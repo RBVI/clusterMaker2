@@ -1,0 +1,163 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<properties>
+		<bundle.symbolicName>clusterMaker2</bundle.symbolicName>
+		<bundle.namespace>edu.ucsf.rbvi.clusterMaker2.internal</bundle.namespace>
+		<cytoscape.api.version>3.0.0</cytoscape.api.version>
+		
+		<maven-bundle-plugin.version>2.3.4</maven-bundle-plugin.version>
+		<osgi.api.version>4.2.0</osgi.api.version>
+	</properties>
+
+	<groupId>edu.ucsf.rbvi</groupId>
+	<artifactId>clusterMaker2</artifactId>
+	<packaging>bundle</packaging>
+	<name>${bundle.symbolicName}</name>
+
+	<version>0.9.0</version>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>${maven-bundle-plugin.version}</version>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
+						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
+						<Bundle-Version>${project.version}</Bundle-Version>
+						<Export-Package>!${bundle.namespace}.*</Export-Package>
+						<Private-Package>${bundle.namespace}.*</Private-Package>
+						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
+					</instructions>
+				</configuration>
+			</plugin>
+			<!-- plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<artifactSet>
+								<includes>
+									<include>org.openscience.cdk:*</include>
+								</includes>
+							</artifactSet>
+							<minimizeJar>true</minimizeJar>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin -->
+		</plugins>
+	</build>
+
+	<!-- Links to the Cytoscape Maven repositories. -->
+	<repositories>
+		<repository>
+			<id>cytoscape_snapshots</id>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<name>Cytoscape Snapshots</name>
+			<url>http://code.cytoscape.org/nexus/content/repositories/snapshots/</url>
+		</repository>
+		<repository>
+			<id>cytoscape_releases</id>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<name>Cytoscape Releases</name>
+			<url>http://code.cytoscape.org/nexus/content/repositories/releases/</url>
+		</repository>
+		<repository>
+			<id>local_cdk_release</id>
+			<name>CDK Release</name>
+			<url>file://${basedir}/cdk-repo</url>
+		</repository>
+		<repository>
+			<id>apache-repo-releases</id>
+			<url>https://repository.apache.org/content/repositories/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>model-api</artifactId>
+			<version>${cytoscape.api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>swing-application-api</artifactId>
+			<version>${cytoscape.api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>group-api</artifactId>
+			<version>${cytoscape.api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>application-api</artifactId>
+			<version>${cytoscape.api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>core-task-api</artifactId>
+			<version>${cytoscape.api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>viewmodel-api</artifactId>
+			<version>${cytoscape.api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>layout-api</artifactId>
+			<version>${cytoscape.api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>presentation-api</artifactId>
+			<version>${cytoscape.api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>work-api</artifactId>
+			<version>${cytoscape.api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>service-api</artifactId>
+			<version>${cytoscape.api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ops4j.pax.logging</groupId>
+			<artifactId>pax-logging-api</artifactId>
+			<version>1.5.2</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>org.osgi.core</artifactId>
+			<version>${osgi.api.version}</version>
+		</dependency>
+	</dependencies>
+
+</project>
