@@ -43,12 +43,33 @@ import clusterMaker.ui.NewNetworkView;
 
 public class MCLCluster extends AbstractNetworkClusterer   {
 
-	double inflation_parameter = 2.0;
-	int rNumber = 16;
-	double clusteringThresh = 1e-15;
-	double maxResidual = 0.001;
-	int maxThreads = 0;
+	
 	RunMCL runMCL = null;
+	
+	//Tunables
+	
+	@Tunable(description ="Basic MCL Tuning" ) 
+	public int tunables_panel;
+	
+	@Tunable(description = "Granularity parameter (inflation value)")
+	public double inflation_parameter;
+	
+	/*****/@Tunable(description =  "MCL Advanced Settings", params="displayState=collapsed")
+	public int mclAdvancedGroup;
+
+	@Tunable(description = "Weak edge weight pruning threshold")
+	public double clusteringThresh;
+	
+	@Tunable(description = "Number of iterations")
+	public int iterations;
+	
+	@Tunable(description = "Maximum residual value")
+	public double maxResidual;
+	
+	@Tunable(description = "Maximum number of threads")
+	public int maxThreads;
+    
+	
 	
 	public MCLCluster() {
 		super();
@@ -83,48 +104,21 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 		/**
 		 * Tuning values
 		 */
-		@Tunable(description ="Basic MCL Tuning" ) 
-		int tunables_panel = 2;
-		/*clusterProperties.add(new Tunable("tunables_panel",
-		                                  "Basic MCL Tuning",
-		                                  Tunable.GROUP, new Integer(1)));
-         */
-		// Inflation Parameter
-		clusterProperties.add(new Tunable("inflation_parameter",
-		                                  "Granularity parameter (inflation value)",
-		                                  Tunable.DOUBLE, new Double(inflation_parameter),
-		                                  (Object)null, (Object)null, 0));
+		tunables_panel = 1;
+		inflation_parameter = 2.0;
+		mclAdvancedGroup = 4;
+		iterations = 16;
+		clusteringThresh = 1e-15;
+		maxResidual = 0.001;
+		maxThreads = 0;
 
 		// Use the standard edge attribute handling stuff....
 		edgeAttributeHandler = new EdgeAttributeHandler(clusterProperties, true);
 
-		clusterProperties.add(new Tunable("mclAdvancedGroup", "MCL Advanced Settings",
+	/*****/	/*clusterProperties.add(new Tunable("mclAdvancedGroup", "MCL Advanced Settings",
 		                                  Tunable.GROUP, new Integer(4),
 		                                  new Boolean(true), null, Tunable.COLLAPSABLE));
-		// Clustering Threshold
-		clusterProperties.add(new Tunable("clusteringThresh",
-		                                  "Weak edge weight pruning threshold",
-		                                  Tunable.DOUBLE, new Double(clusteringThresh),
-		                                  (Object)null, (Object)null, 0));
-
-		// Number of iterations
-		clusterProperties.add(new Tunable("iterations",
-		                                  "Number of iterations",
-		                                  Tunable.INTEGER, new Integer(rNumber),
-		                                  (Object)null, (Object)null, 0));
-
-		// Number of iterations
-		clusterProperties.add(new Tunable("maxResidual",
-		                                  "Maximum residual value",
-		                                  Tunable.DOUBLE, new Double(maxResidual),
-		                                  (Object)null, (Object)null, 0));
-
-		// Maximum number of CPU's to use
-		clusterProperties.add(new Tunable("maxThreads",
-		                                  "Maximum number of threads",
-		                                  Tunable.INTEGER, new Integer(maxThreads),
-		                                  (Object)null, (Object)null, 0));
-
+		*/
 		super.advancedProperties();
 		clusterProperties.initializeProperties();
 		updateSettings(true);

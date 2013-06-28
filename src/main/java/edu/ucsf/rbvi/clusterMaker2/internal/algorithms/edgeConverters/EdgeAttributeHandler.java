@@ -19,6 +19,8 @@ import org.cytoscape.work.BasicTunableHandlerFactory;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.AbstractTunableInterceptor;
 import org.cytoscape.work.TunableSetter;
+import org.cytoscape.work.util.BoundedDouble;
+import org.cytoscape.work.util.ListSingleSelection;
 
 
 import org.cytoscape.myapp.internal.algorithms.ClusterProperties;
@@ -33,8 +35,8 @@ import org.cytoscape.myapp.internal.algorithms.edgeConverters.SCPSConverter;
 
 import org.cytoscape.myapp.internal.algorithms.edgeConverters.ThresholdHeuristic;
 
-import clusterMaker.ui.HistogramDialog;
-import clusterMaker.ui.HistoChangeListener;
+import org.cytoscape.myapp.internal.ui.HistogramDialog;
+import org.cytoscape.myapp.internal.ui.HistoChangeListener;
 
 public class EdgeAttributeHandler implements TunableSetter, ActionListener, HistoChangeListener{
 	
@@ -48,39 +50,84 @@ public class EdgeAttributeHandler implements TunableSetter, ActionListener, Hist
 	private EdgeWeightConverter converter = null;
 	private boolean supportAdjustments = false;
 	
-	@Tunable(params="slider=true")
-	private Double edgeCutOff = null;
+	
 	
 	private Double setEdgeCutOff = null;
 	private String[] attributeArray = new String[1];
 	private List<EdgeWeightConverter>converters = null;
 	
-	@Tunable(description = "Source for array data")
-	private int attributeListGroup = 5;
+	@Tunable(description = "Source for array data", groups = "General")
+	private int attributeListGroup;
 	
 	@Tunable(description = "Array Sources")
-	private int attribute = 0;
+	private ListSingleSelection<String> attribute ;
+	
+	@Tunable(description = "Array Sources")
+	private String getAttribute(){
+		return attribute.getSelectedValue();
+	}
+	
+	private void setAtribute(String newAttribute){
+		
+		attribute.setSelectedValue(newAttribute);
+		System.out.println("Setting the value of Array Sources to: " + attribute.getSelectedValue()  );
+	}
 	
 	@Tunable(description = "Cluster only selected nodes")
-	private boolean selectedOnly = false;
+	private boolean selectedOnly ;
+	
+	@Tunable(description = "Cluster only selected nodes")
+	private boolean getSelectedOnly(){
+		return selectedOnly;
+	}
+	
+	private void setSelectedOnly(boolean newSelectedOnly){
+		selectedOnly = newSelectedOnly;
+		System.out.println("Setting the value of Cluster only selected nodes to: " +  selectedOnly );
+
+	}
 	
 	@Tunable(description = "Edge weight conversion")
-	private int edgeWeighter = 0;
+	private ListSingleSelection<EdgeWeightConverter> edgeWeighter;
+	
+	@Tunable(description = "Edge weight conversion")
+	private EdgeWeightConverter getEdgeWeighter(){
+		return edgeWeighter.getSelectedValue();
+	}
+	
+	private void setEdgeWeighter(EdgeWeightConverter newEdgeWeighter){
+		
+		edgeWeighter.setSelectedValue(newEdgeWeighter);
+		System.out.println("Setting the value of Edge Weight Conversion to: " + edgeWeighter.getSelectedValue()  );
+	}
+	
+	@Tunable(params="slider=true")
+	private BoundedDouble edgeCutOff;
+	
+	@Tunable()
+	private Double getEdgeCutOff(){
+		return edgeCutOff.getValue();
+	}
+	private void setEdgeCutOff(Double newEdgeCutOff){
+		edgeCutOff.setValue(newEdgeCutOff);
+		System.out.println("Setting the value of Edge CutOff to: " + edgeCutOff.getValue()  );
+
+	}
 	
 	@Tunable(description = "Edge weight cutoff")
-	private int edgeCutoffGroup = 2;
-	
+	private int edgeCutoffGroup;
+	/*
 	@Tunable(description = "Set Edge Cutoff Using Histogram")
 	private Button edgeHistogram = null;
-
+*/
 	@Tunable(description = "Array data adjustments")
-	private int options_panel1 = 2;
+	private int options_panel1 ;
 	
 	@Tunable(description = "Assume edges are undirected")
-	private boolean undirectedEdges = true;
+	private boolean undirectedEdges ;
 	
 	@Tunable(description = "Adjust loops before clustering")
-	private boolean adjustLoops = true;
+	private boolean adjustLoops ;
 	
 	
 
@@ -106,79 +153,37 @@ public class EdgeAttributeHandler implements TunableSetter, ActionListener, Hist
 	}
 
 	public void initializeTunables(ClusterProperties clusterProperties) {
-		/*
-		clusterProperties.add(new Tunable("attributeListGroup",
-		                                  "Source for array data",
-		                                  Tunable.GROUP, new Integer(5)));
-
-		// The attribute to use to get the weights
+		
+		
+		attributeListGroup = 5;
+				
 		attributeArray = getAllAttributes();
-		Tunable attrTunable = new Tunable("attribute",
-		                                  "Array sources",
-		                                  Tunable.LIST, 0,
-		                                  (Object)attributeArray, new Integer(0), 0);
-
-		clusterProperties.add(attrTunable);
-
-		// Whether or not to create a new network from the results
-		Tunable selTune = new Tunable("selectedOnly","Cluster only selected nodes",
-		                              Tunable.BOOLEAN, new Boolean(false));
-		clusterProperties.add(selTune);
-		*/
-		
-		
-		// TODO: Change this to a LIST with:
-		// 		--None--
-		// 		1/value
-		// 		-LOG(value)
-		// 		LOG(value)
-		// 		SCPS
-		EdgeWeightConverter[] edgeWeightConverters = converters.toArray(new EdgeWeightConverter[1]);
-		
-		/*
-		Tunable edgeWeighter = new Tunable("edgeWeighter","Edge weight conversion",
-		                                   Tunable.LIST, 0, 
-		                                   (Object)edgeWeightConverters, new Integer(0), 0);
-		clusterProperties.add(edgeWeighter);
-		
-		*/
-		
-		edgeWeighter.addTunableValueListener(this);
-
-		// We want to "listen" for changes to these
-		attrTunable.addTunableValueListener(this);
-		selTune.addTunableValueListener(this);
-
-		/*clusterProperties.add(new Tunable("edgeCutoffGroup",
-		                                  "Edge weight cutoff",
-		                                  Tunable.GROUP, new Integer(2)));
-
-		Tunable edgeCutOffTunable = new Tunable("edgeCutOff",
-		                                        "",
-		                                        Tunable.DOUBLE, new Double(0),
-                                                new Double(0), new Double(1), Tunable.USESLIDER);
-                                                */
-		clusterProperties.add(edgeCutOffTunable);
-		edgeCutOffTunable.addTunableValueListener(this);
-/*
-		clusterProperties.add(new Tunable("edgeHistogram",
-		                                  "Set Edge Cutoff Using Histogram",
-		                                  Tunable.BUTTON, "Edge Histogram", this, null, Tunable.IMMUTABLE));
-
-		if (supportAdjustments) {
-			clusterProperties.add(new Tunable("options_panel1",
-			                                  "Array data adjustments",
-			                                  Tunable.GROUP, new Integer(2)));
-
-			//Whether or not to assume the edges are undirected
-			clusterProperties.add(new Tunable("undirectedEdges","Assume edges are undirected",
-			                                  Tunable.BOOLEAN, new Boolean(true)));
-
-			// Whether or not to adjust loops before clustering
-			clusterProperties.add(new Tunable("adjustLoops","Adjust loops before clustering",
-			                                  Tunable.BOOLEAN, new Boolean(true)));
+		if (attributeArray.length > 0){
+			attribute = new ListSingleSelection<String>(attributeArray);	
+			attribute.setSelectedValue(attributeArray[0]);
 		}
-*/
+		else{
+			attribute = new ListSingleSelection<String>("None");
+		}
+		
+		selectedOnly = false;
+		
+		EdgeWeightConverter[] edgeWeightConverters = converters.toArray(new EdgeWeightConverter[1]);
+		if (edgeWeightConverters.length > 0){
+			edgeWeighter = new ListSingleSelection<EdgeWeightConverter>(edgeWeightConverters);	
+			edgeWeighter.setSelectedValue(edgeWeightConverters[0]);
+		}
+		else{
+			edgeWeighter = new ListSingleSelection<EdgeWeightConverter>();
+		}
+		
+		edgeCutoffGroup = 2;
+		edgeCutOff =  new BoundedDouble(0.0, 0.0, 1.0, true, true);
+		options_panel1 = 2;
+		undirectedEdges = true;
+		adjustLoops = true;
+		
+
 		updateAttributeList();
 	}
 
