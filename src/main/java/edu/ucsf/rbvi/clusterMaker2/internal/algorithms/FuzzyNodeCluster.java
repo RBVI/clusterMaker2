@@ -117,6 +117,16 @@ public class FuzzyNodeCluster extends ArrayList<CyNode> {
 			return 0;
 		}
 	}
+	
+	public double getMembership(CyNode node){
+		
+		return membershipMap.get(node);		
+	}
+	
+	public void setMembership(CyNode node, double membership){
+		
+		membershipMap.put(node,membership);		
+	}
 
 }
 
