@@ -1,4 +1,4 @@
-package org.cytoscape.myapp.internal.algorithms.networkClusterers.FCM;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +16,6 @@ import java.util.Random;
 import java.util.Set;
 import java.lang.Math;
 
-
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -33,11 +32,11 @@ import org.cytoscape.work.TaskMonitor;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
-import org.cytoscape.myapp.internal.algorithms.NodeCluster;
-import org.cytoscape.myapp.internal.algorithms.DistanceMatrix;
-import org.cytoscape.myapp.internal.algorithms.attributeClusterers.Matrix;
-import org.cytoscape.myapp.internal.algorithms.attributeClusterers.DistanceMetric;
-
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.FuzzyNodeCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
 import cern.colt.function.IntIntDoubleFunction;
 import cern.colt.matrix.DoubleFactory2D;
 import cern.colt.matrix.DoubleMatrix1D;
@@ -97,7 +96,7 @@ public class RunFCM {
 	 * @param monitor, Task monitor for the process
 	 * @return method returns a 2D array of cluster membership values
 	 */
-	public double[][] run(TaskMonitor monitor){
+	public List<FuzzyNodeCluster> run(TaskMonitor monitor){
 		
 		CyAppAdapter adapter;
 		CyApplicationManager manager = adapter.getCyApplicationManager();
@@ -158,7 +157,23 @@ public class RunFCM {
 		}
 		while (++iteration < number_iterations);
 		
-		return tClusterMemberships;
+		HashMap <CyNode, double[]> membershipMap = createMembershipMap(tClusterMemberships);
+		
+		List<FuzzyNodeCluster> fuzzyClusters = new ArrayList<FuzzyNodeCluster>();
+		
+		List<CyNode> clusterNodes = new ArrayList<CyNode>();
+		for (int j = 0; j<data.nRows();j++){
+			clusterNodes.add(data.getRowNode(j));
+		}
+		
+		for(int i = 0 ; i< number_clusters; i++){
+			
+			fuzzyClusters.add(new FuzzyNodeCluster(clusterNodes,membershipMap));
+			
+		}
+		
+		
+		return fuzzyClusters;
 	}
 	
 	/*
@@ -451,6 +466,25 @@ public class RunFCM {
 			random = new Random();
 		}
 		return random.nextDouble();
+	}
+	
+	/*
+	 * The method createMembershipMap creates a map from Nodes in the network to an array
+	 *  of membership values corresponding to the various clusters.
+	 *  
+	 * @param membershipArray a 2D array of membership values
+	 * @return membershipHM the Map from CyNodes to their membership value arrays
+	 */
+	public HashMap <CyNode, double[]> createMembershipMap(double[][] membershipArray){
+		
+		HashMap<CyNode, double[]> membershipHM = new HashMap<CyNode, double[]>();
+		
+		for ( int i = 0; i<data.nRows(); i++){
+			
+			membershipHM.put(data.getRowNode(i), membershipArray[i]);
+		}
+		
+		return membershipHM;
 	}
 
 }

@@ -1,4 +1,4 @@
-package org.cytoscape.myapp.internal.algorithms.networkClusterers.FCM;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -24,9 +24,9 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.myapp.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
-import org.cytoscape.myapp.internal.algorithms.networkClusterers.MCL.MCLCluster;
-import org.cytoscape.myapp.internal.algorithms.networkClusterers.MCL.RunMCL;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.RunMCL;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableHandler;
 import org.cytoscape.work.TaskMonitor;
@@ -36,6 +36,8 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
 import clusterMaker.ClusterMaker;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.FuzzyNodeCluster;
+
 import org.cytoscape.myapp.internal.algorithms.ClusterAlgorithm;
 import org.cytoscape.myapp.internal.algorithms.ClusterResults;
 import org.cytoscape.myapp.internal.algorithms.DistanceMatrix;//import clusterMaker.algorithms.DistanceMatrix;
@@ -195,7 +197,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		if (canceled) return;
 
 		// results = runMCL.run(monitor);
-		List<NodeCluster> clusters = runFCM.run(monitor);
+		List<FuzzyNodeCluster> clusters = runFCM.run(monitor);
 		if (clusters == null) return; // Canceled?
 
 		logger.info("Removing groups");
