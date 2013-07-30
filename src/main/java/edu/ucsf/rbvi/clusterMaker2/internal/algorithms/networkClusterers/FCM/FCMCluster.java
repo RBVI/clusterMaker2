@@ -24,6 +24,8 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+
+import edu.ucsf.rbvi.clusterMaker2.internal.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.RunMCL;
@@ -35,17 +37,15 @@ import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
-import clusterMaker.ClusterMaker;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.FuzzyNodeCluster;
-
-import org.cytoscape.myapp.internal.algorithms.ClusterAlgorithm;
-import org.cytoscape.myapp.internal.algorithms.ClusterResults;
-import org.cytoscape.myapp.internal.algorithms.DistanceMatrix;//import clusterMaker.algorithms.DistanceMatrix;
-import org.cytoscape.myapp.internal.algorithms.NodeCluster;//import clusterMaker.algorithms.NodeCluster;
-import org.cytoscape.myapp.internal.algorithms.edgeConverters.EdgeAttributeHandler;
-import org.cytoscape.myapp.internal.algorithms.edgeConverters.EdgeWeightConverter;
-import org.cytoscape.myapp.internal.algorithms.attributeClusterers.DistanceMetric;
-import org.cytoscape.myapp.internal.algorithms.attributeClusterers.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ClusterAlgorithm;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ClusterResults;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeWeightConverter;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import clusterMaker.ui.ClusterViz;
 import clusterMaker.ui.NewNetworkView;
 
@@ -57,6 +57,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 	public static final String NONEATTRIBUTE = "--None--";
 	private boolean selectedOnly = false;
 	private boolean ignoreMissing = true;
+	private CyApplicationManager manager;
 	int rNumber = 50;
 	int c = -1;
 
@@ -78,11 +79,11 @@ public class FCMCluster extends AbstractNetworkClusterer {
 	public ListSingleSelection<DistanceMetric> metric;
 	
 	@Tunable(description = "Distance Metric")
-	private DistanceMetric getMetric(){
+	public DistanceMetric getMetric(){
 		return metric.getSelectedValue();
 	}
 	
-	private void setMetric(DistanceMetric newMetric){
+	public void setMetric(DistanceMetric newMetric){
 		
 		metric.setSelectedValue(newMetric);
 		System.out.println("Setting the value of Distance Metric to: " + metric.getSelectedValue()  );
@@ -92,11 +93,11 @@ public class FCMCluster extends AbstractNetworkClusterer {
 	public ListMultipleSelection<String> attributeList;
 	
 	@Tunable(description = "The attribute to use to get the weights")
-	private List<String> getAttributeList(){
+	public List<String> getAttributeList(){
 		return attributeList.getSelectedValues();
 	}
 	
-	private void setAttributeList(List<String> newAttributeList){
+	public void setAttributeList(List<String> newAttributeList){
 		
 		attributeList.setSelectedValues(newAttributeList);
 		System.out.println("Setting the Attribute List to: " + attributeList.getSelectedValues() );
@@ -104,11 +105,11 @@ public class FCMCluster extends AbstractNetworkClusterer {
 	
 	
 	
-	public FCMCluster() {
+	public FCMCluster(ClusterManager clusterManager) {
 		super();
 		
-		CyAppAdapter adapter;
-		CyApplicationManager manager = adapter.getCyApplicationManager();
+		
+		this.manager = clusterManager.manager;
 		CyNetwork network = manager.getCurrentNetwork();
 		Long networkID = network.getSUID();
 		
@@ -121,7 +122,9 @@ public class FCMCluster extends AbstractNetworkClusterer {
 	public String getName() {return "FCM cluster";};
 
 		
-		
+	/**
+	 * initializeProperties initializes the values of tunables	
+	 */
 	public void initializeProperties() {
 		super.initializeProperties();
 
@@ -199,6 +202,8 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		// results = runMCL.run(monitor);
 		List<FuzzyNodeCluster> clusters = runFCM.run(monitor);
 		if (clusters == null) return; // Canceled?
+		
+		addToNetwork(nodeAttributes, dataMatrix, runFCM.clusterMemberships);
 
 		logger.info("Removing groups");
 
@@ -243,6 +248,24 @@ public class FCMCluster extends AbstractNetworkClusterer {
 			if (attrArray.length > 1) 
 				Arrays.sort(attrArray);
 			return attrArray;
+		}
+		
+		/**
+		 * This method adds the membership value array of each CyNode to the node attributes table 
+		 * 
+		 * @param nodeAttributes :Attribute Table for nodes
+		 * @param data : data matrix for the current set of nodes
+		 * @param clusterMemberships : 2D array of membership values
+		 */
+		
+		private void addToNetwork(CyTable nodeAttributes, Matrix data, double[][] clusterMemberships){
+			
+			CyNode node; 
+			for(int i = 0; i < data.nRows(); i++ ){
+				node = data.getRowNode(i);
+				nodeAttributes.getRow(node).set(clusterAttributeName + "_MembershipValues", clusterMemberships[i]);
+			}
+									
 		}
 
 }
