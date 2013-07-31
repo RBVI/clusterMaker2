@@ -49,7 +49,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matri
 import clusterMaker.ui.ClusterViz;
 import clusterMaker.ui.NewNetworkView;
 
-
+/**
+ * The FCMCluster class is for implementing the Fuzzy C-Means algorithm for clustering. 
+ * The fuzzy clusters are created based on node properties and each node gets assigned a 
+ * degree of membership to each cluster.
+ */
 
 public class FCMCluster extends AbstractNetworkClusterer {
 	
