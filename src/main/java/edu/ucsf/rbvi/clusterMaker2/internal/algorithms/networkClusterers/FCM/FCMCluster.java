@@ -11,6 +11,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JPanel;
 
@@ -46,6 +49,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttrib
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeWeightConverter;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.SilhouetteCalculator;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.Silhouettes;
 import clusterMaker.ui.ClusterViz;
 import clusterMaker.ui.NewNetworkView;
 
@@ -59,8 +64,10 @@ public class FCMCluster extends AbstractNetworkClusterer {
 	
 	RunFCM runFCM = null;
 	public static final String NONEATTRIBUTE = "--None--";
+	protected Matrix dataMatrix;
 	private boolean selectedOnly = false;
 	private boolean ignoreMissing = true;
+	private Silhouettes[] silhouetteResults = null;
 	private CyApplicationManager manager;
 	int rNumber = 50;
 	int c = -1;
@@ -69,6 +76,9 @@ public class FCMCluster extends AbstractNetworkClusterer {
 	
 	@Tunable(description = "Number of iterations")
 	public int iterations;
+	
+	@Tunable(description = "Maximum Number of clusters")
+	public int cMax;
 	
 	@Tunable(description = "Number of clusters")
 	public int cNumber;
@@ -138,6 +148,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		
 		iterations = rNumber;
 		cNumber = c;
+		cMax = 10;
 		fIndex = 1.5;
 		beta = 0.01;
 		
@@ -191,9 +202,11 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		Arrays.sort(attributeArray);
 		
 		// Create the matrix of data with the attributes for calculating distances
-		Matrix dataMatrix = new Matrix(attributeArray, true, ignoreMissing, selectedOnly);
+		dataMatrix = new Matrix(attributeArray, true, ignoreMissing, selectedOnly);
 		dataMatrix.setUniformWeights();
 		//Cluster the nodes
+		
+		this.cNumber = cEstimate();
 		DistanceMetric distMetric = getMetric();
 		runFCM = new RunFCM(dataMatrix, matrix, iterations, cNumber, distMetric, fIndex, beta, logger);
 
@@ -271,6 +284,92 @@ public class FCMCluster extends AbstractNetworkClusterer {
 			}
 									
 		}
+		
+		private int cEstimate(){
+			int nClusters;
+			TaskMonitor saveMonitor = monitor;
+			monitor = null;
+			silhouetteResults = new Silhouettes[cMax];
+
+			int nThreads = Runtime.getRuntime().availableProcessors()-1;
+			if (nThreads > 1)
+				runThreadedSilhouette(cMax, iterations, nThreads, saveMonitor);
+			else
+				runLinearSilhouette(cMax, iterations, saveMonitor);
+
+			// Now get the results and find our best k
+			double maxSil = Double.MIN_VALUE;
+			for (int cEstimate = 2; cEstimate < cMax; cEstimate++) {
+				double sil = silhouetteResults[cEstimate].getMean();
+				// System.out.println("Average silhouette for "+kEstimate+" clusters is "+sil);
+				if (sil > maxSil) {
+					maxSil = sil;
+					nClusters = cEstimate;
+				}
+			}
+			
+			return nClusters;
+		}
+		
+		private void runThreadedSilhouette(int kMax, int nIterations, int nThreads, TaskMonitor saveMonitor) {
+			// Set up the thread pools
+			ExecutorService[] threadPools = new ExecutorService[nThreads];
+			for (int pool = 0; pool < threadPools.length; pool++)
+				threadPools[pool] = Executors.newFixedThreadPool(1);
+
+			// Dispatch a kmeans calculation to each pool
+			for (int kEstimate = 2; kEstimate < kMax; kEstimate++) {
+				int[] clusters = new int[dataMatrix.nRows()];
+				Runnable r = new RunCMeans(dataMatrix, clusters, kEstimate, nIterations, saveMonitor);
+				threadPools[(kEstimate-2)%nThreads].submit(r);
+				// threadPools[0].submit(r);
+			}
+
+			// OK, now wait for each thread to complete
+			for (int pool = 0; pool < threadPools.length; pool++) {
+				threadPools[pool].shutdown();
+				try {
+					boolean result = threadPools[pool].awaitTermination(7, TimeUnit.DAYS);
+				} catch (Exception e) {}
+			}
+		}
+
+		private void runLinearSilhouette(int kMax, int nIterations, TaskMonitor saveMonitor) {
+			for (int kEstimate = 2; kEstimate < kMax; kEstimate++) {
+				int[] clusters = new int[dataMatrix.nRows()];
+				if (halted()) return;
+				if (saveMonitor != null) saveMonitor.setStatusMessage("Getting silhouette with a k estimate of "+kEstimate);
+				//int ifound = kcluster(kEstimate, nIterations, dataMatrix, metric, clusters);
+				silhouetteResults[kEstimate] = SilhouetteCalculator.calculate(dataMatrix, metric.getSelectedValue(), clusters);
+			}
+		}
+		
+		private class RunCMeans implements Runnable {
+			Matrix matrix;
+			int[] clusters;
+			int cEstimate;
+			int nIterations;
+			TaskMonitor saveMonitor = null;
+
+			public RunCMeans (Matrix matrix, int[] clusters, int c, int nIterations, TaskMonitor saveMonitor) {
+				this.matrix = matrix;
+				this.clusters = clusters;
+				this.cEstimate = c;
+				this.nIterations = nIterations;
+				this.saveMonitor = saveMonitor;
+			}
+
+			public void run() {
+				int[] clusters = new int[matrix.nRows()];
+				if (halted()) return;
+				if (saveMonitor != null) saveMonitor.setStatusMessage("Getting silhouette with a c estimate of "+cEstimate);
+				//int ifound = kcluster(kEstimate, nIterations, matrix, metric, clusters);
+				try {
+					silhouetteResults[cEstimate] = SilhouetteCalculator.calculate(matrix, metric.getSelectedValue(), clusters);
+				} catch (Exception e) { e.printStackTrace(); }
+			}
+		}
+		
 
 }
 
