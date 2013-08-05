@@ -27,6 +27,8 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
@@ -68,7 +70,9 @@ public class FCMCluster extends AbstractNetworkClusterer {
 	private boolean selectedOnly = false;
 	private boolean ignoreMissing = true;
 	private Silhouettes[] silhouetteResults = null;
-	private CyApplicationManager manager;
+	private CyApplicationManager manager = null;
+	private CyTableFactory tableFactory = null;
+	private CyTableManager tableManager = null;
 	int rNumber = 50;
 	int c = -1;
 
@@ -124,6 +128,8 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		
 		
 		this.manager = clusterManager.manager;
+		this.tableFactory = clusterManager.tableFactory;
+		this.tableManager = clusterManager.tableManager;
 		CyNetwork network = manager.getCurrentNetwork();
 		Long networkID = network.getSUID();
 		
@@ -220,7 +226,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		List<FuzzyNodeCluster> clusters = runFCM.run(monitor);
 		if (clusters == null) return; // Canceled?
 		
-		addToNetwork(nodeAttributes, dataMatrix, runFCM.clusterMemberships);
+		addToNetwork(clusters, nodeAttributes, dataMatrix, runFCM.clusterMemberships);
 
 		logger.info("Removing groups");
 
@@ -269,20 +275,45 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		
 		/**
 		 * This method adds the membership value array of each CyNode to the node attributes table 
+		 * Method also creates a new table- FuzzyClusterTable which stores all the FuzzyNodeClusters and 
+		 * the corresponding membership values of the nodes in the network
 		 * 
+		 * @param clusters the list of FuzzyNodeCluster for the current network
 		 * @param nodeAttributes :Attribute Table for nodes
 		 * @param data : data matrix for the current set of nodes
 		 * @param clusterMemberships : 2D array of membership values
 		 */
 		
-		private void addToNetwork(CyTable nodeAttributes, Matrix data, double[][] clusterMemberships){
+		private void addToNetwork(List<FuzzyNodeCluster> clusters, CyTable nodeAttributes, Matrix data, double[][] clusterMemberships){
 			
 			CyNode node; 
 			for(int i = 0; i < data.nRows(); i++ ){
 				node = data.getRowNode(i);
 				nodeAttributes.getRow(node).set(clusterAttributeName + "_MembershipValues", clusterMemberships[i]);
 			}
-									
+						
+			CyTable FuzzyClusterTable = tableFactory.createTable("Fuzzy_Cluster_Table", "FuzzyCluster", FuzzyNodeCluster.class, true, true);
+			
+			FuzzyClusterTable.createColumn("FuzzyCluster", FuzzyNodeCluster.class, false);
+			for(int i = 0; i <data.nRows(); i++){
+				
+				FuzzyClusterTable.createColumn("Node_"+i+".SUID", double.class, false);
+			}
+			
+			CyRow TableRow;
+			for(FuzzyNodeCluster cluster : clusters){
+				
+				TableRow = FuzzyClusterTable.getRow(cluster);
+				CyNode ClusterNode ;
+				for(int i = 0; i <data.nRows(); i++){
+					ClusterNode = data.getRowNode(i);
+					TableRow.set("Node_"+i+".SUID", cluster.getMembership(ClusterNode));
+				}
+			}
+			
+			tableManager.addTable(FuzzyClusterTable);			
+			
+			
 		}
 		
 		private int cEstimate(){
