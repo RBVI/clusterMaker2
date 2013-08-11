@@ -18,8 +18,6 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JPanel;
 
 //Cytoscape imports
-import org.cytoscape.app.CyAppAdapter;
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -30,7 +28,8 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.ClusterManager;
+import edu.ucsf.rbvi.clusterMaker2.ClusterAlgorithm;
+import edu.ucsf.rbvi.clusterMaker2.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.RunMCL;
@@ -39,11 +38,8 @@ import org.cytoscape.work.TunableHandler;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.FuzzyNodeCluster;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
@@ -70,9 +66,6 @@ public class FCMCluster extends AbstractNetworkClusterer {
 	private boolean selectedOnly = false;
 	private boolean ignoreMissing = true;
 	private Silhouettes[] silhouetteResults = null;
-	private CyApplicationManager manager = null;
-	private CyTableFactory tableFactory = null;
-	private CyTableManager tableManager = null;
 	int rNumber = 50;
 	int c = -1;
 
@@ -125,21 +118,13 @@ public class FCMCluster extends AbstractNetworkClusterer {
 	
 	public FCMCluster(ClusterManager clusterManager) {
 		super();
-		
-		
-		this.manager = clusterManager.manager;
-		this.tableFactory = clusterManager.tableFactory;
-		this.tableManager = clusterManager.tableManager;
-		CyNetwork network = manager.getCurrentNetwork();
-		Long networkID = network.getSUID();
-		
-		clusterAttributeName = networkID + "_FCM_cluster" ;
-		Logger logger = LoggerFactory.getLogger(FCMCluster.class);
 		initializeProperties();
 	}
 
 	public String getShortName() {return "fcm";};
 	public String getName() {return "FCM cluster";};
+	public ClusterViz getVisualizer() {return null;}
+	public Object getContext() {return null;}
 
 		
 	/**
@@ -171,28 +156,19 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		
 		DistanceMetric[] distanceMetricArray = Matrix.distanceTypes;
 		metric = new ListSingleSelection<DistanceMetric>(distanceMetricArray);
-		
-			
-		super.advancedProperties();
-		clusterProperties.initializeProperties();
-		updateSettings(true);
 	}
 	
-	public void doCluster(TaskMonitor monitor) {
+	public void doCluster(CyNetwork network, TaskMonitor monitor) {
 		this.monitor = monitor;
 		
-		CyAppAdapter adapter;
-		CyApplicationManager manager = adapter.getCyApplicationManager();
-		CyNetwork network = manager.getCurrentNetwork();
 		Long networkID = network.getSUID();
 
 		CyTable netAttributes = network.getDefaultNetworkTable();
 		CyTable nodeAttributes = network.getDefaultNodeTable();
 		
-		Logger logger = LoggerFactory.getLogger("CyUserMessages");
 		DistanceMatrix matrix = edgeAttributeHandler.getMatrix();
 		if (matrix == null) {
-			logger.error("Can't get distance matrix: no attribute value?");
+			monitor.showMessage(TaskMonitor.Level.ERROR, "Can't get distance matrix: no attribute value?");
 			return;
 		}
 
@@ -214,7 +190,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		
 		this.cNumber = cEstimate();
 		DistanceMetric distMetric = getMetric();
-		runFCM = new RunFCM(dataMatrix, matrix, iterations, cNumber, distMetric, fIndex, beta, logger);
+		runFCM = new RunFCM(dataMatrix, matrix, iterations, cNumber, distMetric, fIndex, beta, monitor);
 
 		
 		//RunFCM (Matrix data,DistanceMatrix dMat, int num_iterations, int cClusters,DistanceMetric metric, double findex, double beta, int maxThreads, Logger logger)
@@ -223,7 +199,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		if (canceled) return;
 
 		// results = runMCL.run(monitor);
-		List<FuzzyNodeCluster> clusters = runFCM.run(monitor);
+		List<FuzzyNodeCluster> clusters = runFCM.run();
 		if (clusters == null) return; // Canceled?
 		
 		addToNetwork(clusters, nodeAttributes, dataMatrix, runFCM.clusterMemberships);
@@ -242,8 +218,6 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		results = new ClusterResults(network, nodeClusters);
 		monitor.setStatusMessage("Done.  FCM results:\n"+results);
 
-		// Tell any listeners that we're done
-		pcs.firePropertyChange(ClusterAlgorithm.CLUSTER_COMPUTED, null, this);
 	}
 	
 	public void halt() {

@@ -1,4 +1,4 @@
-package org.cytoscape.myapp.internal.algorithms.networkClusterers.MCL;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL;
 
 
 import java.util.ArrayList;
@@ -23,35 +23,22 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyRow;
-//import cytoscape.Cytoscape;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableHandler;
-import org.cytoscape.app.CyAppAdapter;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.group.*;
 import org.cytoscape.work.TaskMonitor;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 
-//import cytoscape.Cytoscape;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 
-import org.cytoscape.myapp.internal.algorithms.NodeCluster;
-import org.cytoscape.myapp.internal.algorithms.DistanceMatrix;
-//import clusterMaker.algorithms.NodeCluster;
-//import clusterMaker.algorithms.DistanceMatrix;
-
-import cern.colt.function.IntIntDoubleFunction;
-import cern.colt.matrix.DoubleFactory2D;
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.impl.SparseDoubleMatrix2D;
+import cern.colt.function.tdouble.IntIntDoubleFunction;
+import cern.colt.matrix.tdouble.DoubleFactory2D;
+import cern.colt.matrix.tdouble.DoubleMatrix1D;
+import cern.colt.matrix.tdouble.DoubleMatrix2D;
 
 
 public class RunMCL {
 
-	//private final CyAppAdapter adapter;
-	
 	private double inflationParameter; //density parameter 
 	private int number_iterations; //number of inflation/expansion cycles
 	private double clusteringThresh; //Threshold used to remove weak edges between distinct clusters
@@ -59,7 +46,6 @@ public class RunMCL {
 	private List<CyNode> nodes;
 	private List<CyEdge> edges;
 	private boolean canceled = false;
-	private Logger logger;
 	public final static String GROUP_ATTRIBUTE = "__MCLGroups";
 	protected int clusterCount = 0;
 	private boolean createMetaNodes = false;
@@ -69,7 +55,7 @@ public class RunMCL {
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
 	
 	public RunMCL(DistanceMatrix dMat, double inflationParameter, int num_iterations, 
-            double clusteringThresh, double maxResidual, int maxThreads, Logger logger )
+            double clusteringThresh, double maxResidual, int maxThreads, TaskMonitor monitor )
 	{
 			
 		this.distanceMatrix = dMat;
@@ -77,7 +63,6 @@ public class RunMCL {
 		this.number_iterations = num_iterations;
 		this.clusteringThresh = clusteringThresh;
 		this.maxResidual = maxResidual;
-		this.logger = logger;
 		nodes = distanceMatrix.getNodes();
 		edges = distanceMatrix.getEdges();
 		this.matrix = distanceMatrix.getDistanceMatrix();
@@ -95,11 +80,8 @@ public class RunMCL {
 
 	public void setDebug(boolean debug) { this.debug = debug; }
 	
-	public List<NodeCluster> run(TaskMonitor monitor)
+	public List<NodeCluster> run(CyNetwork network, TaskMonitor monitor)
 	{
-		CyAppAdapter adapter;
-		CyApplicationManager manager = adapter.getCyApplicationManager();
-		CyNetwork network = manager.getCurrentNetwork();	//CyNetwork network = Cytoscape.getCurrentNetwork();
 		Long networkID = network.getSUID();		//String networkID = network.getIdentifier();
 
 		CyTable netAttributes = network.getDefaultNetworkTable();	//CyAttributes netAttributes = Cytoscape.getNetworkAttributes();
@@ -142,7 +124,7 @@ public class RunMCL {
 				}
 				// Normalize
 				normalize(matrix, clusteringThresh, false);
-				logger.info("Expansion "+(i+1)+" took "+(System.currentTimeMillis()-t)+"ms");
+				monitor.showMessage(TaskMonitor.Level.INFO,"Expansion "+(i+1)+" took "+(System.currentTimeMillis()-t)+"ms");
 			}
 
 			// printMatrix(matrix);
@@ -157,7 +139,6 @@ public class RunMCL {
 				matrix.forEachNonZero(myPow);
 				// Normalize
 				normalize(matrix, clusteringThresh, true);
-				logger.info("Inflation "+(i+1)+" took "+(System.currentTimeMillis()-t)+"ms");
 			}
 
 			// printMatrix(matrix);
@@ -185,13 +166,13 @@ public class RunMCL {
 		// System.out.println("Cluster map has "+clusterMap.keySet().size()+" clusters");
 
 		//Update node attributes in network to include clusters. Create cygroups from clustered nodes
-		logger.info("Created "+clusterCount+" clusters");
-		logger.info("Cluster map has "+clusterMap.keySet().size()+" clusters");
+		monitor.setStatusMessage("Created "+clusterCount+" clusters");
+		monitor.setStatusMessage("Cluster map has "+clusterMap.keySet().size()+" clusters");
 		// debugln("Created "+clusterCount+" clusters:");
 		//
 		if (clusterCount == 0) {
-			logger.error("Created 0 clusters!!!!");
-			logger.error("Cluster map has "+clusterMap.keySet().size()+" clusters");
+			monitor.setStatusMessage("Created 0 clusters!!!!");
+			monitor.setStatusMessage("Cluster map has "+clusterMap.keySet().size()+" clusters");
 			return null;
 		}
 
@@ -213,7 +194,7 @@ public class RunMCL {
 			clusterNumber++;
 		}
 
-		logger.info("Total runtime = "+(System.currentTimeMillis()-startTime)+"ms");
+		monitor.setStatusMessage("Total runtime = "+(System.currentTimeMillis()-startTime)+"ms");
 
 		Set<NodeCluster>clusters = cMap.keySet();
 		return new ArrayList<NodeCluster>(clusters);
@@ -285,7 +266,7 @@ public class RunMCL {
 	 */
 	private void printMatrixInfo(DoubleMatrix2D matrix) {
 		debugln("Matrix("+matrix.rows()+", "+matrix.columns()+")");
-		if (matrix instanceof SparseDoubleMatrix2D)
+		if (matrix.getClass().getName().indexOf("Sparse") >= 0)
 			debugln(" matrix is sparse");
 		else
 			debugln(" matrix is dense");
@@ -306,7 +287,7 @@ public class RunMCL {
 			debugln();
 		}
 		debugln("Matrix("+matrix.rows()+", "+matrix.columns()+")");
-		if (matrix instanceof SparseDoubleMatrix2D)
+		if (matrix.getClass().getName().indexOf("Sparse") >= 0)
 			debugln(" matrix is sparse");
 		else
 			debugln(" matrix is dense");
@@ -345,7 +326,7 @@ public class RunMCL {
 		}
 
 		A.forEachNonZero(
-			new cern.colt.function.IntIntDoubleFunction() {
+			new IntIntDoubleFunction() {
 				public double apply(int row, int column, double value) {
 
 					Runnable r = new ThreadedDotProduct(value, Brows[column], Crows[row]);
@@ -366,7 +347,7 @@ public class RunMCL {
 	}
 
 	private DoubleMatrix2D create2DMatrix (DoubleMatrix1D[] rows) {
-		int columns = rows[0].size();
+		int columns = (int)rows[0].size();
 		DoubleMatrix2D C = DoubleFactory2D.sparse.make(rows.length, columns);
 		for (int row = 0; row < rows.length; row++) {
 			for (int col = 0; col < columns; col++) {
@@ -518,12 +499,12 @@ public class RunMCL {
 					if (rowCluster == columnCluster) 
 						return value;
 					clusterCount--;
-					logger.debug("Joining cluster "+columnCluster.getClusterNumber()+" and "+rowCluster.getClusterNumber());
-					logger.debug("clusterCount = "+clusterCount);
+					// logger.debug("Joining cluster "+columnCluster.getClusterNumber()+" and "+rowCluster.getClusterNumber());
+					// logger.debug("clusterCount = "+clusterCount);
 					columnCluster.addAll(rowCluster);
 				} else {
-					logger.debug("Adding "+row+" to "+columnCluster.getClusterNumber());
-					logger.debug("clusterCount = "+clusterCount);
+					// logger.debug("Adding "+row+" to "+columnCluster.getClusterNumber());
+					// logger.debug("clusterCount = "+clusterCount);
 					columnCluster.add(nodes, row);
 				}
 				updateClusters(columnCluster);
@@ -533,14 +514,14 @@ public class RunMCL {
 				if (clusterMap.containsKey(row)) {
 					// Yes, just add column to row's cluster
 					rowCluster = clusterMap.get(row);
-					logger.debug("Adding "+column+" to "+rowCluster.getClusterNumber());
-					logger.debug("clusterCount = "+clusterCount);
+					// logger.debug("Adding "+column+" to "+rowCluster.getClusterNumber());
+					// logger.debug("clusterCount = "+clusterCount);
 					rowCluster.add(nodes, column);
 				} else {
 					clusterCount++;
 					rowCluster = new NodeCluster();
-					logger.debug("Created new cluster "+rowCluster.getClusterNumber()+" with "+row+" and "+column);
-					logger.debug("clusterCount = "+clusterCount);
+					// logger.debug("Created new cluster "+rowCluster.getClusterNumber()+" with "+row+" and "+column);
+					// logger.debug("clusterCount = "+clusterCount);
 					rowCluster.add(nodes, column);
 					rowCluster.add(nodes, row);
 				}

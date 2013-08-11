@@ -1,20 +1,21 @@
-package org.cytoscape.myapp.internal.algorithms;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms;
 
 import java.text.NumberFormat;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyTableUtil;
-import org.omg.CORBA.Any;
 
-import giny.model.Edge;
+import edu.ucsf.rbvi.clusterMaker2.ClusterResults;
 
 /**
  * This class calculates a number of cluster statistics on a set of
@@ -28,7 +29,7 @@ import giny.model.Edge;
  *	Cluster coefficient (intra-cluster edges / total edges)
  */
 
-public class ClusterResults {
+public class AbstractClusterResults implements ClusterResults {
 	
 	private List<List<CyNode>> clusters;
 	private CyNetwork network;
@@ -40,14 +41,14 @@ public class ClusterResults {
 	private double modularity;
 	private String extraText = null;
 
-	public ClusterResults(CyNetwork network, List<List<CyNode>> cl, String extraInformation) { 
+	public AbstractClusterResults(CyNetwork network, List<List<CyNode>> cl, String extraInformation) { 
 		this.network = network;
 		clusters = cl; 
 		extraText = extraInformation;
 		calculate();
 	}
 
-	public ClusterResults(CyNetwork network, List<List<CyNode>> cl) { 
+	public AbstractClusterResults(CyNetwork network, List<List<CyNode>> cl) { 
 		this(network,cl,null);
 	}
 
@@ -63,7 +64,15 @@ public class ClusterResults {
 		return result;
 	}
 
+	public double getScore() { return modularity; }
+
 	public List<List<CyNode>> getClusters() {
+		return clusters;
+	}
+
+	public Object getResults(Class requestedType) {
+		if (requestedType.equals(String.class))
+			return toString();
 		return clusters;
 	}
 
@@ -81,8 +90,8 @@ public class ClusterResults {
 			averageSize += (double)cluster.size() / (double)clusterCount;
 			maxSize = Math.max(maxSize, cluster.size());
 			minSize = Math.min(minSize, cluster.size());
-			double innerEdges = getInnerEdgeCount(cluster);
-			double outerEdges = getOuterEdgeCount(cluster);
+			double innerEdges = (double)getInnerEdgeCount(cluster);
+			double outerEdges = (double)getOuterEdgeCount(cluster);
 			clusterCoefficient += (innerEdges / (innerEdges+outerEdges)) / (double)(clusterCount);
 
 			double percentEdgesInCluster = innerEdges/edgeCount;
@@ -92,31 +101,31 @@ public class ClusterResults {
 		}
 	}
 
-	private double getInnerEdgeCount(List<CyNode> cluster) {
-		
-		return (double) CyTableUtil.getEdgesInState(nodes,"connected",true).size(); //network.getConnectingEdges(cluster).size();
+	private int getInnerEdgeCount(List<CyNode> cluster) {
+		return getConnectingEdges(network, cluster).size();
 	}
 
-	private double getOuterEdgeCount(List<CyNode> cluster) {
-		// Get all of the inner edges
-		List<Edge> innerEdges = network.getConnectingEdges(cluster);
-
-		// Make a map out of the inner edges
-		Map<Edge,Edge> edgeMap = new HashMap<Edge,Edge>();
-		for (Edge edge: innerEdges) {
-			edgeMap.put(edge, edge);
-		}
-
-		int outerCount = 0;
+	private int getOuterEdgeCount(List<CyNode> cluster) {
+		Set<CyEdge> innerEdgeSet = new HashSet<CyEdge>(getConnectingEdges(network, cluster));
+		List<CyEdge> outerEdges = new ArrayList<CyEdge>();
 		for (CyNode node: cluster) {
-			List<Edge> edges = network.getAdjacentEdgesList(node,"ANY");
-			for (Edge edge: edges) {
-				if (!edgeMap.containsKey(edge))
-					outerCount++;
+			for (CyEdge edge: network.getAdjacentEdgeList(node, CyEdge.Type.ANY)) {
+				if (!innerEdgeSet.contains(edge))
+					outerEdges.add(edge);
 			}
 		}
-		return (double) outerCount;
+		return outerEdges.size();
 	}
 
+	private List<CyEdge> getConnectingEdges(CyNetwork network, List<CyNode> nodes) {
+			List<CyEdge> edgeList = new ArrayList<CyEdge>();
+			for (int rowIndex = 0; rowIndex < nodes.size(); rowIndex++) {
+				for (int colIndex = rowIndex; colIndex < nodes.size(); colIndex++) {
+					List<CyEdge> connectingEdges = network.getConnectingEdgeList(nodes.get(rowIndex), nodes.get(colIndex), CyEdge.Type.ANY);
+					if (connectingEdges != null) edgeList.addAll(connectingEdges);
+				}
+			}
+			return edgeList;
+		}
 
 }

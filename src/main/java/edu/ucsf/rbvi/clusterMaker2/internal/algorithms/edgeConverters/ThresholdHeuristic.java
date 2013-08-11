@@ -1,4 +1,4 @@
-package org.cytoscape.myapp.internal.algorithms.edgeConverters;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,7 +11,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyNetworkManager;
 
-import org.cytoscape.myapp.internal.algorithms.DistanceMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 
 public class ThresholdHeuristic{
 

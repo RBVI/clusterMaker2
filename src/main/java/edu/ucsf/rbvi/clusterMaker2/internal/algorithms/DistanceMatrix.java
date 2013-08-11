@@ -1,4 +1,4 @@
-package org.cytoscape.myapp.internal.algorithms;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 // Cytoscape imports
-import org.cytoscape.app.CyAppAdapter;
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -20,18 +18,13 @@ import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableHandler;
 import org.cytoscape.work.TaskMonitor;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 
+import cern.colt.function.tdouble.IntIntDoubleFunction;
+import cern.colt.matrix.tdouble.DoubleFactory2D;
+import cern.colt.matrix.tdouble.DoubleMatrix2D;
 
-
-import cern.colt.function.IntIntDoubleFunction;
-import cern.colt.matrix.DoubleFactory2D;
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.impl.SparseDoubleMatrix2D;
-
-import org.cytoscape.myapp.internal.algorithms.edgeConverters.EdgeAttributeHandler;
-import org.cytoscape.myapp.internal.algorithms.edgeConverters.EdgeWeightConverter;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeWeightConverter;
 
 public class DistanceMatrix {
 
@@ -51,15 +44,10 @@ public class DistanceMatrix {
 
 	private double[] edgeWeights = null;
 	
-	public DistanceMatrix(String edgeAttributeName, boolean selectedOnly, EdgeWeightConverter converter) {
+	public DistanceMatrix(CyNetwork network, String edgeAttributeName, boolean selectedOnly, EdgeWeightConverter converter) {
 
 		this.edgeAttributeName = edgeAttributeName;
 		this.converter = converter;
-
-		CyAppAdapter adapter;
-		CyApplicationManager manager = adapter.getCyApplicationManager();
-		CyNetwork network = manager.getCurrentNetwork();
-		//CyNetwork network = Cytoscape.getCurrentNetwork();
 		Long networkID = network.getSUID();	//String networkID = network.getIdentifier();
 		if (!selectedOnly) {
 			nodes = (List<CyNode>)network.getNodeList(); //(List<CyNode>)network.nodesList();
@@ -68,7 +56,7 @@ public class DistanceMatrix {
 			nodes = new ArrayList<CyNode>();
 			edges = new ArrayList<CyEdge>();
 			nodes.addAll(CyTableUtil.getNodesInState(network,"selected",true));	//nodes.addAll(network.getSelectedNodes());
-			edges.addAll(CyTableUtil.getEdgesInState(nodes,"connected",true));//edges = network.getConnectingEdges(nodes);
+			edges.addAll(getConnectingEdges(network,nodes));//edges = network.getConnectingEdges(nodes);
 		}
 		CyTable edgeAttributes = network.getDefaultEdgeTable();
 		//CyAttributes edgeAttributes = Cytoscape.getEdgeAttributes();
@@ -273,13 +261,13 @@ public class DistanceMatrix {
 		 *
 		 * @param matrix the matrix we're going to print out information about
 		 */
-		public void printMatrixInfo(/*CyLogger*/Logger logger, DoubleMatrix2D m) {
-			logger.debug("Matrix("+m.rows()+", "+m.columns()+")");
-			if (m instanceof SparseDoubleMatrix2D)
-				logger.debug(" matrix is sparse");
+		public void printMatrixInfo(DoubleMatrix2D m) {
+			System.out.println("Matrix("+m.rows()+", "+m.columns()+")");
+			if (m.getClass().getName().indexOf("Sparse") >= 0)
+				System.out.println(" matrix is sparse");
 			else
-				logger.debug(" matrix is dense");
-			logger.debug(" cardinality is "+m.cardinality());
+				System.out.println(" matrix is dense");
+			System.out.println(" cardinality is "+m.cardinality());
 		}
 
 		/**
@@ -287,14 +275,14 @@ public class DistanceMatrix {
 		 *
 		 * @param matrix the matrix we're going to print out information about
 		 */
-		public void printMatrix(/*CyLogger*/Logger logger, DoubleMatrix2D m) {
+		public void printMatrix(DoubleMatrix2D m) {
 			String s = "";
 			for (int row = 0; row < m.rows(); row++) {
 				s += nodes.get(row).getSUID()+":\t";
 				for (int col = 0; col < m.columns(); col++) {
 					s += ""+m.get(row,col)+"\t";
 				}
-				logger.debug(s);
+				System.out.println(s);
 			}
 		}
 
@@ -402,6 +390,14 @@ public class DistanceMatrix {
 	    }
 	  }
 
-	
-	
+		List<CyEdge> getConnectingEdges(CyNetwork network, List<CyNode> nodes) {
+			List<CyEdge> edgeList = new ArrayList<CyEdge>();
+			for (int rowIndex = 0; rowIndex < nodes.size(); rowIndex++) {
+				for (int colIndex = rowIndex; colIndex < nodes.size(); colIndex++) {
+					List<CyEdge> connectingEdges = network.getConnectingEdgeList(nodes.get(rowIndex), nodes.get(colIndex), CyEdge.Type.ANY);
+					if (connectingEdges != null) edgeList.addAll(connectingEdges);
+				}
+			}
+			return edgeList;
+		}
 }

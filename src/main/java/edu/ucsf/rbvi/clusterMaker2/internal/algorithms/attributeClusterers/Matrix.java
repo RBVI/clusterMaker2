@@ -1,4 +1,4 @@
-package org.cytoscape.myapp.internal.algorithms.attributeClusterers;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,9 +20,9 @@ import org.cytoscape.model.CyTableUtil;
  */
 
 public class Matrix extends BaseMatrix {
-
 	private CyNode rowNodes[];
 	private CyNode columnNodes[];
+	private CyNetwork network;
 	
 	protected boolean ignoreMissing;
 	protected boolean selectedOnly;
@@ -45,11 +45,11 @@ public class Matrix extends BaseMatrix {
 	 *                  (clustering columns instead of rows)
 	 */
 	
-	public Matrix(String[] weightAttributes, boolean transpose, boolean ignoreMissing, boolean selectedOnly) {
-		CyNetwork network = Cytoscape.getCurrentNetwork();
+	public Matrix(CyNetwork network, String[] weightAttributes, boolean transpose, boolean ignoreMissing, boolean selectedOnly) {
 		this.transpose = transpose;
 		this.ignoreMissing = ignoreMissing;
 		this.selectedOnly = selectedOnly;
+		this.network = network;
 
 		// Create our local copy of the weightAtributes array
 		String[] attributeArray = new String[weightAttributes.length];
@@ -76,10 +76,11 @@ public class Matrix extends BaseMatrix {
 		this.matrix = new Double[nRows][nColumns];
 		this.colWeights = new double[nColumns];
 		this.rowWeights = new double[nRows];
-		this.columnLabels = new Long[nColumns];
-		this.rowLabels = new Long[nRows];
+		this.columnLabels = new String[nColumns];
+		this.rowLabels = new String[nRows];
 		this.ignoreMissing = duplicate.ignoreMissing;
 		this.selectedOnly = duplicate.selectedOnly;
+		this.network = duplicate.network;
 
 		// Only one of these will actually be used, depending on whether
 		// we're transposed or not
@@ -110,21 +111,21 @@ public class Matrix extends BaseMatrix {
 			}
 		}
 	}
-	public Matrix(int rows, int cols) {
-		CyNetwork network = Cytoscape.getCurrentNetwork();
+	public Matrix(CyNetwork network, int rows, int cols) {
 		this.nRows = rows;
 		this.nColumns = cols;
 		this.matrix = new Double[rows][cols];
 		this.colWeights = new double[cols];
 		this.rowWeights = new double[rows];
-		this.columnLabels = new Long[cols];
-		this.rowLabels = new Long[rows];
+		this.columnLabels = new String[cols];
+		this.rowLabels = new String[rows];
 		// Only one of these will actually be used
 		this.rowNodes = null;
 		this.columnNodes = null;
 		this.transpose = false;
 		this.ignoreMissing = false;
 		this.selectedOnly = false;
+		this.network = network;
 	}
 	
 	public CyNode getRowNode(int row) {
@@ -155,8 +156,8 @@ public class Matrix extends BaseMatrix {
 			this.nColumns = this.nRows;
 			this.matrix = new Double[nRows][nColumns];
 			// this.matrix = DoubleFactory2D.sparse.make(nRows,nColumns);
-			this.rowLabels = new Long[nRows];
-			this.columnLabels = new Long[nColumns];
+			this.rowLabels = new String[nRows];
+			this.columnLabels = new String[nColumns];
 			this.rowNodes = new CyNode[nRows];
 			this.columnNodes = null;
 			this.maxAttribute = Double.MIN_VALUE;
@@ -164,15 +165,15 @@ public class Matrix extends BaseMatrix {
 			// For each edge, get the attribute and update the matrix and mask values
 			int index = 0;
 			int column;
-			byte attributeType = edgeAttributes.getColumn(weight).getType(); //edgeAttributes.getType(weight);
+			Class attributeType = edgeAttributes.getColumn(weight).getType(); //edgeAttributes.getType(weight);
 					
 
 			for (CyNode node: nodeList) {
 				boolean found = false;
 				boolean hasSelectedEdge = false;
-				this.rowLabels[index] = node.getSUID();
+				this.rowLabels[index] = getNodeName(node, network);
 				this.rowNodes[index] = node;
-				this.columnLabels[index] = node.getSUID();
+				this.columnLabels[index] = getNodeName(node, network);
 
 				// Get the list of adjacent edges
 				List<CyEdge> edgeList = network.getAdjacentEdgeList(node, CyEdge.Type.ANY);
@@ -273,8 +274,8 @@ public class Matrix extends BaseMatrix {
 				this.nColumns = nodeCondMap.size();
 				this.matrix = new Double[nRows][nColumns];
 				// this.matrix = DoubleFactory2D.sparse.make(nRows,nColumns);
-				this.rowLabels = new Long[nRows];
-				this.columnLabels = new Long[nColumns];
+				this.rowLabels = new String[nRows];
+				this.columnLabels = new String[nColumns];
 				this.columnNodes = new CyNode[nColumns];
 				setRowLabels(condList);
 
@@ -284,10 +285,10 @@ public class Matrix extends BaseMatrix {
 						continue;
 
 					Map<String,Double>thisCondMap = nodeCondMap.get(node);
-					this.columnLabels[column] = node.getSUID();
+					this.columnLabels[column] = getNodeName(node, network);
 					this.columnNodes[column] = node;
 					for (int row=0; row < this.nRows; row++) {
-						Long rowLabel = this.rowLabels[row];
+						String rowLabel = this.rowLabels[row];
 						if (thisCondMap.containsKey(rowLabel)) {
 							matrix[row][column] = thisCondMap.get(rowLabel);
 							// matrix.set(row,column,thisCondMap.get(rowLabel));
@@ -298,9 +299,9 @@ public class Matrix extends BaseMatrix {
 			} else {
 				this.nRows = nodeCondMap.size();
 				this.nColumns = condList.size();
-				this.rowLabels = new Long[nRows];
+				this.rowLabels = new String[nRows];
 				this.rowNodes = new CyNode[nRows];
-				this.columnLabels = new Long[nColumns];
+				this.columnLabels = new String[nColumns];
 				this.matrix = new Double[nRows][nColumns];
 				// this.matrix = DoubleFactory2D.sparse.make(nRows,nColumns);
 				setColumnLabels(condList);
@@ -309,11 +310,11 @@ public class Matrix extends BaseMatrix {
 				for (CyNode node: nodeList) {
 					if (!nodeCondMap.containsKey(node))
 						continue;
-					this.rowLabels[row] = node.getSUID();
+					this.rowLabels[row] = getNodeName(node, network);
 					this.rowNodes[row] = node;
 					Map<String,Double>thisCondMap = nodeCondMap.get(node);
 					for (int column=0; column < this.nColumns; column++) {
-						Long columnLabel = this.columnLabels[column];
+						String columnLabel = this.columnLabels[column];
 						if (thisCondMap.containsKey(columnLabel)) {
 							// System.out.println("Setting matrix["+rowLabels[row]+"]["+columnLabel+"] to "+thisCondMap.get(columnLabel));
 							matrix[row][column] = thisCondMap.get(columnLabel);
@@ -327,13 +328,13 @@ public class Matrix extends BaseMatrix {
 
 		// sortNodeList does an alphabetical sort on the names of the nodes.
 		private List<CyNode>sortNodeList(List<CyNode>nodeList) {
-			Map<Long,CyNode>nodeMap = new HashMap<Long, CyNode>();
+			Map<String,CyNode>nodeMap = new HashMap<String, CyNode>();
 			// First build a string array
-			Long nodeNames[] = new Long[nodeList.size()];
+			String nodeNames[] = new String[nodeList.size()];
 			int index = 0;
 			for (CyNode node: nodeList) {
-				nodeNames[index++] = node.getSUID();
-				nodeMap.put(node.getSUID(), node);
+				nodeNames[index++] = getNodeName(node, network);
+				nodeMap.put(getNodeName(node, network), node);
 			}
 			// Sort it
 			Arrays.sort(nodeNames);
@@ -343,6 +344,13 @@ public class Matrix extends BaseMatrix {
 				newList.add(nodeMap.get(nodeNames[index]));
 			}
 			return newList;
+		}
+
+		private String getNodeName(CyNode node, CyNetwork network) {
+			if (network.containsNode(node)) {
+				return network.getRow(node).get(CyNetwork.NAME, String.class);
+			}
+			return null;
 		}
 	
 	

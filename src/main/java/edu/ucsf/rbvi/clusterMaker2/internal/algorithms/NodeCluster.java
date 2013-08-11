@@ -1,4 +1,4 @@
-package org.cytoscape.myapp.internal.algorithms;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms;
 
 
 import java.util.ArrayList;

@@ -25,8 +25,6 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableHandler;
-import org.cytoscape.app.CyAppAdapter;
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.group.*;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.LoggerFactory;
@@ -96,11 +94,8 @@ public class RunFCM {
 	 * @param monitor, Task monitor for the process
 	 * @return method returns a 2D array of cluster membership values
 	 */
-	public List<FuzzyNodeCluster> run(TaskMonitor monitor){
+	public List<FuzzyNodeCluster> run(CyNetwork network, TaskMonitor monitor){
 		
-		CyAppAdapter adapter;
-		CyApplicationManager manager = adapter.getCyApplicationManager();
-		CyNetwork network = manager.getCurrentNetwork();	
 		Long networkID = network.getSUID();		
 
 		CyTable netAttributes = network.getDefaultNetworkTable();	

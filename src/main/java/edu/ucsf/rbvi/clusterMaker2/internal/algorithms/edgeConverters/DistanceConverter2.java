@@ -1,4 +1,4 @@
-package org.cytoscape.myapp.internal.algorithms.edgeConverters;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters;
 
 
 public class DistanceConverter2 implements EdgeWeightConverter {

@@ -1,4 +1,4 @@
-package org.cytoscape.myapp.internal.ui;
+package edu.ucsf.rbvi.clusterMaker2.internal.ui;
 
 public interface HistoChangeListener {
 	

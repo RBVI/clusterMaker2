@@ -1,4 +1,4 @@
-package org.cytoscape.myapp.internal.algorithms.attributeClusterers;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -12,8 +12,8 @@ public class BaseMatrix {
 	protected double colWeights[];
 	protected double rowWeights[];
 	protected double maxAttribute;
-	protected Long rowLabels [];
-	protected Long columnLabels[];
+	protected String rowLabels [];
+	protected String columnLabels[];
 	
 	protected boolean transpose;
 	protected boolean symmetrical;
@@ -78,8 +78,8 @@ public class BaseMatrix {
 		this.matrix = new Double[rows][cols];
 		this.colWeights = new double[cols];
 		this.rowWeights = new double[rows];
-		this.columnLabels = new Long[cols];
-		this.rowLabels = new Long[rows];
+		this.columnLabels = new String[cols];
+		this.rowLabels = new String[rows];
 		this.transpose = false;
 		setUniformWeights();
 	}
@@ -155,40 +155,40 @@ public class BaseMatrix {
 		colWeights[col] = value;
 	}
 	
-	public Long[] getColLabels() {
+	public String[] getColLabels() {
 		return this.columnLabels;
 	}
 
-	public Long getColLabel(int col) {
+	public String getColLabel(int col) {
 		return this.columnLabels[col];
 	}
 
-	public void setColLabel(int col, Long label) {
+	public void setColLabel(int col, String label) {
 		this.columnLabels[col] = label;
 	}
 
-	public Long[] getRowLabels() {
+	public String[] getRowLabels() {
 		return this.rowLabels;
 	}
 	
-	public Long getRowLabel(int row) {
+	public String getRowLabel(int row) {
 		return this.rowLabels[row];
 	}
 
-	public void setRowLabel(int row, Long label) {
+	public void setRowLabel(int row, String label) {
 		this.rowLabels[row] = label;
 	}
 	
-	protected void setRowLabels(List<Long>labelList) {
+	protected void setRowLabels(List<String>labelList) {
 		int index = 0;
-		for (Long label: labelList){
+		for (String label: labelList){
 			this.rowLabels[index++] = label;
 		}
 	}
 
-	protected void setColumnLabels(List<Long>labelList) {
+	protected void setColumnLabels(List<String>labelList) {
 		int index = 0;
-		for (Long label: labelList){
+		for (String label: labelList){
 			this.columnLabels[index++] = label;
 		}
 	}

@@ -1,4 +1,4 @@
-package org.cytoscape.myapp.internal.algorithms.networkClusterers.MCL;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL;
 
 import java.util.Vector;
 

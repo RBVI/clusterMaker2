@@ -1,4 +1,4 @@
-package org.cytoscape.myapp.internal.algorithms.attributeClusterers;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers;
 
 import java.lang.Math;
 

@@ -1,4 +1,4 @@
-package org.cytoscape.myapp.internal.ui;
+package edu.ucsf.rbvi.clusterMaker2.internal.ui;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -20,7 +20,7 @@ import javax.swing.JScrollPane;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 
-import org.cytoscape.myapp.internal.algorithms.edgeConverters.ThresholdHeuristic;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.ThresholdHeuristic;
 
 public class HistogramDialog extends JDialog implements ActionListener, ComponentListener, HistoChangeListener {
 	
