@@ -44,27 +44,8 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 	
 	RunMCL runMCL = null;
 	
-	//Tunables
-	
-	@Tunable(description = "Granularity parameter (inflation value)",groups={"Basic MCL Tuning"},gravity=1.0)
-	public double inflation_parameter;
-
 	@ContainsTunables
-	public EdgeAttributeHandler edgeAttributeHandler;
-	
-	@Tunable(description = "Weak edge weight pruning threshold", groups={"MCL Advanced Settings"}, params="displayState=collapsed",gravity=2.0)
-	public double clusteringThresh = 1e-15;
-	
-	@Tunable(description = "Number of iterations", groups={"MCL Advanced Settings"}, gravity=3.0)
-	public int iterations = 16;
-	
-	@Tunable(description = "Maximum residual value", groups={"MCL Advanced Settings"}, gravity=4.0)
-	public double maxResidual = 0.001;
-	
-	@Tunable(description = "Maximum number of threads", groups={"MCL Advanced Settings"}, gravity=5.0)
-	public int maxThreads = 0;
-    
-	
+	public MCLContext context = null;
 	
 	public MCLCluster() {
 		super();
@@ -81,24 +62,15 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 	// TODO: all of our tunables need to be split
 	// and and put into a separate context object
 	public Object getContext() {
-		return null;
-	}
-	
-	public void initializeProperties() {
-		/**
-		 * Tuning values
-		 */
-
-		// Use the standard edge attribute handling stuff....
-		edgeAttributeHandler = new EdgeAttributeHandler(network, true);
-
-		// super.advancedProperties();
+		if (context == null)
+			context = new MCLContext();
+		return context;
 	}
 	
 	public void doCluster(CyNetwork network, TaskMonitor monitor) {
 		this.monitor = monitor;
 		
-		DistanceMatrix matrix = edgeAttributeHandler.getMatrix();
+		DistanceMatrix matrix = context.edgeAttributeHandler.getMatrix();
 		if (matrix == null) {
 			monitor.showMessage(TaskMonitor.Level.ERROR,"Can't get distance matrix: no attribute value?");
 			return;
@@ -107,8 +79,8 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 		if (canceled) return;
 
 		//Cluster the nodes
-		runMCL = new RunMCL(matrix, inflation_parameter, iterations, 
-		                    clusteringThresh, maxResidual, maxThreads, monitor);
+		runMCL = new RunMCL(matrix, context.inflation_parameter, context.iterations, 
+		                    context.clusteringThresh, context.maxResidual, context.maxThreads, monitor);
 
 		runMCL.setDebug(debug);
 
@@ -128,7 +100,7 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 		monitor.showMessage(TaskMonitor.Level.INFO,"Creating groups");
 
 		params = new ArrayList<String>();
-		edgeAttributeHandler.setParams(params);
+		context.edgeAttributeHandler.setParams(params);
 
 		List<List<CyNode>> nodeClusters = createGroups(network, clusters);
 

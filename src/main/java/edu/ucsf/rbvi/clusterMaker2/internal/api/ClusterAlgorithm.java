@@ -35,13 +35,6 @@ public interface ClusterAlgorithm {
 		public Object getContext();
 
 		/**
-	 	 * This method is used to re-initialize the properties for an algorithm.  This
-	 	 * might be used, for example, by an external command, or when a new network
-	 	 * is loaded.
-	 	 */
-		public void initializeProperties();
-
-		/**
 		 * This method is used to signal a running cluster algorithm to stop
 		 *
 		 */

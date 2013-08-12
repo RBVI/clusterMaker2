@@ -46,7 +46,6 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 	//private boolean undirectedEdges = true;
 	//private boolean selectedOnly = false;
 	private EdgeWeightConverter converter = null;
-	private boolean supportAdjustments = false;
 	
 	
 	
@@ -54,64 +53,46 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 	private String[] attributeArray = new String[1];
 	private List<EdgeWeightConverter>converters = null;
 	
-	@Tunable(description = "Source for array data", groups = "General")
-	private int attributeListGroup;
-	
-	@Tunable(description = "Array Sources")
 	private ListSingleSelection<String> attribute ;
 	
-	@Tunable(description = "Array Sources")
-	private String getAttribute(){
+	@Tunable(description = "Array Sources", groups={"Source for array data"})
+	public String getAttribute(){
 		return attribute.getSelectedValue();
 	}
-	
-	private void setAtribute(String newAttribute){
-		
-		attribute.setSelectedValue(newAttribute);
-		System.out.println("Setting the value of Array Sources to: " + attribute.getSelectedValue()  );
+	public void setAttribute() { 
 	}
 	
-	@Tunable(description = "Cluster only selected nodes")
-	private boolean selectedOnly ;
 	
-	@Tunable(description = "Cluster only selected nodes")
-	private boolean getSelectedOnly(){
-		return selectedOnly;
-	}
+	@Tunable(description = "Cluster only selected nodes", groups={"Source for array data"})
+	public boolean selectedOnly ;
 	
-	private void setSelectedOnly(boolean newSelectedOnly){
-		selectedOnly = newSelectedOnly;
-		System.out.println("Setting the value of Cluster only selected nodes to: " +  selectedOnly );
-
-	}
-	
-	private ListSingleSelection<EdgeWeightConverter> edgeWeighter;
 	
 	@Tunable(description = "Edge weight conversion")
-	private EdgeWeightConverter getEdgeWeighter(){
-		return edgeWeighter.getSelectedValue();
-	}
+	public ListSingleSelection<EdgeWeightConverter> edgeWeighter;
 	
-	private void setEdgeWeighter(EdgeWeightConverter newEdgeWeighter){
-		edgeWeighter.setSelectedValue(newEdgeWeighter);
-		System.out.println("Setting the value of Edge Weight Conversion to: " + edgeWeighter.getSelectedValue()  );
-	}
-	
-	@Tunable(description="Cut off value for edge consideration", params="slider=true")
+	@Tunable(description="Cut off value for edge consideration", groups={"Source for array data", "Edge weight cutoff"}, params="slider=true")
 	public BoundedDouble edgeCutOff;
 	
-	/*
-	@Tunable(description = "Set Edge Cutoff Using Histogram")
-	private Button edgeHistogram = null;
-*/
-	@Tunable(description = "Array data adjustments")
-	private int options_panel1 ;
+	public boolean edgeHistogram = false;
+	@Tunable(description="Set Edge Cutoff Using Histogram", 
+	         groups={"Source for array data", "Edge weight cutoff"}, context="gui")
+	public boolean getEdgeHistogram() { return edgeHistogram; }
+	public void setEdgeHistogram(boolean eh) {
+		edgeHistogram = eh;
+		if (edgeHistogram) {
+			// Popup the histogram dialog
+		} else {
+			// Dispose of the histogram dialog
+		}
+	}
+
+	@Tunable(description = "Assume edges are undirected", 
+	         groups={"Source for array data", "Array data adjustments"})
+	public boolean undirectedEdges ;
 	
-	@Tunable(description = "Assume edges are undirected")
-	private boolean undirectedEdges ;
-	
-	@Tunable(description = "Adjust loops before clustering")
-	private boolean adjustLoops ;
+	@Tunable(description = "Adjust loops before clustering", 
+	         groups={"Source for array data", "Array data adjustments"})
+	public boolean adjustLoops ;
 	
 	
 
@@ -120,8 +101,7 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 	private HistogramDialog histo = null;
 	
 	// TODO: Convert this to a listener
-	public EdgeAttributeHandler(CyNetwork network, boolean supportAdjustments) {
-		this.supportAdjustments = supportAdjustments;
+	public EdgeAttributeHandler(CyNetwork network) {
 		this.network = network;
 		// Create all of our edge weight converters
 		converters = new ArrayList<EdgeWeightConverter>();
@@ -138,9 +118,6 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 
 	public void initializeTunables() {
 		
-		
-		attributeListGroup = 5;
-				
 		attributeArray = getAllAttributes();
 		if (attributeArray.length > 0){
 			attribute = new ListSingleSelection<String>(attributeArray);	
@@ -162,7 +139,6 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 		}
 		
 		edgeCutOff =  new BoundedDouble(0.0, 0.0, 1.0, true, true);
-		options_panel1 = 2;
 		undirectedEdges = true;
 		adjustLoops = true;
 		
@@ -182,10 +158,9 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 		edgeCutOff.setValue(cutoffValue);
 	}
 
-/*
-	public void actionPerformed(ActionEvent e) {
+	public void createHistogramDialog() {
 		if (this.matrix == null)
-			this.matrix = new DistanceMatrix(dataAttribute, selectedOnly, converter);
+			this.matrix = new DistanceMatrix(network, dataAttribute, selectedOnly, converter);
 
 		ThresholdHeuristic thueristic = new ThresholdHeuristic(matrix);
 
@@ -203,7 +178,6 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 		histo.setVisible(true);
 		histo.addHistoChangeListener(this);
 	}
-*/
 
 	public DistanceMatrix getMatrix() {
 		if (this.matrix == null) {
