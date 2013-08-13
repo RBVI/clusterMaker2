@@ -16,16 +16,20 @@ import java.util.Properties;
 // Cytoscape imports
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.osgi.framework.BundleContext;
 
 // clusterMaker imports
-import edu.ucsf.rbvi.clusterMaker2.ClusterAlgorithm;
-import edu.ucsf.rbvi.clusterMaker2.ClusterManager;
-import edu.ucsf.rbvi.clusterMaker2.ClusterViz;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import edu.ucsf.rbvi.clusterMaker2.internal.ClusterManagerImpl;
+
+// Algorithms
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLClusterTaskFactory;
 
 public class CyActivator extends AbstractCyActivator {
 
@@ -44,15 +48,17 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		CyApplicationManager appRef = getService(bc, CyApplicationManager.class);
 		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
+		CyGroupManager groupManager = getService(bc, CyGroupManager.class);
 
 		// Create our context object.  This will probably keep track of all of the
 		// registered clustering algorithms, settings, etc.
-		ClusterManager clusterManager = new ClusterManagerImpl(appRef, serviceRegistrar);
+		ClusterManagerImpl clusterManager = new ClusterManagerImpl(appRef, serviceRegistrar, groupManager);
 
-		registerServiceListener(bc, clusterManager, "addClusterAlgorithm", "removeClusterAlgorithm", ClusterAlgorithm.class);
+		registerServiceListener(bc, clusterManager, "addClusterAlgorithm", "removeClusterAlgorithm", ClusterTaskFactory.class);
 		registerServiceListener(bc, clusterManager, "addClusterVisualizer", "removeClusterVisualizer", ClusterViz.class);
 
 		// Register each of our algorithms
+		registerService(bc, new MCLClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 	}
 
 }

@@ -1,74 +1,50 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL;
 
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
-import javax.swing.JPanel;
 
-
-import org.cytoscape.model.CyColumn;
 //Cytoscape imports
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyRow;
-//import cytoscape.Cytoscape;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.TunableHandler;
 import org.cytoscape.work.TaskMonitor;
 
 
-import edu.ucsf.rbvi.clusterMaker2.ClusterResults;
-import edu.ucsf.rbvi.clusterMaker2.ClusterAlgorithm;
-import edu.ucsf.rbvi.clusterMaker2.ClusterViz;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;//import clusterMaker.algorithms.DistanceMatrix;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;//import clusterMaker.algorithms.NodeCluster;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
-// import clusterMaker.ui.ClusterViz;
-// import clusterMaker.ui.NewNetworkView;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 
 public class MCLCluster extends AbstractNetworkClusterer   {
-
-	
-	RunMCL runMCL = null;
+	ClusterManager clusterManager;
+	RunMCL runMCL;
+	public static String SHORTNAME = "mcl";
+	public static String NAME = "MCL Cluster";
 	
 	@ContainsTunables
 	public MCLContext context = null;
 	
-	public MCLCluster() {
+	public MCLCluster(MCLContext context, ClusterManager manager) {
 		super();
-	}
-	
-	public String getShortName() {return "mcl";};
-	public String getName() {return "MCL cluster";};
-
-	public ClusterViz getVisualizer() {
-		// return new NewNetworkView(true);
-		return null;
+		this.context = context;
+		this.clusterManager = clusterManager;
 	}
 
-	// TODO: all of our tunables need to be split
-	// and and put into a separate context object
-	public Object getContext() {
-		if (context == null)
-			context = new MCLContext();
-		return context;
-	}
+	public String getShortName() { return SHORTNAME; }
+	public String getName() { return NAME; }
 	
-	public void doCluster(CyNetwork network, TaskMonitor monitor) {
+	public void run(TaskMonitor monitor) {
 		this.monitor = monitor;
+		if (network == null)
+			network = clusterManager.getNetwork();
 		
 		DistanceMatrix matrix = context.edgeAttributeHandler.getMatrix();
 		if (matrix == null) {
@@ -109,10 +85,9 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 
 	}
 
-	public void halt() {
+	public void cancel() {
 		canceled = true;
-		if (runMCL != null)
-			runMCL.halt();
+		runMCL.cancel();
 	}
 }
 	

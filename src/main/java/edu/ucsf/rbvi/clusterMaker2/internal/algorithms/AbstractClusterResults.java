@@ -15,7 +15,7 @@ import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyTableUtil;
 
-import edu.ucsf.rbvi.clusterMaker2.ClusterResults;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 
 /**
  * This class calculates a number of cluster statistics on a set of

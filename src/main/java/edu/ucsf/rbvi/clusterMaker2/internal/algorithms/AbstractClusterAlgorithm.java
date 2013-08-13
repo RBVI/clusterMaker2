@@ -16,8 +16,8 @@ import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetworkManager;
 
-import edu.ucsf.rbvi.clusterMaker2.ClusterAlgorithm;
-import edu.ucsf.rbvi.clusterMaker2.ClusterResults;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 
 public abstract class AbstractClusterAlgorithm implements ClusterAlgorithm {
 	
@@ -33,18 +33,8 @@ public abstract class AbstractClusterAlgorithm implements ClusterAlgorithm {
 	}
 	
 	/************************************************************************
-	 * Abstract inteface -- override these methods!                         *
-	 ***********************************************************************/
-
-	public abstract String getShortName();
-	public abstract String getName();
-	public abstract void doCluster(CyNetwork network, TaskMonitor monitor);
-
-	/************************************************************************
 	 * Convenience routines                                                 *
 	 ***********************************************************************/
-
-	public String toString() { return getName(); }
 
 	public void halt() { canceled = true; }
 

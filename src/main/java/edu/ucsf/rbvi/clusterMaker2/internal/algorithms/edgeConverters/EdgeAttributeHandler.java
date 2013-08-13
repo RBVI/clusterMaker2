@@ -56,10 +56,10 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 	private ListSingleSelection<String> attribute ;
 	
 	@Tunable(description = "Array Sources", groups={"Source for array data"})
-	public String getAttribute(){
+	public String getattribute(){
 		return attribute.getSelectedValue();
 	}
-	public void setAttribute() { 
+	public void setattribute() { 
 	}
 	
 	

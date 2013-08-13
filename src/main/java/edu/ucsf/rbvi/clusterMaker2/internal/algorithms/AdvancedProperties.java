@@ -5,10 +5,10 @@ import org.cytoscape.work.Tunable;
 public class AdvancedProperties {
 	@Tunable(description="Cluster attribute name", groups={"Cytoscape Advanced Settings"}, 
 	         params="displayState=collapsed", gravity=1.0)
-	String clusterAttribute;
+	public String clusterAttribute;
 
 	@Tunable(description="Create groups (metanodes) with results", groups={"Cytoscape Advanced Settings"}, gravity=2.0)
-	boolean createGroups;
+	public boolean createGroups;
 
 	public AdvancedProperties(String clusterAttribute, boolean createGroups) {
 		this.clusterAttribute = clusterAttribute;

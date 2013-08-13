@@ -76,7 +76,7 @@ public class RunMCL {
 		
 	}
 	
-	public void halt () { canceled = true; }
+	public void cancel () { canceled = true; }
 
 	public void setDebug(boolean debug) { this.debug = debug; }
 	

@@ -1,5 +1,5 @@
 /* vim: set ts=2: */
-package edu.ucsf.rbvi.clusterMaker2;
+package edu.ucsf.rbvi.clusterMaker2.internal.api;
 
 /**
  * Copyright (c) 2013 The Regents of the University of California.

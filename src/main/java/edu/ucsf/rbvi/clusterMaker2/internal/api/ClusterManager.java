@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2;
+package edu.ucsf.rbvi.clusterMaker2.internal.api;
 
 import org.cytoscape.model.CyNetwork;
 
@@ -18,15 +18,15 @@ public interface ClusterManager {
 
 
 	// Returns the list of cluster algorithms
-	public Collection<ClusterAlgorithm> getAllAlgorithms();
-	public ClusterAlgorithm getAlgorithm(String name);
+	public Collection<ClusterTaskFactory> getAllAlgorithms();
+	public ClusterTaskFactory getAlgorithm(String name);
 	public Collection<ClusterViz> getAllVisualizers();
 	public ClusterViz getVisualizer(String name);
 
 	// Add a new algorithm.  This is usually done through listening to
 	// osgi registration, but could also be done manually
-	public void addAlgorithm(ClusterAlgorithm alg);
-	public void removeAlgorithm(ClusterAlgorithm alg);
+	public void addAlgorithm(ClusterTaskFactory alg);
+	public void removeAlgorithm(ClusterTaskFactory alg);
 	public void addVisualizer(ClusterViz alg);
 	public void removeVisualizer(ClusterViz alg);
 

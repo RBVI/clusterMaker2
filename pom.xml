@@ -31,6 +31,12 @@
 						<Export-Package>!${bundle.namespace}.*</Export-Package>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
+						<Import-Package>*;resolution:=optional</Import-Package>
+						<Embed-Dependency>
+							parallelcolt;scope=compile|runtime,
+							csparsej;scope=compile|runtime
+						</Embed-Dependency>
+						<Embed-Transitive>true</Embed-Transitive>
 					</instructions>
 				</configuration>
 			</plugin>

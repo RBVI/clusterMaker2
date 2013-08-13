@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2;
+package edu.ucsf.rbvi.clusterMaker2.internal.api;
 
 import org.cytoscape.model.CyNetwork;
 
