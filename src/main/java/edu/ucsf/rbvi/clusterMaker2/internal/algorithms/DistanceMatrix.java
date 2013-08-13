@@ -42,31 +42,31 @@ public class DistanceMatrix {
 	private DoubleMatrix2D matrix = null;
 	private EdgeWeightConverter converter = null;
 
-	private double[] edgeWeights = null;
+	private double[] edgeWeights = null; //XXX this is a 32 memory limitation!!
 	
 	public DistanceMatrix(CyNetwork network, String edgeAttributeName, boolean selectedOnly, EdgeWeightConverter converter) {
 
+		// System.out.println("selectedOnly = "+selectedOnly+" attr = "+edgeAttributeName+" converter = "+converter);
+
 		this.edgeAttributeName = edgeAttributeName;
 		this.converter = converter;
-		Long networkID = network.getSUID();	//String networkID = network.getIdentifier();
 		if (!selectedOnly) {
-			nodes = (List<CyNode>)network.getNodeList(); //(List<CyNode>)network.nodesList();
-			edges = (List<CyEdge>)network.getEdgeList();	//(List<CyEdge>)network.edgesList();
+			nodes = (List<CyNode>)network.getNodeList();
+			edges = (List<CyEdge>)network.getEdgeList();
 		} else {
 			nodes = new ArrayList<CyNode>();
 			edges = new ArrayList<CyEdge>();
-			nodes.addAll(CyTableUtil.getNodesInState(network,"selected",true));	//nodes.addAll(network.getSelectedNodes());
-			edges.addAll(getConnectingEdges(network,nodes));//edges = network.getConnectingEdges(nodes);
+			nodes.addAll(CyTableUtil.getNodesInState(network,CyNetwork.SELECTED,true));
+			edges.addAll(getConnectingEdges(network,nodes));
 		}
 		CyTable edgeAttributes = network.getDefaultEdgeTable();
-		//CyAttributes edgeAttributes = Cytoscape.getEdgeAttributes();
+		// System.out.println("Found "+edges.size()+" edges");
 
 		edgeWeights = new double[edges.size()];
 
 		// We do a fair amount of massaging the data, so let's just do it once
 		for(int edgeIndex = 0; edgeIndex < edges.size(); edgeIndex++) {
 			CyEdge edge = edges.get(edgeIndex);
-			Long id = edge.getSUID(); // String id = edge.getIdentifier();
 
 			edgeWeights[edgeIndex] = Double.MIN_VALUE;
 
@@ -79,10 +79,10 @@ public class DistanceMatrix {
 			}
 
 			double edgeWeight = 0.0;
-			if(edgeAttributes.getColumn(edgeAttributeName).getType() == Float.class) //if(edgeAttributes.getType(edgeAttributeName) == edgeAttributes.TYPE_FLOATING)
-				edgeWeight = edgeAttributes.getRow(edge).get(edgeAttributeName,Double.class).doubleValue(); //edgeWeight = edgeAttributes.getDoubleAttribute(id,edgeAttributeName).doubleValue();
-			else if(edgeAttributes.getColumn(edgeAttributeName).getType() == Integer.class) //if(edgeAttributes.getType(edgeAttributeName) == edgeAttributes.TYPE_INTEGER)
-				edgeWeight = edgeAttributes.getRow(edge).get(edgeAttributeName,Integer.class).doubleValue(); // edgeWeight = edgeAttributes.getIntegerAttribute(id,edgeAttributeName).doubleValue();
+			if(edgeAttributes.getColumn(edgeAttributeName).getType() == Double.class) 
+				edgeWeight = network.getRow(edge).get(edgeAttributeName,Double.class).doubleValue();
+			else if(edgeAttributes.getColumn(edgeAttributeName).getType() == Integer.class)
+				edgeWeight = network.getRow(edge).get(edgeAttributeName,Integer.class).doubleValue();
 			else {
 				// System.out.println("Attribute "+edgeAttributeName+" is not a number");
 				continue;
@@ -92,6 +92,7 @@ public class DistanceMatrix {
 			maxAttribute = Math.max(maxAttribute, edgeWeight);
 			edgeWeights[edgeIndex] = edgeWeight;
 		}
+		// System.out.println("minAttribute = "+minAttribute+", maxAttribute = "+maxAttribute);
 
 		// We now have two lists, one with the edges, one with the weights, now massage the edgeWeights data as requested
 		// Note that we need to go through this again to handle some of the edge cases
@@ -111,6 +112,7 @@ public class DistanceMatrix {
 				maxWeight = Math.max(maxWeight, edgeWeight);
 			}
 		}
+		// System.out.println("minWeight = "+minWeight+", maxWeight = "+maxWeight);
 
 		// OK, now we have our two arrays with the exception of the edge cases -- we can fix those, now
 		for (Integer index: edgeCase) {
@@ -195,7 +197,7 @@ public class DistanceMatrix {
 
 				// Is this weight above the cutoff?
 				if (edgeWeights[edgeIndex] < edgeCutOff) {
-					// System.out.println("Skipping edge "+edge.getIdentifier()+" weight "+edgeWeights[edgeIndex]+" < "+edgeCutOff);
+					// System.out.println("Skipping edge "+edge.toString()+" weight "+edgeWeights[edgeIndex]+" < "+edgeCutOff);
 					continue; // Nope, don't add it
 				}
 
@@ -208,6 +210,7 @@ public class DistanceMatrix {
 					matrix.set(sourceIndex,targetIndex,edgeWeights[edgeIndex]);
 			}
 
+			// System.out.println("Matrix info: "+printMatrixInfo(matrix));
 			return matrix;
 		}
 
@@ -261,13 +264,14 @@ public class DistanceMatrix {
 		 *
 		 * @param matrix the matrix we're going to print out information about
 		 */
-		public void printMatrixInfo(DoubleMatrix2D m) {
-			System.out.println("Matrix("+m.rows()+", "+m.columns()+")");
+		public String printMatrixInfo(DoubleMatrix2D m) {
+			String s = "Matrix("+m.rows()+", "+m.columns()+")\n";
 			if (m.getClass().getName().indexOf("Sparse") >= 0)
-				System.out.println(" matrix is sparse");
+				s += " matrix is sparse\n";
 			else
-				System.out.println(" matrix is dense");
-			System.out.println(" cardinality is "+m.cardinality());
+				s += " matrix is dense\n";
+			s += " cardinality is "+m.cardinality()+"\n";
+			return s;
 		}
 
 		/**
@@ -275,15 +279,16 @@ public class DistanceMatrix {
 		 *
 		 * @param matrix the matrix we're going to print out information about
 		 */
-		public void printMatrix(DoubleMatrix2D m) {
+		public String printMatrix(DoubleMatrix2D m) {
 			String s = "";
 			for (int row = 0; row < m.rows(); row++) {
 				s += nodes.get(row).getSUID()+":\t";
 				for (int col = 0; col < m.columns(); col++) {
 					s += ""+m.get(row,col)+"\t";
 				}
-				System.out.println(s);
+				s += "\n";
 			}
+			return s;
 		}
 
 		/**

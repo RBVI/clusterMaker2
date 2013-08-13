@@ -9,6 +9,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TaskMonitor;
 
@@ -28,6 +29,9 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 	RunMCL runMCL;
 	public static String SHORTNAME = "mcl";
 	public static String NAME = "MCL Cluster";
+
+	@Tunable(description="Network to cluster", context="nogui")
+	public CyNetwork network = null;
 	
 	@ContainsTunables
 	public MCLContext context = null;
@@ -35,13 +39,19 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 	public MCLCluster(MCLContext context, ClusterManager manager) {
 		super();
 		this.context = context;
-		this.clusterManager = clusterManager;
+		this.clusterManager = manager;
+		if (network == null)
+			network = clusterManager.getNetwork();
+		context.setNetwork(network);
 	}
 
 	public String getShortName() { return SHORTNAME; }
+
+	@ProvidesTitle
 	public String getName() { return NAME; }
 	
 	public void run(TaskMonitor monitor) {
+		monitor.setTitle("Performing MCL cluster");
 		this.monitor = monitor;
 		if (network == null)
 			network = clusterManager.getNetwork();
@@ -51,6 +61,9 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 			monitor.showMessage(TaskMonitor.Level.ERROR,"Can't get distance matrix: no attribute value?");
 			return;
 		}
+
+		// Update our tunable results
+		clusterAttributeName = context.getClusterAttribute();
 
 		if (canceled) return;
 
@@ -82,7 +95,6 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 
 		results = new AbstractClusterResults(network, nodeClusters);
 		monitor.showMessage(TaskMonitor.Level.INFO, "Done.  MCL results:\n"+results);
-
 	}
 
 	public void cancel() {

@@ -51,7 +51,7 @@ public class RunMCL {
 	private boolean createMetaNodes = false;
 	private DistanceMatrix distanceMatrix = null;
 	private DoubleMatrix2D matrix = null;
-	private boolean debug = false;
+	private boolean debug = true;
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
 	
 	public RunMCL(DistanceMatrix dMat, double inflationParameter, int num_iterations, 
@@ -70,9 +70,12 @@ public class RunMCL {
 			nThreads = maxThreads;
 		else
 			nThreads = Runtime.getRuntime().availableProcessors()-1;
-		// logger.info("InflationParameter = "+inflationParameter);
-		// logger.info("Iterations = "+num_iterations);
-		// logger.info("Clustering Threshold = "+clusteringThresh);
+
+		monitor.showMessage(TaskMonitor.Level.INFO,"InflationParameter = "+inflationParameter);
+		monitor.showMessage(TaskMonitor.Level.INFO,"Iterations = "+num_iterations);
+		monitor.showMessage(TaskMonitor.Level.INFO,"Clustering Threshold = "+clusteringThresh);
+		monitor.showMessage(TaskMonitor.Level.INFO,"Threads = "+nThreads);
+		monitor.showMessage(TaskMonitor.Level.INFO,"Matrix info: = "+distanceMatrix.printMatrixInfo(matrix));
 		
 	}
 	

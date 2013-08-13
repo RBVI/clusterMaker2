@@ -78,7 +78,7 @@ public class ClusterManagerImpl implements ClusterManager {
 		if (algMap.containsKey(alg.getName()))
 		 	algMap.remove(alg.getName());
 
-		// unregister the algorithm
+		serviceRegistrar.unregisterService(alg, TaskFactory.class);
 	}
 
 
@@ -94,6 +94,15 @@ public class ClusterManagerImpl implements ClusterManager {
 
 	public void addVisualizer(ClusterViz viz) {
 		vizMap.put(viz.getName(), viz);
+
+		// Create our wrapper and register the algorithm
+		Properties props = new Properties();
+		props.setProperty(COMMAND, viz.getName());
+		props.setProperty(COMMAND_NAMESPACE, "clusterviz");
+		props.setProperty(IN_MENU_BAR, "true");
+		props.setProperty(PREFERRED_MENU, "Apps.Cluster Visualization");
+		props.setProperty(TITLE, viz.getName());
+		serviceRegistrar.registerService(viz, TaskFactory.class, props);
 	}
 
 	public void addClusterVisualizer(ClusterViz viz, Map props) {
@@ -107,6 +116,7 @@ public class ClusterManagerImpl implements ClusterManager {
 
 	public void removeClusterVisualizer(ClusterViz viz, Map props) {
 		removeVisualizer(viz);
+		serviceRegistrar.unregisterService(viz, TaskFactory.class);
 	}
 
 	public CyNetwork getNetwork() {
