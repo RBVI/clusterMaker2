@@ -30,6 +30,8 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 
 	//TODO: add group support
 	
+	public AbstractNetworkClusterer(ClusterManager manager) { super(manager); }
+
 	public boolean isAvailable() {
 		if (network.getRow(network).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class) == null) {
 			return false;

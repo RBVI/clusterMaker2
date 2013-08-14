@@ -17,6 +17,7 @@ import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetworkManager;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 
 public abstract class AbstractClusterAlgorithm implements ClusterAlgorithm {
@@ -27,9 +28,11 @@ public abstract class AbstractClusterAlgorithm implements ClusterAlgorithm {
 	protected String clusterAttributeName = null;
 	protected boolean canceled = false;
 	protected ClusterResults results;
+	protected ClusterManager clusterManager;
 	protected String GROUP_ATTRIBUTE = "_cluster";
 	
-	public AbstractClusterAlgorithm() {
+	public AbstractClusterAlgorithm(ClusterManager manager) {
+		this.clusterManager = manager;
 	}
 	
 	/************************************************************************

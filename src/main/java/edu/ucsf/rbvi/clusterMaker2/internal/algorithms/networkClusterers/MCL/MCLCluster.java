@@ -25,7 +25,6 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 
 public class MCLCluster extends AbstractNetworkClusterer   {
-	ClusterManager clusterManager;
 	RunMCL runMCL;
 	public static String SHORTNAME = "mcl";
 	public static String NAME = "MCL Cluster";
@@ -37,9 +36,8 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 	public MCLContext context = null;
 	
 	public MCLCluster(MCLContext context, ClusterManager manager) {
-		super();
+		super(manager);
 		this.context = context;
-		this.clusterManager = manager;
 		if (network == null)
 			network = clusterManager.getNetwork();
 		context.setNetwork(network);

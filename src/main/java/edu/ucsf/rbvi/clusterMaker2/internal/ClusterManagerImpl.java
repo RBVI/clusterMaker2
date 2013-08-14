@@ -33,7 +33,6 @@ public class ClusterManagerImpl implements ClusterManager {
 
 	public ClusterManagerImpl(CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar,
  	                          CyGroupManager groupMgr) {
-		System.out.println("ClusterManagerImpl");
 		this.appMgr = appMgr;
 		this.serviceRegistrar = serviceRegistrar;
 		this.groupMgr = groupMgr;
@@ -57,8 +56,6 @@ public class ClusterManagerImpl implements ClusterManager {
 
 	public void addAlgorithm(ClusterTaskFactory alg) {
 		algMap.put(alg.getName(), alg);
-
-		System.out.println("Adding algorithm "+alg.getName());
 
 		// Create our wrapper and register the algorithm
 		Properties props = new Properties();

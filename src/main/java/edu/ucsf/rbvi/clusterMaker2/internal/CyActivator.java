@@ -30,6 +30,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.ClusterManagerImpl;
 
 // Algorithms
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AP.APClusterTaskFactory;
 
 public class CyActivator extends AbstractCyActivator {
 
@@ -58,6 +59,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, clusterManager, "addClusterVisualizer", "removeClusterVisualizer", ClusterViz.class);
 
 		// Register each of our algorithms
+		registerService(bc, new APClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new MCLClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 	}
 
