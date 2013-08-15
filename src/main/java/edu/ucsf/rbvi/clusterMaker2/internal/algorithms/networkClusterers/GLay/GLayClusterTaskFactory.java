@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AP;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.GLay;
 
 import java.util.Collections;
 import java.util.List;
@@ -12,16 +12,17 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
-public class APClusterTaskFactory implements ClusterTaskFactory   {
+public class GLayClusterTaskFactory implements ClusterTaskFactory   {
 	ClusterManager clusterManager;
-	APContext context = null;
+	GLayContext context = null;
 	
-	public APClusterTaskFactory(ClusterManager clusterManager) {
+	public GLayClusterTaskFactory(ClusterManager clusterManager) {
+		context = new GLayContext();
 		this.clusterManager = clusterManager;
 	}
 	
-	public String getShortName() {return APCluster.SHORTNAME;};
-	public String getName() {return APCluster.NAME;};
+	public String getShortName() {return GLayCluster.SHORTNAME;};
+	public String getName() {return GLayCluster.NAME;};
 
 	public ClusterViz getVisualizer() {
 		// return new NewNetworkView(true);
@@ -36,7 +37,7 @@ public class APClusterTaskFactory implements ClusterTaskFactory   {
 		return false;
 	}
 
-	public List<ClusterType> getTypeList() { 
+	public List<ClusterType> getTypeList() {
 		return Collections.singletonList(ClusterType.NETWORK); 
 	}
 
@@ -44,12 +45,8 @@ public class APClusterTaskFactory implements ClusterTaskFactory   {
 		// Not sure why we need to do this, but it looks like
 		// the tunable stuff "remembers" objects that it's already
 		// processed this tunable.  So, we use a copy constructor
-		if (context == null)
-			context = new APContext();
-		else
-			context = new APContext(context);
-
-		return new TaskIterator(new APCluster(context, clusterManager));
+		context = new GLayContext(context);
+		return new TaskIterator(new GLayCluster(context, clusterManager));
 	}
 	
 }

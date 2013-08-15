@@ -62,10 +62,16 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 	@Tunable(description = "Edge weight conversion", groups={"Source for array data"}, gravity=12.0)
 	public ListSingleSelection<EdgeWeightConverter> edgeWeighter;
 	
+	public BoundedDouble edgeCutOff; // TODO: set the bounds based on the range of the converted edges
 	@Tunable(description="Cut off value for edge consideration", 
+	         listenForChange={"selectedOnly", "attribute", "edgeWeighter"},
 	         groups={"Source for array data", "Edge weight cutoff"}, 
 	         params="slider=true", gravity=13.0)
-	public BoundedDouble edgeCutOff; // TODO: set the bounds based on the range of the converted edges
+	public BoundedDouble getedgeCutOff() {
+		edgeCutOff = updateBounds(edgeCutOff);
+		return edgeCutOff;
+	}
+	public void setedgeCutOff(BoundedDouble value) { }
 	
 	public boolean edgeHistogram = false;
 	@Tunable(description="Set Edge Cutoff Using Histogram", 
@@ -75,18 +81,25 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 		edgeHistogram = eh;
 		if (edgeHistogram) {
 			// Popup the histogram dialog
+			if (histo == null) {
+				createHistogramDialog();
+			} else {
+				histo.setVisible(true);
+			}
 		} else {
 			// Dispose of the histogram dialog
+			if (histo != null)
+				histo.setVisible(false);
 		}
 	}
 
 	@Tunable(description = "Assume edges are undirected", 
 	         groups={"Source for array data", "Array data adjustments"}, gravity=15.0)
-	public boolean undirectedEdges = false;
+	public boolean undirectedEdges = true;
 	
 	@Tunable(description = "Adjust loops before clustering", 
 	         groups={"Source for array data", "Array data adjustments"}, gravity=16.0)
-	public boolean adjustLoops = false;
+	public boolean adjustLoops = true;
 	
 	private HistogramDialog histo = null;
 	
@@ -130,7 +143,7 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 			edgeWeighter = new ListSingleSelection<EdgeWeightConverter>();
 		}
 		
-		updateBounds();
+		edgeCutOff = updateBounds(null);
 	}
 
 	public void setNetwork(CyNetwork network) {
@@ -152,13 +165,34 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 			attribute = newAttribute;
 		}
 		else{
-			attribute = new ListSingleSelection<String>("None");
+			attribute = new ListSingleSelection<String>("--None--");
 		}
 	}
 
-	public void updateBounds() {
-		// TODO: calculate bounds based on data
-		edgeCutOff =  new BoundedDouble(0.0, 0.0, 100.0, false, false);
+	public BoundedDouble updateBounds(BoundedDouble bounded) {
+		System.out.println("Updating bounds for: "+bounded);
+		double cutOff = 0.0;
+		if (bounded != null) cutOff = bounded.getValue();
+		if (bounded == null || attribute == null || attribute.getSelectedValue().equals("--None--"))
+			return new BoundedDouble(0.0, cutOff, 100.0, false, false);
+
+		System.out.println("Getting distance matrix");
+		this.matrix = new DistanceMatrix(network, attribute.getSelectedValue(), 
+		                                 selectedOnly, edgeWeighter.getSelectedValue());
+		double max = matrix.getMaxWeight();
+		double min = matrix.getMinWeight();
+		// Clamp the user-supplied value (if any)
+		if (cutOff < min) 
+			cutOff = min;
+		else if (cutOff > max) 
+			cutOff = max;
+		System.out.println("Setting bounds to: "+min+"-"+max);
+		if (max == bounded.getUpperBound() && min == bounded.getLowerBound()) {
+			bounded.setValue(cutOff);
+			return bounded;
+		}
+
+		return new BoundedDouble(min, cutOff, max, false, false);
 	}
 
 	public void histoValueChanged(double cutoffValue) {
@@ -168,7 +202,8 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 
 	public void createHistogramDialog() {
 		if (this.matrix == null)
-			this.matrix = new DistanceMatrix(network, attribute.getSelectedValue(), selectedOnly, edgeWeighter.getSelectedValue());
+			this.matrix = new DistanceMatrix(network, attribute.getSelectedValue(), 
+			                                 selectedOnly, edgeWeighter.getSelectedValue());
 
 		ThresholdHeuristic thueristic = new ThresholdHeuristic(matrix);
 
@@ -248,12 +283,4 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 			Arrays.sort(attrArray);
 		return Arrays.asList(attrArray);
 	}
-	
-	
-	
-
 }
-
-
-
-

@@ -16,6 +16,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyTableUtil;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 /**
  * This class calculates a number of cluster statistics on a set of
@@ -102,11 +103,11 @@ public class AbstractClusterResults implements ClusterResults {
 	}
 
 	private int getInnerEdgeCount(List<CyNode> cluster) {
-		return getConnectingEdges(network, cluster).size();
+		return ModelUtils.getConnectingEdges(network, cluster).size();
 	}
 
 	private int getOuterEdgeCount(List<CyNode> cluster) {
-		Set<CyEdge> innerEdgeSet = new HashSet<CyEdge>(getConnectingEdges(network, cluster));
+		Set<CyEdge> innerEdgeSet = new HashSet<CyEdge>(ModelUtils.getConnectingEdges(network, cluster));
 		List<CyEdge> outerEdges = new ArrayList<CyEdge>();
 		for (CyNode node: cluster) {
 			for (CyEdge edge: network.getAdjacentEdgeList(node, CyEdge.Type.ANY)) {
@@ -116,16 +117,5 @@ public class AbstractClusterResults implements ClusterResults {
 		}
 		return outerEdges.size();
 	}
-
-	private List<CyEdge> getConnectingEdges(CyNetwork network, List<CyNode> nodes) {
-			List<CyEdge> edgeList = new ArrayList<CyEdge>();
-			for (int rowIndex = 0; rowIndex < nodes.size(); rowIndex++) {
-				for (int colIndex = rowIndex; colIndex < nodes.size(); colIndex++) {
-					List<CyEdge> connectingEdges = network.getConnectingEdgeList(nodes.get(rowIndex), nodes.get(colIndex), CyEdge.Type.ANY);
-					if (connectingEdges != null) edgeList.addAll(connectingEdges);
-				}
-			}
-			return edgeList;
-		}
 
 }

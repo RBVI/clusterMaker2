@@ -1,11 +1,15 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL;
 
+import java.util.Collections;
+import java.util.List;
+
 //Cytoscape imports
 import org.cytoscape.work.TaskIterator;
 
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 public class MCLClusterTaskFactory implements ClusterTaskFactory   {
@@ -31,6 +35,10 @@ public class MCLClusterTaskFactory implements ClusterTaskFactory   {
 
 	public boolean isAvailable() {
 		return false;
+	}
+
+	public List<ClusterType> getTypeList() {
+		return Collections.singletonList(ClusterType.NETWORK); 
 	}
 
 	public TaskIterator createTaskIterator() {

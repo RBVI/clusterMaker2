@@ -9,6 +9,7 @@ import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -57,14 +58,31 @@ public class ClusterManagerImpl implements ClusterManager {
 	public void addAlgorithm(ClusterTaskFactory alg) {
 		algMap.put(alg.getName(), alg);
 
+		// Get the type of clusterer (Attribute, Network, Filter, Attribute+Network)
+		List<ClusterTaskFactory.ClusterType> clusterTypes = alg.getTypeList();
+
 		// Create our wrapper and register the algorithm
-		Properties props = new Properties();
-		props.setProperty(COMMAND, alg.getName());
-		props.setProperty(COMMAND_NAMESPACE, "cluster");
-		props.setProperty(IN_MENU_BAR, "true");
-		props.setProperty(PREFERRED_MENU, "Apps.Cluster");
-		props.setProperty(TITLE, alg.getName());
-		serviceRegistrar.registerService(alg, TaskFactory.class, props);
+		for (ClusterTaskFactory.ClusterType type: clusterTypes) {
+			Properties props = new Properties();
+			props.setProperty(COMMAND, alg.getName());
+			props.setProperty(COMMAND_NAMESPACE, "cluster");
+			props.setProperty(IN_MENU_BAR, "true");
+			props.setProperty(TITLE, alg.getName());
+			switch(type) {
+			case NETWORK:
+				props.setProperty(PREFERRED_MENU, "Apps.Network Cluster Algorithms");
+				break;
+
+			case ATTRIBUTE:
+				props.setProperty(PREFERRED_MENU, "Apps.Attribute Cluster Algorithms");
+				break;
+
+			case FILTER:
+				props.setProperty(PREFERRED_MENU, "Apps.Network Filters");
+				break;
+			}
+			serviceRegistrar.registerService(alg, TaskFactory.class, props);
+		}
 	}
 
 	public void removeClusterAlgorithm(ClusterTaskFactory alg, Map props) {
