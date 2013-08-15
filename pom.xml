@@ -89,11 +89,6 @@
 			<url>http://code.cytoscape.org/nexus/content/repositories/releases/</url>
 		</repository>
 		<repository>
-			<id>local_cdk_release</id>
-			<name>CDK Release</name>
-			<url>file://${basedir}/cdk-repo</url>
-		</repository>
-		<repository>
 			<id>apache-repo-releases</id>
 			<url>https://repository.apache.org/content/repositories/</url>
 			<releases>

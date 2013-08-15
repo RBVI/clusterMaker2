@@ -101,7 +101,3 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 	}
 }
 	
-	
-
-
-
