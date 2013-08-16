@@ -98,4 +98,8 @@ public class NodeCluster extends ArrayList<CyNode> {
 			return 0;
 		}
 	}
+	
+	public boolean isFuzzy(){
+		return false;
+	}
 }

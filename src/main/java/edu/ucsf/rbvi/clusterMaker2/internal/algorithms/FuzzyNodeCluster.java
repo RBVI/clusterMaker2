@@ -20,6 +20,56 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster.ScoreComparat
  *
  */
 
+public class FuzzyNodeCluster extends NodeCluster{
+	
+	private HashMap<CyNode, Double> membershipMap = null;
+		
+	public FuzzyNodeCluster() {
+		super();
+		
+	}
+	
+	public FuzzyNodeCluster(Collection<CyNode> collection, HashMap<CyNode, double[]> clusterMemberships) {
+		super(collection);
+		
+		membershipMap = new HashMap<CyNode, Double>();
+		
+		for(CyNode element : clusterMemberships.keySet()){
+			
+			if(contains(element)){
+				membershipMap.put(element,clusterMemberships.get(element)[clusterNumber -1]);				
+			}
+		}
+		
+	}
+	
+	public boolean add(List<CyNode>nodeList, int index, double membershipValue) {
+		
+		boolean retval = add(nodeList.get(index));
+		if(retval){
+			membershipMap.put(nodeList.get(index), membershipValue);
+		}
+		return retval;
+	}
+	
+	public double getMembership(CyNode node){
+		
+		return membershipMap.get(node);		
+	}
+	
+	public void setMembership(CyNode node, double membership){
+		
+		membershipMap.put(node,membership);		
+	}
+	
+	@Override
+	public boolean isFuzzy(){
+		return true;
+	}
+	
+}
+
+/*
 public class FuzzyNodeCluster extends ArrayList<CyNode> {
 	
 	int clusterNumber = 0;
@@ -129,5 +179,5 @@ public class FuzzyNodeCluster extends ArrayList<CyNode> {
 	}
 
 }
-
+*/
 

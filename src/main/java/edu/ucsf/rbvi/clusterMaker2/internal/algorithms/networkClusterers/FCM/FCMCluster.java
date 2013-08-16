@@ -143,6 +143,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 
 		CyTable netAttributes = network.getDefaultNetworkTable();
 		CyTable nodeAttributes = network.getDefaultNodeTable();
+		CyTable edgeAttributes = network.getDefaultEdgeTable();
 		
 		DistanceMatrix matrix = context.edgeAttributeHandler.getMatrix();
 		if (matrix == null) {
