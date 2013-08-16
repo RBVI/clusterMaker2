@@ -16,6 +16,8 @@ import java.util.Properties;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskFactory;
 
@@ -31,14 +33,18 @@ public class ClusterManagerImpl implements ClusterManager {
 	CyGroupManager groupMgr;
 	Map<String, ClusterTaskFactory> algMap;
 	Map<String, ClusterViz> vizMap;
+	CyTableFactory tableFactory;
+	CyTableManager tableManager;
 
 	public ClusterManagerImpl(CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar,
- 	                          CyGroupManager groupMgr) {
+ 	                          CyGroupManager groupMgr, CyTableFactory tableFactory, CyTableManager tableManager) {
 		this.appMgr = appMgr;
 		this.serviceRegistrar = serviceRegistrar;
 		this.groupMgr = groupMgr;
 		this.algMap = new HashMap<String, ClusterTaskFactory>();
 		this.vizMap = new HashMap<String, ClusterViz>();
+		this.tableFactory = tableFactory;
+		this.tableManager = tableManager;
 	}
 
 	public Collection<ClusterTaskFactory> getAllAlgorithms() {
@@ -136,5 +142,13 @@ public class ClusterManagerImpl implements ClusterManager {
 
 	public CyNetwork getNetwork() {
 		return appMgr.getCurrentNetwork();
+	}
+	
+	public CyTableFactory getTableFactory(){
+		return tableFactory;
+	}
+	
+	public CyTableManager getTableManager(){
+		return tableManager;
 	}
 }

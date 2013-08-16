@@ -1,6 +1,8 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.api;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
 
 import java.util.Collection;
 
@@ -31,5 +33,7 @@ public interface ClusterManager {
 	public void removeVisualizer(ClusterViz alg);
 
 	public CyNetwork getNetwork();
+	public CyTableFactory getTableFactory();
+	public CyTableManager getTableManager();
 }
 

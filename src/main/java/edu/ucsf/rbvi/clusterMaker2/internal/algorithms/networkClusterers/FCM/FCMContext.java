@@ -40,7 +40,7 @@ public class FCMContext implements ClusterAlgorithmContext {
 	public double fIndex = 1.5;
 	
 	@Tunable(description = " Margin allowed for change in fuzzy memberships, to act as end criterion ", groups={"FCM Advanced Settings"}, gravity=27.0)
-	public double beta;
+	public double beta = 0.01;
 	
 	
 	public ListSingleSelection<DistanceMetric> metric;

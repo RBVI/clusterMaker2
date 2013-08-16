@@ -35,11 +35,12 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
-import cern.colt.function.IntIntDoubleFunction;
-import cern.colt.matrix.DoubleFactory2D;
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.DoubleMatrix2D;
+
 import cern.colt.matrix.impl.SparseDoubleMatrix2D;
+import cern.colt.function.tdouble.IntIntDoubleFunction;
+import cern.colt.matrix.tdouble.DoubleFactory2D;
+import cern.colt.matrix.tdouble.DoubleMatrix1D;
+import cern.colt.matrix.tdouble.DoubleMatrix2D;
 
 public class RunFCM {
 
@@ -61,10 +62,12 @@ public class RunFCM {
 	private DistanceMatrix distanceMatrix = null;
 	private DoubleMatrix2D matrix = null;
 	private Matrix data = null;
+	double [][] clusterMemberships = null;
 	private boolean debug = false;
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
 	
-	public RunFCM (Matrix data,DistanceMatrix dMat, int num_iterations, int cClusters,DistanceMetric metric, double findex, double beta, TaskMonitor monitor ){
+	public RunFCM (Matrix data,DistanceMatrix dMat, int num_iterations, int cClusters,
+				DistanceMetric metric, double findex, double beta, double clusteringThresh,int maxThreads, TaskMonitor monitor ){
 		
 		this.distanceMatrix = dMat;
 		this.data = data;
@@ -77,17 +80,24 @@ public class RunFCM {
 		nodes = distanceMatrix.getNodes();
 		edges = distanceMatrix.getEdges();
 		this.matrix = distanceMatrix.getDistanceMatrix();
-		/*
+		
+		
 		if (maxThreads > 0)
 			nThreads = maxThreads;
 		else
 			nThreads = Runtime.getRuntime().availableProcessors()-1;
-			*/
+			
+		monitor.showMessage(TaskMonitor.Level.INFO,"Iterations = "+num_iterations);
+		monitor.showMessage(TaskMonitor.Level.INFO,"Clustering Threshold = "+clusteringThresh);
+		monitor.showMessage(TaskMonitor.Level.INFO,"Threads = "+nThreads);
+		monitor.showMessage(TaskMonitor.Level.INFO,"Matrix info: = "+distanceMatrix.printMatrixInfo(matrix));
+		monitor.showMessage(TaskMonitor.Level.INFO,"Number of Clusters = "+number_clusters);
+		monitor.showMessage(TaskMonitor.Level.INFO,"Margin allowed for Change = "+beta);
+		monitor.showMessage(TaskMonitor.Level.INFO,"Fuzziness Index = "+findex);
+		
 	}
 	
 	public void cancel () { canceled = true; }
-	
-	public void halt () { canceled = true; }
 
 	public void setDebug(boolean debug) { this.debug = debug; }
 	
@@ -122,7 +132,7 @@ public class RunFCM {
 		double [][] prevClusterMemberships = new double[nelements][number_clusters];
 		
 		// This matrix will store the centroid data
-		Matrix cData = new Matrix(number_clusters, data.nColumns());
+		Matrix cData = new Matrix(network, number_clusters, data.nColumns());
 		
 		int iteration = 0;
 		boolean end = false;
@@ -169,7 +179,7 @@ public class RunFCM {
 			
 		}
 		
-		
+		clusterMemberships = tClusterMemberships;
 		return fuzzyClusters;
 	}
 	
