@@ -205,7 +205,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		results = new AbstractClusterResults(network, nodeClusters);
 		monitor.showMessage(TaskMonitor.Level.INFO, "Done.  FCM results:\n"+results);
 		
-		addToNetwork(clusters, nodeAttributes, dataMatrix, runFCM.clusterMemberships);
+		createFuzzyTable(clusters, nodeAttributes, dataMatrix, runFCM.clusterMemberships);
 		
 	}
 	
@@ -249,30 +249,27 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		 * @param clusterMemberships : 2D array of membership values
 		 */
 		
-		private void addToNetwork(List<FuzzyNodeCluster> clusters, CyTable nodeAttributes, Matrix data, double[][] clusterMemberships){
-			
+		private void createFuzzyTable(List<FuzzyNodeCluster> clusters, CyTable nodeAttributes, Matrix data, double[][] clusterMemberships){
+			/*
 			CyNode node; 
 			for(int i = 0; i < data.nRows(); i++ ){
 				node = data.getRowNode(i);
 				nodeAttributes.getRow(node).set(clusterAttributeName + "_MembershipValues", clusterMemberships[i]);
 			}
-						
-			CyTable FuzzyClusterTable = tableFactory.createTable("Fuzzy_Cluster_Table", "FuzzyCluster", FuzzyNodeCluster.class, true, true);
+			*/	
+			CyTable FuzzyClusterTable = tableFactory.createTable("Fuzzy_Cluster_Table", "FuzzyCluster", CyNode.class, true, true);
+			FuzzyClusterTable.createColumn("Fuzzy_Node.SUID", CyNode.class, false);
 			
-			FuzzyClusterTable.createColumn("FuzzyCluster", FuzzyNodeCluster.class, false);
-			for(int i = 0; i <data.nRows(); i++){
+			for(FuzzyNodeCluster cluster : clusters){
 				
-				FuzzyClusterTable.createColumn("Node_"+i+".SUID", double.class, false);
+				FuzzyClusterTable.createColumn("Cluster_"+cluster.getClusterNumber(), double.class, false);
 			}
 			
 			CyRow TableRow;
-			for(FuzzyNodeCluster cluster : clusters){
-				
-				TableRow = FuzzyClusterTable.getRow(cluster);
-				CyNode ClusterNode ;
-				for(int i = 0; i <data.nRows(); i++){
-					ClusterNode = data.getRowNode(i);
-					TableRow.set("Node_"+i+".SUID", cluster.getMembership(ClusterNode));
+			for(CyNode node: network.getNodeList()){
+				TableRow = FuzzyClusterTable.getRow(node);
+				for(FuzzyNodeCluster cluster : clusters){
+					TableRow.set("Cluster_"+cluster.getClusterNumber(), cluster.getMembership(node));
 				}
 			}
 			
