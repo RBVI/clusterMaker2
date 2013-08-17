@@ -133,6 +133,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 	}
 	
 	*/
+	
 	public void run( TaskMonitor monitor) {
 		monitor.setTitle("Performing FCM cluster");
 		this.monitor = monitor;
@@ -185,6 +186,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		monitor.showMessage(TaskMonitor.Level.INFO,"Clustering...");
 
 		// results = runMCL.run(monitor);
+		
 		List<FuzzyNodeCluster> clusters = runFCM.run(network, monitor);
 		if (clusters == null) return; // Canceled?
 		
@@ -198,7 +200,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		params = new ArrayList<String>();
 		context.edgeAttributeHandler.setParams(params);
 
-		List<List<CyNode>> nodeClusters = createGroups(network, clusters);
+		List<List<CyNode>> nodeClusters = createFuzzyGroups(network, clusters);
 
 		results = new AbstractClusterResults(network, nodeClusters);
 		monitor.showMessage(TaskMonitor.Level.INFO, "Done.  FCM results:\n"+results);
@@ -212,7 +214,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		runFCM.cancel();
 	}
 
-				
+	/*			
 		private String[] getAllAttributes() {
 			attributeArray = new String[1];
 			// Create the list by combining node and edge attributes into a single list
@@ -225,6 +227,17 @@ public class FCMCluster extends AbstractNetworkClusterer {
 			return attrArray;
 		}
 		
+		private void getAttributesList(List<String>attributeList, CyAttributes attributes, String prefix) {
+			String[] names = attributes.getAttributeNames();
+			for (int i = 0; i < names.length; i++) {
+				if (attributes.getType(names[i]) == CyAttributes.TYPE_FLOATING ||
+				    attributes.getType(names[i]) == CyAttributes.TYPE_INTEGER) {
+					attributeList.add(prefix+names[i]);
+				}
+			}
+		}
+		*/
+	
 		/**
 		 * This method adds the membership value array of each CyNode to the node attributes table 
 		 * Method also creates a new table- FuzzyClusterTable which stores all the FuzzyNodeClusters and 

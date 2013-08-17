@@ -18,6 +18,7 @@ import java.util.List;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterAlgorithm;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.FuzzyNodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
 
@@ -106,7 +107,7 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 			clusterList.add(nodeList);
 			groupList.add(groupName);
 		}
-
+		
 		// network.getRow(network).set(GROUP_ATTRIBUTE, groupList);
 		createAndSet(network, network, GROUP_ATTRIBUTE, groupList, List.class, String.class);
 
@@ -121,7 +122,49 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 
 		return clusterList;
 	}
+	
+	protected List<List<CyNode>> createFuzzyGroups(CyNetwork network, List<FuzzyNodeCluster> clusters){
+		
+		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
+		List<String>groupList = new ArrayList<String>(); // keep track of the groups we create
+		
+		for (FuzzyNodeCluster cluster: clusters) {
+			int clusterNumber = cluster.getClusterNumber();
+			String groupName = clusterAttributeName+"_"+clusterNumber;
+			List<CyNode>nodeList = new ArrayList<CyNode>();
 
+			for (CyNode node: cluster) {
+				nodeList.add(node);
+				//createAndSet(network, node, clusterAttributeName+"_"+clusterNumber, cluster.getMembership(node), Double.class, null);
+				// network.getRow(node).set(clusterAttributeName, clusterNumber);
+				if (FuzzyNodeCluster.hasScore()) {
+					createAndSet(network, node, clusterAttributeName+"_"+clusterNumber+"_Membership", cluster.getMembership(node), Double.class, null);
+					// network.getRow(node).set(clusterAttributeName+"_Score", cluster.getClusterScore());
+				}
+			}
+
+			if (createGroups) {
+        // Create the group
+        //         CyGroup newgroup = CyGroupManager.createGroup(groupName, nodeList, null);
+        //
+			}
+			clusterList.add(nodeList);
+			groupList.add(groupName);
+		}
+		
+		
+		createAndSet(network, network, GROUP_ATTRIBUTE, groupList, List.class, String.class);
+
+		createAndSet(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, getShortName(), String.class, null);
+		createAndSet(network, network, ClusterManager.CLUSTER_ATTRIBUTE, clusterAttributeName, String.class, null);
+		if (params != null)
+			createAndSet(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, params, List.class, String.class);
+				
+		return clusterList;
+	}
+
+	
+	
 	protected void removeGroups(CyNetwork network) {
 		if (network.getDefaultNetworkTable().getColumn(GROUP_ATTRIBUTE) != null) {
 			List<String> groupList = network.getRow(network).getList(GROUP_ATTRIBUTE, String.class);
