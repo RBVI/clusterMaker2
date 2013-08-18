@@ -27,8 +27,6 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableHandler;
 import org.cytoscape.group.*;
 import org.cytoscape.work.TaskMonitor;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.FuzzyNodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
@@ -36,7 +34,6 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
 
-import cern.colt.matrix.impl.SparseDoubleMatrix2D;
 import cern.colt.function.tdouble.IntIntDoubleFunction;
 import cern.colt.matrix.tdouble.DoubleFactory2D;
 import cern.colt.matrix.tdouble.DoubleMatrix1D;

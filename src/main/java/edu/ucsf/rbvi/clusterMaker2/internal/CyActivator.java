@@ -31,9 +31,12 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import edu.ucsf.rbvi.clusterMaker2.internal.ClusterManagerImpl;
 
 // Algorithms
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AP.APClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.GLay.GLayClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCODE.MCODEClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.SCPS.SCPSClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.TransClustClusterTaskFactory;
 
 public class CyActivator extends AbstractCyActivator {
 
@@ -68,6 +71,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new APClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new GLayClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new MCLClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new MCODEClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new SCPSClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new TransClustClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 	}
 
 }

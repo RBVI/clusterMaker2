@@ -24,4 +24,12 @@ public class ModelUtils {
 		return edgeList;
 	}
 
+	public static String getNodeName(CyNetwork network, CyNode node) {
+		return network.getRow(node).get(CyNetwork.NAME, String.class);
+	}
+
+	public static String getNetworkName(CyNetwork network) {
+		return network.getRow(network).get(CyNetwork.NAME, String.class);
+	}
+
 }
