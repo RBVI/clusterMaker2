@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.SCPS;
 
 import java.util.Collections;
 import java.util.List;
@@ -7,31 +7,28 @@ import java.util.List;
 import org.cytoscape.work.TaskIterator;
 
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLCluster;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
-public class FCMCLusterTaskFactory implements ClusterTaskFactory {
-	
+public class SCPSClusterTaskFactory implements ClusterTaskFactory   {
 	ClusterManager clusterManager;
-	FCMContext context = null;
+	SCPSContext context = null;
 	
-	public void FCMClusterTaskFactory(ClusterManager clusterManager) {
-		context = new FCMContext();
+	public SCPSClusterTaskFactory(ClusterManager clusterManager) {
+		context = new SCPSContext();
 		this.clusterManager = clusterManager;
 	}
 	
-	public String getShortName() {return FCMCluster.SHORTNAME;};
-	public String getName() {return FCMCluster.NAME;};
+	public String getShortName() {return SCPSCluster.SHORTNAME;};
+	public String getName() {return SCPSCluster.NAME;};
 
 	public ClusterViz getVisualizer() {
 		// return new NewNetworkView(true);
 		return null;
 	}
-	
+
 	public boolean isReady() {
 		return true;
 	}
@@ -43,14 +40,18 @@ public class FCMCLusterTaskFactory implements ClusterTaskFactory {
 	public List<ClusterType> getTypeList() {
 		return Collections.singletonList(ClusterType.NETWORK); 
 	}
-	
+
 	public TaskIterator createTaskIterator() {
 		// Not sure why we need to do this, but it looks like
 		// the tunable stuff "remembers" objects that it's already
 		// processed this tunable.  So, we use a copy constructor
-		context = new FCMContext(context);
-		return new TaskIterator(new FCMCluster(context, clusterManager));
+		context = new SCPSContext(context);
+		return new TaskIterator(new SCPSCluster(context, clusterManager));
 	}
 	
-
 }
+	
+	
+
+
+

@@ -35,6 +35,10 @@ public class ClusterManagerImpl implements ClusterManager {
 	Map<String, ClusterViz> vizMap;
 	CyTableFactory tableFactory;
 	CyTableManager tableManager;
+	double networkClusterIndex = 50.0;
+	double attributeClusterIndex = 1.0;
+	double filterIndex = 100.0;
+	double visIndex = 150.0;
 
 	public ClusterManagerImpl(CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar,
  	                          CyGroupManager groupMgr, CyTableFactory tableFactory, CyTableManager tableManager) {
@@ -74,17 +78,21 @@ public class ClusterManagerImpl implements ClusterManager {
 			props.setProperty(COMMAND_NAMESPACE, "cluster");
 			props.setProperty(IN_MENU_BAR, "true");
 			props.setProperty(TITLE, alg.getName());
+			props.setProperty(PREFERRED_MENU, "Apps.clusterMaker");
 			switch(type) {
 			case NETWORK:
-				props.setProperty(PREFERRED_MENU, "Apps.Network Cluster Algorithms");
+				networkClusterIndex += 1.0;
+				props.setProperty(MENU_GRAVITY, ""+networkClusterIndex);
 				break;
 
 			case ATTRIBUTE:
-				props.setProperty(PREFERRED_MENU, "Apps.Attribute Cluster Algorithms");
+				attributeClusterIndex += 1.0;
+				props.setProperty(MENU_GRAVITY, ""+attributeClusterIndex);
 				break;
 
 			case FILTER:
-				props.setProperty(PREFERRED_MENU, "Apps.Network Filters");
+				filterIndex += 1.0;
+				props.setProperty(MENU_GRAVITY, ""+filterIndex);
 				break;
 			}
 			serviceRegistrar.registerService(alg, TaskFactory.class, props);
