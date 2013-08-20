@@ -100,40 +100,6 @@ public class FCMCluster extends AbstractNetworkClusterer {
 	@ProvidesTitle
 	public String getName() { return NAME; }
 	
-			
-	/**
-	 * initializeProperties initializes the values of tunables	
-	 */
-	
-	/*
-	public void initializeProperties() {
-		super.initializeProperties();
-
-		
-		
-		iterations = rNumber;
-		cNumber = c;
-		cMax = 10;
-		fIndex = 1.5;
-		beta = 0.01;
-		
-		attributeArray = getAllAttributes();
-		if (attributeArray.length > 0){
-			attributeList = new ListMultipleSelection<String>(attributeArray);	
-			List<String> temp = new ArrayList<String>();
-			temp.add(attributeArray[0]);
-			attributeList.setSelectedValues(temp);
-		}
-		else{
-			attributeList = new ListMultipleSelection<String>("None");
-		}
-		
-		DistanceMetric[] distanceMetricArray = Matrix.distanceTypes;
-		metric = new ListSingleSelection<DistanceMetric>(distanceMetricArray);
-	}
-	
-	*/
-	
 	public void run( TaskMonitor monitor) {
 		monitor.setTitle("Performing FCM cluster");
 		this.monitor = monitor;
@@ -214,30 +180,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		runFCM.cancel();
 	}
 
-	/*			
-		private String[] getAllAttributes() {
-			attributeArray = new String[1];
-			// Create the list by combining node and edge attributes into a single list
-			List<String> attributeList = new ArrayList<String>();
-			attributeList.add(NONEATTRIBUTE);
-			getAttributesList(attributeList, Cytoscape.getEdgeAttributes());
-			String[] attrArray = attributeList.toArray(attributeArray);
-			if (attrArray.length > 1) 
-				Arrays.sort(attrArray);
-			return attrArray;
-		}
 		
-		private void getAttributesList(List<String>attributeList, CyAttributes attributes, String prefix) {
-			String[] names = attributes.getAttributeNames();
-			for (int i = 0; i < names.length; i++) {
-				if (attributes.getType(names[i]) == CyAttributes.TYPE_FLOATING ||
-				    attributes.getType(names[i]) == CyAttributes.TYPE_INTEGER) {
-					attributeList.add(prefix+names[i]);
-				}
-			}
-		}
-		*/
-	
 		/**
 		 * This method adds the membership value array of each CyNode to the node attributes table 
 		 * Method also creates a new table- FuzzyClusterTable which stores all the FuzzyNodeClusters and 

@@ -46,33 +46,10 @@ public class FCMContext implements ClusterAlgorithmContext {
 	
 	@Tunable(description = "Distance Metric", groups={"FCM Advanced Settings"}, gravity=28.0)
 	public ListSingleSelection<DistanceMetric> distanceMetric;
-	/*
-	@Tunable(description = "Distance Metric", groups={"FCM Advanced Settings"}, gravity=28.0)
-	public DistanceMetric getMetric(){
-		return metric.getSelectedValue();
-	}
 	
-	public void setMetric(DistanceMetric newMetric){
-		
-		metric.setSelectedValue(newMetric);
-		System.out.println("Setting the value of Distance Metric to: " + metric.getSelectedValue()  );
-	}
-	*/
 	@Tunable(description = "The attributes to consider while clustering", groups={"FCM Advanced Settings"}, gravity=29.0)
 	public ListMultipleSelection<String> attributeList;
-	
-	/*
-	@Tunable(description = "The attribute to use to get the weights", groups={"FCM Advanced Settings"}, gravity=29.0)
-	public List<String> getAttributeList(){
-		return attributeList.getSelectedValues();
-	}
-	
-	public void setAttributeList(List<String> newAttributeList){
 		
-		attributeList.setSelectedValues(newAttributeList);
-		System.out.println("Setting the Attribute List to: " + attributeList.getSelectedValues() );
-	}
-    */
 	@ContainsTunables
 	public AdvancedProperties advancedAttributes;
 
