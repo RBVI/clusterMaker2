@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers;
 
 import java.util.Collections;
 import java.util.List;
@@ -6,34 +6,28 @@ import java.util.List;
 //Cytoscape imports
 import org.cytoscape.work.TaskIterator;
 
-
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLCluster;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
-public class FCMCLusterTaskFactory implements ClusterTaskFactory {
-	
+public class AttributeClusterTaskFactory implements ClusterTaskFactory   {
 	ClusterManager clusterManager;
-	FCMContext context = null;
 	
-	public void FCMClusterTaskFactory(ClusterManager clusterManager) {
-		context = new FCMContext();
+	public AttributeClusterTaskFactory(ClusterManager clusterManager) {
 		this.clusterManager = clusterManager;
 	}
 	
-	public String getShortName() {return FCMCluster.SHORTNAME;};
-	public String getName() {return FCMCluster.NAME;};
+	public String getShortName() {return "attribute"; }
+	public String getName() {return "--- Attribute Cluster Algorithms ---";}
 
 	public ClusterViz getVisualizer() {
 		// return new NewNetworkView(true);
 		return null;
 	}
-	
+
 	public boolean isReady() {
-		return true;
+		return false;
 	}
 
 	public boolean isAvailable() {
@@ -41,16 +35,19 @@ public class FCMCLusterTaskFactory implements ClusterTaskFactory {
 	}
 
 	public List<ClusterType> getTypeList() {
-		return Collections.singletonList(ClusterType.NETWORK); 
+		return Collections.singletonList(ClusterType.ATTRIBUTE); 
 	}
-	
+
 	public TaskIterator createTaskIterator() {
 		// Not sure why we need to do this, but it looks like
 		// the tunable stuff "remembers" objects that it's already
 		// processed this tunable.  So, we use a copy constructor
-		context = new FCMContext(context);
-		return new TaskIterator(new FCMCluster(context, clusterManager));
+		return null;
 	}
 	
-
 }
+	
+	
+
+
+
