@@ -1,7 +1,9 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.Tunable;
@@ -42,9 +44,9 @@ public class FCMContext implements ClusterAlgorithmContext {
 	@Tunable(description = " Margin allowed for change in fuzzy memberships, to act as end criterion ", groups={"FCM Advanced Settings"}, gravity=27.0)
 	public double beta = 0.01;
 	
-	
-	public ListSingleSelection<DistanceMetric> metric;
-	
+	@Tunable(description = "Distance Metric", groups={"FCM Advanced Settings"}, gravity=28.0)
+	public ListSingleSelection<DistanceMetric> distanceMetric;
+	/*
 	@Tunable(description = "Distance Metric", groups={"FCM Advanced Settings"}, gravity=28.0)
 	public DistanceMetric getMetric(){
 		return metric.getSelectedValue();
@@ -55,10 +57,11 @@ public class FCMContext implements ClusterAlgorithmContext {
 		metric.setSelectedValue(newMetric);
 		System.out.println("Setting the value of Distance Metric to: " + metric.getSelectedValue()  );
 	}
-	
-	
+	*/
+	@Tunable(description = "The attributes to consider while clustering", groups={"FCM Advanced Settings"}, gravity=29.0)
 	public ListMultipleSelection<String> attributeList;
 	
+	/*
 	@Tunable(description = "The attribute to use to get the weights", groups={"FCM Advanced Settings"}, gravity=29.0)
 	public List<String> getAttributeList(){
 		return attributeList.getSelectedValues();
@@ -69,7 +72,7 @@ public class FCMContext implements ClusterAlgorithmContext {
 		attributeList.setSelectedValues(newAttributeList);
 		System.out.println("Setting the Attribute List to: " + attributeList.getSelectedValues() );
 	}
-    
+    */
 	@ContainsTunables
 	public AdvancedProperties advancedAttributes;
 
@@ -93,12 +96,20 @@ public class FCMContext implements ClusterAlgorithmContext {
 		cNumber = origin.cNumber;
 		fIndex = origin.fIndex;
 		beta = origin.beta;
-		
-		//metric = origin.metric;
-		//attributeList = origin.attributeList;
-		metric.setSelectedValue(origin.metric.getSelectedValue());		
-		attributeList.setSelectedValues(origin.attributeList.getSelectedValues());
 				
+		distanceMetric = new ListSingleSelection<DistanceMetric>(DistanceMetric.VALUE_IS_CORRELATION, DistanceMetric.UNCENTERED_CORRELATION, 
+								DistanceMetric.CORRELATION, DistanceMetric.ABS_UNCENTERED_CORRELATION,DistanceMetric.ABS_CORRELATION,
+								DistanceMetric.SPEARMANS_RANK, DistanceMetric.KENDALLS_TAU, DistanceMetric.EUCLIDEAN, DistanceMetric.CITYBLOCK);
+		
+		// Retrieving the possible node attributes, required for selecting data to be considered for clustering
+		List<CyColumn> columnList =  (List<CyColumn>) network.getDefaultNodeTable().getColumns();
+		List<String> columnNameList = new ArrayList<String>();
+		for (CyColumn column : columnList){
+			columnNameList.add(column.getName());
+		}
+		
+		attributeList = new ListMultipleSelection<String>(columnNameList);
+		
 	}
 	
 	public void setNetwork(CyNetwork network) {

@@ -157,8 +157,8 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		
 		if (canceled) return;
 		
-		// Getting the attribute array to make the data matrix
-		List <String> dataAttributes = context.getAttributeList();
+		// Getting the attribute array to make the data matrix context.getAttributeList()
+		List <String> dataAttributes = context.attributeList.getSelectedValues();
 		String[] attributeArray = new String[dataAttributes.size()];
 		for (int i = 0; i < dataAttributes.size(); i++){
 			
@@ -173,8 +173,8 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		//Cluster the nodes
 		
 		context.cNumber = cEstimate();
-		DistanceMetric distMetric = context.getMetric();
-		runFCM = new RunFCM(dataMatrix, matrix, context.iterations, context.cNumber, distMetric, 
+		DistanceMetric distMetric = context.distanceMetric.getSelectedValue();
+		runFCM = new RunFCM(dataMatrix, context.iterations, context.cNumber, distMetric, 
 									context.fIndex, context.beta, context.clusteringThresh, context.maxThreads, monitor);
 
 		
@@ -333,7 +333,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 				if (halted()) return;
 				if (saveMonitor != null) saveMonitor.setStatusMessage("Getting silhouette with a k estimate of "+kEstimate);
 				//int ifound = kcluster(kEstimate, nIterations, dataMatrix, metric, clusters);
-				silhouetteResults[kEstimate] = SilhouetteCalculator.calculate(dataMatrix, context.getMetric(), clusters);
+				silhouetteResults[kEstimate] = SilhouetteCalculator.calculate(dataMatrix, context.distanceMetric.getSelectedValue(), clusters);
 			}
 		}
 		
@@ -358,7 +358,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 				if (saveMonitor != null) saveMonitor.setStatusMessage("Getting silhouette with a c estimate of "+cEstimate);
 				//int ifound = kcluster(kEstimate, nIterations, matrix, metric, clusters);
 				try {
-					silhouetteResults[cEstimate] = SilhouetteCalculator.calculate(matrix, context.metric.getSelectedValue(), clusters);
+					silhouetteResults[cEstimate] = SilhouetteCalculator.calculate(matrix, context.distanceMetric.getSelectedValue(), clusters);
 				} catch (Exception e) { e.printStackTrace(); }
 			}
 		}
