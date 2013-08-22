@@ -16,6 +16,7 @@ import java.util.Properties;
 // Cytoscape imports
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
@@ -56,13 +57,14 @@ public class CyActivator extends AbstractCyActivator {
 		CyApplicationManager appRef = getService(bc, CyApplicationManager.class);
 		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		CyGroupManager groupManager = getService(bc, CyGroupManager.class);
+		CyGroupFactory groupFactory = getService(bc, CyGroupFactory.class);
 		CyTableFactory tableFactory = getService(bc, CyTableFactory.class);
 		CyTableManager tableManager = getService(bc, CyTableManager.class);
 
 
 		// Create our context object.  This will probably keep track of all of the
 		// registered clustering algorithms, settings, etc.
-		ClusterManagerImpl clusterManager = new ClusterManagerImpl(appRef, serviceRegistrar, groupManager, tableFactory, tableManager );
+		ClusterManagerImpl clusterManager = new ClusterManagerImpl(appRef, serviceRegistrar, groupFactory, groupManager, tableFactory, tableManager );
 
 		registerServiceListener(bc, clusterManager, "addClusterAlgorithm", "removeClusterAlgorithm", ClusterTaskFactory.class);
 		registerServiceListener(bc, clusterManager, "addClusterVisualizer", "removeClusterVisualizer", ClusterViz.class);

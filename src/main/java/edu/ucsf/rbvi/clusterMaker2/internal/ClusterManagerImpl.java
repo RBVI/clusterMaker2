@@ -14,10 +14,16 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskFactory;
 
@@ -30,6 +36,7 @@ public class ClusterManagerImpl implements ClusterManager {
 // public class ClusterManagerImpl {
 	CyApplicationManager appMgr;
 	CyServiceRegistrar serviceRegistrar;
+	CyGroupFactory groupFactory;
 	CyGroupManager groupMgr;
 	Map<String, ClusterTaskFactory> algMap;
 	Map<String, ClusterViz> vizMap;
@@ -37,9 +44,11 @@ public class ClusterManagerImpl implements ClusterManager {
 	CyTableManager tableManager;
 
 	public ClusterManagerImpl(CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar,
- 	                          CyGroupManager groupMgr, CyTableFactory tableFactory, CyTableManager tableManager) {
+ 	                          CyGroupFactory groupFactory, CyGroupManager groupMgr, 
+	                          CyTableFactory tableFactory, CyTableManager tableManager) {
 		this.appMgr = appMgr;
 		this.serviceRegistrar = serviceRegistrar;
+		this.groupFactory = groupFactory;
 		this.groupMgr = groupMgr;
 		this.algMap = new HashMap<String, ClusterTaskFactory>();
 		this.vizMap = new HashMap<String, ClusterViz>();
@@ -150,5 +159,33 @@ public class ClusterManagerImpl implements ClusterManager {
 	
 	public CyTableManager getTableManager(){
 		return tableManager;
+	}
+
+	public CyGroup createGroup(CyNetwork network, String name, List<CyNode> nodeList, List<CyEdge> edgeList, boolean register) {
+		CyGroup group =  groupFactory.createGroup(network, nodeList, edgeList, register);
+		if (group != null) {
+			// The name of the group node is the name of the group
+			network.getRow(group.getGroupNode()).set(CyNetwork.NAME, name);
+			network.getRow(group.getGroupNode(), CyRootNetwork.SHARED_ATTRS).set(CyRootNetwork.SHARED_NAME, name);
+		}
+		return group;
+	}
+
+	public void removeGroup(CyNetwork network, Long suid) {
+		CyNode node = ((CySubNetwork)network).getRootNetwork().getNode(suid); // Make sure to get the node in the root network
+		if (node == null)
+			return;
+
+		CyGroup group = groupMgr.getGroup(node, network);
+		if (group == null) 
+			return;
+
+		// Remove the group from this network
+		if (group.getNetworkSet() != null && group.getNetworkSet().size() > 1) {
+			group.removeGroupFromNetwork(network);
+			return;
+		}
+
+		groupMgr.destroyGroup(group);
 	}
 }

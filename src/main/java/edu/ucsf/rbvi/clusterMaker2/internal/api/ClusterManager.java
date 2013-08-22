@@ -1,13 +1,17 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.api;
 
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface ClusterManager {
-	public final static String GROUP_ATTRIBUTE = "__clusterGroups";
+	public final static String GROUP_ATTRIBUTE = "__clusterGroups.SUID";
 	public final static String MATRIX_ATTRIBUTE = "__distanceMatrix";
 	public final static String CLUSTER_NODE_ATTRIBUTE = "__nodeClusters";
 	public final static String CLUSTER_ATTR_ATTRIBUTE = "__attrClusters";
@@ -35,5 +39,7 @@ public interface ClusterManager {
 	public CyNetwork getNetwork();
 	public CyTableFactory getTableFactory();
 	public CyTableManager getTableManager();
+	public CyGroup createGroup(CyNetwork network, String name, List<CyNode> nodeList, List<CyEdge> edgeList, boolean register);
+	public void removeGroup(CyNetwork network, Long suid);
 }
 

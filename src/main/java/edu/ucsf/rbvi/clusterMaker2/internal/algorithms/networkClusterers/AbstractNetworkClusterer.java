@@ -1,5 +1,6 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers;
 
+import org.cytoscape.group.CyGroup;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -31,7 +32,7 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 
 	//TODO: add group support
 	
-	public AbstractNetworkClusterer(ClusterManager manager) { super(manager); }
+	public AbstractNetworkClusterer(ClusterManager clusterManager) { super(clusterManager); }
 
 	public boolean isAvailable() {
 		if (network.getRow(network).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class) == null) {
@@ -83,7 +84,7 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 
 	protected List<List<CyNode>> createGroups(CyNetwork network, List<NodeCluster> clusters) {
 		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
-		List<String>groupList = new ArrayList<String>(); // keep track of the groups we create
+		List<Long>groupList = new ArrayList<Long>(); // keep track of the groups we create
 		for (NodeCluster cluster: clusters) {
 			int clusterNumber = cluster.getClusterNumber();
 			String groupName = clusterAttributeName+"_"+clusterNumber;
@@ -103,22 +104,19 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
         // Create the group
         //         CyGroup newgroup = CyGroupManager.createGroup(groupName, nodeList, null);
         //
+        CyGroup group = clusterManager.createGroup(network, clusterAttributeName+"_"+clusterNumber, nodeList, null, true);
+				if (group != null)
+					groupList.add(group.getGroupNode().getSUID());
 			}
 			clusterList.add(nodeList);
-			groupList.add(groupName);
 		}
 		
-		// network.getRow(network).set(GROUP_ATTRIBUTE, groupList);
-		createAndSet(network, network, GROUP_ATTRIBUTE, groupList, List.class, String.class);
+		createAndSet(network, network, GROUP_ATTRIBUTE, groupList, List.class, Long.class);
 
 		createAndSet(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, getShortName(), String.class, null);
 		createAndSet(network, network, ClusterManager.CLUSTER_ATTRIBUTE, clusterAttributeName, String.class, null);
 		if (params != null)
 			createAndSet(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, params, List.class, String.class);
-
-		// network.getRow(network).set(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, getShortName());
-		// network.getRow(network).set(ClusterManager.CLUSTER_ATTRIBUTE, clusterAttributeName);
-		// network.getRow(network).set(ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, params);
 
 		return clusterList;
 	}
@@ -126,7 +124,7 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 	protected List<List<CyNode>> createFuzzyGroups(CyNetwork network, List<FuzzyNodeCluster> clusters){
 		
 		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
-		List<String>groupList = new ArrayList<String>(); // keep track of the groups we create
+		List<Long>groupList = new ArrayList<Long>(); // keep track of the groups we create
 		
 		for (FuzzyNodeCluster cluster: clusters) {
 			int clusterNumber = cluster.getClusterNumber();
@@ -149,11 +147,10 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
         //
 			}
 			clusterList.add(nodeList);
-			groupList.add(groupName);
 		}
 		
 		
-		createAndSet(network, network, GROUP_ATTRIBUTE, groupList, List.class, String.class);
+		createAndSet(network, network, GROUP_ATTRIBUTE, groupList, List.class, Long.class);
 
 		createAndSet(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, getShortName(), String.class, null);
 		createAndSet(network, network, ClusterManager.CLUSTER_ATTRIBUTE, clusterAttributeName, String.class, null);
@@ -167,12 +164,14 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 	
 	protected void removeGroups(CyNetwork network) {
 		if (network.getDefaultNetworkTable().getColumn(GROUP_ATTRIBUTE) != null) {
-			List<String> groupList = network.getRow(network).getList(GROUP_ATTRIBUTE, String.class);
+			List<Long> groupList = network.getRow(network).getList(GROUP_ATTRIBUTE, Long.class);
 			if (groupList != null) {
-				for (String groupName: groupList) {
+				for (Long groupSUID: groupList) {
 					// remove the group
+					clusterManager.removeGroup(network, groupSUID);
 				}
 			}
+			network.getRow(network).set(GROUP_ATTRIBUTE, null);
 		}
 	}
 }
