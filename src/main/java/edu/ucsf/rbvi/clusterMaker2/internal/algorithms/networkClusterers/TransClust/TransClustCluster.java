@@ -27,6 +27,7 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.swing.TunableUIHelper;
 
 
 
@@ -167,4 +168,7 @@ public class TransClustCluster extends AbstractNetworkClusterer{
 		params.add("maxSubclusterSize="+context.maxSubclusterSize);
 		params.add("maxTime="+context.maxTime);
 	}
+
+	@Override
+	public void setUIHelper(TunableUIHelper helper) {context.setUIHelper(helper); }
 }

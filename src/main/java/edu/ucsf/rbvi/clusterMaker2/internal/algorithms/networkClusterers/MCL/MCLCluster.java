@@ -12,6 +12,7 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.swing.TunableUIHelper;
 
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
@@ -99,5 +100,9 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 		canceled = true;
 		runMCL.cancel();
 	}
+
+	@Override
+	public void setUIHelper(TunableUIHelper helper) {context.setUIHelper(helper); }
+	
 }
 	

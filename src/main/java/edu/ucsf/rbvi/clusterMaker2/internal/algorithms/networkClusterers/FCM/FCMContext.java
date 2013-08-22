@@ -9,6 +9,7 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
+import org.cytoscape.work.swing.TunableUIHelper;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithmContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AdvancedProperties;
@@ -105,5 +106,6 @@ public class FCMContext implements ClusterAlgorithmContext {
 
 	public String getClusterAttribute() { return advancedAttributes.clusterAttribute;}
 	
+	public void setUIHelper(TunableUIHelper helper) { edgeAttributeHandler.setUIHelper(helper); }
 	
 }

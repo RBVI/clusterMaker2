@@ -72,15 +72,4 @@ public abstract class AbstractClusterAlgorithm implements ClusterAlgorithm {
 		return ((vectorCopy[mid-1].doubleValue()+vectorCopy[mid].doubleValue()) / 2);
 	}
 
-	public void createAndSet(CyNetwork net, CyIdentifiable obj, String column, Object value, Class type, Class elementType) {
-		CyTable tab = net.getRow(obj).getTable();
-		if (tab.getColumn(column) == null) {
-			if (type.equals(List.class))
-				tab.createListColumn(column, elementType, false);
-			else
-				tab.createColumn(column, type, false);
-		}
-		net.getRow(obj).set(column, value);
-	}
-
 }

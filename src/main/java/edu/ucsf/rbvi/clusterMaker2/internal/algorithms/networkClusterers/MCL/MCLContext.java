@@ -4,6 +4,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.swing.TunableUIHelper;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithmContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AdvancedProperties;
@@ -69,5 +70,9 @@ public class MCLContext implements ClusterAlgorithmContext {
 	public CyNetwork getNetwork() { return network; }
 
 	public String getClusterAttribute() { return advancedAttributes.clusterAttribute;}
+
+	public void setUIHelper(TunableUIHelper helper) {
+		edgeAttributeHandler.setUIHelper(helper);
+	}
 	
 }

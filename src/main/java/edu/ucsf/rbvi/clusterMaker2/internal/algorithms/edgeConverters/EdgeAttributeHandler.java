@@ -2,6 +2,8 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters;
 
 
 import java.awt.Button;
+import java.awt.Dialog.ModalityType;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -19,6 +21,8 @@ import org.cytoscape.work.AbstractTunableHandler;
 import org.cytoscape.work.BasicTunableHandlerFactory;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.AbstractTunableInterceptor;
+import org.cytoscape.work.swing.RequestsUIHelper;
+import org.cytoscape.work.swing.TunableUIHelper;
 import org.cytoscape.work.util.BoundedDouble;
 import org.cytoscape.work.util.ListSingleSelection;
 
@@ -36,20 +40,23 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.ThresholdH
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.HistogramDialog;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.HistoChangeListener;
 
-public class EdgeAttributeHandler implements HistoChangeListener {
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
+
+public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelper {
 	
-	public static final String NONEATTRIBUTE = "--None--";
 
 	private DistanceMatrix matrix = null;
 	private CyNetwork network = null;
 	
 	private List<EdgeWeightConverter>converters = null;
+
+	private TunableUIHelper helper = null;
 	
 	private ListSingleSelection<String> attribute ;
 	
 	@Tunable(description = "Array Sources", groups={"Source for array data"}, gravity=10.0)
 	public ListSingleSelection<String> getattribute(){
-		updateAttributeList();
+		attribute = ModelUtils.updateEdgeAttributeList(network, attribute);
 		return attribute;
 	}
 	public void setattribute(ListSingleSelection<String> attr) { }
@@ -62,13 +69,14 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 	@Tunable(description = "Edge weight conversion", groups={"Source for array data"}, gravity=12.0)
 	public ListSingleSelection<EdgeWeightConverter> edgeWeighter;
 	
-	public BoundedDouble edgeCutOff; // TODO: set the bounds based on the range of the converted edges
-	@Tunable(description="Cut off value for edge consideration", 
-	         listenForChange={"selectedOnly", "attribute", "edgeWeighter"},
+	public BoundedDouble edgeCutOff;
+	@Tunable(description="Edge cut off", 
+	         listenForChange={"selectedOnly", "attribute", "edgeWeighter", "EdgeHistogram"},
 	         groups={"Source for array data", "Edge weight cutoff"}, 
-	         params="slider=true", gravity=13.0)
+	         params="slider=true", gravity=13.0, 
+	         tooltip="Edges less than this value will not be included")
 	public BoundedDouble getedgeCutOff() {
-		edgeCutOff = updateBounds(edgeCutOff);
+		updateBounds();
 		return edgeCutOff;
 	}
 	public void setedgeCutOff(BoundedDouble value) { }
@@ -81,11 +89,7 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 		edgeHistogram = eh;
 		if (edgeHistogram) {
 			// Popup the histogram dialog
-			if (histo == null) {
-				createHistogramDialog();
-			} else {
-				histo.setVisible(true);
-			}
+			createHistogramDialog();
 		} else {
 			// Dispose of the histogram dialog
 			if (histo != null)
@@ -105,6 +109,10 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 	
 	// TODO: Convert this to a listener
 	public EdgeAttributeHandler(CyNetwork network) {
+		this(network, true);
+	}
+
+	public EdgeAttributeHandler(CyNetwork network, boolean initialize) {
 		this.network = network;
 		// Create all of our edge weight converters
 		converters = new ArrayList<EdgeWeightConverter>();
@@ -115,7 +123,8 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 		converters.add(new NegLogConverter());
 		converters.add(new SCPSConverter());
 
-		initializeTunables();
+		if (initialize)
+			initializeTunables();
 	}
 
 	public EdgeAttributeHandler(EdgeAttributeHandler clone) {
@@ -132,7 +141,7 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 	}
 
 	public void initializeTunables() {
-		updateAttributeList();
+		attribute = ModelUtils.updateEdgeAttributeList(network, attribute);
 		
 		EdgeWeightConverter[] edgeWeightConverters = converters.toArray(new EdgeWeightConverter[1]);
 		if (edgeWeightConverters.length > 0){
@@ -143,56 +152,39 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 			edgeWeighter = new ListSingleSelection<EdgeWeightConverter>();
 		}
 		
-		edgeCutOff = updateBounds(null);
+		edgeCutOff = new BoundedDouble(0.0, 100.0, 100.0, false, false);
 	}
 
 	public void setNetwork(CyNetwork network) {
 		this.network = network;
-		updateAttributeList();
+		attribute = ModelUtils.updateEdgeAttributeList(network, attribute);
 	}
 
-	public void	updateAttributeList() {
-		List<String> attributeArray = getAllAttributes();
-		if (attributeArray.size() > 0){
-			ListSingleSelection<String> newAttribute = new ListSingleSelection<String>(attributeArray);	
-			if (attribute != null) {
-				newAttribute.setSelectedValue(attribute.getSelectedValue());
-			}
-			if (attribute != null && attributeArray.contains(attribute.getSelectedValue())) {
-				newAttribute.setSelectedValue(attribute.getSelectedValue());
-			} else
-				newAttribute.setSelectedValue(attributeArray.get(0));
-			attribute = newAttribute;
-		}
-		else{
-			attribute = new ListSingleSelection<String>("--None--");
-		}
-	}
+	public BoundedDouble updateBounds() {
+		double cutOff = 100.0;
+		double max = 100.0;
+		double min = 0.0;
 
-	public BoundedDouble updateBounds(BoundedDouble bounded) {
-		System.out.println("Updating bounds for: "+bounded);
-		double cutOff = 0.0;
-		if (bounded != null) cutOff = bounded.getValue();
-		if (bounded == null || attribute == null || attribute.getSelectedValue().equals("--None--"))
-			return new BoundedDouble(0.0, cutOff, 100.0, false, false);
+		if (attribute == null || attribute.getSelectedValue().equals("--None--")) {
+			// System.out.println("Setting bounds to: "+min+","+max);
+			edgeCutOff.setBounds(min, max);
+			return edgeCutOff;
+		}
 
-		System.out.println("Getting distance matrix");
+		// System.out.println("Getting distance matrix");
 		this.matrix = new DistanceMatrix(network, attribute.getSelectedValue(), 
 		                                 selectedOnly, edgeWeighter.getSelectedValue());
-		double max = matrix.getMaxWeight();
-		double min = matrix.getMinWeight();
-		// Clamp the user-supplied value (if any)
-		if (cutOff < min) 
-			cutOff = min;
-		else if (cutOff > max) 
-			cutOff = max;
-		System.out.println("Setting bounds to: "+min+"-"+max);
-		if (max == bounded.getUpperBound() && min == bounded.getLowerBound()) {
-			bounded.setValue(cutOff);
-			return bounded;
+		max = matrix.getMaxWeight();
+		min = matrix.getMinWeight();
+
+		// System.out.println("Setting cutoff to: "+cutOff);
+		if (max != edgeCutOff.getUpperBound() || min != edgeCutOff.getLowerBound()) {
+			// System.out.println("Changing bounds to: "+min+","+max);
+			edgeCutOff.setBounds(min, max);
 		}
 
-		return new BoundedDouble(min, cutOff, max, false, false);
+		// System.out.println("Setting bounds to: "+min+"-"+max+" and cutOff to "+cutOff);
+		return edgeCutOff;
 	}
 
 	public void histoValueChanged(double cutoffValue) {
@@ -216,7 +208,7 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 		// else if (dataArray.length > 10000)
 		// 	nbins = 1000;
 		String title = "Histogram for "+attribute.getSelectedValue()+" edge attribute";
-		histo = new HistogramDialog(title, dataArray, nbins,thueristic);
+		histo = new HistogramDialog(helper.getParent(), title, dataArray, nbins,thueristic);
 		histo.pack();
 		histo.setVisible(true);
 		histo.addHistoChangeListener(this);
@@ -253,6 +245,9 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 	}
 
 	public EdgeWeightConverter getConverter(String converterName) {
+		if (converterName == null)
+			return null;
+
 		for (EdgeWeightConverter ewc: converters) {
 			if (converterName.equals(ewc.getShortName()))
 				return ewc;
@@ -260,27 +255,7 @@ public class EdgeAttributeHandler implements HistoChangeListener {
 		return null;
 	}
 
-	private void getAttributesList(List<String>attributeList, CyTable attributes) {
-		Collection<CyColumn> names = attributes.getColumns();
-		java.util.Iterator<CyColumn> itr = names.iterator();
-		for (CyColumn column: attributes.getColumns()) {
-			if (column.getType() == Double.class ||
-					column.getType() == Integer.class) {
-					attributeList.add(column.getName());
-			}
-		}
-	
-	}
-
-	private List<String> getAllAttributes() {
-		String[] attributeArray = new String[1];
-		// Create the list by combining node and edge attributes into a single list
-		List<String> attributeList = new ArrayList<String>();
-		attributeList.add(NONEATTRIBUTE);
-		getAttributesList(attributeList, network.getDefaultEdgeTable());
-		String[] attrArray = attributeList.toArray(attributeArray);
-		if (attrArray.length > 1) 
-			Arrays.sort(attrArray);
-		return Arrays.asList(attrArray);
+	public void setUIHelper(TunableUIHelper helper) {
+		this.helper = helper;
 	}
 }

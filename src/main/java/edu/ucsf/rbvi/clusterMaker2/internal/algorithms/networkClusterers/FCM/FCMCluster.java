@@ -42,6 +42,7 @@ import org.cytoscape.work.TunableHandler;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
+import org.cytoscape.work.swing.TunableUIHelper;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.FuzzyNodeCluster;
@@ -179,6 +180,9 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		canceled = true;
 		runFCM.cancel();
 	}
+
+	@Override
+	public void setUIHelper(TunableUIHelper helper) {context.setUIHelper(helper); }
 
 		
 		/**

@@ -44,6 +44,7 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.swing.TunableUIHelper;
 
 // clusterMaker imports
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
@@ -138,4 +139,7 @@ public class SCPSCluster extends AbstractNetworkClusterer  {
 		params.add("iterations="+context.iterations);
 		params.add("clusters="+context.clusters);
 	}
+
+	@Override
+	public void setUIHelper(TunableUIHelper helper) {context.setUIHelper(helper); }
 }

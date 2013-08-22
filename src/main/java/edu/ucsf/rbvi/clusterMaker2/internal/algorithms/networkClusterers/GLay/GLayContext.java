@@ -4,10 +4,10 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.GLay;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.swing.TunableUIHelper;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithmContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AdvancedProperties;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
 
 public class GLayContext implements ClusterAlgorithmContext {
 	CyNetwork network;
@@ -48,5 +48,7 @@ public class GLayContext implements ClusterAlgorithmContext {
 	public CyNetwork getNetwork() { return network; }
 
 	public String getClusterAttribute() { return null;}
+
+	public void setUIHelper(TunableUIHelper helper) { }
 	
 }
