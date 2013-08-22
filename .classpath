@@ -10,6 +10,8 @@
 	<classpathentry kind="lib" path="C:/Users/Abhiraj/JAVA/colt/lib/colt.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Abhiraj/JAVA/colt/lib/concurrent.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Abhiraj/git/cytoscape-app-developer/target/lib/cytoscape-swing-app-api-3.1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Abhiraj/git/cytoscape-app-developer/target/lib/api-3.1.0-SNAPSHOT-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Abhiraj/git/cytoscape-app-developer/target/lib/impl-3.1.0-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
 		<attributes>
 			<attribute name="optional" value="true"/>

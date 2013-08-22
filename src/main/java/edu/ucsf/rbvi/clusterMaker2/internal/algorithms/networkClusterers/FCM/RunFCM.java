@@ -55,22 +55,24 @@ public class RunFCM {
 	protected int clusterCount = 0;
 	private boolean createMetaNodes = false;
 	private DistanceMatrix distanceMatrix = null;
-	private Matrix data = null;
+	//private Matrix data = null;
 	double [][] clusterMemberships = null;
+	double clusteringThresh = 0;
 	private boolean debug = false;
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
 	
-	public RunFCM (Matrix data, int num_iterations, int cClusters,
+	public RunFCM (DistanceMatrix distanceMatrix, int num_iterations, int cClusters,
 				DistanceMetric metric, double findex, double beta, double clusteringThresh,int maxThreads, TaskMonitor monitor ){
 		
 		
-		this.data = data;
+		this.distanceMatrix = distanceMatrix;
 		this.number_iterations = num_iterations;
 		this.number_clusters = cClusters;
 		this.findex = findex;
 		this.beta = beta;
 		this.metric = metric;
 		this.monitor = monitor;
+		this.clusteringThresh = clusteringThresh;
 		
 		
 		if (maxThreads > 0)
@@ -107,7 +109,7 @@ public class RunFCM {
 		long startTime = System.currentTimeMillis();
 		
 		random = null;
-		int nelements = data.nRows();
+		int nelements = distanceMatrix.getNodes().size();
 		
 		//Matrix to store the temporary cluster membership values of elements 
 		double [][] tClusterMemberships = new double[nelements][number_clusters];
@@ -123,7 +125,7 @@ public class RunFCM {
 		double [][] prevClusterMemberships = new double[nelements][number_clusters];
 		
 		// This matrix will store the centroid data
-		Matrix cData = new Matrix(network, number_clusters, data.nColumns());
+		Matrix cData = new Matrix(network, number_clusters, nelements);
 		
 		int iteration = 0;
 		boolean end = false;
@@ -159,14 +161,25 @@ public class RunFCM {
 		
 		List<FuzzyNodeCluster> fuzzyClusters = new ArrayList<FuzzyNodeCluster>();
 		
-		List<CyNode> clusterNodes = new ArrayList<CyNode>();
-		for (int j = 0; j<data.nRows();j++){
-			clusterNodes.add(data.getRowNode(j));
+		List<CyNode> clusterNodes = distanceMatrix.getNodes();
+				
+				/*new ArrayList<CyNode>();
+		for (int j = 0; j< nelements;j++){
+			clusterNodes.add(distanceMatrix.);//data.getRowNode(j)
 		}
+		*/
 		
-		for(int i = 0 ; i< number_clusters; i++){
+		// Adding the nodes which have memberships greater than the threshold to fuzzy node clusters
+		List<CyNode> fuzzyNodeList;
+		for(int i = 0 ; i < number_clusters; i++){
+			fuzzyNodeList = new ArrayList<CyNode>();
+			for( CyNode node: clusterNodes){
+				if (membershipMap.get(node)[i] > clusteringThresh ){
+					fuzzyNodeList.add(node);
+				}
+			}
 			
-			fuzzyClusters.add(new FuzzyNodeCluster(clusterNodes,membershipMap));
+			fuzzyClusters.add(new FuzzyNodeCluster(fuzzyNodeList,membershipMap));
 			
 		}
 		
@@ -185,7 +198,7 @@ public class RunFCM {
 		
 		// To store the sum of memberships(raised to fuzziness index) corresponding to each cluster
 		double[] totalMemberships = new double [number_clusters];
-		int nelements = data.nRows();
+		int nelements = distanceMatrix.getNodes().size();
 		
 		//Calculating the total membership values
 		for (int i = 0; i < number_clusters; i++){
@@ -198,10 +211,13 @@ public class RunFCM {
 		
 		for(int c= 0 ; c < number_clusters; c++){
 			
-			for(int d = 0; d <  data.nColumns(); d++ ){
+			for(int d = 0; d < nelements ; d++ ){
 				double numerator = 0;
+				Double distance = 0.0;
 				for (int e = 0; e < nelements; e++){
-					numerator += Math.pow(tClusterMemberships[e][c],findex) * data.getValue(e,d).doubleValue();
+					distance = distanceMatrix.getEdgeValueFromMatrix(e, d);
+					
+					numerator += Math.pow(tClusterMemberships[e][c],findex) * distance;
 					
 				}
 				
@@ -220,7 +236,7 @@ public class RunFCM {
 	
 	public void getClusterMemberships(Matrix cData, double [][]tClusterMemberships){
 		
-		int nelements = data.nRows();
+		int nelements = distanceMatrix.getNodes().size();
 		double fpower = 2/(findex - 1);
 		
 		
@@ -230,12 +246,10 @@ public class RunFCM {
 			for(int c = 0; c < number_clusters; c++){
 				double sumDistanceRatios = 0;
 				double distance_ik;
-				distance_ic = metric.getMetric(data, cData, data.getWeights(), i, c);
 				
 				for(int k = 0; k < number_clusters; k++){
 					
-					distance_ik = metric.getMetric(data, cData, data.getWeights(), i, k);
-					sumDistanceRatios += Math.pow((distance_ic/distance_ik), fpower);
+					sumDistanceRatios += Math.pow((cData.getValue(c, i)/cData.getValue(k, i)), fpower);
 					
 				}
 				
@@ -259,9 +273,9 @@ public class RunFCM {
 		
 		boolean endCheck = false;
 		
-		double[][] differences = new double [data.nRows()][number_clusters] ;
+		double[][] differences = new double [distanceMatrix.getNodes().size()][number_clusters] ;
 		double maxdiff = -1;
-		for (int i = 0; i < data.nRows(); i++){
+		for (int i = 0; i < distanceMatrix.getNodes().size(); i++){
 			
 			for (int j = 0; j < number_clusters; j++){
 				
@@ -316,12 +330,12 @@ public class RunFCM {
 	public HashMap <CyNode, double[]> createMembershipMap(double[][] membershipArray){
 		
 		HashMap<CyNode, double[]> membershipHM = new HashMap<CyNode, double[]>();
-		
-		for ( int i = 0; i<data.nRows(); i++){
+		List<CyNode> nodeList = distanceMatrix.getNodes();
+		for ( int i = 0; i<distanceMatrix.getNodes().size(); i++){
 			
-			membershipHM.put(data.getRowNode(i), membershipArray[i]);
+			membershipHM.put(nodeList.get(i), membershipArray[i]);
 		}
-		
+			
 		return membershipHM;
 	}
 

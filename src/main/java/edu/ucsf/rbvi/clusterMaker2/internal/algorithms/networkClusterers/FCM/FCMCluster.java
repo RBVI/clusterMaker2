@@ -113,12 +113,12 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		CyTable nodeAttributes = network.getDefaultNodeTable();
 		CyTable edgeAttributes = network.getDefaultEdgeTable();
 		
-		DistanceMatrix matrix = context.edgeAttributeHandler.getMatrix();
-		if (matrix == null) {
+		DistanceMatrix distanceMatrix = context.edgeAttributeHandler.getMatrix();
+		if (distanceMatrix == null) {
 			monitor.showMessage(TaskMonitor.Level.ERROR, "Can't get distance matrix: no attribute value?");
 			return;
 		}
-
+		/*
 		// Update our tunable results
 		clusterAttributeName = context.getClusterAttribute();
 		
@@ -138,10 +138,10 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		dataMatrix = new Matrix(network, attributeArray, true, ignoreMissing, selectedOnly);
 		dataMatrix.setUniformWeights();
 		//Cluster the nodes
-		
+		*/
 		context.cNumber = cEstimate();
 		DistanceMetric distMetric = context.distanceMetric.getSelectedValue();
-		runFCM = new RunFCM(dataMatrix, context.iterations, context.cNumber, distMetric, 
+		runFCM = new RunFCM(distanceMatrix, context.iterations, context.cNumber, distMetric, 
 									context.fIndex, context.beta, context.clusteringThresh, context.maxThreads, monitor);
 
 		
