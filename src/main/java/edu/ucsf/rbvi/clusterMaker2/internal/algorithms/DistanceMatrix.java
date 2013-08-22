@@ -25,6 +25,7 @@ import cern.colt.matrix.tdouble.DoubleMatrix2D;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeWeightConverter;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 public class DistanceMatrix {
 
@@ -73,7 +74,7 @@ public class DistanceMatrix {
 			if( edgeAttributes.getColumn(edgeAttributeName) == null ) //if( !edgeAttributes.hasAttribute(id,edgeAttributeName))
 			{
 				// Special-case for "None" attribute.  We just assign an edge value of 1.
-				if (edgeAttributeName.equals(EdgeAttributeHandler.NONEATTRIBUTE))
+				if (edgeAttributeName.equals(ModelUtils.NONEATTRIBUTE))
 					edgeWeights[edgeIndex] = 1.0;
 				continue;
 			}

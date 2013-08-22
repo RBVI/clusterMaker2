@@ -49,24 +49,21 @@ public class RunFCM {
 	private double findex; // fuzziness index
 	private double beta; // Termination Criterion
 	private DistanceMetric metric;
-	private List<CyNode> nodes;
-	private List<CyEdge> edges;
 	private boolean canceled = false;
 	private TaskMonitor monitor;
 	public final static String GROUP_ATTRIBUTE = "__FCMGroups";
 	protected int clusterCount = 0;
 	private boolean createMetaNodes = false;
 	private DistanceMatrix distanceMatrix = null;
-	private DoubleMatrix2D matrix = null;
 	private Matrix data = null;
 	double [][] clusterMemberships = null;
 	private boolean debug = false;
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
 	
-	public RunFCM (Matrix data,DistanceMatrix dMat, int num_iterations, int cClusters,
+	public RunFCM (Matrix data, int num_iterations, int cClusters,
 				DistanceMetric metric, double findex, double beta, double clusteringThresh,int maxThreads, TaskMonitor monitor ){
 		
-		this.distanceMatrix = dMat;
+		
 		this.data = data;
 		this.number_iterations = num_iterations;
 		this.number_clusters = cClusters;
@@ -74,9 +71,6 @@ public class RunFCM {
 		this.beta = beta;
 		this.metric = metric;
 		this.monitor = monitor;
-		nodes = distanceMatrix.getNodes();
-		edges = distanceMatrix.getEdges();
-		this.matrix = distanceMatrix.getDistanceMatrix();
 		
 		
 		if (maxThreads > 0)
@@ -87,7 +81,7 @@ public class RunFCM {
 		monitor.showMessage(TaskMonitor.Level.INFO,"Iterations = "+num_iterations);
 		monitor.showMessage(TaskMonitor.Level.INFO,"Clustering Threshold = "+clusteringThresh);
 		monitor.showMessage(TaskMonitor.Level.INFO,"Threads = "+nThreads);
-		monitor.showMessage(TaskMonitor.Level.INFO,"Matrix info: = "+distanceMatrix.printMatrixInfo(matrix));
+		//monitor.showMessage(TaskMonitor.Level.INFO,"Matrix info: = "+distanceMatrix.printMatrixInfo(matrix));
 		monitor.showMessage(TaskMonitor.Level.INFO,"Number of Clusters = "+number_clusters);
 		monitor.showMessage(TaskMonitor.Level.INFO,"Margin allowed for Change = "+beta);
 		monitor.showMessage(TaskMonitor.Level.INFO,"Fuzziness Index = "+findex);

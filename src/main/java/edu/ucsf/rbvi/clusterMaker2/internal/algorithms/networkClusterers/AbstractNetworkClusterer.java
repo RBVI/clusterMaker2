@@ -10,7 +10,11 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableHandler;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.swing.RequestsUIHelper;
+import org.cytoscape.work.swing.TunableUIHelper;
 
+import java.awt.Window;
+import java.awt.Dialog.ModalityType;
 import java.lang.Math;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,14 +25,16 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.FuzzyNodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
-public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm {
+public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
+                                               implements RequestsUIHelper {
 	
 	// Shared instance variables
 	protected TaskMonitor monitor = null;
 	protected List<String>params = null;
 	protected CyNetwork network = null;
+	protected Window parent = null;
 
 	//TODO: add group support
 	
@@ -92,18 +98,13 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 
 			for (CyNode node: cluster) {
 				nodeList.add(node);
-				createAndSet(network, node, clusterAttributeName, clusterNumber, Integer.class, null);
-				// network.getRow(node).set(clusterAttributeName, clusterNumber);
+				ModelUtils.createAndSet(network, node, clusterAttributeName, clusterNumber, Integer.class, null);
 				if (NodeCluster.hasScore()) {
-					createAndSet(network, node, clusterAttributeName+"_Score", clusterNumber, Double.class, null);
-					// network.getRow(node).set(clusterAttributeName+"_Score", cluster.getClusterScore());
+					ModelUtils.createAndSet(network, node, clusterAttributeName+"_Score", clusterNumber, Double.class, null);
 				}
 			}
 
 			if (createGroups) {
-        // Create the group
-        //         CyGroup newgroup = CyGroupManager.createGroup(groupName, nodeList, null);
-        //
         CyGroup group = clusterManager.createGroup(network, clusterAttributeName+"_"+clusterNumber, nodeList, null, true);
 				if (group != null)
 					groupList.add(group.getGroupNode().getSUID());
@@ -111,12 +112,12 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 			clusterList.add(nodeList);
 		}
 		
-		createAndSet(network, network, GROUP_ATTRIBUTE, groupList, List.class, Long.class);
+		ModelUtils.createAndSet(network, network, GROUP_ATTRIBUTE, groupList, List.class, String.class);
 
-		createAndSet(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, getShortName(), String.class, null);
-		createAndSet(network, network, ClusterManager.CLUSTER_ATTRIBUTE, clusterAttributeName, String.class, null);
+		ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, getShortName(), String.class, null);
+		ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_ATTRIBUTE, clusterAttributeName, String.class, null);
 		if (params != null)
-			createAndSet(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, params, List.class, String.class);
+			ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, params, List.class, String.class);
 
 		return clusterList;
 	}
@@ -136,7 +137,7 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 				//createAndSet(network, node, clusterAttributeName+"_"+clusterNumber, cluster.getMembership(node), Double.class, null);
 				// network.getRow(node).set(clusterAttributeName, clusterNumber);
 				if (FuzzyNodeCluster.hasScore()) {
-					createAndSet(network, node, clusterAttributeName+"_"+clusterNumber+"_Membership", cluster.getMembership(node), Double.class, null);
+					ModelUtils.createAndSet(network, node, clusterAttributeName+"_"+clusterNumber+"_Membership", cluster.getMembership(node), Double.class, null);
 					// network.getRow(node).set(clusterAttributeName+"_Score", cluster.getClusterScore());
 				}
 			}
@@ -150,12 +151,12 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 		}
 		
 		
-		createAndSet(network, network, GROUP_ATTRIBUTE, groupList, List.class, Long.class);
+		ModelUtils.createAndSet(network, network, GROUP_ATTRIBUTE, groupList, List.class, String.class);
 
-		createAndSet(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, getShortName(), String.class, null);
-		createAndSet(network, network, ClusterManager.CLUSTER_ATTRIBUTE, clusterAttributeName, String.class, null);
+		ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, getShortName(), String.class, null);
+		ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_ATTRIBUTE, clusterAttributeName, String.class, null);
 		if (params != null)
-			createAndSet(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, params, List.class, String.class);
+			ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, params, List.class, String.class);
 				
 		return clusterList;
 	}
@@ -174,4 +175,7 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 			network.getRow(network).set(GROUP_ATTRIBUTE, null);
 		}
 	}
+
+	public void setUIHelper(TunableUIHelper helper) { }
+
 }

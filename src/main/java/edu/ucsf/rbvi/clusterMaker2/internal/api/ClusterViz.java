@@ -61,18 +61,11 @@ public interface ClusterViz {
 	public Object getContext();
 
 	/**
- 	 * This method is used to re-initialize the properties for an algorithm.  This
- 	 * might be used, for example, by an external command, or when a new network
- 	 * is loaded.
- 	 */
-	public void initializeProperties();
-
-	/**
 	 * This is the main interface to trigger a ui to display
 	 *
 	 * @param monitor a TaskMonitor
 	 */
-	public void startViz(TaskMonitor monitor);
+	public void run(TaskMonitor monitor);
 
 	/**
  	 * Returns true if the data is available to visualize

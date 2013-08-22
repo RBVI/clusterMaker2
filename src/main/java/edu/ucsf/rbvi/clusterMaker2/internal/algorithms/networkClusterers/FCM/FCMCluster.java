@@ -42,6 +42,7 @@ import org.cytoscape.work.TunableHandler;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
+import org.cytoscape.work.swing.TunableUIHelper;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.FuzzyNodeCluster;
@@ -100,40 +101,6 @@ public class FCMCluster extends AbstractNetworkClusterer {
 	@ProvidesTitle
 	public String getName() { return NAME; }
 	
-			
-	/**
-	 * initializeProperties initializes the values of tunables	
-	 */
-	
-	/*
-	public void initializeProperties() {
-		super.initializeProperties();
-
-		
-		
-		iterations = rNumber;
-		cNumber = c;
-		cMax = 10;
-		fIndex = 1.5;
-		beta = 0.01;
-		
-		attributeArray = getAllAttributes();
-		if (attributeArray.length > 0){
-			attributeList = new ListMultipleSelection<String>(attributeArray);	
-			List<String> temp = new ArrayList<String>();
-			temp.add(attributeArray[0]);
-			attributeList.setSelectedValues(temp);
-		}
-		else{
-			attributeList = new ListMultipleSelection<String>("None");
-		}
-		
-		DistanceMetric[] distanceMetricArray = Matrix.distanceTypes;
-		metric = new ListSingleSelection<DistanceMetric>(distanceMetricArray);
-	}
-	
-	*/
-	
 	public void run( TaskMonitor monitor) {
 		monitor.setTitle("Performing FCM cluster");
 		this.monitor = monitor;
@@ -157,8 +124,8 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		
 		if (canceled) return;
 		
-		// Getting the attribute array to make the data matrix
-		List <String> dataAttributes = context.getAttributeList();
+		// Getting the attribute array to make the data matrix context.getAttributeList()
+		List <String> dataAttributes = context.attributeList.getSelectedValues();
 		String[] attributeArray = new String[dataAttributes.size()];
 		for (int i = 0; i < dataAttributes.size(); i++){
 			
@@ -173,8 +140,8 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		//Cluster the nodes
 		
 		context.cNumber = cEstimate();
-		DistanceMetric distMetric = context.getMetric();
-		runFCM = new RunFCM(dataMatrix, matrix, context.iterations, context.cNumber, distMetric, 
+		DistanceMetric distMetric = context.distanceMetric.getSelectedValue();
+		runFCM = new RunFCM(dataMatrix, context.iterations, context.cNumber, distMetric, 
 									context.fIndex, context.beta, context.clusteringThresh, context.maxThreads, monitor);
 
 		
@@ -214,30 +181,10 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		runFCM.cancel();
 	}
 
-	/*			
-		private String[] getAllAttributes() {
-			attributeArray = new String[1];
-			// Create the list by combining node and edge attributes into a single list
-			List<String> attributeList = new ArrayList<String>();
-			attributeList.add(NONEATTRIBUTE);
-			getAttributesList(attributeList, Cytoscape.getEdgeAttributes());
-			String[] attrArray = attributeList.toArray(attributeArray);
-			if (attrArray.length > 1) 
-				Arrays.sort(attrArray);
-			return attrArray;
-		}
+	@Override
+	public void setUIHelper(TunableUIHelper helper) {context.setUIHelper(helper); }
+
 		
-		private void getAttributesList(List<String>attributeList, CyAttributes attributes, String prefix) {
-			String[] names = attributes.getAttributeNames();
-			for (int i = 0; i < names.length; i++) {
-				if (attributes.getType(names[i]) == CyAttributes.TYPE_FLOATING ||
-				    attributes.getType(names[i]) == CyAttributes.TYPE_INTEGER) {
-					attributeList.add(prefix+names[i]);
-				}
-			}
-		}
-		*/
-	
 		/**
 		 * This method adds the membership value array of each CyNode to the node attributes table 
 		 * Method also creates a new table- FuzzyClusterTable which stores all the FuzzyNodeClusters and 
@@ -333,7 +280,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 				if (halted()) return;
 				if (saveMonitor != null) saveMonitor.setStatusMessage("Getting silhouette with a k estimate of "+kEstimate);
 				//int ifound = kcluster(kEstimate, nIterations, dataMatrix, metric, clusters);
-				silhouetteResults[kEstimate] = SilhouetteCalculator.calculate(dataMatrix, context.getMetric(), clusters);
+				silhouetteResults[kEstimate] = SilhouetteCalculator.calculate(dataMatrix, context.distanceMetric.getSelectedValue(), clusters);
 			}
 		}
 		
@@ -358,7 +305,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 				if (saveMonitor != null) saveMonitor.setStatusMessage("Getting silhouette with a c estimate of "+cEstimate);
 				//int ifound = kcluster(kEstimate, nIterations, matrix, metric, clusters);
 				try {
-					silhouetteResults[cEstimate] = SilhouetteCalculator.calculate(matrix, context.metric.getSelectedValue(), clusters);
+					silhouetteResults[cEstimate] = SilhouetteCalculator.calculate(matrix, context.distanceMetric.getSelectedValue(), clusters);
 				} catch (Exception e) { e.printStackTrace(); }
 			}
 		}

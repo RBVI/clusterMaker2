@@ -44,6 +44,7 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.swing.TunableUIHelper;
 
 
 // clusterMaker imports
@@ -140,4 +141,7 @@ public class APCluster extends AbstractNetworkClusterer  {
 		params.add("rNumber="+context.rNumber);
 		params.add("preference="+context.preference);
 	}
+
+	@Override
+	public void setUIHelper(TunableUIHelper helper) {context.setUIHelper(helper); }
 }

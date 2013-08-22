@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.ScrollPane;
+import java.awt.Window;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,8 +39,9 @@ public class HistogramDialog extends JDialog implements ActionListener, Componen
 
 	ThresholdHeuristic thueristic = null;
 	
-	public HistogramDialog(String title, double[] inputArray, int nBins, ThresholdHeuristic thueristic) {
-		super();
+	public HistogramDialog(Window parent, String title, double[] inputArray, 
+	                       int nBins, ThresholdHeuristic thueristic) {
+		super(parent);
 		this.inputArray = inputArray;
 		this.nBins = nBins;
 		this.currentBins = nBins;
