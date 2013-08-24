@@ -72,4 +72,21 @@ public class FuzzifierContext implements ClusterAlgorithmContext {
 		
 	}	
 
+	public void setUIHelper(TunableUIHelper helper) {
+		edgeAttributeHandler.setUIHelper(helper);
+	}
+
+	public void setNetwork(CyNetwork network) {
+		if (this.network != null && this.network.equals(network))
+			return; // Nothing to see here....
+
+		this.network = network;
+
+		if (edgeAttributeHandler == null)
+			edgeAttributeHandler = new EdgeAttributeHandler(network);
+		else
+			edgeAttributeHandler.setNetwork(network);
+	}
+
+	public CyNetwork getNetwork() { return network; }
 }

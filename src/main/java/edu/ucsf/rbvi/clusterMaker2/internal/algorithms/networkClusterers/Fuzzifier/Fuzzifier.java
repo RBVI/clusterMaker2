@@ -72,6 +72,7 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 	public static String NAME = "Fuzzifier Cluster";
 	
 	public static final String NONEATTRIBUTE = "--None--";
+	public final static String GROUP_ATTRIBUTE = "__FuzzyGroups.SUID";
 	protected Matrix dataMatrix;
 	private boolean selectedOnly = false;
 	private boolean ignoreMissing = true;
@@ -87,6 +88,10 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 	@ContainsTunables
 	public FuzzifierContext context = null;
 	
+	public Fuzzifier(FuzzifierContext context, ClusterManager manager) {
+		this(context, manager, null);
+	}
+
 	public Fuzzifier(FuzzifierContext context, ClusterManager manager, List<NodeCluster> Custers) {
 		super(manager);
 		this.context = context;
@@ -143,14 +148,14 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 		monitor.showMessage(TaskMonitor.Level.INFO,"Removing groups");
 
 		// Remove any leftover groups from previous runs
-		removeGroups(network);
+		removeGroups(network, GROUP_ATTRIBUTE);
 		
 		monitor.showMessage(TaskMonitor.Level.INFO,"Creating groups");
 
 		params = new ArrayList<String>();
 		context.edgeAttributeHandler.setParams(params);
 
-		List<List<CyNode>> nodeClusters = createFuzzyGroups(network, FuzzyClusters);
+		List<List<CyNode>> nodeClusters = createFuzzyGroups(network, FuzzyClusters, GROUP_ATTRIBUTE);
 
 		results = new AbstractClusterResults(network, nodeClusters);
 		monitor.showMessage(TaskMonitor.Level.INFO, "Done.  Fuzzifier results:\n"+results);
