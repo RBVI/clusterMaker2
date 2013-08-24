@@ -80,7 +80,7 @@ public class FCMContext implements ClusterAlgorithmContext {
 								DistanceMetric.SPEARMANS_RANK, DistanceMetric.KENDALLS_TAU, DistanceMetric.EUCLIDEAN, DistanceMetric.CITYBLOCK);
 		
 		// Retrieving the possible node attributes, required for selecting data to be considered for clustering
-		List<CyColumn> columnList =  (List<CyColumn>) network.getDefaultNodeTable().getColumns();
+		List<CyColumn> columnList =  (List<CyColumn>) network.getDefaultEdgeTable().getColumns();
 		List<String> columnNameList = new ArrayList<String>();
 		for (CyColumn column : columnList){
 			columnNameList.add(column.getName());

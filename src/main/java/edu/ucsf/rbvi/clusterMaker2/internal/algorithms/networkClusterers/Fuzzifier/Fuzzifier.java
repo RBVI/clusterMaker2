@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Fuzzifier;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -31,6 +31,8 @@ import org.cytoscape.model.CyTableManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM.FCMContext;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM.RunFCM;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.RunMCL;
@@ -56,18 +58,18 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matri
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.SilhouetteCalculator;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.Silhouettes;
 
-
 /**
- * The FCMCluster class is for implementing the Fuzzy C-Means algorithm for clustering. 
- * The fuzzy clusters are created based on the edge properties and each node gets assigned a 
- * degree of membership to each cluster.
+ * Fuzzifier creates fuzzy clusters from already existing clusters.
+ * All the nodes are assigned membership values corresponding to the clusters, based on edge attributes
+ * @author Abhiraj
+ *
  */
 
-public class FCMCluster extends AbstractNetworkClusterer {
+public class Fuzzifier extends AbstractNetworkClusterer{
 	
-	RunFCM runFCM = null;
-	public static String SHORTNAME = "fcml";
-	public static String NAME = "FCM Cluster";
+	RunFuzzifier runFuzzifier = null;
+	public static String SHORTNAME = "fuzzifier";
+	public static String NAME = "Fuzzifier Cluster";
 	
 	public static final String NONEATTRIBUTE = "--None--";
 	protected Matrix dataMatrix;
@@ -75,19 +77,21 @@ public class FCMCluster extends AbstractNetworkClusterer {
 	private boolean ignoreMissing = true;
 	CyTableFactory tableFactory = null;
 	CyTableManager tableManager = null;
-	private Silhouettes[] silhouetteResults = null;
-	
+	private List<NodeCluster> Clusters = null;
+	private int cNumber;	
 	private String[] attributeArray = new String[1];
 	
 	@Tunable(description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
 	
 	@ContainsTunables
-	public FCMContext context = null;
+	public FuzzifierContext context = null;
 	
-	public FCMCluster(FCMContext context, ClusterManager manager) {
+	public Fuzzifier(FuzzifierContext context, ClusterManager manager, List<NodeCluster> Custers) {
 		super(manager);
 		this.context = context;
+		this.Clusters = Clusters;
+		this.cNumber = Clusters.size();
 		if (network == null){
 			network = clusterManager.getNetwork();
 			tableFactory = clusterManager.getTableFactory();
@@ -95,14 +99,14 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		}	
 		context.setNetwork(network);
 	}
-
+	
 	public String getShortName() {return SHORTNAME;};
 	
 	@ProvidesTitle
 	public String getName() { return NAME; }
 	
 	public void run( TaskMonitor monitor) {
-		monitor.setTitle("Performing FCM cluster");
+		monitor.setTitle("Performing Fuzzifier clustering");
 		this.monitor = monitor;
 		if (network == null)
 			network = clusterManager.getNetwork();
@@ -118,35 +122,14 @@ public class FCMCluster extends AbstractNetworkClusterer {
 			monitor.showMessage(TaskMonitor.Level.ERROR, "Can't get distance matrix: no attribute value?");
 			return;
 		}
-		/*
-		// Update our tunable results
-		clusterAttributeName = context.getClusterAttribute();
-		
-		if (canceled) return;
-		
-		// Getting the attribute array to make the data matrix context.getAttributeList()
-		List <String> dataAttributes = context.attributeList.getSelectedValues();
-		String[] attributeArray = new String[dataAttributes.size()];
-		for (int i = 0; i < dataAttributes.size(); i++){
-			
-			attributeArray[i] = dataAttributes.get(i);
-		}
-		
-		Arrays.sort(attributeArray);
-		
-		// Create the matrix of data with the attributes for calculating distances
-		dataMatrix = new Matrix(network, attributeArray, true, ignoreMissing, selectedOnly);
-		dataMatrix.setUniformWeights();
-		//Cluster the nodes
-		*/
-		context.cNumber = cEstimate();
+				
 		DistanceMetric distMetric = context.distanceMetric.getSelectedValue();
-		runFCM = new RunFCM(distanceMatrix, context.iterations, context.cNumber, distMetric, 
-									context.fIndex, context.beta, context.clusteringThresh, context.maxThreads, monitor);
+		runFuzzifier = new RunFuzzifier(Clusters, distanceMatrix,cNumber, distMetric, 
+									context.clusteringThresh, context.maxThreads, monitor);
 
 		
 		//RunFCM (Matrix data,DistanceMatrix dMat, int num_iterations, int cClusters,DistanceMetric metric, double findex, double beta, int maxThreads, Logger logger)
-		runFCM.setDebug(debug);
+		runFuzzifier.setDebug(debug);
 
 		if (canceled) return;
 		
@@ -154,8 +137,8 @@ public class FCMCluster extends AbstractNetworkClusterer {
 
 		// results = runMCL.run(monitor);
 		
-		List<FuzzyNodeCluster> clusters = runFCM.run(network, monitor);
-		if (clusters == null) return; // Canceled?
+		List<FuzzyNodeCluster> FuzzyClusters = runFuzzifier.run(network, monitor);
+		if (FuzzyClusters == null) return; // Canceled?
 		
 		monitor.showMessage(TaskMonitor.Level.INFO,"Removing groups");
 
@@ -167,18 +150,18 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		params = new ArrayList<String>();
 		context.edgeAttributeHandler.setParams(params);
 
-		List<List<CyNode>> nodeClusters = createFuzzyGroups(network, clusters);
+		List<List<CyNode>> nodeClusters = createFuzzyGroups(network, FuzzyClusters);
 
 		results = new AbstractClusterResults(network, nodeClusters);
-		monitor.showMessage(TaskMonitor.Level.INFO, "Done.  FCM results:\n"+results);
+		monitor.showMessage(TaskMonitor.Level.INFO, "Done.  Fuzzifier results:\n"+results);
 		
-		createFuzzyTable(clusters, nodeAttributes, dataMatrix, runFCM.clusterMemberships);
+		createFuzzyTable(FuzzyClusters, nodeAttributes, dataMatrix, runFuzzifier.clusterMemberships);
 		
-	}
+	}	
 	
 	public void cancel() {
 		canceled = true;
-		runFCM.cancel();
+		runFuzzifier.cancel();
 	}
 
 	@Override
@@ -225,97 +208,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 			
 		}
 		
-		private int cEstimate(){
-			int nClusters = -1;
-			TaskMonitor saveMonitor = monitor;
-			monitor = null;
-			silhouetteResults = new Silhouettes[context.cMax];
-
-			int nThreads = Runtime.getRuntime().availableProcessors()-1;
-			if (nThreads > 1)
-				runThreadedSilhouette(context.cMax, context.iterations, nThreads, saveMonitor);
-			else
-				runLinearSilhouette(context.cMax, context.iterations, saveMonitor);
-
-			// Now get the results and find our best k
-			double maxSil = Double.MIN_VALUE;
-			for (int cEstimate = 2; cEstimate < context.cMax; cEstimate++) {
-				double sil = silhouetteResults[cEstimate].getMean();
-				// System.out.println("Average silhouette for "+kEstimate+" clusters is "+sil);
-				if (sil > maxSil) {
-					maxSil = sil;
-					nClusters = cEstimate;
-				}
-			}
-			
-			return nClusters;
-		}
-		
-		private void runThreadedSilhouette(int kMax, int nIterations, int nThreads, TaskMonitor saveMonitor) {
-			// Set up the thread pools
-			ExecutorService[] threadPools = new ExecutorService[nThreads];
-			for (int pool = 0; pool < threadPools.length; pool++)
-				threadPools[pool] = Executors.newFixedThreadPool(1);
-
-			// Dispatch a kmeans calculation to each pool
-			for (int kEstimate = 2; kEstimate < kMax; kEstimate++) {
-				int[] clusters = new int[dataMatrix.nRows()];
-				Runnable r = new RunCMeans(dataMatrix, clusters, kEstimate, nIterations, saveMonitor);
-				threadPools[(kEstimate-2)%nThreads].submit(r);
-				// threadPools[0].submit(r);
-			}
-
-			// OK, now wait for each thread to complete
-			for (int pool = 0; pool < threadPools.length; pool++) {
-				threadPools[pool].shutdown();
-				try {
-					boolean result = threadPools[pool].awaitTermination(7, TimeUnit.DAYS);
-				} catch (Exception e) {}
-			}
-		}
-
-		private void runLinearSilhouette(int kMax, int nIterations, TaskMonitor saveMonitor) {
-			for (int kEstimate = 2; kEstimate < kMax; kEstimate++) {
-				int[] clusters = new int[dataMatrix.nRows()];
-				if (halted()) return;
-				if (saveMonitor != null) saveMonitor.setStatusMessage("Getting silhouette with a k estimate of "+kEstimate);
-				//int ifound = kcluster(kEstimate, nIterations, dataMatrix, metric, clusters);
-				silhouetteResults[kEstimate] = SilhouetteCalculator.calculate(dataMatrix, context.distanceMetric.getSelectedValue(), clusters);
-			}
-		}
-		
-		private class RunCMeans implements Runnable {
-			Matrix matrix;
-			int[] clusters;
-			int cEstimate;
-			int nIterations;
-			TaskMonitor saveMonitor = null;
-
-			public RunCMeans (Matrix matrix, int[] clusters, int c, int nIterations, TaskMonitor saveMonitor) {
-				this.matrix = matrix;
-				this.clusters = clusters;
-				this.cEstimate = c;
-				this.nIterations = nIterations;
-				this.saveMonitor = saveMonitor;
-			}
-
-			public void run() {
-				int[] clusters = new int[matrix.nRows()];
-				if (halted()) return;
-				if (saveMonitor != null) saveMonitor.setStatusMessage("Getting silhouette with a c estimate of "+cEstimate);
-				//int ifound = kcluster(kEstimate, nIterations, matrix, metric, clusters);
-				try {
-					silhouetteResults[cEstimate] = SilhouetteCalculator.calculate(matrix, context.distanceMetric.getSelectedValue(), clusters);
-				} catch (Exception e) { e.printStackTrace(); }
-			}
-		}
-		
+	
+	
 
 }
-
-
-
-
-
-
-
