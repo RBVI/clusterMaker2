@@ -96,7 +96,7 @@ public class RunFCM {
 	/**
 	 * The method run has the actual implementation of the fuzzy c-means code
 	 * @param monitor, Task monitor for the process
-	 * @return method returns a 2D array of cluster membership values
+	 * @return List of FuzzyNodeCLusters
 	 */
 	public List<FuzzyNodeCluster> run(CyNetwork network, TaskMonitor monitor){
 		
