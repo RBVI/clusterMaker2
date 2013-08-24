@@ -46,7 +46,6 @@ public class RunMCL {
 	private List<CyNode> nodes;
 	private List<CyEdge> edges;
 	private boolean canceled = false;
-	public final static String GROUP_ATTRIBUTE = "__MCLGroups";
 	protected int clusterCount = 0;
 	private boolean createMetaNodes = false;
 	private DistanceMatrix distanceMatrix = null;
@@ -90,8 +89,6 @@ public class RunMCL {
 		CyTable netAttributes = network.getDefaultNetworkTable();	//CyAttributes netAttributes = Cytoscape.getNetworkAttributes();
 		CyTable nodeAttributes = network.getDefaultNodeTable();	//CyAttributes nodeAttributes = Cytoscape.getNodeAttributes();
 		
-		
-
 		long startTime = System.currentTimeMillis();
 
 		// Matrix matrix;

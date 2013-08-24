@@ -68,6 +68,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 	RunFCM runFCM = null;
 	public static String SHORTNAME = "fcml";
 	public static String NAME = "FCM Cluster";
+	public final static String GROUP_ATTRIBUTE = "__FCMGroups.SUID";
 	
 	public static final String NONEATTRIBUTE = "--None--";
 	protected Matrix dataMatrix;
@@ -118,6 +119,8 @@ public class FCMCluster extends AbstractNetworkClusterer {
 			monitor.showMessage(TaskMonitor.Level.ERROR, "Can't get distance matrix: no attribute value?");
 			return;
 		}
+
+		createGroups = context.advancedAttributes.createGroups;
 		/*
 		// Update our tunable results
 		clusterAttributeName = context.getClusterAttribute();
@@ -160,14 +163,14 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		monitor.showMessage(TaskMonitor.Level.INFO,"Removing groups");
 
 		// Remove any leftover groups from previous runs
-		removeGroups(network);
+		removeGroups(network, GROUP_ATTRIBUTE);
 		
 		monitor.showMessage(TaskMonitor.Level.INFO,"Creating groups");
 
 		params = new ArrayList<String>();
 		context.edgeAttributeHandler.setParams(params);
 
-		List<List<CyNode>> nodeClusters = createFuzzyGroups(network, clusters);
+		List<List<CyNode>> nodeClusters = createFuzzyGroups(network, clusters, GROUP_ATTRIBUTE);
 
 		results = new AbstractClusterResults(network, nodeClusters);
 		monitor.showMessage(TaskMonitor.Level.INFO, "Done.  FCM results:\n"+results);

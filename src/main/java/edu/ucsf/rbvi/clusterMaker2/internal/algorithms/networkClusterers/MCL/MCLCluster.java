@@ -25,10 +25,13 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
+
 public class MCLCluster extends AbstractNetworkClusterer   {
 	RunMCL runMCL;
 	public static String SHORTNAME = "mcl";
 	public static String NAME = "MCL Cluster";
+	public final static String GROUP_ATTRIBUTE = "__MCLGroups.SUID";
 
 	@Tunable(description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
@@ -54,7 +57,7 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 		this.monitor = monitor;
 		if (network == null)
 			network = clusterManager.getNetwork();
-		
+
 		DistanceMatrix matrix = context.edgeAttributeHandler.getMatrix();
 		if (matrix == null) {
 			monitor.showMessage(TaskMonitor.Level.ERROR,"Can't get distance matrix: no attribute value?");
@@ -63,6 +66,7 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 
 		// Update our tunable results
 		clusterAttributeName = context.getClusterAttribute();
+		createGroups = context.advancedAttributes.createGroups;
 
 		if (canceled) return;
 
@@ -83,17 +87,28 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 		monitor.showMessage(TaskMonitor.Level.INFO,"Removing groups");
 
 		// Remove any leftover groups from previous runs
-		removeGroups(network);
+		removeGroups(network, GROUP_ATTRIBUTE);
 
 		monitor.showMessage(TaskMonitor.Level.INFO,"Creating groups");
 
 		params = new ArrayList<String>();
 		context.edgeAttributeHandler.setParams(params);
 
-		List<List<CyNode>> nodeClusters = createGroups(network, clusters);
+		List<List<CyNode>> nodeClusters = createGroups(network, clusters, GROUP_ATTRIBUTE);
 
 		results = new AbstractClusterResults(network, nodeClusters);
-		monitor.showMessage(TaskMonitor.Level.INFO, "Done.  MCL results:\n"+results);
+
+		if (context.createNetwork) {
+			monitor.showMessage(TaskMonitor.Level.INFO, 
+		                      "MCL results:\n"+results);
+			monitor.showMessage(TaskMonitor.Level.INFO, 
+		                      "Creating network");
+			NewNetworkView nnv = 
+				new NewNetworkView(network, clusterManager);
+			insertTasksAfterCurrentTask(nnv);
+		} else {
+			monitor.showMessage(TaskMonitor.Level.INFO, "Done.  MCL results:\n"+results);
+		}
 	}
 
 	public void cancel() {

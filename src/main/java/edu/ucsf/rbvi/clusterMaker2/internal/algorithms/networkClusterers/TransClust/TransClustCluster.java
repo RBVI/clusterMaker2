@@ -35,6 +35,7 @@ public class TransClustCluster extends AbstractNetworkClusterer{
 	private List<CyNode> nodes;
 	public static String SHORTNAME = "transclust";
 	public static String NAME = "Transitivity Clustering";
+	public final static String GROUP_ATTRIBUTE = "__TransClustGroups.SUID";
 	
 	private static final long serialVersionUID = 1L;
 
@@ -134,6 +135,7 @@ public class TransClustCluster extends AbstractNetworkClusterer{
 		if (canceled) return;
 
 		monitor.showMessage(TaskMonitor.Level.INFO,"Clustering...");
+		createGroups = context.advancedAttributes.createGroups;
 
 		//Cluster the nodes
 
@@ -143,14 +145,14 @@ public class TransClustCluster extends AbstractNetworkClusterer{
 		monitor.showMessage(TaskMonitor.Level.INFO,"Removing groups");
 
 		// Remove any leftover groups from previous runs
-		removeGroups(network);
+		removeGroups(network, GROUP_ATTRIBUTE);
 
 		monitor.showMessage(TaskMonitor.Level.INFO,"Creating groups");
 
 		params = new ArrayList<String>();
 		context.edgeAttributeHandler.setParams(params);
 
-		List<List<CyNode>> nodeClusters = createGroups(network, clusters);
+		List<List<CyNode>> nodeClusters = createGroups(network, clusters, GROUP_ATTRIBUTE);
 
 		results = new AbstractClusterResults(network, nodeClusters);
 

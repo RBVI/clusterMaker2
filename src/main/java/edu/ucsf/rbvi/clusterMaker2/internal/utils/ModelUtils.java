@@ -10,13 +10,17 @@ import java.util.Set;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 
 import org.cytoscape.work.util.ListSingleSelection;
+
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 
 public class ModelUtils {
 	public static final String NONEATTRIBUTE = "--None--";
@@ -50,16 +54,43 @@ public class ModelUtils {
 		return true;
 	}
 
+	public static CyNetwork createChildNetwork(ClusterManager manager, CyNetwork network, 
+	                                           List<CyNode> nodeList, List<CyEdge> edgeList, String title) {
+
+		String name = network.getRow(network).get(CyNetwork.NAME, String.class);
+		// Create the network;
+		CyNetwork newNetwork = ((CySubNetwork)network).getRootNetwork().addSubNetwork(nodeList,edgeList);
+
+		// Register the network
+		CyNetworkManager netManager = manager.getService(CyNetworkManager.class);
+		netManager.addNetwork(newNetwork);
+
+		// Set the title
+		newNetwork.getRow(newNetwork).set(CyNetwork.NAME, name+title);
+
+		return newNetwork;
+	}
+
+	public static void createAndSetLocal(CyNetwork net, CyIdentifiable obj, String column, 
+	                                     Object value, Class type, Class elementType) {
+		createAndSet(net, obj, column, value, type, elementType, CyNetwork.LOCAL_ATTRS);
+	}
+
 	public static void createAndSet(CyNetwork net, CyIdentifiable obj, String column, 
 	                                Object value, Class type, Class elementType) {
-		CyTable tab = net.getRow(obj).getTable();
+		createAndSet(net, obj, column, value, type, elementType, CyNetwork.DEFAULT_ATTRS);
+	}
+
+	public static void createAndSet(CyNetwork net, CyIdentifiable obj, String column, 
+	                                Object value, Class type, Class elementType, String namespace) {
+		CyTable tab = net.getRow(obj, namespace).getTable();
 		if (tab.getColumn(column) == null) {
 			if (type.equals(List.class))
 				tab.createListColumn(column, elementType, false);
 			else
 				tab.createColumn(column, type, false);
 		}
-		net.getRow(obj).set(column, value);
+		net.getRow(obj, namespace).set(column, value);
 	}
 
 	public static ListSingleSelection<String> updateEdgeAttributeList(CyNetwork network, 

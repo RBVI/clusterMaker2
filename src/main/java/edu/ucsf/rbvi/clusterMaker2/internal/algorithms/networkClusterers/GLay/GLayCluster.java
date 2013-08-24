@@ -60,6 +60,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 public class GLayCluster extends AbstractNetworkClusterer  {
 	public static String SHORTNAME = "glay";
 	public static String NAME = "Community cluster (GLay)";
+	public final static String GROUP_ATTRIBUTE = "__Communities.SUID";
 	
 	FastGreedyAlgorithm fa = null;
 	boolean createNewNetwork = false;
@@ -89,6 +90,7 @@ public class GLayCluster extends AbstractNetworkClusterer  {
 	public void run(TaskMonitor monitor) {
 		this.monitor = monitor;
 		monitor.setTitle("Performing community clustering (GLay)");
+		createGroups = context.advancedAttributes.createGroups;
 
     GSimpleGraphData simpleGraph = new GSimpleGraphData(network, context.selectedOnly, context.undirectedEdges);
 		fa = new FastGreedyAlgorithm();
@@ -112,11 +114,11 @@ public class GLayCluster extends AbstractNetworkClusterer  {
 		monitor.showMessage(TaskMonitor.Level.INFO,"Removing groups");
 
 		// Remove any leftover groups from previous runs
-		removeGroups(network);
+		removeGroups(network, GROUP_ATTRIBUTE);
 
 		monitor.showMessage(TaskMonitor.Level.INFO,"Creating groups");
 
-		List<List<CyNode>> nodeClusters = createGroups(network, clusterList);
+		List<List<CyNode>> nodeClusters = createGroups(network, clusterList, GROUP_ATTRIBUTE);
 
 		results = new AbstractClusterResults(network, nodeClusters);
 		monitor.showMessage(TaskMonitor.Level.INFO, "Done.  Community Clustering results:\n"+results);

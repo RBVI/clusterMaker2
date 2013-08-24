@@ -38,7 +38,6 @@ public class RunAP {
 	private List<CyEdge> edges;
 	private boolean canceled = false;
 	private TaskMonitor monitor;
-	public final static String GROUP_ATTRIBUTE = "__APGroups";
 	protected int clusterCount = 0;
 	private DistanceMatrix distanceMatrix = null;
 	private ResponsibilityMatrix r_matrix = null;

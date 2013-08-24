@@ -18,6 +18,10 @@ public class MCLContext implements ClusterAlgorithmContext {
 	@Tunable(description = "Granularity parameter (inflation value)",groups={"Basic MCL Tuning"},gravity=1.0)
 	public double inflation_parameter = 2.5;
 
+	@Tunable(description = "Create new network after clustering", 
+	         groups={"Basic MCL Tuning"}, gravity=2.0)
+	public boolean createNetwork = false;
+
 	@ContainsTunables
 	public EdgeAttributeHandler edgeAttributeHandler;
 	

@@ -51,7 +51,6 @@ public class RunFCM {
 	private DistanceMetric metric;
 	private boolean canceled = false;
 	private TaskMonitor monitor;
-	public final static String GROUP_ATTRIBUTE = "__FCMGroups";
 	protected int clusterCount = 0;
 	private boolean createMetaNodes = false;
 	private DistanceMatrix distanceMatrix = null;

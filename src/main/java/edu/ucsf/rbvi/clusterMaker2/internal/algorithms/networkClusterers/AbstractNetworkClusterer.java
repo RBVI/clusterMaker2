@@ -88,7 +88,7 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm
 		return clusterList;
 	}
 
-	protected List<List<CyNode>> createGroups(CyNetwork network, List<NodeCluster> clusters) {
+	protected List<List<CyNode>> createGroups(CyNetwork network, List<NodeCluster> clusters, String group_attr) {
 		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
 		List<Long>groupList = new ArrayList<Long>(); // keep track of the groups we create
 		for (NodeCluster cluster: clusters) {
@@ -112,7 +112,7 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm
 			clusterList.add(nodeList);
 		}
 		
-		ModelUtils.createAndSet(network, network, GROUP_ATTRIBUTE, groupList, List.class, String.class);
+		ModelUtils.createAndSet(network, network, group_attr, groupList, List.class, Long.class);
 
 		ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, getShortName(), String.class, null);
 		ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_ATTRIBUTE, clusterAttributeName, String.class, null);
@@ -122,7 +122,8 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm
 		return clusterList;
 	}
 	
-	protected List<List<CyNode>> createFuzzyGroups(CyNetwork network, List<FuzzyNodeCluster> clusters){
+	protected List<List<CyNode>> createFuzzyGroups(CyNetwork network, 
+	                                               List<FuzzyNodeCluster> clusters, String group_attr){
 		
 		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
 		List<Long>groupList = new ArrayList<Long>(); // keep track of the groups we create
@@ -151,7 +152,7 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm
 		}
 		
 		
-		ModelUtils.createAndSet(network, network, GROUP_ATTRIBUTE, groupList, List.class, String.class);
+		ModelUtils.createAndSet(network, network, group_attr, groupList, List.class, Long.class);
 
 		ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, getShortName(), String.class, null);
 		ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_ATTRIBUTE, clusterAttributeName, String.class, null);
@@ -163,16 +164,16 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm
 
 	
 	
-	protected void removeGroups(CyNetwork network) {
-		if (network.getDefaultNetworkTable().getColumn(GROUP_ATTRIBUTE) != null) {
-			List<Long> groupList = network.getRow(network).getList(GROUP_ATTRIBUTE, Long.class);
+	protected void removeGroups(CyNetwork network, String group_attr) {
+		if (network.getDefaultNetworkTable().getColumn(group_attr) != null) {
+			List<Long> groupList = network.getRow(network).getList(group_attr, Long.class);
 			if (groupList != null) {
 				for (Long groupSUID: groupList) {
 					// remove the group
 					clusterManager.removeGroup(network, groupSUID);
 				}
 			}
-			network.getRow(network).set(GROUP_ATTRIBUTE, null);
+			network.getRow(network).set(group_attr, null);
 		}
 	}
 

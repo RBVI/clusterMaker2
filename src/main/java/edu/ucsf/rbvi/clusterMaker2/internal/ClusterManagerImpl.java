@@ -19,18 +19,20 @@ import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskFactory;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterVizFactory;
 
 public class ClusterManagerImpl implements ClusterManager {
 // public class ClusterManagerImpl {
@@ -39,7 +41,7 @@ public class ClusterManagerImpl implements ClusterManager {
 	CyGroupFactory groupFactory;
 	CyGroupManager groupMgr;
 	Map<String, ClusterTaskFactory> algMap;
-	Map<String, ClusterViz> vizMap;
+	Map<String, ClusterVizFactory> vizMap;
 	CyTableFactory tableFactory;
 	CyTableManager tableManager;
 	double networkClusterIndex = 50.0;
@@ -55,7 +57,7 @@ public class ClusterManagerImpl implements ClusterManager {
 		this.groupFactory = groupFactory;
 		this.groupMgr = groupMgr;
 		this.algMap = new HashMap<String, ClusterTaskFactory>();
-		this.vizMap = new HashMap<String, ClusterViz>();
+		this.vizMap = new HashMap<String, ClusterVizFactory>();
 		this.tableFactory = tableFactory;
 		this.tableManager = tableManager;
 	}
@@ -75,7 +77,7 @@ public class ClusterManagerImpl implements ClusterManager {
 	}
 
 	public void addAlgorithm(ClusterTaskFactory alg) {
-		algMap.put(alg.getName(), alg);
+		algMap.put(alg.getShortName(), alg);
 
 		// Get the type of clusterer (Attribute, Network, Filter, Attribute+Network)
 		List<ClusterTaskFactory.ClusterType> clusterTypes = alg.getTypeList();
@@ -83,7 +85,7 @@ public class ClusterManagerImpl implements ClusterManager {
 		// Create our wrapper and register the algorithm
 		for (ClusterTaskFactory.ClusterType type: clusterTypes) {
 			Properties props = new Properties();
-			props.setProperty(COMMAND, alg.getName());
+			props.setProperty(COMMAND, alg.getShortName());
 			props.setProperty(COMMAND_NAMESPACE, "cluster");
 			props.setProperty(IN_MENU_BAR, "true");
 			props.setProperty(TITLE, alg.getName());
@@ -120,17 +122,17 @@ public class ClusterManagerImpl implements ClusterManager {
 	}
 
 
-	public Collection<ClusterViz> getAllVisualizers() {
+	public Collection<ClusterVizFactory> getAllVisualizers() {
 		return vizMap.values();
 	}
 
-	public ClusterViz getVisualizer(String name) {
+	public ClusterVizFactory getVisualizer(String name) {
 		if (vizMap.containsKey(name))
 	 		return vizMap.get(name);
 		return null;
 	}
 
-	public void addVisualizer(ClusterViz viz) {
+	public void addVisualizer(ClusterVizFactory viz) {
 		vizMap.put(viz.getName(), viz);
 
 		// Create our wrapper and register the algorithm
@@ -138,21 +140,21 @@ public class ClusterManagerImpl implements ClusterManager {
 		props.setProperty(COMMAND, viz.getName());
 		props.setProperty(COMMAND_NAMESPACE, "clusterviz");
 		props.setProperty(IN_MENU_BAR, "true");
-		props.setProperty(PREFERRED_MENU, "Apps.Cluster Visualization");
+		props.setProperty(PREFERRED_MENU, "Apps.clusterMaker Visualizations");
 		props.setProperty(TITLE, viz.getName());
 		serviceRegistrar.registerService(viz, TaskFactory.class, props);
 	}
 
-	public void addClusterVisualizer(ClusterViz viz, Map props) {
+	public void addClusterVisualizer(ClusterVizFactory viz, Map props) {
 		addVisualizer(viz);
 	}
 
-	public void removeVisualizer(ClusterViz viz) {
+	public void removeVisualizer(ClusterVizFactory viz) {
 		if (vizMap.containsKey(viz.getName()))
 	 		vizMap.remove(viz.getName());
 	}
 
-	public void removeClusterVisualizer(ClusterViz viz, Map props) {
+	public void removeClusterVisualizer(ClusterVizFactory viz, Map props) {
 		removeVisualizer(viz);
 		serviceRegistrar.unregisterService(viz, TaskFactory.class);
 	}
@@ -169,12 +171,14 @@ public class ClusterManagerImpl implements ClusterManager {
 		return tableManager;
 	}
 
-	public CyGroup createGroup(CyNetwork network, String name, List<CyNode> nodeList, List<CyEdge> edgeList, boolean register) {
+	public CyGroup createGroup(CyNetwork network, String name, List<CyNode> nodeList, 
+	                           List<CyEdge> edgeList, boolean register) {
 		CyGroup group =  groupFactory.createGroup(network, nodeList, edgeList, register);
 		if (group != null) {
+			CyRootNetwork rootNetwork = ((CySubNetwork)network).getRootNetwork();
 			// The name of the group node is the name of the group
-			network.getRow(group.getGroupNode()).set(CyNetwork.NAME, name);
-			network.getRow(group.getGroupNode(), CyRootNetwork.SHARED_ATTRS).set(CyRootNetwork.SHARED_NAME, name);
+			rootNetwork.getRow(group.getGroupNode()).set(CyNetwork.NAME, name);
+			rootNetwork.getRow(group.getGroupNode(), CyRootNetwork.SHARED_ATTRS).set(CyRootNetwork.SHARED_NAME, name);
 		}
 		return group;
 	}
@@ -195,5 +199,9 @@ public class ClusterManagerImpl implements ClusterManager {
 		}
 
 		groupMgr.destroyGroup(group);
+	}
+
+	public <T> T getService(Class<? extends T> clazz) {
+		return serviceRegistrar.getService(clazz);
 	}
 }

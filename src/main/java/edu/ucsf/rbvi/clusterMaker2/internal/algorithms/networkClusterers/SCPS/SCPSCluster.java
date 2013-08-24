@@ -61,6 +61,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 public class SCPSCluster extends AbstractNetworkClusterer  {
 	public static String SHORTNAME = "scps";
 	public static String NAME = "SCPS Cluster";
+	public final static String GROUP_ATTRIBUTE = "__SCPSGroups.SUID";
 	
 	RunSCPS runSCPS = null;
 
@@ -100,6 +101,7 @@ public class SCPSCluster extends AbstractNetworkClusterer  {
 
 		// Update our tunable results
 		clusterAttributeName = context.getClusterAttribute();
+		createGroups = context.advancedAttributes.createGroups;
 
 		if (canceled) return;
 
@@ -115,14 +117,14 @@ public class SCPSCluster extends AbstractNetworkClusterer  {
 		monitor.showMessage(TaskMonitor.Level.INFO,"Removing groups");
 
 		// Remove any leftover groups from previous runs
-		removeGroups(network);
+		removeGroups(network, GROUP_ATTRIBUTE);
 
 		monitor.showMessage(TaskMonitor.Level.INFO,"Creating groups");
 
 		params = new ArrayList<String>();
 		context.edgeAttributeHandler.setParams(params);
 
-		List<List<CyNode>> nodeClusters = createGroups(network, clusterList);
+		List<List<CyNode>> nodeClusters = createGroups(network, clusterList, GROUP_ATTRIBUTE);
 
 		results = new AbstractClusterResults(network, nodeClusters);
 		monitor.showMessage(TaskMonitor.Level.INFO,"Done.  SCPS results:\n"+results);

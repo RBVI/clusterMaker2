@@ -49,6 +49,12 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -63,24 +69,34 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ViewUtils;
 
 /**
  * The ClusterViz class provides the primary interface to the
  * Cytoscape plugin mechanism
  */
-public class NewNetworkView implements ClusterViz, ClusterAlgorithm {
+public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterAlgorithm {
 
 	private static String appName = "ClusterMaker New Network View";
 	private boolean checkForAvailability = false;
 	private ClusterManager manager;
 	private String clusterAttribute = null;
 	private EdgeAttributeHandler edgeConverterList = null;
+	public static String CLUSTERNAME = "Create New Network from Clusters";
+	public static String ATTRIBUTENAME = "Create New Network from Attributes";
+	public static String CLUSTERSHORTNAME = "clusterview";
+	public static String ATTRSHORTNAME = "attributeview";
 
 	@Tunable(description="Network to look for cluster", context="nogui")
 	public CyNetwork network = null;
 
 	@ContainsTunables
-	NewNetworkViewContext context = null;
+	public NewNetworkViewContext context = null;
+
+	public NewNetworkView(CyNetwork network, ClusterManager manager) {
+		this(null, manager, true);
+		this.network = network;
+	}
 
 	public NewNetworkView(NewNetworkViewContext context, ClusterManager manager, boolean available) {
 		this.manager = manager;
@@ -90,6 +106,7 @@ public class NewNetworkView implements ClusterViz, ClusterAlgorithm {
 
 		if (!checkForAvailability) {
 			this.context = context;
+			context.setNetwork(network);
 		} else {
 			this.context = null;
 		}
@@ -104,32 +121,42 @@ public class NewNetworkView implements ClusterViz, ClusterAlgorithm {
 	}
 
 	// ClusterViz methods
-	public String getShortName() { return "newnetworkview"; }
+	public String getShortName() { 
+		if (checkForAvailability) {
+			return CLUSTERSHORTNAME;
+		} else {
+			return ATTRSHORTNAME; 
+		}
+	}
 
 	@ProvidesTitle
 	public String getName() { 
 		if (checkForAvailability) {
-			return "Create New Network from Clusters";
+			return CLUSTERNAME;
 		} else {
-			return "Create New Network from Attribute"; 
+			return ATTRIBUTENAME; 
 		}
 	}
 
 	public ClusterResults getResults() { return null; }
 
 	public void run(TaskMonitor monitor) {
-		createClusteredNetwork(clusterAttribute);
+		if (isAvailable())
+			createClusteredNetwork(clusterAttribute, monitor);
 	}
 
 	public boolean isAvailable() {
-		if (!checkForAvailability)
+		if (!checkForAvailability) {
+			clusterAttribute = context.attribute.getSelectedValue();
 			return true;
+		}
 		
 		CyTable networkTable = network.getDefaultNetworkTable();
 		if (!CyTableUtil.getColumnNames(networkTable).contains(ClusterManager.CLUSTER_TYPE_ATTRIBUTE))
 			return false;
 
 		String cluster_type = network.getRow(network).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class);
+		if (manager.getAlgorithm(cluster_type) != null)
 		if (manager.getAlgorithm(cluster_type) == null || 
 		    !manager.getAlgorithm(cluster_type).getTypeList().contains(ClusterTaskFactory.ClusterType.NETWORK))
 			return false;
@@ -150,7 +177,7 @@ public class NewNetworkView implements ClusterViz, ClusterAlgorithm {
 	public void cancel() { }
 
 	@SuppressWarnings("unchecked")
-	private void createClusteredNetwork(String clusterAttribute) {
+	private void createClusteredNetwork(String clusterAttribute, TaskMonitor monitor) {
 		// Get the clustering parameters
 		Map<String, String> params = getParams();
 
@@ -179,45 +206,33 @@ public class NewNetworkView implements ClusterViz, ClusterAlgorithm {
 				}
 				edgeMap.put(edge,edge);
 				// Add the cluster attribute to the edge so we can style it later
-				ModelUtils.createAndSet(network, edge, clusterAttribute, new Integer(1), Integer.class, null);
+				ModelUtils.createAndSetLocal(network, edge, clusterAttribute, new Integer(1), Integer.class, null);
 				edgeList.add(edge);
 			}
 		}
 
-		CyNetwork newNetwork = ((CySubNetwork)network).getRootNetwork().addSubNetwork(nodeList,edgeList);
+		VisualStyle style = ViewUtils.getCurrentVisualStyle(manager);
 
-/*
-		// Create the network view
-		CyNetworkView view = Cytoscape.createNetworkView(net);
+		CyNetwork newNetwork = ModelUtils.createChildNetwork(manager, network, nodeList, edgeList, "--clustered");
+		CyNetworkView view = ViewUtils.createView(manager, newNetwork, false);
 
-		// If available, do a force-directed layout
-		CyLayoutAlgorithm alg = CyLayouts.getLayout("force-directed");
-
-		if (alg != null)
-			view.applyLayout(alg);
-
-		// Get the current visual mapper
-		VisualStyle vm = Cytoscape.getVisualMappingManager().getVisualStyle();
+		ViewUtils.doLayout(manager, view, monitor, "force-directed");
 
 		// Now, if we're supposed to, restore the inter-cluster edges
-		if (restoreEdges) {
-			// Create new visual style
-			vm = createNewStyle(clusterAttribute, "-cluster");
-
-			// Add edge width and opacity descrete mappers
-			for (CyEdge edge: (List<CyEdge>)currentNetwork.edgesList()) {
+		if (context != null && context.restoreEdges) {
+			for (CyEdge edge: (List<CyEdge>)network.getEdgeList()) {
 				if (!edgeMap.containsKey(edge)) {
-					net.addEdge(edge);
-					edgeAttributes.setAttribute(edge.getIdentifier(), clusterAttribute, new Integer(0));
+					((CySubNetwork)view.getModel()).addEdge(edge);
+					ModelUtils.createAndSetLocal(view.getModel(), edge, clusterAttribute, 
+					                             new Integer(0), Integer.class, null);
 				}
 			}
+			style = styleNewView(style, clusterAttribute);
 		}
 
-		view.applyVizmapper(vm);
+		ViewUtils.setVisualStyle(manager, view, style);
+		ViewUtils.registerView(manager, view);
 
-		Cytoscape.setCurrentNetwork(net.getIdentifier());
-		Cytoscape.setCurrentNetworkView(view.getIdentifier());
-*/
 		return;
 	}
 
@@ -245,6 +260,26 @@ public class NewNetworkView implements ClusterViz, ClusterAlgorithm {
 			nodeList.add(node);
 		}
 		return clusterMap;
+	}
+
+	private VisualStyle	styleNewView(VisualStyle style, String clusterAttribute) {
+		VisualStyle newStyle = ViewUtils.copyStyle(manager, style, "--clustered");
+		VisualMappingFunctionFactory vmff = manager.getService(VisualMappingFunctionFactory.class);
+		DiscreteMapping edgeWidth = 
+			(DiscreteMapping) vmff.createVisualMappingFunction(clusterAttribute, Integer.class, 
+			                                                   BasicVisualLexicon.EDGE_WIDTH);
+		edgeWidth.putMapValue(new Integer(0), new Double(1));
+		edgeWidth.putMapValue(new Integer(1), new Double(5));
+
+		DiscreteMapping edgeTrans = 
+			(DiscreteMapping) vmff.createVisualMappingFunction(clusterAttribute, Integer.class, 
+			                                                   BasicVisualLexicon.EDGE_TRANSPARENCY);
+		edgeTrans.putMapValue(new Integer(0), new Integer(50));
+		edgeTrans.putMapValue(new Integer(1), new Integer(255));
+
+		newStyle.addVisualMappingFunction(edgeWidth);
+		newStyle.addVisualMappingFunction(edgeTrans);
+		return newStyle;
 	}
 
 	private void addNodeToMap(Map<Integer, List<CyNode>> map, Integer cluster, CyNode node) {
@@ -328,7 +363,7 @@ public class NewNetworkView implements ClusterViz, ClusterAlgorithm {
 		for (String param: params) {
 			String[] attr = param.split("=");
 			if (attr.length == 2)
-				map.put(attr[1], attr[2]);
+				map.put(attr[0], attr[1]);
 		}
 		return map;
 	}

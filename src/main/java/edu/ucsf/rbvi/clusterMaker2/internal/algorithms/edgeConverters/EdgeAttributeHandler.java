@@ -82,7 +82,7 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 	public void setedgeCutOff(BoundedDouble value) { }
 	
 	public boolean edgeHistogram = false;
-	@Tunable(description="Set Edge Cutoff Using Histogram", 
+	@Tunable(description="Show/Hide Edge Weight Histogram", 
 	         groups={"Source for array data", "Edge weight cutoff"}, context="gui", gravity=14.0)
 	public boolean getEdgeHistogram() { return edgeHistogram; }
 	public void setEdgeHistogram(boolean eh) {
@@ -235,7 +235,7 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 		if (adjustLoops)
 			params.add("adjustLoops");
 		if (edgeCutOff != null)
-			params.add("edgeCutOff="+edgeCutOff.toString());
+			params.add("edgeCutOff="+edgeCutOff.getValue().toString());
 		if (selectedOnly)
 			params.add("selectedOnly");
 		if (undirectedEdges)

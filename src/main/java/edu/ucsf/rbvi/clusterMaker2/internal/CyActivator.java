@@ -28,7 +28,7 @@ import org.osgi.framework.BundleContext;
 // clusterMaker imports
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterVizFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ClusterManagerImpl;
 
 // Algorithms
@@ -42,6 +42,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCODE.M
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.SCPS.SCPSClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.TransClustClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.FilterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkViewFactory;
+// import edu.ucsf.rbvi.clusterMaker2.internal.ui.UITaskFactory;
 
 public class CyActivator extends AbstractCyActivator {
 
@@ -71,7 +73,7 @@ public class CyActivator extends AbstractCyActivator {
 		ClusterManagerImpl clusterManager = new ClusterManagerImpl(appRef, serviceRegistrar, groupFactory, groupManager, tableFactory, tableManager );
 
 		registerServiceListener(bc, clusterManager, "addClusterAlgorithm", "removeClusterAlgorithm", ClusterTaskFactory.class);
-		registerServiceListener(bc, clusterManager, "addClusterVisualizer", "removeClusterVisualizer", ClusterViz.class);
+		registerServiceListener(bc, clusterManager, "addClusterVisualizer", "removeClusterVisualizer", ClusterVizFactory.class);
 
 		// Register each of our algorithms
 		registerService(bc, new AttributeClusterTaskFactory(clusterManager), 
@@ -87,6 +89,11 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new TransClustClusterTaskFactory(clusterManager), 
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new FilterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+		// registerService(bc, new UITaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new NewNetworkViewFactory(clusterManager, true), ClusterVizFactory.class, 
+		                new Properties());
+		registerService(bc, new NewNetworkViewFactory(clusterManager, false), ClusterVizFactory.class, 
+		                new Properties());
 	}
 
 }

@@ -23,7 +23,6 @@ public class RunTransClust {
 
 	private List<CyNode> nodes;
 	private boolean canceled = false;
-	public final static String GROUP_ATTRIBUTE = "__TransClustGroups";
 	protected int clusterCount = 0;
 	private DistanceMatrix distanceMatrix = null;
 	private double threshold;

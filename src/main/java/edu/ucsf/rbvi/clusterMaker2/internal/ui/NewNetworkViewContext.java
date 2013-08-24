@@ -14,7 +14,7 @@ public class NewNetworkViewContext {
 	
 	//Tunables
 	
-	ListSingleSelection<String> attribute;
+	public ListSingleSelection<String> attribute;
 
 	@Tunable(description = "Cluster Attribute to Use", groups={"New Network Options"}, gravity=1.0)
   public ListSingleSelection<String> getattribute(){

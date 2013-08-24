@@ -68,6 +68,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 public class MCODECluster extends AbstractNetworkClusterer  {
 	public static String SHORTNAME = "mcode";
 	public static String NAME = "MCODE Cluster";
+	public final static String GROUP_ATTRIBUTE = "__MCODEGroups.SUID";
 	
 	final static int FIRST_TIME = 0;
 	final static int RESCORE = 1;
@@ -150,15 +151,16 @@ public class MCODECluster extends AbstractNetworkClusterer  {
 
 		// Now, sort our list of clusters by score
 		clusters = NodeCluster.rankListByScore(clusters);
+		createGroups = context.advancedAttributes.createGroups;
 
 		monitor.showMessage(TaskMonitor.Level.INFO,"Removing groups");
 
 		// Remove any leftover groups from previous runs
-		removeGroups(network);
+		removeGroups(network, GROUP_ATTRIBUTE);
 
 		monitor.setStatusMessage("Creating groups");
 
-		List<List<CyNode>> nodeClusters = createGroups(network, clusters);
+		List<List<CyNode>> nodeClusters = createGroups(network, clusters, GROUP_ATTRIBUTE);
 
 		results = new AbstractClusterResults(network, nodeClusters);
 		monitor.setStatusMessage("Done.  MCODE results:\n"+results);

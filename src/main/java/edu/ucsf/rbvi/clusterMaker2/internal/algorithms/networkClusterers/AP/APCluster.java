@@ -62,6 +62,7 @@ public class APCluster extends AbstractNetworkClusterer  {
 	ClusterManager clusterManager;
 	public static String SHORTNAME = "ap";
 	public static String NAME = "Affinity Propagation cluster";
+	public final static String GROUP_ATTRIBUTE = "__APGroups.SUID";
 	
 	RunAP runAP = null;
 
@@ -101,6 +102,7 @@ public class APCluster extends AbstractNetworkClusterer  {
 
 		// Update our tunable results
 		clusterAttributeName = context.getClusterAttribute();
+		createGroups = context.advancedAttributes.createGroups;
 
 		if (canceled) return;
 
@@ -117,7 +119,7 @@ public class APCluster extends AbstractNetworkClusterer  {
 		monitor.showMessage(TaskMonitor.Level.INFO,"Removing groups");
 
 		// Remove any leftover groups from previous runs
-		removeGroups(network);
+		removeGroups(network, GROUP_ATTRIBUTE);
 
 		monitor.showMessage(TaskMonitor.Level.INFO,"Creating groups");
 
@@ -125,7 +127,7 @@ public class APCluster extends AbstractNetworkClusterer  {
 		context.edgeAttributeHandler.setParams(params);
 		setParams(params);
 
-		List<List<CyNode>> nodeClusters = createGroups(network, clusters);
+		List<List<CyNode>> nodeClusters = createGroups(network, clusters, GROUP_ATTRIBUTE);
 
 		results = new AbstractClusterResults(network, nodeClusters);
 		monitor.showMessage(TaskMonitor.Level.INFO, "Done.  AP results:\n"+results);

@@ -9,6 +9,7 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableHandler;
 import org.cytoscape.work.TaskMonitor;
@@ -20,7 +21,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 
-public abstract class AbstractClusterAlgorithm implements ClusterAlgorithm {
+public abstract class AbstractClusterAlgorithm extends AbstractTask implements ClusterAlgorithm {
 	
 	// Common class values
 	protected boolean debug = false;
@@ -29,7 +30,7 @@ public abstract class AbstractClusterAlgorithm implements ClusterAlgorithm {
 	protected boolean canceled = false;
 	protected ClusterResults results;
 	protected ClusterManager clusterManager;
-	protected String GROUP_ATTRIBUTE = "_cluster";
+	// protected String GROUP_ATTRIBUTE = "__cluster";
 	
 	public AbstractClusterAlgorithm(ClusterManager manager) {
 		this.clusterManager = manager;
