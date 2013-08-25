@@ -161,7 +161,7 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
  	 * This method resets (clears) all of the existing network attributes.
  	 */
 	@SuppressWarnings("unchecked")
-	protected void resetAttributes(String group_attr) {
+	protected void resetAttributes(CyNetwork network, String group_attr) {
 
 		// Remove the attributes that are lingering
 		if (ModelUtils.hasAttribute(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE))
@@ -199,7 +199,7 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
  	 *
  	 * @param cluster_type the cluster type to indicate write into the CLUSTER_TYPE_ATTRIBUTE
  	 */
-	protected void updateAttributes(String cluster_type, Integer[] rowOrder, 
+	protected void updateAttributes(CyNetwork network, String cluster_type, Integer[] rowOrder, 
 	                                String weightAttributes[], List<String> attrList, 
 		                              Matrix matrix) {
 
@@ -252,7 +252,7 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 
 	}
 
-	protected void updateParams(List<String> params) {
+	protected void updateParams(CyNetwork network, List<String> params) {
 		ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, params, List.class, String.class);
 	}
 }

@@ -30,75 +30,65 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hierarchical;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmeans;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
+// Cytoscape imports
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
+
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeList;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BaseMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.KClusterAttributes;
 
-public class HierarchicalContext {
+// clusterMaker imports
+
+public class KMeansContext {
 	CyNetwork network;
 
-	@Tunable(description="Linkage")
-	public ListSingleSelection<ClusterMethod> linkage = 
-		new ListSingleSelection<ClusterMethod>(HierarchicalCluster.linkageTypes);
+	@ContainsTunables
+	public KClusterAttributes kcluster = new KClusterAttributes();
+
+	@Tunable (description="Number of iterations")
+	public int iterations = 50;
 
 	@Tunable(description="Distance Metric")
 	public ListSingleSelection<DistanceMetric> metric = 
 		new ListSingleSelection<DistanceMetric>(BaseMatrix.distanceTypes);
-
+	
 	@ContainsTunables
 	public AttributeList attributeList = null;
 
-	@Tunable(description="Only use selected nodes/edges for cluster", groups={"Clustering Parameters"})
 	public boolean selectedOnly = false;
-
-	@Tunable(description="Cluster attributes as well as nodes", groups={"Clustering Parameters"})
-	public boolean clusterAttributes = true;
-
-	@Tunable(description="Ignore nodes/edges with no data", groups={"Clustering Parameters"})
-	public boolean ignoreMissing = true;
-
-	@Tunable(description="Set missing data to zero (not common)", 
-	         groups={"Clustering Parameters", "Advanced Parameters"}, params="displayState=collapsed")
-	public boolean zeroMissing = false;
-
-	@Tunable(description="Adjust loops (not common)", groups={"Clustering Parameters", "Advanced Parameters"})
-	public boolean adjustDiagonals = false;
-
-	@Tunable(description="Create groups from clusters", groups={"Clustering Parameters"})
-	public boolean createGroups = false;
-
-
-	public HierarchicalContext() {
-		linkage.setSelectedValue(ClusterMethod.AVERAGE_LINKAGE);
+	@Tunable(description="Use only selected nodes/edges for cluster")
+	public boolean getselectedOnly() { return selectedOnly; }
+	public void setselectedOnly(boolean selectedOnly) {
+		this.selectedOnly = selectedOnly;
+		if (network != null) kcluster.updateKEstimates(network, selectedOnly);
 	}
 
-	public List<String> getParams(Matrix matrix) {
-		List<String> params = new ArrayList<String>();
-		params.add("linkage="+linkage.getSelectedValue().toString());
-		params.add("metric="+metric.getSelectedValue().toString());
-		params.add("nodeAttributeList="+attributeList.getNodeAttributeList().toString());
-		params.add("edgeAttribute="+attributeList.getEdgeAttribute());
-		params.add("selectedOnly="+selectedOnly);
-		params.add("clusterAttributes="+clusterAttributes);
-		params.add("ignoreMissing="+ignoreMissing);
-		params.add("zeroMissing="+zeroMissing);
-		params.add("createGroups="+createGroups);
-		params.add("adjustDiagonals="+adjustDiagonals);
-		if (adjustDiagonals)
-			params.add("diagonals="+matrix.getValue(0,0));
-		return params;
+	@Tunable(description="Cluster attributes as well as nodes")
+	public boolean clusterAttributes = false;
+	
+	@Tunable(description="Create groups from clusters")
+	public boolean createGroups = false;
+
+	public KMeansContext() {
 	}
 
 	public void setNetwork(CyNetwork network) {
@@ -110,6 +100,8 @@ public class HierarchicalContext {
 			attributeList = new AttributeList(network);
 		else
 			attributeList.setNetwork(network);
+
+		kcluster.updateKEstimates(network, selectedOnly);
 	}
 
 	public CyNetwork getNetwork() { return network; }
@@ -118,7 +110,16 @@ public class HierarchicalContext {
 		return metric.getSelectedValue();
 	}
 
-	public ClusterMethod getLinkage() {
-		return linkage.getSelectedValue();
+	public List<String> getParams() {
+		List<String> params = new ArrayList<String>();
+		kcluster.addParams(params);
+		params.add("iterations="+iterations);
+		params.add("metric="+metric.getSelectedValue().toString());
+		params.add("nodeAttributeList="+attributeList.getNodeAttributeList().toString());
+		params.add("edgeAttribute="+attributeList.getEdgeAttribute());
+		params.add("selectedOnly="+selectedOnly);
+		params.add("clusterAttributes="+clusterAttributes);
+		params.add("createGroups="+createGroups);
+		return params;
 	}
 }

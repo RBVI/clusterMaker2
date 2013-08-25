@@ -30,7 +30,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hierarchical;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmeans;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +46,7 @@ import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
+// clusterMaker imports
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
@@ -53,30 +54,18 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractAttributeClusterer;
 
-
-// clusterMaker imports
-
-public class HierarchicalCluster extends AbstractAttributeClusterer {
-	public static String SHORTNAME = "hierarchical";
-	public static String NAME = "Hierarchical cluster";
-	public static String GROUP_ATTRIBUTE = "__hierarchicalGroups";
-	/**
-	 * Linkage types
-	 */
-	public static ClusterMethod[] linkageTypes = { ClusterMethod.AVERAGE_LINKAGE,
-	                                               ClusterMethod.SINGLE_LINKAGE,
-	                                               ClusterMethod.MAXIMUM_LINKAGE,
-	                                               ClusterMethod.CENTROID_LINKAGE };
-
-	ClusterMethod clusterMethod =  ClusterMethod.AVERAGE_LINKAGE;
+public class KMeansCluster extends AbstractAttributeClusterer {
+	public static String SHORTNAME = "kmeans";
+	public static String NAME = "K-Means cluster";
+	public static String GROUP_ATTRIBUTE = "__kmeansGroups";
 
 	@Tunable(description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
 
 	@ContainsTunables
-	public HierarchicalContext context = null;
+	public KMeansContext context = null;
 
-	public HierarchicalCluster(HierarchicalContext context, ClusterManager clusterManager) {
+	public KMeansCluster(KMeansContext context, ClusterManager clusterManager) {
 		super(clusterManager);
 		this.context = context;
 		if (network == null)
@@ -85,12 +74,9 @@ public class HierarchicalCluster extends AbstractAttributeClusterer {
 	}
 
 	public String getShortName() {return SHORTNAME;}
-
-	@ProvidesTitle
 	public String getName() {return NAME;}
 
 	public ClusterViz getVisualizer() {
-		// return new TreeView();
 		return null;
 	}
 
@@ -134,36 +120,36 @@ public class HierarchicalCluster extends AbstractAttributeClusterer {
 		}
 
 		monitor.setStatusMessage("Initializing");
-		System.out.println("Initializing");
+		// System.out.println("Initializing");
 
 		resetAttributes(network, GROUP_ATTRIBUTE);
 
 		// Create a new clusterer
-		RunHierarchical algorithm = new RunHierarchical(network, attributeArray, distanceMetric, clusterMethod, monitor, context);
+		RunKCluster algorithm = new RunKCluster(network, attributeArray, distanceMetric, monitor, context);
+
+		// System.out.println("Algorithm defined");
+
+		String resultsString = "K-Means results:";
 
 		// Cluster the attributes, if requested
 		if (context.clusterAttributes && attributeArray.length > 1) {
 			monitor.setStatusMessage("Clustering attributes");
-			System.out.println("Clustering attributes");
-
-			Integer[] rowOrder = algorithm.cluster(true);
+			// System.out.println("Clustering attributes");
+			Integer[] rowOrder = algorithm.cluster(context.kcluster.kNumber, 
+			                                       context.iterations, true, "kmeans", context.kcluster);
 			updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, algorithm.getAttributeList(), 
 			                 algorithm.getMatrix());
 		}
 
-		monitor.setStatusMessage("Clustering nodes");
-		System.out.println("Clustering nodes");
-
 		// Cluster the nodes
-		Integer[] rowOrder = algorithm.cluster(false);
+		monitor.setStatusMessage("Clustering nodes");
+		// System.out.println("Clustering nodes");
+		Integer[] rowOrder = algorithm.cluster(context.kcluster.kNumber, 
+			                                     context.iterations, false, "kmeans", context.kcluster);
 		updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, algorithm.getAttributeList(), 
 		                 algorithm.getMatrix());
 
-		// TODO: Deal with params!
-		List<String> params = context.getParams(algorithm.getMatrix());
-		updateParams(network, params);
-
-		monitor.setStatusMessage("Done");
-
+		// System.out.println(resultsString);
 	}
+
 }

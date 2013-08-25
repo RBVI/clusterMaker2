@@ -182,17 +182,26 @@ public class Matrix extends BaseMatrix {
 				// Get the list of adjacent edges
 				List<CyEdge> edgeList = network.getAdjacentEdgeList(node, CyEdge.Type.ANY);
 				for (CyEdge edge: edgeList) {
-					if (selectedOnly && !edgeAttributes.getRow(edge).get("SELECTED", Boolean.class) /*!network.Selected(edge)*/)
+					if (selectedOnly && !edgeAttributes.getRow(edge.getSUID()).get("SELECTED", Boolean.class) /*!network.Selected(edge)*/)
 					 	continue;
 					hasSelectedEdge = true;
 					
 					Double val = null;
-					if (attributeType == Float.class) {
-						val = edgeAttributes.getRow(edge).get(weight, Double.class).doubleValue();
+					Number v = null;
+					if (attributeType == Double.class) {
+						val = edgeAttributes.getRow(edge.getSUID()).get(weight, Double.class);
+					} else if (attributeType == Float.class) {
+						v = edgeAttributes.getRow(edge.getSUID()).get(weight, Float.class);
+					} else if (attributeType == Long.class) {
+						v = edgeAttributes.getRow(edge.getSUID()).get(weight, Long.class);
+					} else if (attributeType == Integer.class) {
+						v = edgeAttributes.getRow(edge.getSUID()).get(weight, Integer.class);
 					} else {
-						Integer v = edgeAttributes.getRow(edge).get(weight, Integer.class);
-						if (v != null)
-							val = Double.valueOf(v.toString());
+						v = null;
+					}
+
+					if (val == null && v != null) {
+						val = Double.valueOf(v.doubleValue());
 					}
 
 					if (val != null) {
@@ -253,19 +262,19 @@ public class Matrix extends BaseMatrix {
 					Double value = null;
 					// Get the attribute type
 					if (nodeAttributes.getColumn(attr).getType() == Integer.class) {
-						Integer intVal = nodeAttributes.getRow(node).get(attr, Integer.class);
+						Integer intVal = nodeAttributes.getRow(node.getSUID()).get(attr, Integer.class);
 						if (intVal != null)
 							value = Double.valueOf(intVal.doubleValue());
 					} else if (nodeAttributes.getColumn(attr).getType() == Long.class) {
-						Long longVal = nodeAttributes.getRow(node).get(attr, Long.class);
+						Long longVal = nodeAttributes.getRow(node.getSUID()).get(attr, Long.class);
 						if (longVal != null)
 							value = Double.valueOf(longVal.doubleValue());
 					} else if (nodeAttributes.getColumn(attr).getType() == Float.class) {
-						Float floatVal = nodeAttributes.getRow(node).get(attr, Float.class);
+						Float floatVal = nodeAttributes.getRow(node.getSUID()).get(attr, Float.class);
 						if (floatVal != null)
 							value = Double.valueOf(floatVal.doubleValue());
 					} else if (nodeAttributes.getColumn(attr).getType() == Double.class) {
-						value = nodeAttributes.getRow(node).get(attr, Double.class);
+						value = nodeAttributes.getRow(node.getSUID()).get(attr, Double.class);
 					} else {
 						continue; // At some point, handle lists?
 					}
