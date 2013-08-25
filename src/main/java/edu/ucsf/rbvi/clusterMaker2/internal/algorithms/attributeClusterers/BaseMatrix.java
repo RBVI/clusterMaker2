@@ -4,6 +4,10 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+// TODO: convert to sparse matrices
+// import cern.colt.matrix.tdouble.DoubleFactory2D;
+// import cern.colt.matrix.tdouble.DoubleMatrix2D;
+
 public class BaseMatrix {
 	
 	protected int nRows;

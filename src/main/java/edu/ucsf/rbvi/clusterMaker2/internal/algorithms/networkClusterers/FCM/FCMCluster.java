@@ -280,7 +280,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		private void runLinearSilhouette(int kMax, int nIterations, TaskMonitor saveMonitor) {
 			for (int kEstimate = 2; kEstimate < kMax; kEstimate++) {
 				int[] clusters = new int[dataMatrix.nRows()];
-				if (halted()) return;
+				if (cancelled()) return;
 				if (saveMonitor != null) saveMonitor.setStatusMessage("Getting silhouette with a k estimate of "+kEstimate);
 				//int ifound = kcluster(kEstimate, nIterations, dataMatrix, metric, clusters);
 				silhouetteResults[kEstimate] = SilhouetteCalculator.calculate(dataMatrix, context.distanceMetric.getSelectedValue(), clusters);
@@ -304,7 +304,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 
 			public void run() {
 				int[] clusters = new int[matrix.nRows()];
-				if (halted()) return;
+				if (cancelled()) return;
 				if (saveMonitor != null) saveMonitor.setStatusMessage("Getting silhouette with a c estimate of "+cEstimate);
 				//int ifound = kcluster(kEstimate, nIterations, matrix, metric, clusters);
 				try {
@@ -312,13 +312,4 @@ public class FCMCluster extends AbstractNetworkClusterer {
 				} catch (Exception e) { e.printStackTrace(); }
 			}
 		}
-		
-
 }
-
-
-
-
-
-
-

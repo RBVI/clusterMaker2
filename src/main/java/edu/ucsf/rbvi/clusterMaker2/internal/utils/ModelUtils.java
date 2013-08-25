@@ -3,6 +3,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.utils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,6 +19,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 
+import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
@@ -52,6 +54,12 @@ public class ModelUtils {
 			return false;
 
 		return true;
+	}
+
+	public static void deleteAttribute(CyNetwork network, CyIdentifiable value, String column) {
+		if (!CyTableUtil.getColumnNames(network.getRow(value).getTable()).contains(column))
+			return;
+		network.getRow(value).getTable().deleteColumn(column);
 	}
 
 	public static CyNetwork createChildNetwork(ClusterManager manager, CyNetwork network, 
@@ -93,14 +101,43 @@ public class ModelUtils {
 		net.getRow(obj, namespace).set(column, value);
 	}
 
+	public static ListMultipleSelection<String> updateAttributeList(CyNetwork network, 
+	                                                                ListMultipleSelection<String> attributes) {
+		List<String> attributeArray = getAllAttributes(network, network.getDefaultNodeTable());
+		attributeArray.addAll(getAllAttributes(network, network.getDefaultEdgeTable()));
+		ListMultipleSelection<String> newAttribute = new ListMultipleSelection<String>(attributeArray);	
+		if (attributeArray.size() > 0){
+			if (attributes != null) {
+				newAttribute.setSelectedValues(attributes.getSelectedValues());
+			} else {
+				newAttribute.setSelectedValues(Collections.singletonList(attributeArray.get(0)));
+			}
+			return newAttribute;
+		}
+		return new ListMultipleSelection<String>("--None--");
+	}
+
+
+	public static ListMultipleSelection<String> updateNodeAttributeList(CyNetwork network, 
+	                                                                    ListMultipleSelection<String> attribute) {
+		List<String> attributeArray = getAllAttributes(network, network.getDefaultNodeTable());
+		if (attributeArray.size() > 0){
+			ListMultipleSelection<String> newAttribute = new ListMultipleSelection<String>(attributeArray);	
+			if (attribute != null) {
+				newAttribute.setSelectedValues(attribute.getSelectedValues());
+			} else
+				newAttribute.setSelectedValues(Collections.singletonList(attributeArray.get(0)));
+
+			return newAttribute;
+		}
+		return new ListMultipleSelection<String>("--None--");
+	}
+
 	public static ListSingleSelection<String> updateEdgeAttributeList(CyNetwork network, 
 	                                                                  ListSingleSelection<String> attribute) {
 		List<String> attributeArray = getAllAttributes(network, network.getDefaultEdgeTable());
 		if (attributeArray.size() > 0){
 			ListSingleSelection<String> newAttribute = new ListSingleSelection<String>(attributeArray);	
-			if (attribute != null) {
-				newAttribute.setSelectedValue(attribute.getSelectedValue());
-			}
 			if (attribute != null && attributeArray.contains(attribute.getSelectedValue())) {
 				newAttribute.setSelectedValue(attribute.getSelectedValue());
 			} else
@@ -110,7 +147,6 @@ public class ModelUtils {
 		}
 		return new ListSingleSelection<String>("--None--");
 	}
-	
 
 	private static List<String> getAllAttributes(CyNetwork network, CyTable table) {
 		String[] attributeArray = new String[1];

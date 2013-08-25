@@ -12,6 +12,10 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 
+// TODO: convert to sparse matrices
+// import cern.colt.matrix.tdouble.DoubleFactory2D;
+// import cern.colt.matrix.tdouble.DoubleMatrix2D;
+
 // clusterMaker imports
 
 /**
@@ -252,7 +256,15 @@ public class Matrix extends BaseMatrix {
 						Integer intVal = nodeAttributes.getRow(node).get(attr, Integer.class);
 						if (intVal != null)
 							value = Double.valueOf(intVal.doubleValue());
+					} else if (nodeAttributes.getColumn(attr).getType() == Long.class) {
+						Long longVal = nodeAttributes.getRow(node).get(attr, Long.class);
+						if (longVal != null)
+							value = Double.valueOf(longVal.doubleValue());
 					} else if (nodeAttributes.getColumn(attr).getType() == Float.class) {
+						Float floatVal = nodeAttributes.getRow(node).get(attr, Float.class);
+						if (floatVal != null)
+							value = Double.valueOf(floatVal.doubleValue());
+					} else if (nodeAttributes.getColumn(attr).getType() == Double.class) {
 						value = nodeAttributes.getRow(node).get(attr, Double.class);
 					} else {
 						continue; // At some point, handle lists?

@@ -15,13 +15,17 @@ import org.cytoscape.work.TunableHandler;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.work.swing.RequestsUIHelper;
+import org.cytoscape.work.swing.TunableUIHelper;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 
-public abstract class AbstractClusterAlgorithm extends AbstractTask implements ClusterAlgorithm {
+public abstract class AbstractClusterAlgorithm extends AbstractTask 
+                                               implements RequestsUIHelper, ClusterAlgorithm {
 	
 	// Common class values
 	protected boolean debug = false;
@@ -30,19 +34,21 @@ public abstract class AbstractClusterAlgorithm extends AbstractTask implements C
 	protected boolean canceled = false;
 	protected ClusterResults results;
 	protected ClusterManager clusterManager;
-	// protected String GROUP_ATTRIBUTE = "__cluster";
+	protected CyNetwork network = null;
+	protected TaskMonitor monitor = null;
+	protected List<String>params = null;
 	
-	public AbstractClusterAlgorithm(ClusterManager manager) {
-		this.clusterManager = manager;
+	public AbstractClusterAlgorithm(ClusterManager clusterManager) {
+		this.clusterManager = clusterManager;
 	}
 	
 	/************************************************************************
 	 * Convenience routines                                                 *
 	 ***********************************************************************/
 
-	public void halt() { canceled = true; }
+	public void cancel() { canceled = true; }
 
-	public boolean halted() { return canceled; }
+	public boolean cancelled() { return canceled; }
 
 	public ClusterResults getResults() { return results; }
 
@@ -73,4 +79,5 @@ public abstract class AbstractClusterAlgorithm extends AbstractTask implements C
 		return ((vectorCopy[mid-1].doubleValue()+vectorCopy[mid].doubleValue()) / 2);
 	}
 
+  public void setUIHelper(TunableUIHelper helper) { }
 }

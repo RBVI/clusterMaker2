@@ -10,8 +10,6 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableHandler;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.swing.RequestsUIHelper;
-import org.cytoscape.work.swing.TunableUIHelper;
 
 import java.awt.Window;
 import java.awt.Dialog.ModalityType;
@@ -27,33 +25,13 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.FuzzyNodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
-public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
-                                               implements RequestsUIHelper {
+public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm {
 	
 	// Shared instance variables
-	protected TaskMonitor monitor = null;
-	protected List<String>params = null;
-	protected CyNetwork network = null;
-	protected Window parent = null;
 
 	//TODO: add group support
 	
 	public AbstractNetworkClusterer(ClusterManager clusterManager) { super(clusterManager); }
-
-	public boolean isAvailable() {
-		if (network.getRow(network).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class) == null) {
-			return false;
-		}
-
-		String cluster_type = network.getRow(network).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class);
-		if (cluster_type == null || !cluster_type.toLowerCase().equals(getShortName()))
-			return false;
-
-		if (network.getRow(network).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class) != null) {
-			return true;
-		}
-		return false;
-	}
 
 	@SuppressWarnings("unchecked")
 	public List<List<CyNode>> getNodeClusters() {
@@ -176,7 +154,4 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm
 			network.getRow(network).set(group_attr, null);
 		}
 	}
-
-	public void setUIHelper(TunableUIHelper helper) { }
-
 }
