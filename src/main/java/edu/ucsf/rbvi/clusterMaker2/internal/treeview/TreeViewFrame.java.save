@@ -1,0 +1,1014 @@
+/* BEGIN_HEADER                                              Java TreeView
+ *
+ * $Author: alokito $
+ * $RCSfile: TreeViewFrame.java,v $w
+ * $Revision: 1.69 $
+ * $Date: 2007/02/03 04:58:36 $
+ * $Name:  $
+ *
+ * This file is part of Java TreeView
+ * Copyright (C) 2001-2003 Alok Saldanha, All Rights Reserved. Modified by Alex Segal 2004/08/13. Modifications Copyright (C) Lawrence Berkeley Lab.
+ *
+ * This software is provided under the GNU GPL Version 2. In particular, 
+ *
+ * 1) If you modify a source file, make a comment in it containing your name and the date.
+ * 2) If you distribute a modified version, you must do it under the GPL 2.
+ * 3) Developers are encouraged but not required to notify the Java TreeView maintainers at alok@genome.stanford.edu when they make a useful addition. It would be nice if significant contributions could be merged into the main distribution.
+ *
+ * A full copy of the license can be found in gpl.txt or online at
+ * http://www.gnu.org/licenses/gpl.txt
+ *
+ * END_HEADER 
+ */
+package edu.stanford.genetics.treeview;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Observable;
+
+import javax.swing.*;
+
+import edu.stanford.genetics.treeview.core.*;
+import edu.stanford.genetics.treeview.model.DataModelWriter;
+import edu.stanford.genetics.treeview.model.TVModel;
+import edu.stanford.genetics.treeview.plugin.dendroview.DendroView;
+
+/**
+ * This class is the main window of java treeview.
+ * In practice, it serves as the base class for the LinkedViewFrame and
+ * the AppletViewFrame.
+ * 
+ * @author aloksaldanha
+ *
+ */
+public class TreeViewFrame extends ViewFrame {
+	/** override in subclasses? */
+	private static String appName = "TreeView Classic";
+
+	public String getAppName() {
+		return appName;
+	}
+
+	public TreeViewFrame(TreeViewApp treeview) {
+		this(treeview, appName);
+	}
+
+	public TreeViewFrame(TreeViewApp treeview, String appName) {
+		super(appName);
+		treeView = treeview;
+		loaded = false;
+		setWindowActive(true);
+		waiting = new JPanel();
+		// waiting.add(new WaitScreen(
+		// 		new String[] { "Hello How are you Gentlepeople",
+		// 				"Welcome to " + getAppName() }));
+
+		setupPresets();
+		// setupMenuBar();
+		// setupFileMru(treeView.getGlobalConfig().getNode("FileMru"));
+
+		centerOnscreen();
+		setLoaded(false);
+	}
+
+	protected void setupMenuBar() {
+		menubar = new JMenuBar();
+		// setJMenuBar(menubar);
+		programMenu = new ProgramMenu(); // rebuilt when fileMru notifies
+		menubar.add(programMenu);
+		documentMenu = new JMenu("Settings");
+		menubar.add(documentMenu);
+		analysisMenu = new JMenu("Analysis");
+		menubar.add(analysisMenu);
+		presetsMenu = new JMenu("Presets");
+		populateSettingsMenu(presetsMenu);
+		documentMenu.add(presetsMenu);
+		exportMenu = new JMenu("Export");
+		menubar.add(exportMenu);
+		windowMenu = new JMenu("Window");
+		menubar.add(windowMenu);
+		// menubar.setHelpMenu(getHelpMenu()); not implemented yet?
+		menubar.add(getHelpMenu());
+	}
+
+	protected void setupPresets() {
+	}
+
+	public UrlPresets getGeneUrlPresets() {
+		return treeView.getGeneUrlPresets();
+	}
+
+	public UrlPresets getArrayUrlPresets() {
+		return treeView.getArrayUrlPresets();
+	}
+
+	public void closeWindow() {
+		if (running != null) {
+			running.syncConfig();
+		}
+		super.closeWindow();
+	}
+
+	protected FileSet offerUrlSelection() throws LoadException {
+		FileSet fileSet1;
+		/*
+		 * JTextField textField = new JTextField(); JPanel prompt = new
+		 * JPanel(); prompt.setLayout(new BorderLayout()); prompt.add(new
+		 * JLabel("Enter a Url"), BorderLayout.NORTH); prompt.add(textField,
+		 * BorderLayout.CENTER);
+		 */
+		// get string from user...
+		String urlString = JOptionPane.showInputDialog(this, "Enter a Url");
+		if (urlString != null) {
+			// must parse out name, parent + sep...
+			int postfix = urlString.lastIndexOf("/") + 1;
+			String name = urlString.substring(postfix);
+			String parent = urlString.substring(0, postfix);
+			fileSet1 = new FileSet(name, parent);
+		} else {
+			throw new LoadException("Input Dialog closed without selection...",
+					LoadException.NOFILE);
+		}
+		return fileSet1;
+	}
+
+	public void scrollToGene(int i) {
+		running.scrollToGene(i);
+	}
+
+	public void scrollToArray(int i) {
+		running.scrollToArray(i);
+	}
+
+	public void load(FileSet fileSet) throws LoadException {
+		loadFileSet(fileSet);
+		fileSet = fileMru.addUnique(fileSet);
+		fileMru.setLast(fileSet);
+		fileMru.notifyObservers();
+		setLoaded(true);
+	}
+
+	/**
+	 * To load any fileset without using the event queue thread
+	 */
+	public void loadNW(FileSet fileSet) throws LoadException {
+		loadFileSetNW(fileSet);
+		fileSet = fileMru.addUnique(fileSet);
+		fileMru.setLast(fileSet);
+		fileMru.notifyObservers();
+		setLoaded(true);
+	}
+
+	/**
+	 * r * This is the workhorse. It creates a new DataModel of the file, and
+	 * then sets the Datamodel. A side effect of setting the datamodel is to
+	 * update the running window.
+	 */
+	public void loadFileSet(FileSet fileSet) throws LoadException {
+		TVModel tvModel = new TVModel();
+		tvModel.setFrame(this);
+		try {
+			tvModel.loadNew(fileSet);
+			setDataModel(tvModel);
+		} catch (LoadException e) {
+			if (e.getType() != LoadException.INTPARSE)
+				JOptionPane.showMessageDialog(this, e);
+			throw e;
+		}
+	}
+
+	/**
+	 * To load any fileset without using the event queue thread
+	 */
+	public void loadFileSetNW(FileSet fileSet) throws LoadException {
+		TVModel tvModel = new TVModel();
+		tvModel.setFrame(this);
+		try {
+			tvModel.loadNewNW(fileSet);
+			setDataModel(tvModel);
+		} catch (LoadException e) {
+			if (e.getType() != LoadException.INTPARSE)
+				JOptionPane.showMessageDialog(this, e);
+			throw e;
+		}
+	}
+
+	/**
+	 * Sets up the following: 1) urlExtractor, an object that generates urls
+	 * from gene indexes 2) arrayUrlExtractor, similarly 3) geneSelection and 4)
+	 * arraySelection, the two selection objects. It is important that these are
+	 * set up before any plugins are instantiated. This is called before
+	 * setupRunning by setDataModel.
+	 */
+	protected void setupExtractors() {
+		ConfigNode documentConfig = getDataModel().getDocumentConfig();
+		// extractors...
+		UrlPresets genePresets = getGeneUrlPresets();
+		UrlExtractor urlExtractor = new UrlExtractor(getDataModel()
+				.getGeneHeaderInfo(), genePresets);
+		urlExtractor.setDefaultTemplate(genePresets.getDefaultTemplate());
+		urlExtractor.setDefaultEnabled(genePresets.isDefaultEnabled());
+		urlExtractor.bindConfig(documentConfig.fetchOrCreate("UrlExtractor"));
+		setUrlExtractor(urlExtractor);
+
+		UrlPresets arrayPresets = getArrayUrlPresets();
+		UrlExtractor arrayUrlExtractor = new UrlExtractor(getDataModel()
+				.getArrayHeaderInfo());
+		arrayUrlExtractor.setDefaultTemplate(arrayPresets.getDefaultTemplate());
+		arrayUrlExtractor.setDefaultEnabled(arrayPresets.isDefaultEnabled());
+		arrayUrlExtractor.bindConfig(documentConfig
+				.fetchOrCreate("ArrayUrlExtractor"));
+		setArrayUrlExtractor(arrayUrlExtractor);
+		DataMatrix matrix = getDataModel().getDataMatrix();
+		int ngene = matrix.getNumRow();
+		int nexpr = matrix.getNumCol();
+		geneSelection = new TreeSelection(ngene);
+		arraySelection = new TreeSelection(nexpr);
+	}
+
+	protected void setupRunning() {
+		DendroView dv = new DendroView(getDataModel(), this);
+		running = dv;
+	}
+
+	// Observer
+	public void update(Observable observable, Object object) {
+		if (observable == fileMru) {
+			// System.out.println("Rebuilding file menu");
+			programMenu.rebuild();
+		} else {
+			System.out.println("Got weird update");
+		}
+	}
+
+	/**
+	 * This should be called whenever the loaded status changes It's
+	 * responsibility is to change the look of the main view only
+	 */
+
+	public void setLoaded(boolean flag) {
+		// reset persistent popups
+		setGeneFinder(null);
+		loaded = flag;
+		getContentPane().removeAll();
+		// getContentPane().add(menubar, BorderLayout.NORTH);
+		if (loaded) {
+			if (running == null) {
+				JOptionPane.showMessageDialog(this, "TreeViewFrame 253: No data to display");
+			} else {
+				getContentPane().add((JComponent) running);
+				setTitle(getAppName() + " : " + dataModel.getSource());
+				treeView.getGlobalConfig().store();
+			}
+		} else {
+			getContentPane().add(waiting);
+			setTitle(getAppName());
+		}
+
+		// menubar.rebuild...
+		// rebuildMainPanelMenu();
+		// treeView.rebuildWindowMenus();
+
+		validate();
+		repaint();
+	}
+
+	public void rebuildMainPanelMenu() {
+		documentMenu.removeAll(); // settings...
+		analysisMenu.removeAll();
+		exportMenu.removeAll();
+		// analysisMenu.setEnabled(getLoaded());
+		// exportMenu.setEnabled(getLoaded());
+		analysisMenu.setEnabled(true);
+		exportMenu.setEnabled(true);
+		if (getLoaded()) {
+			populateAnalysisMenu(analysisMenu);
+			populateExportMenu(exportMenu);
+			if (running != null) {
+				running.populateSettingsMenu(documentMenu);
+				running.populateAnalysisMenu(analysisMenu);
+				if (exportMenu.getItemCount() > 0)
+					exportMenu.addSeparator();
+				running.populateExportMenu(exportMenu);
+			}
+			if (analysisMenu.getItemCount() > 0)
+				analysisMenu.addSeparator();
+		}
+
+		documentMenu.setEnabled(true);
+		if (documentMenu.getItemCount() > 0)
+			documentMenu.addSeparator();
+		documentMenu.add(presetsMenu);
+	}
+
+	public boolean getLoaded() {
+		return loaded;
+	}
+
+	// Menus
+
+	protected JDialog presetsFrame = null; // persistent popup
+
+	protected TabbedSettingsPanel presetsPanel = null;
+
+	protected void setupPresetsPanel() {
+		presetsFrame = new JDialog(TreeViewFrame.this, "Presets", true);
+		presetsPanel = new TabbedSettingsPanel();
+
+		UrlPresetsEditor presetEditor = new UrlPresetsEditor(
+				getGeneUrlPresets());
+		presetEditor.setTitle("Gene Url Presets");
+		presetsPanel.addSettingsPanel("Gene", presetEditor);
+
+		presetEditor = new UrlPresetsEditor(getArrayUrlPresets());
+		presetEditor.setTitle("Array Url Presets");
+		presetsPanel.addSettingsPanel("Array", presetEditor);
+
+		SettingsPanelHolder innerPanel = new SettingsPanelHolder(presetsFrame,
+				getApp().getGlobalConfig().getRoot());
+		innerPanel.addSettingsPanel(presetsPanel);
+		presetsFrame.getContentPane().add(innerPanel);
+		presetsFrame.pack();
+	}
+
+	protected void populateSettingsMenu(JMenu settingsMenu) {
+		JMenuItem presetItem = new JMenuItem("Gene Url Presets...",
+				KeyEvent.VK_P);
+		presetItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent actionEvent) {
+				if (presetsPanel == null)
+					setupPresetsPanel();
+				presetsPanel.synchronizeFrom();
+				presetsPanel.setSelectedIndex(0);
+				presetsFrame.show();
+			}
+		});
+
+		JMenuItem apresetItem = new JMenuItem("Array Url Presets...");
+		apresetItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent actionEvent) {
+				if (presetsPanel == null)
+					setupPresetsPanel();
+				presetsPanel.synchronizeFrom();
+				presetsPanel.setSelectedIndex(1);
+				presetsFrame.show();
+			}
+		});
+		settingsMenu.add(presetItem);
+		settingsMenu.add(apresetItem);
+
+		PluginFactory[] plugins = PluginManager.getPluginManager().getPluginFactories();
+		if (plugins.length == 0) {
+			JMenuItem cpresetItem = new JMenuItem("Color Presets...");
+			cpresetItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent actionEvent) {
+					if (presetsPanel == null)
+						setupPresetsPanel();
+					presetsPanel.synchronizeFrom();
+					presetsPanel.setSelectedIndex(2);
+					presetsFrame.show();
+				}
+			});
+			settingsMenu.add(cpresetItem);
+
+		} else {
+			for (int i = 0; i < plugins.length; i++) {
+				plugins[i].addPluginConfig(settingsMenu, this);
+			}
+		}
+
+	}
+
+	private HeaderFinder geneFinder = null;
+
+	/** Setter for geneFinder */
+	public void setGeneFinder(HeaderFinder geneFinder) {
+		this.geneFinder = geneFinder;
+	}
+
+	/** Getter for geneFinder */
+	public HeaderFinder getGeneFinder() {
+		if (geneFinder == null) {
+			geneFinder = new GeneFinder(TreeViewFrame.this, getDataModel()
+					.getGeneHeaderInfo(), getGeneSelection());
+		}
+		return geneFinder;
+	}
+
+	private HeaderFinder arrayFinder = null;
+
+	/** Setter for geneFinder */
+	public void setArrayFinder(HeaderFinder geneFinder) {
+		this.geneFinder = geneFinder;
+	}
+
+	/** Getter for geneFinder */
+	public HeaderFinder getArrayFinder() {
+		if (arrayFinder == null) {
+			arrayFinder = new ArrayFinder(TreeViewFrame.this, getDataModel()
+					.getArrayHeaderInfo(), getArraySelection());
+		}
+		return arrayFinder;
+	}
+
+	protected void populateAnalysisMenu(JMenu menu) {
+		JMenuItem menuItem1 = new JMenuItem("Find Genes...", KeyEvent.VK_F);
+		menuItem1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent actionEvent) {
+				getGeneFinder().setVisible(true);
+			}
+		});
+		menu.add(menuItem1);
+
+		JMenuItem arrayItem = new JMenuItem("Find Arrays...");
+		arrayItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent actionEvent) {
+				getArrayFinder().setVisible(true);
+			}
+		});
+		menu.add(arrayItem);
+
+		JMenuItem menuItem2 = new JMenuItem("Stats...");
+		menuItem2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JOptionPane.showMessageDialog(TreeViewFrame.this,
+						new JTextArea(getDataModel().toString()));
+			}
+		});
+
+		menu.add(menuItem2);
+	}
+
+	protected void populateExportMenu(JMenu exportMenu) {
+		/*
+		 * MenuItem menuItem2 = new MenuItem("Export to Text File... ");
+		 * menuItem2.addActionListener(new ActionListener() { public void
+		 * actionPerformed(ActionEvent actiosnEvent) { ViewFrame viewFrame =
+		 * TreeViewFrame.this; FileSet source = getDataModel().getFileSet();
+		 * GeneListMaker t = new GeneListMaker(viewFrame, getGeneSelection(),
+		 * getDataModel().getGeneHeaderInfo(), source.getDir()+source.getRoot() +
+		 * ".txt"); t.setDataMatrix(getDataModel().getDataMatrix(),
+		 * getDataModel().getArrayHeaderInfo(), DataModel.NODATA);
+		 * t.bindConfig(getDataModel().getDocumentConfig().getNode("GeneListMaker"));
+		 * t.makeList(); } }); exportMenu.add(menuItem2);
+		 */
+
+		JMenuItem listItem = new JMenuItem("Save List");
+		listItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent actiosnEvent) {
+				if (warnSelectionEmpty()) {
+					ViewFrame viewFrame = TreeViewFrame.this;
+					FileSet source = getDataModel().getFileSet();
+					String def = getDataModel().getName() + "_list.txt";
+					if (source != null) {
+						def = source.getDir() + source.getRoot() + "_list.txt";
+					}
+					GeneListMaker t = new GeneListMaker(viewFrame,
+							getGeneSelection(), getDataModel()
+									.getGeneHeaderInfo(), def);
+					t.setDataMatrix(getDataModel().getDataMatrix(),
+							getDataModel().getArrayHeaderInfo(),
+							DataModel.NODATA);
+					t.bindConfig(getDataModel().getDocumentConfig()
+							.fetchOrCreate("GeneListMaker"));
+					t.pack();
+					t.show();
+				}
+			}
+		});
+		exportMenu.add(listItem);
+
+		JMenuItem dataItem = new JMenuItem("Save Data");
+		dataItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent actiosnEvent) {
+				if (warnSelectionEmpty()) {
+					ViewFrame viewFrame = TreeViewFrame.this;
+					FileSet source = getDataModel().getFileSet();
+					GeneListMaker t = new GeneListMaker(viewFrame,
+							getGeneSelection(), getDataModel()
+									.getGeneHeaderInfo(), source.getDir()
+									+ source.getRoot() + "_data.cdt");
+					t.setDataMatrix(getDataModel().getDataMatrix(),
+							getDataModel().getArrayHeaderInfo(),
+							DataModel.NODATA);
+					t.bindConfig(getDataModel().getDocumentConfig()
+							.fetchOrCreate("GeneListMaker"));
+					t.includeAll();
+					t.pack();
+					t.show();
+				}
+			}
+		});
+		exportMenu.add(dataItem);
+
+	}
+
+	public boolean warnSelectionEmpty() {
+		TreeSelectionI treeSelection = getGeneSelection();
+		if ((treeSelection == null)
+				|| (treeSelection.getNSelectedIndexes() <= 0)) {
+
+			JOptionPane.showMessageDialog(this,
+					"Cannot generate gene list, no gene selected");
+			return false;
+		}
+		return true;
+	}
+
+	public TreeViewApp getApp() {
+		return treeView;
+	}
+
+	private class ProgramMenu extends JMenu {
+		private JMenuItem openItem, urlItem, exitItem, fmeItem, saveItem;
+
+		private JMenu mruItem;
+
+		ProgramMenu() {
+			super("File");
+
+			openItem = new JMenuItem("Open...", KeyEvent.VK_O);
+			openItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent actionEvent) {
+					try {
+						FileSet fileSet = offerSelection();
+						loadFileSet(fileSet);
+						fileSet = fileMru.addUnique(fileSet);
+						fileMru.setLast(fileSet);
+						fileMru.notifyObservers();
+						setLoaded(true);
+					} catch (LoadException e) {
+						if ((e.getType() != LoadException.INTPARSE)
+								&& (e.getType() != LoadException.NOFILE)) {
+							LogBuffer.println("Could not open file: "
+									+ e.getMessage());
+							e.printStackTrace();
+						}
+						// setLoaded(false);
+					}
+				}
+			});
+
+			urlItem = new JMenuItem("Open Url...");
+			urlItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent actionEvent) {
+					try {
+						FileSet fileSet = offerUrlSelection();
+						loadFileSet(fileSet);
+						fileSet = fileMru.addUnique(fileSet);
+						fileMru.setLast(fileSet);
+						fileMru.notifyObservers();
+						setLoaded(true);
+					} catch (LoadException e) {
+						LogBuffer.println("could not load url: "
+								+ e.getMessage());
+						// setLoaded(false);
+					}
+				}
+			});
+
+			saveItem = new JMenuItem("Save");
+			saveItem.setMnemonic(KeyEvent.VK_S);
+			saveItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent actionEvent) {
+					DataModelWriter writer = new DataModelWriter(getDataModel());
+					writer.writeIncremental(getDataModel().getFileSet());
+				}
+			});
+			exitItem = new JMenuItem("Exit Program", KeyEvent.VK_Q);
+			exitItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent actionEvent) {
+					try {
+						treeView.closeAllWindows();
+					} catch (Exception e) {
+						System.out.println("While trying to exit, got error "
+								+ e);
+						System.exit(1);
+					}
+				}
+			});
+
+			mruItem = new JMenu("Recent Files");
+
+			fmeItem = new JMenuItem("Edit Recent Files...");
+			fmeItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent actionEvent) {
+					FileMruEditor fme = new FileMruEditor(fileMru);
+					fme.showDialog(TreeViewFrame.this);
+				}
+			});
+		}
+
+		public void rebuild() {
+
+			removeAll();
+			add(openItem);
+			add(urlItem);
+			add(saveItem);
+
+			mruItem.removeAll();
+			ConfigNode aconfigNode[] = fileMru.getConfigs();
+			String astring[] = fileMru.getFileNames();
+			for (int j = aconfigNode.length; j > 0; j--) {
+				FileMenuListener fileMenuListener = new FileMenuListener(
+						new FileSet(aconfigNode[j - 1]));
+				JMenuItem menuItem = new JMenuItem(astring[j - 1]);
+				menuItem.addActionListener(fileMenuListener);
+				mruItem.add(menuItem);
+			}
+			add(mruItem);
+			add(fmeItem);
+			// addSeparator();
+
+			// add(exitItem);
+
+		}
+	}
+
+	class FileMenuListener implements ActionListener {
+		private FileSet fileSet;
+
+		FileMenuListener(FileSet set) {
+			fileSet = set;
+		}
+
+		public void actionPerformed(ActionEvent argActionEvent) {
+			final ActionEvent actionEvent = argActionEvent;
+			Runnable update = new Runnable() {
+				public void run() {
+					try {
+						fileMru.setLast(fileSet);
+						fileMru.notifyObservers();
+						if (running != null)
+							running.syncConfig();
+						loadFileSet(fileSet);
+						setLoaded(getDataModel().isLoaded());
+					} catch (LoadException e) {
+						if (e.getType() == LoadException.INTPARSE) {
+							// System.out.println("Parsing cancelled...");
+						} else {
+							// System.out.println("Could not load: " + e);
+							int result = FileMruEditor.offerSearch(fileSet,
+									TreeViewFrame.this, "Could not Load "
+											+ fileSet.getCdt());
+							if (result == FileMruEditor.FIND) {
+								fileMru.notifyFileSetModified();
+								fileMru.notifyObservers();
+								actionPerformed(actionEvent); // REPROCESS...
+								return; // EARLY RETURN
+							} else if (result == FileMruEditor.REMOVE) {
+								fileMru.removeFileSet(fileSet);
+								fileMru.notifyObservers();
+							}
+						}
+						setLoaded(false);
+					}
+					// dataModel.notifyObservers();
+				}
+			};
+			SwingUtilities.invokeLater(update);
+		}
+	}
+
+	private JMenu getHelpMenu() {
+		JMenu menu = new JMenu("Help");
+
+		JMenuItem menuItem1 = new JMenuItem("About...");
+		menuItem1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent actionEvent) {
+				/*
+				 * Popup popup = new Popup(TreeViewFrame.this,getAppName(), new
+				 * String [] { "Java TreeView was created by Alok
+				 * (alok@genome).", "It is an extensible, crossplatform port of
+				 * Eisen's TreeView.", "Version: " +
+				 * TreeViewApp.getVersionTag(), "Homepage:
+				 * http://genetics.stanford.edu/~alok/TreeView/" });
+				 */
+				JPanel message = new JPanel();
+				// message.setLayout(new BoxLayout(message, BoxLayout.Y_AXIS));
+				message.setLayout(new GridLayout(0, 1));
+				message
+						.add(new JLabel(
+								getAppName()
+										+ " was created by Alok (alokito@users.sourceforge.net)."));
+				message.add(new JLabel("Version: "
+						+ TreeViewApp.getVersionTag()));
+
+				JPanel home = new JPanel();
+				home.add(new JLabel("Homepage"));
+				home.add(new JTextField(getApp().getUpdateUrl()));
+				JButton yesB = new JButton("Open");
+				yesB.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent arg0) {
+						displayURL(getApp().getUpdateUrl());
+					}
+
+				});
+				home.add(yesB);
+				message.add(home);
+
+				home = new JPanel();
+				home.add(new JLabel("Announcements"));
+				home.add(new JTextField(getApp().getAnnouncementUrl()));
+				yesB = new JButton("Sign Up");
+				yesB.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent arg0) {
+						displayURL(getApp().getAnnouncementUrl());
+					}
+
+				});
+				home.add(yesB);
+				message.add(home);
+
+				JOptionPane.showMessageDialog(TreeViewFrame.this, message, 
+						"About...", JOptionPane.INFORMATION_MESSAGE);
+			}
+		});
+		menu.add(menuItem1);
+
+		JMenuItem messagesItem = new JMenuItem("Messages...");
+		messagesItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JPanel inner = new JPanel();
+				inner.setLayout(new BorderLayout());
+				inner.add(new JLabel("JTV Messages"), BorderLayout.NORTH);
+				inner.add(new JScrollPane(new LogMessagesPanel(LogBuffer
+						.getSingleton())), BorderLayout.CENTER);
+				LogBuffer buffer = LogBuffer.getSingleton();
+				buffer.setLog(true);
+				inner.add(new LogSettingsPanel(buffer),
+						BorderLayout.SOUTH);
+				final JDialog top = new JDialog(TreeViewFrame.this,
+						"JTV Messages", false);
+				top.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+				top.setContentPane(inner);
+				top.pack();
+				top.setLocationRelativeTo(TreeViewFrame.this);
+				top.setVisible(true);
+			}
+		});
+		menu.add(messagesItem);
+
+		JMenuItem menuItem4 = new JMenuItem("Documentation...");
+		menuItem4.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent actionEvent) {
+				// Popup popup = new Popup(TreeViewFrame.this, "Java TreeView:
+				// Color", new String [] { "I'm going to add better help
+				// later.", "For now, point a web browser at index.html in the
+				// doc subdirectory of the Java TreeView folder.", "(that is, if
+				// it doesn't open automatically...)" });
+				// String classPath = System.getProperty("java.class.path");
+				JPanel message = new JPanel();
+				message.setLayout(new BoxLayout(message, BoxLayout.Y_AXIS));
+				message.add(new JLabel(getAppName()
+						+ " documentation is available from the website."));
+				final String docUrl = getApp().getUpdateUrl()
+						+ "/manual.html";
+				message.add(new JTextField(docUrl));
+				JButton lButton = new JButton("Launch Browser");
+				lButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						displayURL(docUrl);
+					}
+				});
+				message.add(lButton);
+				JOptionPane.showMessageDialog(TreeViewFrame.this, message);
+			}
+		});
+		menu.add(menuItem4);
+
+		JMenuItem mi_plugins = new JMenuItem("Plugins...");
+		mi_plugins.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent actionEvent) {
+				displayPluginInfo();
+			}
+		});
+		menu.add(mi_plugins);
+
+		JMenuItem menuItem5 = new JMenuItem("Registration...");
+		menuItem5.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent actionEvent) {
+				ConfigNode node = treeView.getGlobalConfig().getNode(
+						"Registration");
+				if (node != null) {
+					try {
+						edu.stanford.genetics.treeview.reg.RegEngine
+								.reverify(node);
+					} catch (Exception e) {
+						LogBuffer.println("registration error " + e);
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		menu.add(menuItem5);
+
+		JMenuItem menuItem6 = new JMenuItem("Feedback...");
+		menuItem6.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent actionEvent) {
+				JPanel feedback = new JPanel();
+				feedback.setLayout(new BoxLayout(feedback, BoxLayout.Y_AXIS));
+				JComponent tmp = new JLabel("Please report bugs at ");
+				tmp.setAlignmentX((float) 0.0);
+				feedback.add(tmp);
+				final String bugsURL = "http://sourceforge.net/tracker/?group_id=84593&atid=573298";
+				tmp = new JTextField(bugsURL);
+				// tmp.setAlignmentX((float) 1.0);
+				feedback.add(tmp);
+				JButton yesB = new JButton("Report Bug");
+				yesB.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent arg0) {
+						displayURL(bugsURL);
+					}
+				});
+				feedback.add(yesB);
+
+				tmp = new JLabel("Please request features at ");
+				tmp.setAlignmentX((float) 0.0);
+				feedback.add(tmp);
+				final String featureURL = "https://sourceforge.net/tracker/?group_id=84593&atid=573301";
+				tmp = new JTextField(featureURL);
+				// tmp.setAlignmentX((float) 1.0);
+				feedback.add(tmp);
+				yesB = new JButton("Request Feature");
+				yesB.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent arg0) {
+						displayURL(featureURL);
+					}
+				});
+				feedback.add(yesB);
+
+				tmp = new JLabel("For support, send email to ");
+				tmp.setAlignmentX((float) 0.0);
+				feedback.add(tmp);
+				final String supportURL = "jtreeview-users@lists.sourceforge.net";
+				tmp = new JTextField(supportURL);
+				// tmp.setAlignmentX((float) 1.0);
+				feedback.add(tmp);
+				yesB = new JButton("Email Support");
+				yesB.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent arg0) {
+						displayURL("mailto:"+supportURL);
+					}
+				});
+				feedback.add(yesB);
+
+				tmp = new JLabel("You may also search the list archives at ");
+				tmp.setAlignmentX((float) 0.0);
+				feedback.add(tmp);
+				final String archiveURL = "http://sourceforge.net/mailarchive/forum.php?forum_id=36027";
+				tmp = new JTextField(archiveURL);
+				// tmp.setAlignmentX((float) 1.0);
+				feedback.add(tmp);
+				yesB = new JButton("Browse Archive");
+				yesB.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent arg0) {
+						displayURL(archiveURL);
+					}
+				});
+				feedback.add(yesB);
+				JOptionPane.showMessageDialog(TreeViewFrame.this, feedback, 
+						"Feedback...", JOptionPane.INFORMATION_MESSAGE);
+			}
+		});
+		menu.add(menuItem6);
+
+		menu.addSeparator();
+
+		JMenuItem menuItem2 = new JMenuItem("Memory...");
+		menuItem2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new MemMonitor();
+			}
+		});
+		menu.add(menuItem2);
+
+		JMenuItem menuItem3 = new JMenuItem("Threads...");
+		menuItem3.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				ThreadListener pop = new ThreadListener();
+			}
+		});
+		menu.add(menuItem3);
+		
+		
+		/* This is to help debug plugin instance naming.
+		MenuItem pluginSearch = new MenuItem("Search for instances");
+		pluginSearch.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JTextField name = new JTextField(20);
+				JOptionPane.showMessageDialog(TreeViewFrame.this, name);
+				MainPanel [] list = getPluginsByName(name.getText());
+				JPanel res = new JPanel();
+				for (int i = 0; i < list.length; i++)
+					res.add(new JLabel(list[i].getName()));
+				JOptionPane.showMessageDialog(TreeViewFrame.this,res);
+			}
+		});
+		menu.add(pluginSearch);
+		*/
+		return menu;
+	}
+
+	public double noData() {
+		return DataModel.NODATA;
+	}
+
+	TreeViewApp treeView;
+
+	private JMenuBar menubar;
+
+	private ProgramMenu programMenu;
+
+	private JMenu documentMenu;
+
+	private JMenu analysisMenu;
+
+	private JMenu exportMenu;
+
+	private JMenu presetsMenu;
+
+	private boolean loaded;
+
+	protected JPanel waiting;
+
+	protected MainPanel running;
+
+	protected DataModel dataModel;
+
+	/**
+	 * Setter for dataModel, also sets extractors, running.
+	 * 
+	 * @throws LoadException
+	 */
+	public void setDataModel(DataModel dataModel) {
+		this.dataModel = dataModel;
+		setupExtractors();
+		setupRunning();
+	}
+
+	/** Getter for dataModel */
+	public DataModel getDataModel() {
+		return dataModel;
+	}
+
+	/**
+	 * This method displays the current plugin info. 
+	 * I set it up as a method so that it can be overridden
+	 * by AppletViewFrame
+	 */
+	protected void displayPluginInfo() {
+		MenuHelpPluginsFrame frame = new MenuHelpPluginsFrame(
+				"Current Plugins", this);
+		File f_currdir = new File(".");
+		try {
+			frame.setSourceText(f_currdir.getCanonicalPath() + File.separator +"plugins" + File.separator);
+		} catch (IOException e) {
+			frame.setSourceText("Unable to read default plugins directory.");
+		}
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		frame.setVisible(true);
+	}
+
+	public MainPanel[] getMainPanelsByName(String name) {
+		if (running != null) {
+			// is the current running a match?
+			if (name.equals(running.getName())) {
+				MainPanel [] list = new MainPanel[1];
+				list[0] = running;
+				return list;
+			}
+			// okay, is the current running a linkedPanel?
+			try {
+				LinkedPanel linked = (LinkedPanel) running;
+				return linked.getMainPanelsByName(name);
+			} catch (ClassCastException e) {
+				// fall through to end
+			}
+		} else {
+			// fall through to end
+		}
+		MainPanel [] list = new MainPanel[0];
+		return list;
+	}
+
+	public MainPanel[] getMainPanels() {
+		if (running == null) {
+			MainPanel [] list = new MainPanel[0];
+			return list;			
+		}
+		// okay, is the current running a linkedPanel?
+		try {
+			LinkedPanel linked = (LinkedPanel) running;
+			return linked.getMainPanels();
+		} catch (ClassCastException e) {
+			// fall through to end
+		}
+
+		MainPanel [] list = new MainPanel[1];
+		list[0] = running;
+		return list;
+	}
+}

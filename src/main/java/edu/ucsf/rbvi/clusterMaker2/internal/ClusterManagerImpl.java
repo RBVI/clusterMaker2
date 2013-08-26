@@ -162,6 +162,10 @@ public class ClusterManagerImpl implements ClusterManager {
 	public CyNetwork getNetwork() {
 		return appMgr.getCurrentNetwork();
 	}
+
+	public CyNetworkView getNetworkView() {
+		return appMgr.getCurrentNetworkView();
+	}
 	
 	public CyTableFactory getTableFactory(){
 		return tableFactory;
@@ -203,5 +207,9 @@ public class ClusterManagerImpl implements ClusterManager {
 
 	public <T> T getService(Class<? extends T> clazz) {
 		return serviceRegistrar.getService(clazz);
+	}
+
+	public <T> T getService(Class<? extends T> clazz, String filter) {
+		return serviceRegistrar.getService(clazz, filter);
 	}
 }

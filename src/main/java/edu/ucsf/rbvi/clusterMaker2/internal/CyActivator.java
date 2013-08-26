@@ -70,7 +70,6 @@ public class CyActivator extends AbstractCyActivator {
 		CyTableFactory tableFactory = getService(bc, CyTableFactory.class);
 		CyTableManager tableManager = getService(bc, CyTableManager.class);
 
-
 		// Create our context object.  This will probably keep track of all of the
 		// registered clustering algorithms, settings, etc.
 		ClusterManagerImpl clusterManager = new ClusterManagerImpl(appRef, serviceRegistrar, groupFactory, groupManager, tableFactory, tableManager );

@@ -37,10 +37,12 @@ public interface ClusterManager {
 	public void removeVisualizer(ClusterVizFactory alg);
 
 	public CyNetwork getNetwork();
+	public CyNetworkView getNetworkView();
 	public CyTableFactory getTableFactory();
 	public CyTableManager getTableManager();
 	public CyGroup createGroup(CyNetwork network, String name, List<CyNode> nodeList, List<CyEdge> edgeList, boolean register);
 	public void removeGroup(CyNetwork network, Long suid);
 	public <T> T getService(Class <? extends T> clazz);
+	public <T> T getService(Class<? extends T> clazz, String filter);
 }
 

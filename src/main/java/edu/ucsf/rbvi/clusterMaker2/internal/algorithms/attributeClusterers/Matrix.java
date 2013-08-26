@@ -17,6 +17,7 @@ import org.cytoscape.model.CyTableUtil;
 // import cern.colt.matrix.tdouble.DoubleMatrix2D;
 
 // clusterMaker imports
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 /**
  * Matrix extends BaseMatrix to provide mechanism of importing attributes from Cytoscape network
@@ -186,6 +187,7 @@ public class Matrix extends BaseMatrix {
 					 	continue;
 					hasSelectedEdge = true;
 					
+/*
 					Double val = null;
 					Number v = null;
 					if (attributeType == Double.class) {
@@ -203,6 +205,8 @@ public class Matrix extends BaseMatrix {
 					if (val == null && v != null) {
 						val = Double.valueOf(v.doubleValue());
 					}
+*/
+					Double val = ModelUtils.getNumericValue(network, edge, weight);
 
 					if (val != null) {
 						found = true;

@@ -9,12 +9,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyEdge.Type;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyEdge.Type;
-import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CySubNetwork;
@@ -146,6 +147,44 @@ public class ModelUtils {
 			return newAttribute;
 		}
 		return new ListSingleSelection<String>("--None--");
+	}
+
+	public static String getName(CyNetwork network, CyIdentifiable obj) {
+		CyRow row = network.getRow(obj);
+		if (row == null) return null;
+		return row.get(CyNetwork.NAME, String.class);
+	}
+
+	public static CyIdentifiable getNetworkObjectWithName(CyNetwork network, String name, Class <? extends CyIdentifiable> clazz) {
+		CyTable table = network.getTable(clazz, CyNetwork.DEFAULT_ATTRS);
+		Collection<CyRow> rows = table.getMatchingRows(CyNetwork.NAME, name);
+		for (CyRow row: rows) {
+			// Get take the first one
+			Long suid = row.get(CyIdentifiable.SUID, Long.class);
+			if (clazz.equals(CyNode.class))
+				return network.getNode(suid);
+			else if (clazz.equals(CyEdge.class))
+				return network.getEdge(suid);
+		}
+		return null;
+	}
+
+	public static Double getNumericValue(CyNetwork network, CyIdentifiable obj, String column) {
+		CyColumn col = network.getRow(obj).getTable().getColumn(column);
+		Class type = col.getType();
+		Number val = null;
+		if (type == Double.class) {
+			val = network.getRow(obj).get(column, Double.class);
+		} else if (type == Float.class) {
+			val = network.getRow(obj).get(column, Float.class);
+		} else if (type == Long.class) {
+			val = network.getRow(obj).get(column, Long.class);
+		} else if (type == Integer.class) {
+			val = network.getRow(obj).get(column, Integer.class);
+		} else
+			return null;
+
+		return Double.valueOf(val.doubleValue());
 	}
 
 	private static List<String> getAllAttributes(CyNetwork network, CyTable table) {
