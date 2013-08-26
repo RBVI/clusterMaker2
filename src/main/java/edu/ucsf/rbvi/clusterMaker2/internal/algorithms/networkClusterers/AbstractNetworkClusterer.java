@@ -122,16 +122,15 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 			}
 
 			if (createGroups) {
-        // Create the group
-        //         CyGroup newgroup = CyGroupManager.createGroup(groupName, nodeList, null);
-        //
+				CyGroup group = clusterManager.createGroup(network, clusterAttributeName+"_"+clusterNumber, nodeList, null, true);
+				if (group != null)
+					groupList.add(group.getGroupNode().getSUID());
 			}
 			clusterList.add(nodeList);
 		}
 		
 		
 		ModelUtils.createAndSet(network, network, group_attr, groupList, List.class, Long.class);
-
 		ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, getShortName(), String.class, null);
 		ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_ATTRIBUTE, clusterAttributeName, String.class, null);
 		if (params != null)
