@@ -90,10 +90,11 @@ public class TreeViewModel extends TVModel {
 
 		if (clusterParams != null) {
 			for (String param: clusterParams) {
-				if (param.equals("zeroMissing"))
-					zeroMissing = true;
-				else if (param.startsWith("diagonals=")) {
-					diagonalValue = Double.valueOf(param.substring(10));
+				String[] pair = param.split("=");
+				if (pair[0].equals("zeroMissing"))
+					zeroMissing = Boolean.valueOf(pair[1]);
+				else if (pair[0].equals("diagonals")) {
+					diagonalValue = Double.valueOf(pair[1]);
 				}
 			}
 		}

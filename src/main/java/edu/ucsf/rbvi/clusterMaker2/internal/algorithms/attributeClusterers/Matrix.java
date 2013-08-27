@@ -171,7 +171,6 @@ public class Matrix extends BaseMatrix {
 			int index = 0;
 			int column;
 			Class attributeType = edgeAttributes.getColumn(weight).getType(); //edgeAttributes.getType(weight);
-					
 
 			for (CyNode node: nodeList) {
 				boolean found = false;
@@ -187,25 +186,6 @@ public class Matrix extends BaseMatrix {
 					 	continue;
 					hasSelectedEdge = true;
 					
-/*
-					Double val = null;
-					Number v = null;
-					if (attributeType == Double.class) {
-						val = edgeAttributes.getRow(edge.getSUID()).get(weight, Double.class);
-					} else if (attributeType == Float.class) {
-						v = edgeAttributes.getRow(edge.getSUID()).get(weight, Float.class);
-					} else if (attributeType == Long.class) {
-						v = edgeAttributes.getRow(edge.getSUID()).get(weight, Long.class);
-					} else if (attributeType == Integer.class) {
-						v = edgeAttributes.getRow(edge.getSUID()).get(weight, Integer.class);
-					} else {
-						v = null;
-					}
-
-					if (val == null && v != null) {
-						val = Double.valueOf(v.doubleValue());
-					}
-*/
 					Double val = ModelUtils.getNumericValue(network, edge, weight);
 
 					if (val != null) {

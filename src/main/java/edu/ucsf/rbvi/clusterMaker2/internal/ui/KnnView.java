@@ -78,7 +78,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hierarchical.HierarchicalCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmeans.KMeansCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmedoid.KMedoidCluster;
 
 // TreeView imports
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.FileSet;
@@ -127,8 +128,8 @@ public class KnnView extends TreeView {
 	public boolean isAvailable() {
 		if (ModelUtils.hasAttribute(myNetwork, myNetwork, ClusterManager.CLUSTER_TYPE_ATTRIBUTE)) {
 			String type = myNetwork.getRow(myNetwork).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class);
-			if (!type.equals("kmeans") &&
-			    !type.equals("kmedoid") &&
+			if (!type.equals(KMeansCluster.GROUP_ATTRIBUTE) &&
+			    !type.equals(KMedoidCluster.GROUP_ATTRIBUTE) &&
 			    !type.equals("autosome heatmap") &&
 			    !type.equals("PAM") &&
 			    !type.equals("HOMACH"))

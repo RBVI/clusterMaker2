@@ -79,9 +79,10 @@ public class RunHierarchical {
 		String keyword = "GENE";
 		if (transpose) keyword = "ARRY";
 
-		for (int att = 0; att < weightAttributes.length; att++)
-			if (debug)
+		if (debug) {
+			for (int att = 0; att < weightAttributes.length; att++)
 				monitor.showMessage(TaskMonitor.Level.INFO,"Attribute: '"+weightAttributes[att]+"'");
+		}
 
 		if (monitor != null) 
 			monitor.setStatusMessage("Creating distance matrix");
