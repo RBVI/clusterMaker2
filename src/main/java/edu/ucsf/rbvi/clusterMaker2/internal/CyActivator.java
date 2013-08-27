@@ -36,6 +36,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Attri
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hierarchical.HierarchicalTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmeans.KMeansTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmedoid.KMedoidTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.featureVector.FeatureVectorTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.NetworkClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AP.APClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM.FCMClusterTaskFactory;
@@ -81,6 +82,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, clusterManager, "addClusterVisualizer", "removeClusterVisualizer", ClusterVizFactory.class);
 
 		// Register each of our algorithms
+		// Attribute clusterers
 		registerService(bc, new AttributeClusterTaskFactory(clusterManager), 
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new HierarchicalTaskFactory(clusterManager), 
@@ -89,6 +91,10 @@ public class CyActivator extends AbstractCyActivator {
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new KMedoidTaskFactory(clusterManager), 
 		                ClusterTaskFactory.class, new Properties());
+		registerService(bc, new FeatureVectorTaskFactory(clusterManager), 
+		                ClusterTaskFactory.class, new Properties());
+
+		// Network clusterers
 		registerService(bc, new NetworkClusterTaskFactory(clusterManager), 
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new APClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
@@ -101,6 +107,8 @@ public class CyActivator extends AbstractCyActivator {
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new FilterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		// registerService(bc, new UITaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+
+		// Visualizations
 		registerService(bc, new NewNetworkViewFactory(clusterManager, true), ClusterVizFactory.class, 
 		                new Properties());
 		registerService(bc, new NewNetworkViewFactory(clusterManager, false), ClusterVizFactory.class, 
