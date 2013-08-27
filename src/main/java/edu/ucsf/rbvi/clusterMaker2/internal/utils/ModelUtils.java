@@ -184,6 +184,8 @@ public class ModelUtils {
 		} else
 			return null;
 
+		if (val == null) return null;
+
 		return Double.valueOf(val.doubleValue());
 	}
 

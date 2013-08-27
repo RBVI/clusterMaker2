@@ -67,7 +67,7 @@ public class PropertyConfig {
 	public PropertyConfig(CyProperty<Properties> cyProps, String prefix, String tag) {
 		// Get the prefix.tag property (and all of its children) from Cytoscape properties
 		this.prefix = prefix;
-		cyProps = cyProps;
+		this.cyProps = cyProps;
 
 		Properties props = cyProps.getProperties();
 		String xml = props.getProperty(prefix+"."+tag);

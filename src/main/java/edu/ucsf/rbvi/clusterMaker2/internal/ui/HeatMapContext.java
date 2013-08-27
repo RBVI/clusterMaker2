@@ -30,34 +30,41 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers;
+package edu.ucsf.rbvi.clusterMaker2.internal.ui;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
+// Cytoscape imports
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
-public class AttributeList {
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeList;
+
+// clusterMaker imports
+
+public class HeatMapContext {
 	CyNetwork network;
 
-	@Tunable(description="Node attributes for cluster", groups="Array sources", 
-	         tooltip="You must choose at least 2 node columns for an attribute cluster", gravity=50 )
-	public ListMultipleSelection<String> nodeAttributeList = null;
+	@ContainsTunables
+	public AttributeList attributeList = null;
 
-	@Tunable(description="Edge column for cluster", groups="Array sources",
-	         tooltip="You may only chose 1 edge column for an attribute cluster" , gravity=51)
-	public ListSingleSelection<String> edgeAttributeList = null;
+	@Tunable(description="Use only selected nodes/edges for cluster", gravity=100)
+	public boolean selectedOnly = false;
 
-	public AttributeList(CyNetwork network) {
-		this.network = network;
-		if (network != null) {
-			nodeAttributeList = ModelUtils.updateNodeAttributeList(network, nodeAttributeList);
-			edgeAttributeList = ModelUtils.updateEdgeAttributeList(network, edgeAttributeList);
-		}
+	public HeatMapContext() {
 	}
 
 	public void setNetwork(CyNetwork network) {
@@ -65,25 +72,21 @@ public class AttributeList {
 			return;
 
 		this.network = network;
-		nodeAttributeList = ModelUtils.updateNodeAttributeList(network, nodeAttributeList);
-		edgeAttributeList = ModelUtils.updateEdgeAttributeList(network, edgeAttributeList);
+		if (attributeList == null)
+			attributeList = new AttributeList(network);
+		else
+			attributeList.setNetwork(network);
 	}
 
 	public CyNetwork getNetwork() { return network; }
 
 	public List<String> getNodeAttributeList() {
-		if (nodeAttributeList == null) return null;
-		List<String> attrs = nodeAttributeList.getSelectedValues();
-		if (attrs == null || attrs.size() == 0) return null;
-		if ((attrs.size() == 1) &&
-		    (attrs.get(0).equals("--None--"))) return null;
-		return attrs;
+		if (attributeList == null) return null;
+		return attributeList.getNodeAttributeList();
 	}
 
 	public String getEdgeAttribute() {
-		if (edgeAttributeList == null) return null;
-		String attr = edgeAttributeList.getSelectedValue();
-		if (attr == null || attr.equals("--None--")) return null;
-		return attr;
+		if (attributeList == null) return null;
+		return attributeList.getEdgeAttribute();
 	}
 }

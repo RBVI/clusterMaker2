@@ -46,6 +46,9 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.SCPS.SC
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.TransClustClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.FilterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkViewFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.TreeViewTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.KnnViewTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.HeatMapViewTaskFactory;
 // import edu.ucsf.rbvi.clusterMaker2.internal.ui.UITaskFactory;
 
 public class CyActivator extends AbstractCyActivator {
@@ -101,6 +104,12 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new NewNetworkViewFactory(clusterManager, true), ClusterVizFactory.class, 
 		                new Properties());
 		registerService(bc, new NewNetworkViewFactory(clusterManager, false), ClusterVizFactory.class, 
+		                new Properties());
+		registerService(bc, new TreeViewTaskFactory(clusterManager), ClusterVizFactory.class, 
+		                new Properties());
+		registerService(bc, new KnnViewTaskFactory(clusterManager), ClusterVizFactory.class, 
+		                new Properties());
+		registerService(bc, new HeatMapViewTaskFactory(clusterManager), ClusterVizFactory.class, 
 		                new Properties());
 	}
 

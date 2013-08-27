@@ -10,6 +10,7 @@ import org.cytoscape.view.model.CyNetworkView;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 
 public interface ClusterManager {
 	public final static String MATRIX_ATTRIBUTE = "__distanceMatrix";
@@ -42,7 +43,12 @@ public interface ClusterManager {
 	public CyTableManager getTableManager();
 	public CyGroup createGroup(CyNetwork network, String name, List<CyNode> nodeList, List<CyEdge> edgeList, boolean register);
 	public void removeGroup(CyNetwork network, Long suid);
+
 	public <T> T getService(Class <? extends T> clazz);
 	public <T> T getService(Class<? extends T> clazz, String filter);
+
+	// Use with caution.  If you register it, you need to unregister it!
+	public void registerService(Object service, Class<?> serviceClass, Properties props);
+	public void unregisterService(Object service, Class<?> serviceClass);
 }
 

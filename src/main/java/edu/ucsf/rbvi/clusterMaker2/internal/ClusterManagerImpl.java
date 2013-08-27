@@ -212,4 +212,12 @@ public class ClusterManagerImpl implements ClusterManager {
 	public <T> T getService(Class<? extends T> clazz, String filter) {
 		return serviceRegistrar.getService(clazz, filter);
 	}
+
+	public void registerService(Object service, Class serviceClass, Properties props) {
+		serviceRegistrar.registerService(service, serviceClass, props);
+	}
+
+	public void unregisterService(Object service, Class serviceClass) {
+		serviceRegistrar.unregisterService(service, serviceClass);
+	}
 }

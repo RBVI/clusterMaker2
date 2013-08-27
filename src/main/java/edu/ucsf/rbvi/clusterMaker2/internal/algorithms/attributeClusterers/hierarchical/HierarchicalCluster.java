@@ -59,7 +59,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Abstr
 public class HierarchicalCluster extends AbstractAttributeClusterer {
 	public static String SHORTNAME = "hierarchical";
 	public static String NAME = "Hierarchical cluster";
-	public static String GROUP_ATTRIBUTE = "__hierarchicalGroups";
+	public static String GROUP_ATTRIBUTE = SHORTNAME;
 	/**
 	 * Linkage types
 	 */
@@ -119,12 +119,10 @@ public class HierarchicalCluster extends AbstractAttributeClusterer {
 			return;
 		}
 
-		// To make debugging easier, sort the attribute list
-		Collections.sort(nodeAttributeList);
-
 		// Get our attributes we're going to use for the cluster
 		String[] attributeArray;
 		if (nodeAttributeList != null && nodeAttributeList.size() > 1) {
+			Collections.sort(nodeAttributeList);
 			attributeArray = new String[nodeAttributeList.size()];
 			int i = 0;
 			for (String attr: nodeAttributeList) { attributeArray[i++] = "node."+attr; }

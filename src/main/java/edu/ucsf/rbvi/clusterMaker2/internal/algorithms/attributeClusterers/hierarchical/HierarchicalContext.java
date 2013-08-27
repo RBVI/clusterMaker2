@@ -49,34 +49,34 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matri
 public class HierarchicalContext {
 	CyNetwork network;
 
-	@Tunable(description="Linkage")
+	@Tunable(description="Linkage", gravity=1.0)
 	public ListSingleSelection<ClusterMethod> linkage = 
 		new ListSingleSelection<ClusterMethod>(HierarchicalCluster.linkageTypes);
 
-	@Tunable(description="Distance Metric")
+	@Tunable(description="Distance Metric", gravity=2.0)
 	public ListSingleSelection<DistanceMetric> metric = 
 		new ListSingleSelection<DistanceMetric>(BaseMatrix.distanceTypes);
 
 	@ContainsTunables
 	public AttributeList attributeList = null;
 
-	@Tunable(description="Only use selected nodes/edges for cluster", groups={"Clustering Parameters"})
+	@Tunable(description="Only use selected nodes/edges for cluster", groups={"Clustering Parameters"}, gravity=60)
 	public boolean selectedOnly = false;
 
-	@Tunable(description="Cluster attributes as well as nodes", groups={"Clustering Parameters"})
+	@Tunable(description="Cluster attributes as well as nodes", groups={"Clustering Parameters"}, gravity=61)
 	public boolean clusterAttributes = true;
 
-	@Tunable(description="Ignore nodes/edges with no data", groups={"Clustering Parameters"})
+	@Tunable(description="Ignore nodes/edges with no data", groups={"Clustering Parameters"}, gravity=62)
 	public boolean ignoreMissing = true;
 
 	@Tunable(description="Set missing data to zero (not common)", 
-	         groups={"Clustering Parameters", "Advanced Parameters"}, params="displayState=collapsed")
+	         groups={"Clustering Parameters", "Advanced Parameters"}, params="displayState=collapsed", gravity=63)
 	public boolean zeroMissing = false;
 
-	@Tunable(description="Adjust loops (not common)", groups={"Clustering Parameters", "Advanced Parameters"})
+	@Tunable(description="Adjust loops (not common)", groups={"Clustering Parameters", "Advanced Parameters"}, gravity=64)
 	public boolean adjustDiagonals = false;
 
-	@Tunable(description="Create groups from clusters", groups={"Clustering Parameters"})
+	@Tunable(description="Create groups from clusters", groups={"Clustering Parameters"}, gravity=65)
 	public boolean createGroups = false;
 
 
@@ -88,8 +88,10 @@ public class HierarchicalContext {
 		List<String> params = new ArrayList<String>();
 		params.add("linkage="+linkage.getSelectedValue().toString());
 		params.add("metric="+metric.getSelectedValue().toString());
-		params.add("nodeAttributeList="+attributeList.getNodeAttributeList().toString());
-		params.add("edgeAttribute="+attributeList.getEdgeAttribute());
+		if (attributeList.getNodeAttributeList() != null)
+			params.add("nodeAttributeList="+attributeList.getNodeAttributeList().toString());
+		if (attributeList.getEdgeAttribute() != null)
+			params.add("edgeAttribute="+attributeList.getEdgeAttribute());
 		params.add("selectedOnly="+selectedOnly);
 		params.add("clusterAttributes="+clusterAttributes);
 		params.add("ignoreMissing="+ignoreMissing);

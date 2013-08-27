@@ -40,7 +40,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Observer;
 import java.util.Observable;
@@ -68,8 +71,10 @@ import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 
 // ClusterMaker imports
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
@@ -78,6 +83,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeList;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hierarchical.HierarchicalCluster;
 
 // TreeView imports
@@ -95,11 +101,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.treeview.model.TreeViewModel;
  * The ClusterViz class provides the primary interface to the
  * Cytoscape plugin mechanism
  */
-public class TreeView extends TreeViewApp implements Observer, 
-                                                     RowsSetListener,
-                                                     ClusterViz, ClusterAlgorithm {
-	public static String SHORTNAME = "treeview";
-	public static String NAME =  "JTree TreeView";
+public class HeatMapView extends TreeViewApp implements Observer, 
+                                                        RowsSetListener,
+                                                        ClusterViz, ClusterAlgorithm {
+	public static String SHORTNAME = "heatmapview";
+	public static String NAME =  "JTree HeatMapView (unclustered)";
 
 	private URL codeBase = null;
 	protected ViewFrame viewFrame = null;
@@ -107,7 +113,6 @@ public class TreeView extends TreeViewApp implements Observer,
 	protected TreeSelectionI arraySelection = null;
 	protected TreeViewModel dataModel = null;
 	protected CyNetworkView myView = null;
-	protected CyNetwork myNetwork = null;
 	protected TaskMonitor monitor = null;
 	private	List<CyNode>selectedNodes;
 	private	List<CyNode>selectedArrays;
@@ -115,18 +120,27 @@ public class TreeView extends TreeViewApp implements Observer,
 	protected ClusterManager manager = null;
 	protected CyNetworkTableManager networkTableManager = null;
 
-	private static String appName = "clusterMaker TreeView";
+	@Tunable(description="Network to view heatmap for", context="nogui")
+	public CyNetwork myNetwork = null;
 
-	public TreeView(ClusterManager manager) {
+	@ContainsTunables
+	public HeatMapContext context = null;
+
+	private static String appName = "clusterMaker HeatMapView";
+
+	public HeatMapView(HeatMapContext context, ClusterManager manager) {
 		super();
 		// setExitOnWindowsClosed(false);
 		selectedNodes = new ArrayList<CyNode>();
 		selectedArrays = new ArrayList<CyNode>();
 		this.manager = manager;
+		this.context = context;
 		networkTableManager = manager.getService(CyNetworkTableManager.class);
+		if (myNetwork == null) myNetwork = manager.getNetwork();
+		context.setNetwork(myNetwork);
 	}
 
-	public TreeView(PropertyConfig propConfig) {
+	public HeatMapView(PropertyConfig propConfig) {
 		super(propConfig);
 		selectedNodes = new ArrayList<CyNode>();
 		selectedArrays = new ArrayList<CyNode>();
@@ -142,7 +156,7 @@ public class TreeView extends TreeViewApp implements Observer,
 		return appName;
 	}
 
-	public Object getContext() { return null; }
+	public Object getContext() { return context; }
 
 	// ClusterViz methods
 	public String getShortName() { return SHORTNAME; }
@@ -153,7 +167,6 @@ public class TreeView extends TreeViewApp implements Observer,
 	public ClusterResults getResults() { return null; }
 
 	public void run(TaskMonitor monitor) {
-		myNetwork = manager.getNetwork();
 		myView = manager.getNetworkView();
 		this.monitor = monitor;
 		// Sanity check
@@ -165,16 +178,7 @@ public class TreeView extends TreeViewApp implements Observer,
 	}
 
 	public boolean isAvailable() {
-		if (ModelUtils.hasAttribute(myNetwork, myNetwork, ClusterManager.CLUSTER_TYPE_ATTRIBUTE) &&
-		    !myNetwork.getRow(myNetwork).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class).equals(HierarchicalCluster.GROUP_ATTRIBUTE)) {
-			return false;
-		}
-
-		if (ModelUtils.hasAttribute(myNetwork, myNetwork, ClusterManager.CLUSTER_NODE_ATTRIBUTE) ||
-		    ModelUtils.hasAttribute(myNetwork, myNetwork, ClusterManager.CLUSTER_ATTR_ATTRIBUTE)) {
-			return true;
-		}
-		return false;
+		return true;
 	}
 
 	public void cancel() {}
@@ -182,6 +186,73 @@ public class TreeView extends TreeViewApp implements Observer,
 	protected void startup() {
 		CyProperty cyProperty = manager.getService(CyProperty.class, 
 		                                           "(cyPropertyName=cytoscape3.props)");
+
+		List<String> nodeAttributeList = context.attributeList.getNodeAttributeList();
+		String edgeAttribute = context.attributeList.getEdgeAttribute();
+
+		if (nodeAttributeList == null && edgeAttribute == null) {
+			monitor.showMessage(TaskMonitor.Level.ERROR, "Must select either one edge column or two or more node columns");
+			return;
+		}
+
+		if (nodeAttributeList != null && nodeAttributeList.size() > 0 && edgeAttribute != null) {
+			monitor.showMessage(TaskMonitor.Level.ERROR,"Can't have both node and edge columns selected");
+			return;
+		}
+
+		if (nodeAttributeList != null && nodeAttributeList.size() < 2) {
+			monitor.showMessage(TaskMonitor.Level.ERROR,"Must have at least two node columns for cluster weighting");
+			return;
+		}
+
+		String nodeArray[];
+
+		// Handle selected only
+		if (!context.selectedOnly) {
+			nodeArray = new String[myNetwork.getNodeCount()];
+			int index = 0;
+			for (CyNode node: myNetwork.getNodeList()) {
+				nodeArray[index++] = ModelUtils.getName(myNetwork, node);
+			}
+		} else {
+			if (edgeAttribute != null && edgeAttribute.length() > 0) {
+				List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(myNetwork, CyNetwork.SELECTED, true);
+				Set<CyNode> nodesSeen = new HashSet<CyNode>();
+				for (CyEdge edge: selectedEdges) {
+					nodesSeen.add(edge.getSource());
+					nodesSeen.add(edge.getTarget());
+				}
+				int index = 0;
+				nodeArray = new String[nodesSeen.size()];
+				for (CyNode node: nodesSeen) nodeArray[index++] = ModelUtils.getName(myNetwork, node);
+			} else {
+				List<CyNode> selectedNodes = CyTableUtil.getNodesInState(myNetwork, CyNetwork.SELECTED, true);
+				nodeArray = new String[selectedNodes.size()];
+				int index = 0;
+				for (CyNode node: selectedNodes) {
+					nodeArray[index++] = ModelUtils.getName(myNetwork, node);
+				}
+			}
+		}
+
+		Arrays.sort(nodeArray);
+		ModelUtils.createAndSet(myNetwork, myNetwork, ClusterManager.NODE_ORDER_ATTRIBUTE, 
+		                        Arrays.asList(nodeArray), List.class, String.class);
+
+		// Edge attribute?
+		if (edgeAttribute != null && edgeAttribute.length() > 0) {
+			ModelUtils.createAndSet(myNetwork, myNetwork, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
+		                          Arrays.asList(nodeArray), List.class, String.class);
+			ModelUtils.createAndSet(myNetwork, myNetwork, ClusterManager.CLUSTER_EDGE_ATTRIBUTE, 
+		                          "edge."+edgeAttribute, String.class, null);
+		} else {
+			int index = 0;
+			Collections.sort(nodeAttributeList);
+
+			ModelUtils.createAndSet(myNetwork, myNetwork, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
+		                          nodeAttributeList, List.class, String.class);
+		}
+
 		// Get our data model
 		dataModel = new TreeViewModel(monitor, myNetwork, myView);
 
