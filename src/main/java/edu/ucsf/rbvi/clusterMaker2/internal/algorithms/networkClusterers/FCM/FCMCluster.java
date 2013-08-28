@@ -223,6 +223,8 @@ public class FCMCluster extends AbstractNetworkClusterer {
 				}
 			}
 			
+			network.getDefaultNetworkTable().createColumn("FuzzyClusterTableSUID", long.class, false);
+			network.getDefaultNetworkTable().getRow(network).set("FuzzyClusterTableSUID", FuzzyClusterTable.getSUID());
 			tableManager.addTable(FuzzyClusterTable);			
 			
 			

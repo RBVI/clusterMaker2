@@ -6,7 +6,9 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableHandler;
 import org.cytoscape.work.TaskMonitor;
@@ -28,10 +30,13 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm {
 	
 	// Shared instance variables
-
+	CyTableManager tableManager = null;
 	//TODO: add group support
 	
-	public AbstractNetworkClusterer(ClusterManager clusterManager) { super(clusterManager); }
+	public AbstractNetworkClusterer(ClusterManager clusterManager) { 
+		super(clusterManager); 
+		tableManager = clusterManager.getTableManager();
+	}
 
 	@SuppressWarnings("unchecked")
 	public List<List<CyNode>> getNodeClusters() {
@@ -63,6 +68,40 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 				clusterMap.get(cluster).add(node);
 			}
 		}
+		return clusterList;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<List<CyNode>> getFuzzyNodeClusters() {
+		CyTable networkAttributes = network.getDefaultNetworkTable();
+		Long netId = network.getSUID();
+
+		String clusterAttribute = network.getRow(network).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
+		return getFuzzyNodeClusters(clusterAttribute);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<List<CyNode>> getFuzzyNodeClusters(String clusterAttribute){
+		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
+		
+		Long FuzzyClusterTableSUID = network.getRow(network).get("FuzzyClusterTableSUID", long.class);
+		CyTable FuzzyClusterTable = tableManager.getTable(FuzzyClusterTableSUID);
+		
+		int numC = FuzzyClusterTable.getColumns().size() - 1;
+		for(int i = 0; i < numC; i++){
+			clusterList.add(new ArrayList<CyNode>());
+		}
+		
+		List<CyNode> nodeList = network.getNodeList();
+		for (CyNode node : nodeList){
+			CyRow nodeRow = FuzzyClusterTable.getRow(node);
+			for(int i = 0; i < numC; i++){
+				if(nodeRow.get("Cluster_"+ i, double.class) != null){
+					clusterList.get(i).add(node);
+				}
+			}			
+		}
+						
 		return clusterList;
 	}
 
