@@ -67,7 +67,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 	
 	RunFCM runFCM = null;
 	public static String SHORTNAME = "fcml";
-	public static String NAME = "FCM Cluster";
+	public static String NAME = "Fuzzy C-Means Cluster";
 	public final static String GROUP_ATTRIBUTE = "__FCMGroups.SUID";
 	
 	public static final String NONEATTRIBUTE = "--None--";
@@ -145,7 +145,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		context.cNumber = cEstimate();
 		DistanceMetric distMetric = context.distanceMetric.getSelectedValue();
 		runFCM = new RunFCM(distanceMatrix, context.iterations, context.cNumber, distMetric, 
-									context.fIndex, context.beta, context.clusteringThresh, context.maxThreads, monitor);
+									context.fIndex, context.beta, context.membershipThreshold.getValue(), context.maxThreads, monitor);
 
 		
 		//RunFCM (Matrix data,DistanceMatrix dMat, int num_iterations, int cClusters,DistanceMetric metric, double findex, double beta, int maxThreads, Logger logger)

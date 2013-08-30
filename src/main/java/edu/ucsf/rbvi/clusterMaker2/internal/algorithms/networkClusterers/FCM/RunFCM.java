@@ -56,12 +56,12 @@ public class RunFCM {
 	private DistanceMatrix distanceMatrix = null;
 	//private Matrix data = null;
 	double [][] clusterMemberships = null;
-	double clusteringThresh = 0;
+	double membershipThreshold = 0;
 	private boolean debug = false;
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
 	
 	public RunFCM (DistanceMatrix distanceMatrix, int num_iterations, int cClusters,
-				DistanceMetric metric, double findex, double beta, double clusteringThresh,int maxThreads, TaskMonitor monitor ){
+				DistanceMetric metric, double findex, double beta, double membershipThreshold,int maxThreads, TaskMonitor monitor ){
 		
 		
 		this.distanceMatrix = distanceMatrix;
@@ -71,7 +71,7 @@ public class RunFCM {
 		this.beta = beta;
 		this.metric = metric;
 		this.monitor = monitor;
-		this.clusteringThresh = clusteringThresh;
+		this.membershipThreshold = membershipThreshold;
 		
 		
 		if (maxThreads > 0)
@@ -80,7 +80,7 @@ public class RunFCM {
 			nThreads = Runtime.getRuntime().availableProcessors()-1;
 			
 		monitor.showMessage(TaskMonitor.Level.INFO,"Iterations = "+num_iterations);
-		monitor.showMessage(TaskMonitor.Level.INFO,"Clustering Threshold = "+clusteringThresh);
+		monitor.showMessage(TaskMonitor.Level.INFO,"Membership Threshold = "+membershipThreshold);
 		monitor.showMessage(TaskMonitor.Level.INFO,"Threads = "+nThreads);
 		//monitor.showMessage(TaskMonitor.Level.INFO,"Matrix info: = "+distanceMatrix.printMatrixInfo(matrix));
 		monitor.showMessage(TaskMonitor.Level.INFO,"Number of Clusters = "+number_clusters);
@@ -173,7 +173,7 @@ public class RunFCM {
 		for(int i = 0 ; i < number_clusters; i++){
 			fuzzyNodeList = new ArrayList<CyNode>();
 			for( CyNode node: clusterNodes){
-				if (membershipMap.get(node)[i] > clusteringThresh ){
+				if (membershipMap.get(node)[i] > membershipThreshold ){
 					fuzzyNodeList.add(node);
 				}
 			}
