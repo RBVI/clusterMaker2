@@ -1,6 +1,8 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers;
 
 import java.lang.Math;
+import java.util.ArrayList;
+import java.util.List;
 
 
 //FIXME EUCLIDEAN is actually EUCLIDEAN_SQUARED!!!
@@ -22,7 +24,24 @@ public enum DistanceMetric {
 	DistanceMetric(String name) {
 		this.name = name;
 	}
-
+	
+	public static List<DistanceMetric> getDistanceMetricList(){
+		
+		List<DistanceMetric> distanceMetricList = new ArrayList<DistanceMetric>();
+		
+		distanceMetricList.add(VALUE_IS_CORRELATION);
+		distanceMetricList.add(UNCENTERED_CORRELATION);
+		distanceMetricList.add(CORRELATION);
+		distanceMetricList.add(ABS_UNCENTERED_CORRELATION);
+		distanceMetricList.add(ABS_CORRELATION);
+		distanceMetricList.add(SPEARMANS_RANK);
+		distanceMetricList.add(KENDALLS_TAU);
+		distanceMetricList.add(EUCLIDEAN);
+		distanceMetricList.add(CITYBLOCK);
+		
+		return distanceMetricList;
+	}
+	
 	public String toString() {
 		return this.name;
 	}

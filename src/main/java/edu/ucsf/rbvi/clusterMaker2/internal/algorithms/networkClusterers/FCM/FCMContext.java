@@ -46,7 +46,7 @@ public class FCMContext implements ClusterAlgorithmContext {
 	public double beta = 0.01;
 	
 	@Tunable(description = "Distance Metric", groups={"FCM Advanced Settings"}, gravity=28.0)
-	public ListSingleSelection<DistanceMetric> distanceMetric;
+	public ListSingleSelection<DistanceMetric> distanceMetric = new ListSingleSelection<DistanceMetric>(DistanceMetric.getDistanceMetricList());
 	
 	@Tunable(description = "The attributes to consider while clustering", groups={"FCM Advanced Settings"}, gravity=29.0)
 	public ListMultipleSelection<String> attributeList;
@@ -75,10 +75,6 @@ public class FCMContext implements ClusterAlgorithmContext {
 		fIndex = origin.fIndex;
 		beta = origin.beta;
 				
-		distanceMetric = new ListSingleSelection<DistanceMetric>(DistanceMetric.VALUE_IS_CORRELATION, DistanceMetric.UNCENTERED_CORRELATION, 
-								DistanceMetric.CORRELATION, DistanceMetric.ABS_UNCENTERED_CORRELATION,DistanceMetric.ABS_CORRELATION,
-								DistanceMetric.SPEARMANS_RANK, DistanceMetric.KENDALLS_TAU, DistanceMetric.EUCLIDEAN, DistanceMetric.CITYBLOCK);
-		
 		// Retrieving the possible node attributes, required for selecting data to be considered for clustering
 		List<CyColumn> columnList =  (List<CyColumn>) network.getDefaultEdgeTable().getColumns();
 		List<String> columnNameList = new ArrayList<String>();
