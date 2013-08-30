@@ -195,7 +195,8 @@ public class RunHierarchical {
 */
 			}
 			// Remember this in the _hierarchicalGroups attribute
-			ModelUtils.createAndSet(network, network, HierarchicalCluster.GROUP_ATTRIBUTE, groupNames, List.class, String.class);
+			ModelUtils.createAndSetLocal(network, network, HierarchicalCluster.GROUP_ATTRIBUTE, 
+			                             groupNames, List.class, String.class);
 		}
 
 		return rowOrder;

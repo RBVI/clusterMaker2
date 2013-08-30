@@ -164,23 +164,23 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 	protected void resetAttributes(CyNetwork network, String group_attr) {
 
 		// Remove the attributes that are lingering
-		if (ModelUtils.hasAttribute(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE))
-			ModelUtils.deleteAttribute(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE);
-		if (ModelUtils.hasAttribute(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE))
-			ModelUtils.deleteAttribute(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE);
-		if (ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE))
-			ModelUtils.deleteAttribute(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE);
-		if (ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE))
-			ModelUtils.deleteAttribute(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE);
-		if (ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_EDGE_ATTRIBUTE))
-			ModelUtils.deleteAttribute(network, network, ClusterManager.CLUSTER_EDGE_ATTRIBUTE);
-		if (ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE))
-			ModelUtils.deleteAttribute(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE);
-		if (ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE))
-			ModelUtils.deleteAttribute(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE);
+		if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE))
+			ModelUtils.deleteAttributeLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE);
+		if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE))
+			ModelUtils.deleteAttributeLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE);
+		if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE))
+			ModelUtils.deleteAttributeLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE);
+		if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE))
+			ModelUtils.deleteAttributeLocal(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE);
+		if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.CLUSTER_EDGE_ATTRIBUTE))
+			ModelUtils.deleteAttributeLocal(network, network, ClusterManager.CLUSTER_EDGE_ATTRIBUTE);
+		if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE))
+			ModelUtils.deleteAttributeLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE);
+		if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE))
+			ModelUtils.deleteAttributeLocal(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE);
 
 		// See if we have any old groups in this network
-		if (ModelUtils.hasAttribute(network, network, group_attr)) {
+		if (ModelUtils.hasAttributeLocal(network, network, group_attr)) {
 			List<String>clList = network.getRow(network).getList(group_attr, String.class);
 			/*
 			for (String groupName: clList) {
@@ -189,7 +189,7 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 					CyGroupManager.removeGroup(group);
 			}
 			*/
-			ModelUtils.deleteAttribute(network, network, group_attr);
+			ModelUtils.deleteAttributeLocal(network, network, group_attr);
 		}
 	}
 
@@ -203,15 +203,20 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 	                                String weightAttributes[], List<String> attrList, 
 		                              Matrix matrix) {
 
-		ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, cluster_type, String.class, null);
+		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, 
+		                             cluster_type, String.class, null);
 
 		if (matrix.isTransposed()) {
-			ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE, attrList, List.class, String.class);
+			ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE, 
+		                               attrList, List.class, String.class);
 		} else {
-			ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE, attrList, List.class, String.class);
+			ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE, 
+			                             attrList, List.class, String.class);
 			if (matrix.isSymmetrical()) {
-				ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE, attrList, List.class, String.class);
-				ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_EDGE_ATTRIBUTE, weightAttributes[0], String.class, null);
+				ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE, 
+			                               attrList, List.class, String.class);
+				ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_EDGE_ATTRIBUTE, 
+			                               weightAttributes[0], String.class, null);
 			}
 		}
 
@@ -238,21 +243,26 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 			// We did an Array cluster -- output the calculated array order
 			// and the actual node order
 			// netAttr.setListAttribute(netID, ClusterManager.ARRAY_ORDER_ATTRIBUTE, orderList);
-			ModelUtils.createAndSet(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE, orderList, List.class, String.class);
+			ModelUtils.createAndSetLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
+			                             orderList, List.class, String.class);
 
 			// Don't override the columnlist if a node order already exists
-			if (!ModelUtils.hasAttribute(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE))
-				ModelUtils.createAndSet(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE, columnList, List.class, String.class);
+			if (!ModelUtils.hasAttributeLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE))
+				ModelUtils.createAndSetLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE, 
+			                               columnList, List.class, String.class);
 		} else {
-			ModelUtils.createAndSet(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE, orderList, List.class, String.class);
+			ModelUtils.createAndSetLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE, 
+			                             orderList, List.class, String.class);
 			// Don't override the columnlist if a node order already exists
-			if (!ModelUtils.hasAttribute(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE))
-				ModelUtils.createAndSet(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE, columnList, List.class, String.class);
+			if (!ModelUtils.hasAttributeLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE))
+				ModelUtils.createAndSetLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
+			                               columnList, List.class, String.class);
 		}
 
 	}
 
 	protected void updateParams(CyNetwork network, List<String> params) {
-		ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, params, List.class, String.class);
+		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, 
+		                             params, List.class, String.class);
 	}
 }

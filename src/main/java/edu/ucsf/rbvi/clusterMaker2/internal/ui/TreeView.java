@@ -58,6 +58,7 @@ import java.net.URL;
 import java.net.MalformedURLException;
 
 // Cytoscape imports
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -112,6 +113,7 @@ public class TreeView extends TreeViewApp implements Observer,
 	private	List<CyNode>selectedNodes;
 	private	List<CyNode>selectedArrays;
 	private boolean disableListeners = false;
+	private boolean ignoreSelection = false;
 	protected ClusterManager manager = null;
 	protected CyNetworkTableManager networkTableManager = null;
 
@@ -213,6 +215,9 @@ public class TreeView extends TreeViewApp implements Observer,
 		if (!e.containsColumn(CyNetwork.SELECTED))
 			return;
 
+		if (ignoreSelection)
+			return;
+
 		CyTable table = e.getSource();
 		CyNetwork net = networkTableManager.getNetworkForTable(table);
 		Class type = networkTableManager.getTableType(table);
@@ -248,7 +253,6 @@ public class TreeView extends TreeViewApp implements Observer,
 		if (disableListeners) return;
 
 		if (o == geneSelection) {
-			// System.out.println("gene selection");
 			selectedNodes.clear();
 			int[] selections = geneSelection.getSelectedIndexes();
 			HeaderInfo geneInfo = dataModel.getGeneHeaderInfo();
@@ -268,17 +272,24 @@ public class TreeView extends TreeViewApp implements Observer,
 			// System.out.println("Selecting "+selectedNodes.size()+" nodes");
 			if (!dataModel.isSymmetrical() || selectedArrays.size() == 0) {
 				List<CyNode> nodesToClear = CyTableUtil.getNodesInState(currentNetwork, CyNetwork.SELECTED, true);
-				for (CyNode node: nodesToClear) 
+				ignoreSelection = true;
+				for (CyNode node: nodesToClear) {
+					myNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.FALSE);
 					currentNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.FALSE);
+				}
 
-				for (CyNode node: selectedNodes) 
+				for (CyNode node: selectedNodes) {
+					myNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.TRUE);
 					currentNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.TRUE);
+				}
+				manager.getService(CyEventHelper.class).flushPayloadEvents();
+				ignoreSelection = false;
 
-				myView.updateView();
+				if (currentView != null)
+					currentView.updateView();
 			}
 			return;
 		} else if (o == arraySelection) {
-			// System.out.println("array selection");
 			// We only care about array selection for symmetrical models
 			if (!dataModel.isSymmetrical())
 				return;
@@ -303,6 +314,13 @@ public class TreeView extends TreeViewApp implements Observer,
 		}
 
 		HashMap<CyEdge,CyEdge>edgesToSelect = new HashMap<CyEdge,CyEdge>();
+		ignoreSelection = true;
+		List<CyEdge> edgesToClear = CyTableUtil.getEdgesInState(currentNetwork, CyNetwork.SELECTED, true);
+		for (CyEdge edge: edgesToClear) {
+			myNetwork.getRow(edge).set(CyNetwork.SELECTED, Boolean.FALSE);
+			currentNetwork.getRow(edge).set(CyNetwork.SELECTED, Boolean.FALSE);
+		}
+
 		for (CyNode node1: selectedNodes) {
 			for (CyNode node2: selectedArrays) {
 				List<CyEdge> edges = currentNetwork.getConnectingEdgeList(node1, node2, CyEdge.Type.ANY);
@@ -311,9 +329,12 @@ public class TreeView extends TreeViewApp implements Observer,
 				}
 				for (CyEdge edge: edges) {
 					currentNetwork.getRow(edge).set(CyNetwork.SELECTED, Boolean.TRUE);
+					myNetwork.getRow(edge).set(CyNetwork.SELECTED, Boolean.TRUE);
 				}
 			}
 		}
+		manager.getService(CyEventHelper.class).flushPayloadEvents();
+		ignoreSelection = false;
 
 		if (currentView != null)
 			currentView.updateView();
@@ -337,6 +358,9 @@ public class TreeView extends TreeViewApp implements Observer,
 
 		// Do the actual selection
 		for (CyEdge cyEdge: edgeArray) {
+			if (!myNetwork.containsEdge(cyEdge))
+				continue;
+
 			CyNode source = (CyNode)cyEdge.getSource();
 			CyNode target = (CyNode)cyEdge.getTarget();
 			int geneIndex = geneInfo.getHeaderIndex(ModelUtils.getName(myNetwork, source));
@@ -360,6 +384,9 @@ public class TreeView extends TreeViewApp implements Observer,
 		geneSelection.setSelectedNode(null);
 		geneSelection.deselectAllIndexes();
 		for (CyNode cyNode: nodeArray) {
+			if (!myNetwork.containsNode(cyNode))
+				continue;
+
 			int geneIndex = geneInfo.getHeaderIndex(ModelUtils.getName(myNetwork, cyNode));
 			// System.out.println("setting "+cyNode.getIdentifier()+"("+geneIndex+") to "+select);
 			geneSelection.setIndex(geneIndex, select);

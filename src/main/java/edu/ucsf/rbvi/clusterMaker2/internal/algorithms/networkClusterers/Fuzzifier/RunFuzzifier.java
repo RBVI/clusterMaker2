@@ -96,8 +96,6 @@ public class RunFuzzifier {
 		
 		Long networkID = network.getSUID();		
 		nodeList = network.getNodeList();
-		CyTable netAttributes = network.getDefaultNetworkTable();	
-		CyTable nodeAttributes = network.getDefaultNodeTable();			
 
 		long startTime = System.currentTimeMillis();		
 		int nelements = distanceMatrix.getNodes().size();

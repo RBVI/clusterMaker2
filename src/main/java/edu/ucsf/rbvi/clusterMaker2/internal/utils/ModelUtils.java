@@ -47,20 +47,36 @@ public class ModelUtils {
 		return network.getRow(network).get(CyNetwork.NAME, String.class);
 	}
 
+	public static boolean hasAttributeLocal(CyNetwork network, CyIdentifiable value, String column) {
+		return hasAttribute(network, value, column, CyNetwork.LOCAL_ATTRS);
+	}
+
 	public static boolean hasAttribute(CyNetwork network, CyIdentifiable value, String column) {
-		if (!CyTableUtil.getColumnNames(network.getRow(value).getTable()).contains(column))
+		return hasAttribute(network, value, column, CyNetwork.DEFAULT_ATTRS);
+	}
+
+	public static boolean hasAttribute(CyNetwork network, CyIdentifiable value, String column, String namespace) {
+		if (!CyTableUtil.getColumnNames(network.getRow(value, namespace).getTable()).contains(column))
 			return false;
 
-		if (network.getRow(value).getRaw(column) == null)
+		if (network.getRow(value, namespace).getRaw(column) == null)
 			return false;
 
 		return true;
 	}
 
+	public static void deleteAttributeLocal(CyNetwork network, CyIdentifiable value, String column) {
+		deleteAttribute(network, value, column, CyNetwork.LOCAL_ATTRS);
+	}
+
 	public static void deleteAttribute(CyNetwork network, CyIdentifiable value, String column) {
-		if (!CyTableUtil.getColumnNames(network.getRow(value).getTable()).contains(column))
+		deleteAttribute(network, value, column, CyNetwork.DEFAULT_ATTRS);
+	}
+
+	public static void deleteAttribute(CyNetwork network, CyIdentifiable value, String column, String namespace) {
+		if (!CyTableUtil.getColumnNames(network.getRow(value, namespace).getTable()).contains(column))
 			return;
-		network.getRow(value).getTable().deleteColumn(column);
+		network.getRow(value, namespace).getTable().deleteColumn(column);
 	}
 
 	public static CyNetwork createChildNetwork(ClusterManager manager, CyNetwork network, 

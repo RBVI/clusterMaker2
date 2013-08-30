@@ -151,18 +151,18 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 			return true;
 		}
 		
-		CyTable networkTable = network.getDefaultNetworkTable();
+		CyTable networkTable = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
 		if (!CyTableUtil.getColumnNames(networkTable).contains(ClusterManager.CLUSTER_TYPE_ATTRIBUTE))
 			return false;
 
-		String cluster_type = network.getRow(network).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class);
+		String cluster_type = network.getRow(network, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class);
 		if (manager.getAlgorithm(cluster_type) != null)
 		if (manager.getAlgorithm(cluster_type) == null || 
 		    !manager.getAlgorithm(cluster_type).getTypeList().contains(ClusterTaskFactory.ClusterType.NETWORK))
 			return false;
 
 		if (CyTableUtil.getColumnNames(networkTable).contains(ClusterManager.CLUSTER_ATTRIBUTE)) {
-			clusterAttribute = network.getRow(network).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
+			clusterAttribute = network.getRow(network, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
 			if (clusterAttribute != null) return true;
 		}
 		return false;
@@ -240,7 +240,7 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 		// Two possibilities.  We may have a fuzzy cluster or a discrete cluster.  Figure
 		// that out now.
 		boolean isFuzzy = 
-			network.getDefaultNodeTable().getColumn(clusterAttribute).getType().equals(List.class);
+			network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS).getColumn(clusterAttribute).getType().equals(List.class);
 
 		// Create the cluster Map
 		Map<Integer, List<CyNode>> clusterMap = new HashMap<Integer, List<CyNode>>();

@@ -43,7 +43,7 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 		CyTable networkAttributes = network.getDefaultNetworkTable();
 		Long netId = network.getSUID();
 
-		String clusterAttribute = network.getRow(network).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
+		String clusterAttribute = network.getRow(network, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
 		return getNodeClusters(clusterAttribute);
 	}
 
@@ -76,7 +76,7 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 		CyTable networkAttributes = network.getDefaultNetworkTable();
 		Long netId = network.getSUID();
 
-		String clusterAttribute = network.getRow(network).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
+		String clusterAttribute = network.getRow(network, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
 		return getFuzzyNodeClusters(clusterAttribute);
 	}
 	
@@ -84,7 +84,7 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 	public List<List<CyNode>> getFuzzyNodeClusters(String clusterAttribute){
 		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
 		
-		Long FuzzyClusterTableSUID = network.getRow(network).get("FuzzyClusterTable.SUID", long.class);
+		Long FuzzyClusterTableSUID = network.getRow(network, CyNetwork.LOCAL_ATTRS).get("FuzzyClusterTable.SUID", long.class);
 		CyTable FuzzyClusterTable = tableManager.getTable(FuzzyClusterTableSUID);
 		
 		int numC = FuzzyClusterTable.getColumns().size() - 1;
@@ -115,9 +115,9 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 
 			for (CyNode node: cluster) {
 				nodeList.add(node);
-				ModelUtils.createAndSet(network, node, clusterAttributeName, clusterNumber, Integer.class, null);
+				ModelUtils.createAndSetLocal(network, node, clusterAttributeName, clusterNumber, Integer.class, null);
 				if (NodeCluster.hasScore()) {
-					ModelUtils.createAndSet(network, node, clusterAttributeName+"_Score", clusterNumber, Double.class, null);
+					ModelUtils.createAndSetLocal(network, node, clusterAttributeName+"_Score", clusterNumber, Double.class, null);
 				}
 			}
 
@@ -129,12 +129,15 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 			clusterList.add(nodeList);
 		}
 		
-		ModelUtils.createAndSet(network, network, group_attr, groupList, List.class, Long.class);
+		ModelUtils.createAndSetLocal(network, network, group_attr, groupList, List.class, Long.class);
 
-		ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, getShortName(), String.class, null);
-		ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_ATTRIBUTE, clusterAttributeName, String.class, null);
+		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, getShortName(), 
+		                             String.class, null);
+		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTRIBUTE, clusterAttributeName, 
+		                             String.class, null);
 		if (params != null)
-			ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, params, List.class, String.class);
+			ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, params, 
+		                               List.class, String.class);
 
 		return clusterList;
 	}
@@ -155,7 +158,8 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 				//createAndSet(network, node, clusterAttributeName+"_"+clusterNumber, cluster.getMembership(node), Double.class, null);
 				// network.getRow(node).set(clusterAttributeName, clusterNumber);
 				if (FuzzyNodeCluster.hasScore()) {
-					ModelUtils.createAndSet(network, node, clusterAttributeName+"_"+clusterNumber+"_Membership", cluster.getMembership(node), Double.class, null);
+					ModelUtils.createAndSetLocal(network, node, clusterAttributeName+"_"+clusterNumber+"_Membership", 
+					                             cluster.getMembership(node), Double.class, null);
 					// network.getRow(node).set(clusterAttributeName+"_Score", cluster.getClusterScore());
 				}
 			}
@@ -169,11 +173,14 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 		}
 		
 		
-		ModelUtils.createAndSet(network, network, group_attr, groupList, List.class, Long.class);
-		ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, getShortName(), String.class, null);
-		ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_ATTRIBUTE, clusterAttributeName, String.class, null);
+		ModelUtils.createAndSetLocal(network, network, group_attr, groupList, List.class, Long.class);
+		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, 
+		                             getShortName(), String.class, null);
+		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTRIBUTE, 
+		                             clusterAttributeName, String.class, null);
 		if (params != null)
-			ModelUtils.createAndSet(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, params, List.class, String.class);
+			ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, 
+		                               params, List.class, String.class);
 				
 		return clusterList;
 	}
@@ -182,14 +189,14 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 	
 	protected void removeGroups(CyNetwork network, String group_attr) {
 		if (network.getDefaultNetworkTable().getColumn(group_attr) != null) {
-			List<Long> groupList = network.getRow(network).getList(group_attr, Long.class);
+			List<Long> groupList = network.getRow(network, CyNetwork.LOCAL_ATTRS).getList(group_attr, Long.class);
 			if (groupList != null) {
 				for (Long groupSUID: groupList) {
 					// remove the group
 					clusterManager.removeGroup(network, groupSUID);
 				}
 			}
-			network.getRow(network).set(group_attr, null);
+			network.getRow(network, CyNetwork.LOCAL_ATTRS).set(group_attr, null);
 		}
 	}
 }

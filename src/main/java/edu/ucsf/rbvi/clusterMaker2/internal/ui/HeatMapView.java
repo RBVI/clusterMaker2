@@ -236,21 +236,21 @@ public class HeatMapView extends TreeViewApp implements Observer,
 		}
 
 		Arrays.sort(nodeArray);
-		ModelUtils.createAndSet(myNetwork, myNetwork, ClusterManager.NODE_ORDER_ATTRIBUTE, 
-		                        Arrays.asList(nodeArray), List.class, String.class);
+		ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.NODE_ORDER_ATTRIBUTE, 
+		                             Arrays.asList(nodeArray), List.class, String.class);
 
 		// Edge attribute?
 		if (edgeAttribute != null && edgeAttribute.length() > 0) {
-			ModelUtils.createAndSet(myNetwork, myNetwork, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
-		                          Arrays.asList(nodeArray), List.class, String.class);
-			ModelUtils.createAndSet(myNetwork, myNetwork, ClusterManager.CLUSTER_EDGE_ATTRIBUTE, 
-		                          "edge."+edgeAttribute, String.class, null);
+			ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
+		                               Arrays.asList(nodeArray), List.class, String.class);
+			ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.CLUSTER_EDGE_ATTRIBUTE, 
+		                               "edge."+edgeAttribute, String.class, null);
 		} else {
 			int index = 0;
 			Collections.sort(nodeAttributeList);
 
-			ModelUtils.createAndSet(myNetwork, myNetwork, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
-		                          nodeAttributeList, List.class, String.class);
+			ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
+		                               nodeAttributeList, List.class, String.class);
 		}
 
 		// Get our data model

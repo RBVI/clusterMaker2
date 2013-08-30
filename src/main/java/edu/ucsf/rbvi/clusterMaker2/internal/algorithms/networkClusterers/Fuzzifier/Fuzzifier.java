@@ -118,9 +118,7 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 		
 		Long networkID = network.getSUID();
 
-		CyTable netAttributes = network.getDefaultNetworkTable();
 		CyTable nodeAttributes = network.getDefaultNodeTable();
-		CyTable edgeAttributes = network.getDefaultEdgeTable();
 		
 		DistanceMatrix distanceMatrix = context.edgeAttributeHandler.getMatrix();
 		if (distanceMatrix == null) {

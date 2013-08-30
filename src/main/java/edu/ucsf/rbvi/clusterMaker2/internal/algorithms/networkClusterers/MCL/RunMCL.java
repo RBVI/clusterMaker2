@@ -86,9 +86,6 @@ public class RunMCL {
 	{
 		Long networkID = network.getSUID();		//String networkID = network.getIdentifier();
 
-		CyTable netAttributes = network.getDefaultNetworkTable();	//CyAttributes netAttributes = Cytoscape.getNetworkAttributes();
-		CyTable nodeAttributes = network.getDefaultNodeTable();	//CyAttributes nodeAttributes = Cytoscape.getNodeAttributes();
-		
 		long startTime = System.currentTimeMillis();
 
 		// Matrix matrix;
