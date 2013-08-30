@@ -172,6 +172,21 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 			clusterList.add(nodeList);
 		}
 		
+		// Adding a column per node by the clusterAttributeName, which will store a list of all the clusters to which the node belongs
+		List<CyNode> nodeList = network.getNodeList();
+		
+		for(int i = 0; i < nodeList.size(); i++ ){
+			CyNode node = nodeList.get(i);
+			List<Integer> listOfClusters = new ArrayList<Integer>();
+			for(FuzzyNodeCluster cluster : clusters){
+				if(cluster.getMembership(node) > 0.0){
+					listOfClusters.add(cluster.getClusterNumber());
+				}
+			}
+			ModelUtils.createAndSet(network, node, clusterAttributeName, listOfClusters , Integer.class, null);
+			
+		}
+		
 		
 		ModelUtils.createAndSetLocal(network, network, group_attr, groupList, List.class, Long.class);
 		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, 
