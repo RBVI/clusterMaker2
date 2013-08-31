@@ -56,11 +56,12 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
 
 public class GLayCluster extends AbstractNetworkClusterer  {
 	public static String SHORTNAME = "glay";
 	public static String NAME = "Community cluster (GLay)";
-	public final static String GROUP_ATTRIBUTE = "__Communities.SUID";
+	public final static String GROUP_ATTRIBUTE = SHORTNAME;
 	
 	FastGreedyAlgorithm fa = null;
 	boolean createNewNetwork = false;
@@ -80,6 +81,8 @@ public class GLayCluster extends AbstractNetworkClusterer  {
 	}
 
 	public String getShortName() {return SHORTNAME;};
+
+	@ProvidesTitle
 	public String getName() {return NAME;};
 
 	public ClusterViz getVisualizer() {
@@ -122,6 +125,13 @@ public class GLayCluster extends AbstractNetworkClusterer  {
 
 		results = new AbstractClusterResults(network, nodeClusters);
 		monitor.showMessage(TaskMonitor.Level.INFO, "Done.  Community Clustering results:\n"+results);
+
+		if (context.vizProperties.showUI) {
+			monitor.showMessage(TaskMonitor.Level.INFO, 
+		                      "Creating network");
+			insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true,
+			                                               context.vizProperties.restoreEdges));
+		}
 
 	}
 

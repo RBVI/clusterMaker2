@@ -56,12 +56,13 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Abstrac
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
 
 
 public class SCPSCluster extends AbstractNetworkClusterer  {
 	public static String SHORTNAME = "scps";
 	public static String NAME = "SCPS Cluster";
-	public final static String GROUP_ATTRIBUTE = "__SCPSGroups.SUID";
+	public final static String GROUP_ATTRIBUTE = SHORTNAME;
 	
 	RunSCPS runSCPS = null;
 
@@ -128,6 +129,13 @@ public class SCPSCluster extends AbstractNetworkClusterer  {
 
 		results = new AbstractClusterResults(network, nodeClusters);
 		monitor.showMessage(TaskMonitor.Level.INFO,"Done.  SCPS results:\n"+results);
+
+		if (context.vizProperties.showUI) {
+			monitor.showMessage(TaskMonitor.Level.INFO, 
+		                      "Creating network");
+			insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true,
+			                                               context.vizProperties.restoreEdges));
+		}
 
 	}
 

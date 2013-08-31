@@ -45,7 +45,6 @@ public class FCMClusterTaskFactory implements ClusterTaskFactory   {
 		// Not sure why we need to do this, but it looks like
 		// the tunable stuff "remembers" objects that it's already
 		// processed this tunable.  So, we use a copy constructor
-		context = new FCMContext(context);
 		return new TaskIterator(new FCMCluster(context, clusterManager));
 	}
 	

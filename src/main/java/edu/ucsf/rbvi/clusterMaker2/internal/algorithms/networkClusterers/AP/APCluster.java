@@ -57,12 +57,13 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Abstrac
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
 
 public class APCluster extends AbstractNetworkClusterer  {
 	ClusterManager clusterManager;
 	public static String SHORTNAME = "ap";
 	public static String NAME = "Affinity Propagation cluster";
-	public final static String GROUP_ATTRIBUTE = "__APGroups.SUID";
+	public final static String GROUP_ATTRIBUTE = SHORTNAME;
 	
 	RunAP runAP = null;
 
@@ -81,6 +82,8 @@ public class APCluster extends AbstractNetworkClusterer  {
 	}
 
 	public String getShortName() {return SHORTNAME;}
+
+	@ProvidesTitle
 	public String getName() {return NAME;}
 
 	public ClusterViz getVisualizer() {
@@ -131,6 +134,13 @@ public class APCluster extends AbstractNetworkClusterer  {
 
 		results = new AbstractClusterResults(network, nodeClusters);
 		monitor.showMessage(TaskMonitor.Level.INFO, "Done.  AP results:\n"+results);
+
+		if (context.vizProperties.showUI) {
+			monitor.showMessage(TaskMonitor.Level.INFO, 
+		                      "Creating network");
+			insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true,
+			                                               context.vizProperties.restoreEdges));
+		}
 	}
 
 	public void cancel() {

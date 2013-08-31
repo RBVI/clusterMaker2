@@ -9,6 +9,7 @@ import org.cytoscape.work.swing.TunableUIHelper;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithmContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AdvancedProperties;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.NetworkVizProperties;
 
 public class SCPSContext implements ClusterAlgorithmContext {
 	CyNetwork network;
@@ -29,6 +30,9 @@ public class SCPSContext implements ClusterAlgorithmContext {
 	
 	@ContainsTunables
 	public AdvancedProperties advancedAttributes;
+
+	@ContainsTunables
+	public NetworkVizProperties vizProperties = new NetworkVizProperties();
 
 	public SCPSContext() {
 		advancedAttributes = new AdvancedProperties("__scpsCluster", false);

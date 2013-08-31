@@ -75,18 +75,24 @@ public class KMeansContext {
 	public AttributeList attributeList = null;
 
 	public boolean selectedOnly = false;
-	@Tunable(description="Use only selected nodes/edges for cluster", gravity=100)
+	@Tunable(description="Use only selected nodes/edges for cluster", 
+	         groups={"K-Means Parameters"}, gravity=100)
 	public boolean getselectedOnly() { return selectedOnly; }
 	public void setselectedOnly(boolean selectedOnly) {
 		this.selectedOnly = selectedOnly;
 		if (network != null) kcluster.updateKEstimates(network, selectedOnly);
 	}
 
-	@Tunable(description="Cluster attributes as well as nodes", gravity=101)
+	@Tunable(description="Cluster attributes as well as nodes", 
+	         groups={"K-Means Parameters"}, gravity=101)
 	public boolean clusterAttributes = false;
 	
-	@Tunable(description="Create groups from clusters", gravity=102)
+	@Tunable(description="Create groups from clusters", groups={"Visualization Options"}, gravity=150)
 	public boolean createGroups = false;
+
+	@Tunable(description="Show HeatMap when complete", groups={"Visualization Options"}, gravity=151)
+	public boolean showUI = false;
+
 
 	public KMeansContext() {
 	}

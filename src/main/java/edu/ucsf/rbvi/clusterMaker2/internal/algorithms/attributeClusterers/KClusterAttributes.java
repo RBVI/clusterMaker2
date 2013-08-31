@@ -61,16 +61,20 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
  */
 public class KClusterAttributes {
 
-	@Tunable (description="Estimate k using silhouette", gravity=1.0)
+	@Tunable (description="Estimate k using silhouette", 
+	          groups={"K-Cluster parameters"}, gravity=1.0)
 	public boolean useSilhouette = false;
 
-	@Tunable (description="Maximum number of clusters", dependsOn="useSilhouette=true", gravity=2.0)
+	@Tunable (description="Maximum number of clusters", 
+	          groups={"K-Cluster parameters"}, dependsOn="useSilhouette=true", gravity=2.0)
 	public int kMax = 0;
 
-	@Tunable (description="Number of clusters", dependsOn="useSilhouette=false", gravity=3.0)
+	@Tunable (description="Number of clusters", 
+	          groups={"K-Cluster parameters"}, dependsOn="useSilhouette=false", gravity=3.0)
 	public int kNumber = 0;
 
-	@Tunable (description="Initialize cluster centers from most central elements", gravity=4.0)
+	@Tunable (description="Initialize cluster centers from most central elements", 
+	          groups={"K-Cluster parameters"}, gravity=4.0)
 	public boolean initializeNearCenter = false;
 
 	public KClusterAttributes() {

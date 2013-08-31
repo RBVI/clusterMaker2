@@ -63,22 +63,25 @@ import edu.ucsf.rbvi.clusterMaker2.internal.treeview.model.TVModel;
  */
 public class TreeViewModel extends TVModel {
 	// Keep track of gene to node references
-	CyNetwork network;
-	CyNetworkView networkView;
 	boolean isSymmetrical = false;
 	boolean zeroMissing = false;
 	Double diagonalValue = null;
 	List<String> clusterParams = null;
-	TaskMonitor monitor = null;
+
+	CyNetwork network;
+	CyNetworkView networkView;
+	TaskMonitor monitor;
+	ClusterManager clusterManager;
+
 	private String [] clusterHeaders = {"NODEID", "LEFT", "RIGHT", "CORRELATION"};
 
-	public TreeViewModel(TaskMonitor monitor, CyNetwork network, CyNetworkView networkView) {
+	public TreeViewModel(TaskMonitor monitor, CyNetwork network, 
+	                     CyNetworkView networkView, ClusterManager clusterManager) {
 		super();
-
-		// Get our logger
 		this.monitor = monitor;
 		this.network = network;
 		this.networkView = networkView;
+		this.clusterManager = clusterManager;
 
 		// Get the type of cluster
 		String clusterType = null;
@@ -241,6 +244,10 @@ public class TreeViewModel extends TVModel {
 
 	public boolean isSymmetrical() {
 		return isSymmetrical;
+	}
+
+	public ClusterManager getClusterManager() {
+		return clusterManager;
 	}
 
 	protected String[] getClusterHeaders() {

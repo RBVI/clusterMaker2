@@ -18,6 +18,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.de.layclust.taskmanaging.TaskConfig;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -61,6 +62,8 @@ public class TransClustCluster extends AbstractNetworkClusterer{
 	}
 
 	public String getShortName() {return SHORTNAME;};
+
+	@ProvidesTitle
 	public String getName() {return NAME;};
 
 	public ClusterViz getVisualizer() {
@@ -157,6 +160,13 @@ public class TransClustCluster extends AbstractNetworkClusterer{
 		results = new AbstractClusterResults(network, nodeClusters);
 
 		monitor.setStatusMessage("Done.  TransClust results:\n"+results);
+
+		if (context.vizProperties.showUI) {
+			monitor.showMessage(TaskMonitor.Level.INFO, 
+		                      "Creating network");
+			insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true,
+			                                               context.vizProperties.restoreEdges));
+		}
 	}
 
 	public void cancel() {

@@ -63,12 +63,13 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Abstrac
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 public class MCODECluster extends AbstractNetworkClusterer  {
 	public static String SHORTNAME = "mcode";
 	public static String NAME = "MCODE Cluster";
-	public final static String GROUP_ATTRIBUTE = "__MCODEGroups.SUID";
+	public final static String GROUP_ATTRIBUTE = SHORTNAME;
 	
 	final static int FIRST_TIME = 0;
 	final static int RESCORE = 1;
@@ -164,6 +165,13 @@ public class MCODECluster extends AbstractNetworkClusterer  {
 
 		results = new AbstractClusterResults(network, nodeClusters);
 		monitor.setStatusMessage("Done.  MCODE results:\n"+results);
+
+		if (context.vizProperties.showUI) {
+			monitor.showMessage(TaskMonitor.Level.INFO, 
+		                      "Creating network");
+			insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true,
+			                                               context.vizProperties.restoreEdges));
+		}
 
 	}
 

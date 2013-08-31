@@ -38,7 +38,19 @@
 */
 package edu.ucsf.rbvi.clusterMaker2.internal.ui;
 
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.TaskMonitor;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.DataModel;
@@ -46,9 +58,12 @@ import edu.ucsf.rbvi.clusterMaker2.internal.treeview.HeaderInfo;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.TreeSelectionI;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.ViewFrame;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.dendroview.ColorExtractor;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ViewUtils;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -107,6 +122,8 @@ public class NetworkColorDialog extends JDialog
 	protected JSlider animationSlider;
 	private JButton animateButton;
 	private JButton nodeChartButton = null;
+	private ClusterManager clusterManager = null;
+	private TaskManager taskManager = null;
 
 	private boolean animating = false;
 	private boolean listening = true;
@@ -115,32 +132,34 @@ public class NetworkColorDialog extends JDialog
 	 * Creates a new NetworkColorDialog object.
 	 */
 	public NetworkColorDialog(JFrame parent, ColorExtractor ce, List<String>attributes, 
-	                          ViewFrame viewFrame,
+	                          ViewFrame viewFrame, ClusterManager clusterManager,
 	                          double minValue, double maxValue, 
 	                          boolean symmetric) {
 		super(parent, "Map Colors to Network", false);
-/*
 		colorExtractor = ce;
 		attributeList = attributes;
 		this.maxValue = maxValue;
 		this.minValue = minValue;
 		this.viewFrame = viewFrame;
+		this.clusterManager = clusterManager;
+
+		taskManager = clusterManager.getService(TaskManager.class); // Get a task manager
 
 		if (symmetric) {
-			CyAttributes networkAttributes = Cytoscape.getNetworkAttributes();
-			CyNetwork network = Cytoscape.getCurrentNetwork();
-			String attribute = networkAttributes.getStringAttribute(network.getIdentifier(), ClusterMaker.CLUSTER_EDGE_ATTRIBUTE);
+			CyNetwork network = clusterManager.getNetwork();
+			if (!ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_EDGE_ATTRIBUTE))
+				return;
+
 			MapTask task = new MapTask(attribute.substring(5), "-heatMap", true);
-			TaskManager.executeTask( task, task.getDefaultTaskConfig() );
-			// createNewStyle(attribute.substring(5), "-heatMap", true, true);
+			taskManager.execute(new TaskIterator(task));
 			return;
 		}
 		// How many attributes are there?
 		if (attributeList.size() == 1) {
 			// Only one, so just do it (no dialog)
 			MapTask task = new MapTask(attributeList.get(0), "-heatMap", false);
-			TaskManager.executeTask( task, task.getDefaultTaskConfig() );
-			// createNewStyle(attributeList.get(0), "-heatMap", true, false);
+			taskManager.execute(new TaskIterator(task));
+			return;
 		} else {
 			initializeOnce(); // Initialize the components we only do once
 			pack();
@@ -148,7 +167,6 @@ public class NetworkColorDialog extends JDialog
 		}
 
 		addWindowListener(this);
-*/
 	}
 
 	/**
@@ -157,7 +175,6 @@ public class NetworkColorDialog extends JDialog
 	 * @param e DOCUMENT ME!
 	 */
 	public void actionPerformed(ActionEvent e) {
-/*
 		// Are we the source of the event?
 		String command = e.getActionCommand();
 
@@ -172,8 +189,7 @@ public class NetworkColorDialog extends JDialog
 			String attribute = (String)attributeSelector.getSelectedValue();
 
 			MapTask task = new MapTask(attribute, "-heatMap", false);
-			TaskManager.executeTask( task, task.getDefaultTaskConfig() );
-			// VisualStyle style = createNewStyle(attribute, "-heatMap", true, false);
+			taskManager.execute(new TaskIterator(task));
 		} else if (command.equals("animate")) {
 			if (animating) {
 				animating = false;
@@ -186,7 +202,7 @@ public class NetworkColorDialog extends JDialog
 			if (attributeArray.length < 2) {
 				// Really nothing to animate if we only have one map
 				MapTask task = new MapTask((String)attributeArray[0], "-heatMap", false);
-				TaskManager.executeTask( task, task.getDefaultTaskConfig() );
+				taskManager.execute(new TaskIterator(task));
 				return;
 			}
 
@@ -208,6 +224,12 @@ public class NetworkColorDialog extends JDialog
 			// Get the selected attributes
 			Object[] attributeArray = attributeSelector.getSelectedValues();
 
+			// We need to use enhancedgraphics for this.
+			// 1) create a heatstrip command
+			// 2) Write it into a column for every node
+			// 3) Add a passthrough mapper for custom graphics
+
+/*
 			Map<String, Object> args = new HashMap<String, Object>();
 			args.put("nodelist","all");
 
@@ -240,9 +262,9 @@ public class NetworkColorDialog extends JDialog
 			} catch (Exception e2) {
 				CyLogger.getLogger(this.getClass()).error("Error from nodecharts: "+e2.getMessage());
 			}
-			Cytoscape.getCurrentNetworkView().updateView();
-		}
 */
+			clusterManager.getNetworkView().updateView();
+		}
 	}
 
 	// WindowListener methods
@@ -256,54 +278,54 @@ public class NetworkColorDialog extends JDialog
  	public void	windowIconified(WindowEvent e) {}
  	public void	windowOpened(WindowEvent e) {}
 
-/*
 	private VisualStyle createNewStyle(String attribute, String suffix, boolean update, boolean edge) { 
 		boolean newStyle = false;
 
 		// Get our current vizmap
-		VisualMappingManager manager = Cytoscape.getVisualMappingManager();
-		CalculatorCatalog calculatorCatalog = manager.getCalculatorCatalog();
-
-		// Get the current style
-		VisualStyle style = Cytoscape.getCurrentNetworkView().getVisualStyle();
+		VisualMappingManager vmm = clusterManager.getService(VisualMappingManager.class);
+		VisualStyle style = ViewUtils.getCurrentVisualStyle(clusterManager);
 
 		// Get our colors
 		Color missingColor = colorExtractor.getMissing();
 
-		if (!style.getName().endsWith(suffix)) {
-			// Create a new vizmap
-			Set<String> styles = calculatorCatalog.getVisualStyleNames();
-			if (styles.contains(style.getName()+suffix))
-				style = calculatorCatalog.getVisualStyle(style.getName()+suffix);
-			else {
-				style = new VisualStyle(style, style.getName()+suffix);
-				newStyle = true;
-			}
-		}
-
-		// Get the right mapping, depending on whether we are mapping an edge or a node
-		// byte mapping = ObjectMapping.NODE_MAPPING;
-		VisualPropertyType vizType = VisualPropertyType.NODE_FILL_COLOR;
+		// Get the type of "attribute"
+		CyNetwork network = clusterManager.getNetwork();
+		VisualProperty<Paint> property;
+		CyColumn column;
 		if (edge) {
-			// mapping = ObjectMapping.EDGE_MAPPING;
-			vizType = VisualPropertyType.EDGE_COLOR;
+			column = network.getDefaultEdgeTable().getColumn(attribute);
+			property = BasicVisualLexicon.EDGE_PAINT;
+		} else {
+			column = network.getDefaultNodeTable().getColumn(attribute);
+			property = BasicVisualLexicon.NODE_FILL_COLOR;
+		}
+		if (column == null) return null;
+
+		Class type = column.getType();
+
+		if (!style.getTitle().endsWith(suffix)) {
+			style = ViewUtils.copyStyle(clusterManager, style, suffix);
+			newStyle = true;
 		}
 
-		// Create the new continuous mapper
-		ContinuousMapping colorMapping = new ContinuousMapping(Color.class, attribute);
-		
+		// Get a function factory
+		VisualMappingFunctionFactory vmff = clusterManager.getService(VisualMappingFunctionFactory.class, 
+		                                                              "(mapping.type=continuous)");
+		ContinuousMapping colorMapping =
+			(ContinuousMapping) vmff.createVisualMappingFunction(attribute, type, property);
+
 		double minStep = minValue/5.0;
 		for (int i = 0; i < 5; i++) {
 			Color color = colorExtractor.getColor(minValue-(minStep*i));
 			// System.out.println("Value: "+(minValue-(minStep*i))+" Color: "+color.toString());
 			colorMapping.addPoint (minValue-(minStep*i),
-				new BoundaryRangeValues(color, color, color));
+				new BoundaryRangeValues<Paint>(color, color, color));
 		}
 
 		{
 			Color color = colorExtractor.getColor(0.0f);
 			colorMapping.addPoint (0.0f,
-				new BoundaryRangeValues(color, color, color));
+				new BoundaryRangeValues<Paint>(color, color, color));
 		}
 
 		double maxStep = maxValue/5.0;
@@ -311,35 +333,16 @@ public class NetworkColorDialog extends JDialog
 			Color color = colorExtractor.getColor(maxStep*i);
 			// System.out.println("Value: "+(maxStep*i)+" Color: "+color.toString());
 			colorMapping.addPoint (maxStep*i,
-				new BoundaryRangeValues(color, color, color));
+				new BoundaryRangeValues<Paint>(color, color, color));
 		}
 
-   	Calculator colorCalculator = new BasicCalculator("TreeView Color Calculator", 
-		                                                 colorMapping, vizType);
-
-		// Apply it
-	
-		if (edge) {
-			EdgeAppearanceCalculator edgeAppCalc = style.getEdgeAppearanceCalculator();
-   		edgeAppCalc.setCalculator(colorCalculator);
-			style.setEdgeAppearanceCalculator(edgeAppCalc);
-		} else {
-			NodeAppearanceCalculator nodeAppCalc = style.getNodeAppearanceCalculator();
-   		nodeAppCalc.setCalculator(colorCalculator);
-			style.setNodeAppearanceCalculator(nodeAppCalc);
+		style.addVisualMappingFunction(colorMapping);
+		if (update) {
+			ViewUtils.setVisualStyle(clusterManager, clusterManager.getNetworkView(), style);
 		}
-		if (newStyle) {
-			calculatorCatalog.addVisualStyle(style);
-			if (update) {
-				Cytoscape.getCurrentNetworkView().setVisualStyle(style.getName());
-				manager.setVisualStyle(style);
-			}
-		} else if (update) {
-			Cytoscape.getCurrentNetworkView().applyVizmapper(style);
-		} 
+
 		return style;
 	}
-*/
 
 	private void initializeOnce() {
 		boolean enableAnimation = false;
@@ -578,15 +581,14 @@ public class NetworkColorDialog extends JDialog
 				while (animating) {
 					// Cycle through the vizmaps we created
 					for (int i = firstIndex; i < styles.length && animating; i++) {
-						// FIXME
-						// Cytoscape.getCurrentNetworkView().applyVizmapper(styles[i]);
+						ViewUtils.setVisualStyle(clusterManager, clusterManager.getNetworkView(), styles[i]);
+
 						attributeSelector.setSelectedValue(attributes[i], true);
 						currentAttribute = (String)attributes[i];
 						// Now show the selection in the tree view
 						int arrayIndex = arrayInfo.getHeaderIndex(currentAttribute);
 						viewFrame.seekArray(arrayIndex);
 						
-						// Cytoscape.getCurrentNetworkView().redrawGraph(false, true);
 						int wait = animationSlider.getValue();
 						this.sleep((100-wait)*20);
 					}
@@ -617,7 +619,6 @@ public class NetworkColorDialog extends JDialog
 		}
 	}
 
-/*
 	private class MapTask implements Task {
 		TaskMonitor monitor;
 		String attribute;
@@ -630,36 +631,12 @@ public class NetworkColorDialog extends JDialog
 			this.edge = edge;
 		}
 
-		public void setTaskMonitor(TaskMonitor monitor) {
-			this.monitor = monitor;
-		}
-
-		public void run() {
+		public void run(TaskMonitor monitor) {
 			createNewStyle(attribute, suffix, true, edge);
 		}
 
-		public void halt() {
-		}
-
-		public String getTitle() {
-			return "Mapping colors onto network";
-		}
-
-		public JTaskConfig getDefaultTaskConfig() {
-			JTaskConfig result = new JTaskConfig();
-	
-			result.displayCancelButton(false);
-			result.displayCloseButton(false);
-			result.displayStatus(true);
-			result.displayTimeElapsed(false);
-			result.setAutoDispose(true);
-			result.setModal(false);
-			result.setOwner(Cytoscape.getDesktop());
-	
-			return result;
-		}
+		public void cancel() {}
 
 	}
-*/
 
 }

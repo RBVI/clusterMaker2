@@ -98,14 +98,14 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 
 		results = new AbstractClusterResults(network, nodeClusters);
 
-		if (context.createNetwork) {
-			monitor.showMessage(TaskMonitor.Level.INFO, 
-		                      "MCL results:\n"+results);
+		monitor.showMessage(TaskMonitor.Level.INFO, 
+		                    "MCL results:\n"+results);
+
+		if (context.vizProperties.showUI) {
 			monitor.showMessage(TaskMonitor.Level.INFO, 
 		                      "Creating network");
-			NewNetworkView nnv = 
-				new NewNetworkView(network, clusterManager);
-			insertTasksAfterCurrentTask(nnv);
+			insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true,
+			                                               context.vizProperties.restoreEdges));
 		} else {
 			monitor.showMessage(TaskMonitor.Level.INFO, "Done.  MCL results:\n"+results);
 		}

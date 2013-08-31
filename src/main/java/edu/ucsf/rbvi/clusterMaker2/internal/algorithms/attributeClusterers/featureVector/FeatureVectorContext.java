@@ -64,21 +64,20 @@ public class FeatureVectorContext {
 	@Tunable(description="Ignore nodes/edges with no data", groups={"Clustering Parameters"}, gravity=62)
 	public boolean ignoreMissing = true;
 
-	@Tunable(description="Create a new network with results", groups={"Clustering Parameters"}, gravity=63)
-	public boolean createNewNetwork = true;
-
-	@Tunable(description="Only create edges if nodes are closer than this", groups={"Clustering Parameters"}, 
-	         dependsOn="createNewNetwork=true", gravity=64)
-	public double edgeCutoff = 0.01;
-
 	@Tunable(description="Edge attribute to use for distance values", 
-	         groups={"Clustering Parameters", "Advanced Parameters"}, params="displayState=collapsed", gravity=70)
+	         groups={"Advanced Parameters"}, params="displayState=collapsed", gravity=70)
 	public String edgeAttribute = "FeatureDistance";
 
 	@Tunable(description="Set missing data to zero (not common)", 
-	         groups={"Clustering Parameters", "Advanced Parameters"}, gravity=71)
+	         groups={"Advanced Parameters"}, gravity=71)
 	public boolean zeroMissing = false;
 
+	@Tunable(description="Create a new network with results", groups={"Visualization Options"}, gravity=63)
+	public boolean createNewNetwork = true;
+
+	@Tunable(description="Only create edges if nodes are closer than this", 
+	         groups={"Visualization Options"}, dependsOn="createNewNetwork=true", gravity=64)
+	public double edgeCutoff = 0.01;
 
 	public FeatureVectorContext() {
 	}

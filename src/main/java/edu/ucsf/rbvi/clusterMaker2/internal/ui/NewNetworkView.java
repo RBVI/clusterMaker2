@@ -79,6 +79,7 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 
 	private static String appName = "ClusterMaker New Network View";
 	private boolean checkForAvailability = false;
+	private boolean restoreEdges = false;
 	private ClusterManager manager;
 	private String clusterAttribute = null;
 	private EdgeAttributeHandler edgeConverterList = null;
@@ -96,6 +97,13 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 	public NewNetworkView(CyNetwork network, ClusterManager manager) {
 		this(null, manager, true);
 		this.network = network;
+	}
+
+	public NewNetworkView(CyNetwork network, ClusterManager manager, 
+	                      boolean available, boolean restoreEdges) {
+		this(null, manager, true);
+		this.network = network;
+		this.restoreEdges = restoreEdges;
 	}
 
 	public NewNetworkView(NewNetworkViewContext context, ClusterManager manager, boolean available) {
@@ -219,7 +227,7 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 		ViewUtils.doLayout(manager, view, monitor, "force-directed");
 
 		// Now, if we're supposed to, restore the inter-cluster edges
-		if (context != null && context.restoreEdges) {
+		if (restoreEdges || (context != null && context.restoreEdges)) {
 			for (CyEdge edge: (List<CyEdge>)network.getEdgeList()) {
 				if (!edgeMap.containsKey(edge)) {
 					((CySubNetwork)view.getModel()).addEdge(edge);
