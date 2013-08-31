@@ -185,7 +185,7 @@ public class TreeView extends TreeViewApp implements Observer,
 		CyProperty cyProperty = manager.getService(CyProperty.class, 
 		                                           "(cyPropertyName=cytoscape3.props)");
 		// Get our data model
-		dataModel = new TreeViewModel(monitor, myNetwork, myView);
+		dataModel = new TreeViewModel(monitor, myNetwork, myView, manager);
 
 		// Set up the global config
 		setConfigDefaults(new PropertyConfig(cyProperty, globalConfigName(),"ProgramConfig"));
@@ -275,12 +275,14 @@ public class TreeView extends TreeViewApp implements Observer,
 				ignoreSelection = true;
 				for (CyNode node: nodesToClear) {
 					myNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.FALSE);
-					currentNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.FALSE);
+					if (currentNetwork.containsNode(node))
+						currentNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.FALSE);
 				}
 
 				for (CyNode node: selectedNodes) {
 					myNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.TRUE);
-					currentNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.TRUE);
+					if (currentNetwork.containsNode(node))
+						currentNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.TRUE);
 				}
 				manager.getService(CyEventHelper.class).flushPayloadEvents();
 				ignoreSelection = false;
@@ -318,7 +320,8 @@ public class TreeView extends TreeViewApp implements Observer,
 		List<CyEdge> edgesToClear = CyTableUtil.getEdgesInState(currentNetwork, CyNetwork.SELECTED, true);
 		for (CyEdge edge: edgesToClear) {
 			myNetwork.getRow(edge).set(CyNetwork.SELECTED, Boolean.FALSE);
-			currentNetwork.getRow(edge).set(CyNetwork.SELECTED, Boolean.FALSE);
+			if (currentNetwork.containsEdge(edge))
+				currentNetwork.getRow(edge).set(CyNetwork.SELECTED, Boolean.FALSE);
 		}
 
 		for (CyNode node1: selectedNodes) {
@@ -328,7 +331,8 @@ public class TreeView extends TreeViewApp implements Observer,
 					continue;
 				}
 				for (CyEdge edge: edges) {
-					currentNetwork.getRow(edge).set(CyNetwork.SELECTED, Boolean.TRUE);
+					if (currentNetwork.containsEdge(edge))
+						currentNetwork.getRow(edge).set(CyNetwork.SELECTED, Boolean.TRUE);
 					myNetwork.getRow(edge).set(CyNetwork.SELECTED, Boolean.TRUE);
 				}
 			}

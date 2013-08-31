@@ -368,7 +368,7 @@ public abstract class AbstractKClusterAlgorithm {
 			threadPools[pool].shutdown();
 			try {
 				boolean result = threadPools[pool].awaitTermination(7, TimeUnit.DAYS);
-			} catch (Exception e) {}
+			} catch (Exception e) {e.printStackTrace();}
 		}
 	}
 
@@ -434,9 +434,12 @@ public abstract class AbstractKClusterAlgorithm {
 			int[] clusters = new int[matrix.nRows()];
 			if (cancelled()) return;
 			if (saveMonitor != null) saveMonitor.setStatusMessage("Getting silhouette with a k estimate of "+kEstimate);
+			// System.out.println("Calling kcluster");
 			int ifound = kcluster(kEstimate, nIterations, matrix, metric, clusters);
+			// System.out.println("kcluster returns "+ifound);
 			try {
 				silhouetteResults[kEstimate] = SilhouetteCalculator.calculate(matrix, metric, clusters);
+				// System.out.println("Got silhouette results for "+kEstimate+": "+silhouetteResults[kEstimate].toString());
 			} catch (Exception e) { e.printStackTrace(); }
 		}
 	}

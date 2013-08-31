@@ -51,13 +51,14 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.KnnView;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractAttributeClusterer;
 
 public class KMedoidCluster extends AbstractAttributeClusterer {
 	public static String SHORTNAME = "kmedoid";
 	public static String NAME = "K-Medoid cluster";
-	public static String GROUP_ATTRIBUTE = "__kmedoidGroups";
+	public static String GROUP_ATTRIBUTE = SHORTNAME;
 
 	@Tunable(description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
@@ -74,6 +75,7 @@ public class KMedoidCluster extends AbstractAttributeClusterer {
 	}
 
 	public String getShortName() {return SHORTNAME;}
+	@ProvidesTitle
 	public String getName() {return NAME;}
 
 	public ClusterViz getVisualizer() {
@@ -150,6 +152,9 @@ public class KMedoidCluster extends AbstractAttributeClusterer {
 		                 algorithm.getMatrix());
 
 		// System.out.println(resultsString);
+		if (context.showUI) {
+			insertTasksAfterCurrentTask(new KnnView(clusterManager));
+		}
 	}
 
 }

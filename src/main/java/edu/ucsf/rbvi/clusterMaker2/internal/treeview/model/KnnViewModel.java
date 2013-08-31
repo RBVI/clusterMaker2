@@ -65,8 +65,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.treeview.model.TVModel;
 public class KnnViewModel extends TreeViewModel {
 	private String [] clusterHeaders = {"NODEID", "GROUP"};
 
-	public KnnViewModel(TaskMonitor monitor, CyNetwork network, CyNetworkView view) {
-		super(monitor, network, view);
+	public KnnViewModel(TaskMonitor monitor, CyNetwork network, CyNetworkView view, ClusterManager clusterManager) {
+		super(monitor, network, view, clusterManager);
 
 		// Now we have a sort of TreeView model, modify it to add the GROUP information
 		if (gidFound()) {

@@ -62,7 +62,6 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matri
 
 public class RunKCluster extends AbstractKClusterAlgorithm {
 	Random random = null;
-	HashMap<String,List<CyNode>> groupMap = null;
 	KMeansContext context;
 
 	public RunKCluster(CyNetwork network, String weightAttributes[], DistanceMetric metric, 
@@ -73,7 +72,7 @@ public class RunKCluster extends AbstractKClusterAlgorithm {
 
 	// The kmeans implementation of a k-clusterer
 	public int kcluster(int nClusters, int nIterations, Matrix matrix, DistanceMetric metric, int[] clusterID) {
-		// System.out.println("RUnning kmeans with "+nClusters+" clusters");
+		// System.out.println("Running kmeans with "+nClusters+" clusters");
 
 		random = null;
 		int nelements = matrix.nRows();
@@ -88,8 +87,10 @@ public class RunKCluster extends AbstractKClusterAlgorithm {
 
 		double error = Double.MAX_VALUE;
 
-		monitor.setProgress(0);
+		if (monitor != null)
+			monitor.setProgress(0);
 
+		// System.out.println("Creating matrix for "+nClusters);
 		// This matrix will store the centroid data
 		Matrix cData = new Matrix(network, nClusters, matrix.nColumns());
 
@@ -104,10 +105,12 @@ public class RunKCluster extends AbstractKClusterAlgorithm {
 				clusterID[i] = 0;
 		}
 
+		// System.out.println("Entering do loop for "+nClusters);
 		int iteration = 0;
 		do {
 
-			monitor.setProgress(((double)iteration/(double)nIterations));
+			if (monitor != null)
+				monitor.setProgress(((double)iteration/(double)nIterations));
 
 			double total = Double.MAX_VALUE;
 			int counter = 0;
@@ -216,6 +219,7 @@ public class RunKCluster extends AbstractKClusterAlgorithm {
     	}
     	if (element==nelements) ifound++; /* break statement not encountered */
   	} while (++iteration < nIterations);
+		// System.out.println("Do loop complete for "+nClusters);
 
 		// System.out.println("ifound = "+ifound+", error = "+error);
   	return ifound;

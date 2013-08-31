@@ -70,15 +70,17 @@ public class HierarchicalContext {
 	public boolean ignoreMissing = true;
 
 	@Tunable(description="Set missing data to zero (not common)", 
-	         groups={"Clustering Parameters", "Advanced Parameters"}, params="displayState=collapsed", gravity=63)
+	         groups={"Advanced Parameters"}, params="displayState=collapsed", gravity=63)
 	public boolean zeroMissing = false;
 
-	@Tunable(description="Adjust loops (not common)", groups={"Clustering Parameters", "Advanced Parameters"}, gravity=64)
+	@Tunable(description="Adjust loops (not common)", groups={"Advanced Parameters"}, gravity=64)
 	public boolean adjustDiagonals = false;
 
-	@Tunable(description="Create groups from clusters", groups={"Clustering Parameters"}, gravity=65)
+	@Tunable(description="Create groups from clusters", groups={"Visualization Options"}, gravity=65)
 	public boolean createGroups = false;
 
+	@Tunable(description="Show TreeView when complete", groups={"Visualization Options"}, gravity=66)
+	public boolean showUI = false;
 
 	public HierarchicalContext() {
 		linkage.setSelectedValue(ClusterMethod.AVERAGE_LINKAGE);

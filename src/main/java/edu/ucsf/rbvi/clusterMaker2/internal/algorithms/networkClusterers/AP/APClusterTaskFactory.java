@@ -17,6 +17,7 @@ public class APClusterTaskFactory implements ClusterTaskFactory   {
 	APContext context = null;
 	
 	public APClusterTaskFactory(ClusterManager clusterManager) {
+		this.context = new APContext();
 		this.clusterManager = clusterManager;
 	}
 	
@@ -41,14 +42,6 @@ public class APClusterTaskFactory implements ClusterTaskFactory   {
 	}
 
 	public TaskIterator createTaskIterator() {
-		// Not sure why we need to do this, but it looks like
-		// the tunable stuff "remembers" objects that it's already
-		// processed this tunable.  So, we use a copy constructor
-		if (context == null)
-			context = new APContext();
-		else
-			context = new APContext(context);
-
 		return new TaskIterator(new APCluster(context, clusterManager));
 	}
 	

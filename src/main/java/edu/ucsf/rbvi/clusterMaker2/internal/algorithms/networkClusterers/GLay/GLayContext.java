@@ -8,6 +8,7 @@ import org.cytoscape.work.swing.TunableUIHelper;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithmContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AdvancedProperties;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.NetworkVizProperties;
 
 public class GLayContext implements ClusterAlgorithmContext {
 	CyNetwork network;
@@ -22,6 +23,9 @@ public class GLayContext implements ClusterAlgorithmContext {
     
 	@ContainsTunables
 	public AdvancedProperties advancedAttributes;
+
+	@ContainsTunables
+	public NetworkVizProperties vizProperties = new NetworkVizProperties();
 
 	public GLayContext() {
 		advancedAttributes = new AdvancedProperties("__glayCluster", false);

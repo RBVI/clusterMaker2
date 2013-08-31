@@ -52,6 +52,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractAttributeClusterer;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.TreeView;
 
 
 // clusterMaker imports
@@ -131,7 +132,8 @@ public class HierarchicalCluster extends AbstractAttributeClusterer {
 			attributeArray[0] = "edge."+edgeAttribute;
 		}
 
-		monitor.setStatusMessage("Initializing");
+		monitor.showMessage(TaskMonitor.Level.INFO, "Initializing");
+		System.out.println("Initializing");
 
 		resetAttributes(network, GROUP_ATTRIBUTE);
 
@@ -157,6 +159,10 @@ public class HierarchicalCluster extends AbstractAttributeClusterer {
 		// TODO: Deal with params!
 		List<String> params = context.getParams(algorithm.getMatrix());
 		updateParams(network, params);
+
+		if (context.showUI) {
+			insertTasksAfterCurrentTask(new TreeView(clusterManager));
+		}
 
 		monitor.setStatusMessage("Done");
 

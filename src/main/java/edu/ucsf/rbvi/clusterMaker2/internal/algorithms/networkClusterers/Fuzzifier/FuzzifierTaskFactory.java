@@ -47,7 +47,6 @@ public class FuzzifierTaskFactory implements ClusterTaskFactory {
 		// Not sure why we need to do this, but it looks like
 		// the tunable stuff "remembers" objects that it's already
 		// processed this tunable.  So, we use a copy constructor
-		context = new FuzzifierContext(context);
 		return new TaskIterator(new Fuzzifier(context, clusterManager));
 	}
 	

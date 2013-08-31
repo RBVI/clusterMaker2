@@ -141,7 +141,11 @@ public class ModelUtils {
 		if (attributeArray.size() > 0){
 			ListMultipleSelection<String> newAttribute = new ListMultipleSelection<String>(attributeArray);	
 			if (attribute != null) {
-				newAttribute.setSelectedValues(attribute.getSelectedValues());
+				try {
+					newAttribute.setSelectedValues(attribute.getSelectedValues());
+				} catch (IllegalArgumentException e) {
+					newAttribute.setSelectedValues(Collections.singletonList(attributeArray.get(0)));
+				}
 			} else
 				newAttribute.setSelectedValues(Collections.singletonList(attributeArray.get(0)));
 
@@ -156,7 +160,11 @@ public class ModelUtils {
 		if (attributeArray.size() > 0){
 			ListSingleSelection<String> newAttribute = new ListSingleSelection<String>(attributeArray);	
 			if (attribute != null && attributeArray.contains(attribute.getSelectedValue())) {
-				newAttribute.setSelectedValue(attribute.getSelectedValue());
+				try {
+					newAttribute.setSelectedValue(attribute.getSelectedValue());
+				} catch (IllegalArgumentException e) {
+					newAttribute.setSelectedValue(attributeArray.get(0));
+				}
 			} else
 				newAttribute.setSelectedValue(attributeArray.get(0));
 

@@ -42,10 +42,6 @@ public class TransClustClusterTaskFactory implements ClusterTaskFactory   {
 	}
 
 	public TaskIterator createTaskIterator() {
-		// Not sure why we need to do this, but it looks like
-		// the tunable stuff "remembers" objects that it's already
-		// processed this tunable.  So, we use a copy constructor
-		context = new TransClusterContext(context);
 		return new TaskIterator(new TransClustCluster(context, clusterManager));
 	}
 	

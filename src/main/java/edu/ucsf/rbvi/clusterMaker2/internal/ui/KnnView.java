@@ -148,7 +148,7 @@ public class KnnView extends TreeView {
 		CyProperty cyProperty = manager.getService(CyProperty.class, 
 		                                           "(cyPropertyName=cytoscape3.props)");
 		// Get our data model
-		dataModel = new KnnViewModel(monitor, myNetwork, myView);
+		dataModel = new KnnViewModel(monitor, myNetwork, myView, manager);
 
 		// Set up the global config
 		setConfigDefaults(new PropertyConfig(cyProperty, globalConfigName(),"ProgramConfig"));

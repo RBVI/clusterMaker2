@@ -37,6 +37,7 @@ import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.BorderFactory;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.NetworkColorDialog;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.ConfigNode;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.ConfigNodePersistent;
@@ -60,6 +61,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.treeview.ViewFrame;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.model.AtrTVModel;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.model.DataModelWriter;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.model.ReorderedDataModel;
+import edu.ucsf.rbvi.clusterMaker2.internal.treeview.model.TreeViewModel;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.model.TVModel;
 
 /**
@@ -800,7 +802,9 @@ public class DendroView extends JPanel
 		}
 
 		// Map the visual properties onto the network
-		{
+		if (dataModel instanceof TreeViewModel) {
+			final ClusterManager clusterManager = ((TreeViewModel)dataModel).getClusterManager();
+
 			JButton vizMapButton = createButton("Map Colors Onto Network...");
     	vizMapButton.addActionListener(new ActionListener() {
       	public void actionPerformed(ActionEvent evt) {
@@ -834,7 +838,7 @@ public class DendroView extends JPanel
 					}
 
 					// Bring up the dialog
-					NetworkColorDialog ncd = new NetworkColorDialog(null, ce, attributes, viewFrame,
+					NetworkColorDialog ncd = new NetworkColorDialog(null, ce, attributes, viewFrame, clusterManager,
 					                                                dataModel.getDataMatrix().getMinValue(),
 					                                                dataModel.getDataMatrix().getMaxValue(),
 					                                                dataModel.isSymmetrical());

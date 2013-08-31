@@ -9,6 +9,7 @@ import org.cytoscape.work.swing.TunableUIHelper;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithmContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AdvancedProperties;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.NetworkVizProperties;
 
 public class MCLContext implements ClusterAlgorithmContext {
 	CyNetwork network;
@@ -17,10 +18,6 @@ public class MCLContext implements ClusterAlgorithmContext {
 	
 	@Tunable(description = "Granularity parameter (inflation value)",groups={"Basic MCL Tuning"},gravity=1.0)
 	public double inflation_parameter = 2.5;
-
-	@Tunable(description = "Create new network after clustering", 
-	         groups={"Basic MCL Tuning"}, gravity=2.0)
-	public boolean createNetwork = false;
 
 	@ContainsTunables
 	public EdgeAttributeHandler edgeAttributeHandler;
@@ -39,6 +36,9 @@ public class MCLContext implements ClusterAlgorithmContext {
     
 	@ContainsTunables
 	public AdvancedProperties advancedAttributes;
+
+	@ContainsTunables
+	public NetworkVizProperties vizProperties = new NetworkVizProperties();
 
 	public MCLContext() {
 		advancedAttributes = new AdvancedProperties("__mclCluster", false);
