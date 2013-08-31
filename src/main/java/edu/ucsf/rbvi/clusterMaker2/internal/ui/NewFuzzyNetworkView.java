@@ -226,8 +226,9 @@ public class NewFuzzyNetworkView extends AbstractTask implements ClusterViz, Clu
 		for (CyNode node: (List<CyNode>)network.getNodeList()) {
 			// For each node -- see if it's in a cluster.  If so, add it to our map
 			if (ModelUtils.hasAttribute(network, node, clusterAttribute)) {
-				List<Integer> clusterList = 
-				network.getRow(node).getList(clusterAttribute, Integer.class);
+				List<Integer> clusterList = network.getRow(node).getList(clusterAttribute, Integer.class);
+				// network.getRow(node).get(clusterAttribute, ArrayList.class);
+				
 				for (Integer cluster: clusterList){
 					addNodeToMap(clusterMap, cluster, node);
 				}

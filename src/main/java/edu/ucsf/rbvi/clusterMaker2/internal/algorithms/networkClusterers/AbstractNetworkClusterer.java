@@ -94,7 +94,7 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 		
 		List<CyNode> nodeList = network.getNodeList();
 		for (CyNode node : nodeList){
-			CyRow nodeRow = FuzzyClusterTable.getRow(node);
+			CyRow nodeRow = FuzzyClusterTable.getRow(node.getSUID());
 			for(int i = 0; i < numC; i++){
 				if(nodeRow.get("Cluster_"+ i, double.class) != null){
 					clusterList.get(i).add(node);
@@ -179,11 +179,11 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 			CyNode node = nodeList.get(i);
 			List<Integer> listOfClusters = new ArrayList<Integer>();
 			for(FuzzyNodeCluster cluster : clusters){
-				if(cluster.getMembership(node) > 0.0){
+				if(cluster.getMembership(node) != null){
 					listOfClusters.add(cluster.getClusterNumber());
 				}
 			}
-			ModelUtils.createAndSet(network, node, clusterAttributeName, listOfClusters , Integer.class, null);
+			//ModelUtils.createAndSetLocal(network, node, clusterAttributeName, listOfClusters , Integer.class, null);
 			
 		}
 		

@@ -142,7 +142,12 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		dataMatrix.setUniformWeights();
 		//Cluster the nodes
 		*/
+
+		
+		//context.cNumber = cEstimate();
+
 		// context.cNumber = cEstimate();
+
 		DistanceMetric distMetric = context.distanceMetric.getSelectedValue();
 		runFCM = new RunFCM(distanceMatrix, context.iterations, context.cNumber, distMetric, 
 									context.fIndex, context.beta, context.membershipThreshold.getValue(), context.maxThreads, monitor);
@@ -207,23 +212,23 @@ public class FCMCluster extends AbstractNetworkClusterer {
 				nodeAttributes.getRow(node).set(clusterAttributeName + "_MembershipValues", clusterMemberships[i]);
 			}
 			*/	
-			CyTable FuzzyClusterTable = tableFactory.createTable("Fuzzy_Cluster_Table", "FuzzyCluster", CyNode.class, true, true);
-			FuzzyClusterTable.createColumn("Fuzzy_Node.SUID", CyNode.class, false);
+			CyTable FuzzyClusterTable = tableFactory.createTable("Fuzzy_Cluster_Table", "Fuzzy_Node.SUID", Long.class, true, true);
+			//FuzzyClusterTable.createColumn("Fuzzy_Node.SUID", Long.class, false);
 			
 			for(FuzzyNodeCluster cluster : clusters){
 				
-				FuzzyClusterTable.createColumn("Cluster_"+cluster.getClusterNumber(), double.class, false);
+				FuzzyClusterTable.createColumn("Cluster_"+cluster.getClusterNumber(), Double.class, false);
 			}
 			
 			CyRow TableRow;
 			for(CyNode node: network.getNodeList()){
-				TableRow = FuzzyClusterTable.getRow(node);
+				TableRow = FuzzyClusterTable.getRow(node.getSUID());
 				for(FuzzyNodeCluster cluster : clusters){
 					TableRow.set("Cluster_"+cluster.getClusterNumber(), cluster.getMembership(node));
 				}
 			}
 			
-			network.getDefaultNetworkTable().createColumn("FuzzyClusterTable.SUID", long.class, false);
+			network.getDefaultNetworkTable().createColumn("FuzzyClusterTable.SUID", Long.class, false);
 			network.getRow(network).set("FuzzyClusterTable.SUID", FuzzyClusterTable.getSUID());
 			tableManager.addTable(FuzzyClusterTable);			
 			

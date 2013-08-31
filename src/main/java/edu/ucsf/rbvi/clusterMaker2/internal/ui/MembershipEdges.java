@@ -60,7 +60,7 @@ public class MembershipEdges {
 		
 		List<CyNode> nodeList = network.getNodeList();
 		for (CyNode node : nodeList){
-			CyRow nodeRow = FuzzyClusterTable.getRow(node);
+			CyRow nodeRow = FuzzyClusterTable.getRow(node.getSUID());
 			for(int i = 0; i < numC; i++){
 				if(nodeRow.get("Cluster_"+ i, double.class) != null){
 					clusterList.get(i).add(node);
