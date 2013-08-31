@@ -172,13 +172,15 @@ public class RunFCM {
 		List<CyNode> fuzzyNodeList;
 		for(int i = 0 ; i < number_clusters; i++){
 			fuzzyNodeList = new ArrayList<CyNode>();
+			HashMap<CyNode, Double> clusterMembershipMap = new HashMap<CyNode, Double>();
 			for( CyNode node: clusterNodes){
 				if (membershipMap.get(node)[i] > membershipThreshold ){
 					fuzzyNodeList.add(node);
+					clusterMembershipMap.put(node, membershipMap.get(node)[i]);
 				}
 			}
 			
-			fuzzyClusters.add(new FuzzyNodeCluster(fuzzyNodeList,membershipMap));
+			fuzzyClusters.add(new FuzzyNodeCluster(fuzzyNodeList,clusterMembershipMap));
 			
 		}
 		

@@ -29,7 +29,7 @@ public class FuzzyNodeCluster extends NodeCluster{
 		
 	}
 	
-	public FuzzyNodeCluster(Collection<CyNode> collection, HashMap<CyNode, double[]> clusterMemberships) {
+	public FuzzyNodeCluster(Collection<CyNode> collection, HashMap<CyNode, Double> clusterMemberships) {
 		super(collection);
 		
 		membershipMap = new HashMap<CyNode, Double>();
@@ -37,7 +37,7 @@ public class FuzzyNodeCluster extends NodeCluster{
 		for(CyNode element : clusterMemberships.keySet()){
 			
 			if(contains(element)){
-				membershipMap.put(element,clusterMemberships.get(element)[clusterNumber -1]);				
+				membershipMap.put(element,clusterMemberships.get(element));				
 			}
 		}
 		
@@ -52,9 +52,15 @@ public class FuzzyNodeCluster extends NodeCluster{
 		return retval;
 	}
 	
-	public double getMembership(CyNode node){
-		
-		return membershipMap.get(node);		
+	public Object getMembership(CyNode node){
+		return membershipMap.get(node);	
+
+		/*if(membershipMap.containsKey(node)){
+			return membershipMap.get(node);	
+		}
+		else{
+		return null;
+		}*/
 	}
 	
 	public void setMembership(CyNode node, double membership){
