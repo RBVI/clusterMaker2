@@ -142,6 +142,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		dataMatrix.setUniformWeights();
 		//Cluster the nodes
 		*/
+		
 		//context.cNumber = cEstimate();
 		DistanceMetric distMetric = context.distanceMetric.getSelectedValue();
 		runFCM = new RunFCM(distanceMatrix, context.iterations, context.cNumber, distMetric, 
