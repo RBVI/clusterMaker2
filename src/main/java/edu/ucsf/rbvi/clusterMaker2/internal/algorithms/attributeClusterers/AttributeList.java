@@ -43,6 +43,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 public class AttributeList {
 	CyNetwork network;
+	boolean nodesOnly = false;
 
 	@Tunable(description="Node attributes for cluster", groups="Array sources", 
 	         tooltip="You must choose at least 2 node columns for an attribute cluster", gravity=50 )
@@ -53,10 +54,15 @@ public class AttributeList {
 	public ListSingleSelection<String> edgeAttributeList = null;
 
 	public AttributeList(CyNetwork network) {
+		this(network, false);
+	}
+
+	public AttributeList(CyNetwork network, boolean nodesOnly) {
 		this.network = network;
 		if (network != null) {
 			nodeAttributeList = ModelUtils.updateNodeAttributeList(network, nodeAttributeList);
-			edgeAttributeList = ModelUtils.updateEdgeAttributeList(network, edgeAttributeList);
+			if (!nodesOnly)
+				edgeAttributeList = ModelUtils.updateEdgeAttributeList(network, edgeAttributeList);
 		}
 	}
 
@@ -66,7 +72,8 @@ public class AttributeList {
 
 		this.network = network;
 		nodeAttributeList = ModelUtils.updateNodeAttributeList(network, nodeAttributeList);
-		edgeAttributeList = ModelUtils.updateEdgeAttributeList(network, edgeAttributeList);
+		if (!nodesOnly)
+			edgeAttributeList = ModelUtils.updateEdgeAttributeList(network, edgeAttributeList);
 	}
 
 	public CyNetwork getNetwork() { return network; }

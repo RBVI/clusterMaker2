@@ -43,6 +43,16 @@ public class ModelUtils {
 		return network.getRow(node).get(CyNetwork.NAME, String.class);
 	}
 
+	public static CyNetwork getNetworkWithName(ClusterManager manager, String networkName) {
+		// This is ugly, but Cytoscape doesn't provide an easy way to get at a network
+		// based on it's name :-(
+		for (CyNetwork network: manager.getService(CyNetworkManager.class).getNetworkSet()) {
+			if (getNetworkName(network).equals(networkName))
+				return network;
+		}
+		return null;
+	}
+
 	public static String getNetworkName(CyNetwork network) {
 		return network.getRow(network).get(CyNetwork.NAME, String.class);
 	}
