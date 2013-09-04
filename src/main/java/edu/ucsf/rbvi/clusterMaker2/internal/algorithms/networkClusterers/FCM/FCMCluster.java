@@ -55,6 +55,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Dista
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.SilhouetteCalculator;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.Silhouettes;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
 
 
 /**
@@ -121,10 +122,10 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		}
 
 		createGroups = context.advancedAttributes.createGroups;
-		/*
+		
 		// Update our tunable results
 		clusterAttributeName = context.getClusterAttribute();
-		
+		/*
 		if (canceled) return;
 		
 		// Getting the attribute array to make the data matrix context.getAttributeList()
@@ -179,6 +180,15 @@ public class FCMCluster extends AbstractNetworkClusterer {
 
 		results = new AbstractClusterResults(network, nodeClusters);
 		monitor.showMessage(TaskMonitor.Level.INFO, "Done.  FCM results:\n"+results);
+		
+		if (context.vizProperties.showUI) {
+			monitor.showMessage(TaskMonitor.Level.INFO, 
+		                      "Creating network");
+			insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true,
+			                                               context.vizProperties.restoreEdges));
+		} else {
+			monitor.showMessage(TaskMonitor.Level.INFO, "Done.  FCM results:\n"+results);
+		}
 		
 		createFuzzyTable(clusters, nodeAttributes, dataMatrix, runFCM.clusterMemberships);
 		

@@ -84,7 +84,7 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 	public List<List<CyNode>> getFuzzyNodeClusters(String clusterAttribute){
 		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
 		
-		Long FuzzyClusterTableSUID = network.getRow(network, CyNetwork.LOCAL_ATTRS).get("FuzzyClusterTable.SUID", long.class);
+		long FuzzyClusterTableSUID = network.getRow(network, CyNetwork.LOCAL_ATTRS).get("FuzzyClusterTable.SUID", Long.class);
 		CyTable FuzzyClusterTable = tableManager.getTable(FuzzyClusterTableSUID);
 		
 		int numC = FuzzyClusterTable.getColumns().size() - 1;

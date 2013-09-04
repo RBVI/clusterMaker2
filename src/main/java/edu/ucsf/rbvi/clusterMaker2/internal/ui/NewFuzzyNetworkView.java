@@ -210,7 +210,7 @@ public class NewFuzzyNetworkView extends AbstractTask implements ClusterViz, Clu
 		ViewUtils.setVisualStyle(manager, view, style);
 		ViewUtils.registerView(manager, view);
 		
-		new MembershipEdges(newNetwork,view,manager);
+		//new MembershipEdges(newNetwork,view,manager);
 
 		return;
 	}

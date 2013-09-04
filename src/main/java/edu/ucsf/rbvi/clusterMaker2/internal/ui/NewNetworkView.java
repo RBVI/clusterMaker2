@@ -186,6 +186,12 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 
 	@SuppressWarnings("unchecked")
 	private void createClusteredNetwork(String clusterAttribute, TaskMonitor monitor) {
+		
+		boolean isFuzzy = 
+				network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS).getColumn(clusterAttribute).getType().equals(List.class);
+		
+		long FuzzyClusterTableSUID = network.getRow(network).get("FuzzyClusterTable.SUID", Long.class);
+		CyTable FuzzyClusterTable = manager.getTableManager().getTable(FuzzyClusterTableSUID);
 		// Get the clustering parameters
 		Map<String, String> params = getParams();
 
@@ -236,6 +242,10 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 				}
 			}
 			style = styleNewView(style, clusterAttribute);
+		}
+		
+		if(isFuzzy){
+			new MembershipEdges(newNetwork,view,manager,FuzzyClusterTable);
 		}
 
 		ViewUtils.setVisualStyle(manager, view, style);

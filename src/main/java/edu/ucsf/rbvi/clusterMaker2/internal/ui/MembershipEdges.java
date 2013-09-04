@@ -36,12 +36,14 @@ public class MembershipEdges {
 	private CyNetworkView networkView = null;
 	private CyTableManager tableManager = null;
 	private ClusterManager manager;
+	private CyTable FuzzyClusterTable = null;
 	
-	public MembershipEdges(CyNetwork network, CyNetworkView view, ClusterManager manager){
+	public MembershipEdges(CyNetwork network, CyNetworkView view, ClusterManager manager,CyTable FuzzyClusterTable){
 		this.network = network;
 		this.networkView = view;
 		this.tableManager = manager.getTableManager();
 		this.manager = manager;
+		this.FuzzyClusterTable =  FuzzyClusterTable;
 		
 		createMembershipEdges();
 	}
@@ -49,9 +51,9 @@ public class MembershipEdges {
 	private void createMembershipEdges(){
 				
         List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
-		
-		Long FuzzyClusterTableSUID = network.getRow(network).get("FuzzyClusterTable.SUID", long.class);
-		CyTable FuzzyClusterTable = tableManager.getTable(FuzzyClusterTableSUID);
+		//CyNetwork parentNetwork = manager.getNetwork();
+		//Long FuzzyClusterTableSUID = parentNetwork.getRow(parentNetwork).get("FuzzyClusterTable.SUID", long.class);
+		//CyTable FuzzyClusterTable = tableManager.getTable(FuzzyClusterTableSUID);
 		
 		int numC = FuzzyClusterTable.getColumns().size() - 1;
 		for(int i = 0; i < numC; i++){
@@ -62,8 +64,8 @@ public class MembershipEdges {
 		for (CyNode node : nodeList){
 			CyRow nodeRow = FuzzyClusterTable.getRow(node.getSUID());
 			for(int i = 1; i <= numC; i++){
-				if(nodeRow.get("Cluster_"+ i, double.class) != null){
-					clusterList.get(i).add(node);
+				if(nodeRow.get("Cluster_"+ i, Double.class) != null){
+					clusterList.get(i-1).add(node);
 				}
 			}			
 		}
@@ -79,19 +81,21 @@ public class MembershipEdges {
 	        
 	        for (CyNode node : cluster) {
 	        	nodeView = networkView.getNodeView(node);
+	        	System.out.println("NodeView SUID: " + nodeView.getSUID());
 	        	x += nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 	        	y += nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
 	        	System.out.println(x);
 	        	count += 1;
-	        	
+	        	System.out.println("Read x = "+ x +", y = "+ y);
 	        	network.addEdge(centroid, node, false);
-	        	
+	        	networkView.updateView();
 	        }
 	        
 	        x = x/count;
 	        y = y/count;
 	        View<CyNode> centroidView = networkView.getNodeView(centroid);
-	        
+	        System.out.println("CentroidView SUID: " + nodeView.getSUID());
+	        System.out.println("x = "+ x +", y = "+ y);
 	        centroidView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, x);
 	        centroidView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, y);
 	        
@@ -109,7 +113,7 @@ public class MembershipEdges {
 			View<CyEdge> edgeView = networkView.getEdgeView(edge);
 			CyNode node = edge.getTarget();
 			edgeView.setVisualProperty(BasicVisualLexicon.EDGE_LINE_TYPE, LineTypeVisualProperty.DASH_DOT);
-			edgeView.setVisualProperty(BasicVisualLexicon.EDGE_TRANSPARENCY, (int)(FuzzyClusterTable.getRow(node).get("Cluster_"+ cNum, double.class)*250));
+			//edgeView.setVisualProperty(BasicVisualLexicon.EDGE_TRANSPARENCY, (int)(FuzzyClusterTable.getRow(node).get("Cluster_"+ cNum, double.class)*250));
 
 		}
 		
