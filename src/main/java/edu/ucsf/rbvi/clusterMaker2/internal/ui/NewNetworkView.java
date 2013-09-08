@@ -243,12 +243,13 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 			}
 			style = styleNewView(style, clusterAttribute);
 		}
+		ViewUtils.setVisualStyle(manager, view, style);
 		
 		if(isFuzzy){
 			new MembershipEdges(newNetwork,view,manager,FuzzyClusterTable);
 		}
 
-		ViewUtils.setVisualStyle(manager, view, style);
+		
 		ViewUtils.registerView(manager, view);
 
 		return;

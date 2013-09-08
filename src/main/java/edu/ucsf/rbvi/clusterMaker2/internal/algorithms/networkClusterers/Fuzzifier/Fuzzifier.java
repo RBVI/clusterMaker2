@@ -57,6 +57,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Dista
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.SilhouetteCalculator;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.Silhouettes;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 /**
  * Fuzzifier creates fuzzy clusters from already existing clusters.
@@ -88,20 +90,18 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 	@ContainsTunables
 	public FuzzifierContext context = null;
 	
+	
 	public Fuzzifier(FuzzifierContext context, ClusterManager manager) {
-		this(context, manager, null);
-	}
-
-	public Fuzzifier(FuzzifierContext context, ClusterManager manager, List<NodeCluster> Custers) {
 		super(manager);
 		this.context = context;
-		this.Clusters = Clusters;
+		//this.Clusters = Clusters;
 		this.cNumber = Clusters.size();
 		if (network == null){
 			network = clusterManager.getNetwork();
 			tableFactory = clusterManager.getTableFactory();
 			tableManager = clusterManager.getTableManager();
 		}	
+		this.Clusters = getClusters();
 		context.setNetwork(network);
 	}
 	
@@ -125,10 +125,13 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 			monitor.showMessage(TaskMonitor.Level.ERROR, "Can't get distance matrix: no attribute value?");
 			return;
 		}
+		
+		// Update our tunable results
+		clusterAttributeName = context.getClusterAttribute();
 				
 		DistanceMetric distMetric = context.distanceMetric.getSelectedValue();
 		runFuzzifier = new RunFuzzifier(Clusters, distanceMatrix,cNumber, distMetric, 
-									context.clusteringThresh, context.maxThreads, monitor);
+									context.membershipThreshold.getValue(), context.maxThreads, monitor);
 
 		
 		//RunFCM (Matrix data,DistanceMatrix dMat, int num_iterations, int cClusters,DistanceMetric metric, double findex, double beta, int maxThreads, Logger logger)
@@ -158,6 +161,15 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 		results = new AbstractClusterResults(network, nodeClusters);
 		monitor.showMessage(TaskMonitor.Level.INFO, "Done.  Fuzzifier results:\n"+results);
 		
+		if (context.vizProperties.showUI) {
+			monitor.showMessage(TaskMonitor.Level.INFO, 
+		                      "Creating network");
+			insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true,
+			                                               context.vizProperties.restoreEdges));
+		} else {
+			monitor.showMessage(TaskMonitor.Level.INFO, "Done.  FCM results:\n"+results);
+		}
+		
 		createFuzzyTable(FuzzyClusters, nodeAttributes, dataMatrix, runFuzzifier.clusterMemberships);
 		
 	}	
@@ -165,6 +177,30 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 	public void cancel() {
 		canceled = true;
 		runFuzzifier.cancel();
+	}
+	
+	public List<NodeCluster> getClusters(){
+		List<NodeCluster> nodeClusters = new ArrayList<NodeCluster>();
+		HashMap<Integer,List<CyNode>> clusterMap = new HashMap<Integer,List<CyNode>>();
+		List<CyNode> nodeList = network.getNodeList();
+		
+		for(CyNode node : nodeList){
+			
+			if (ModelUtils.hasAttribute(network, node, clusterAttributeName)){
+				
+				Integer cluster = network.getRow(node).get(clusterAttributeName, Integer.class);
+				
+				if (!clusterMap.containsKey(cluster))
+					clusterMap.put(cluster, new ArrayList<CyNode>());
+				clusterMap.get(cluster).add(node);
+								
+			}			
+		}
+		
+		for (int key : clusterMap.keySet()){
+			nodeClusters.add(new NodeCluster(clusterMap.get(key)));
+		}
+		return nodeClusters;
 	}
 
 	@Override

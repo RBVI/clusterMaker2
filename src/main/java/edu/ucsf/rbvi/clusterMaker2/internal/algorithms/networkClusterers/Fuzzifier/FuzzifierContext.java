@@ -8,6 +8,7 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.util.BoundedDouble;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 import org.cytoscape.work.swing.TunableUIHelper;
@@ -16,6 +17,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithmContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AdvancedProperties;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.NetworkVizProperties;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM.FCMContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLContext;
 
@@ -26,8 +28,8 @@ public class FuzzifierContext implements ClusterAlgorithmContext {
 	@ContainsTunables
 	public EdgeAttributeHandler edgeAttributeHandler;
 	
-	@Tunable(description = "Weak edge weight pruning threshold", groups={"Fuzzifier Advanced Settings"}, params="displayState=collapsed",gravity=20.0)
-	public double clusteringThresh = 1e-15;
+	@Tunable(description = "Threshold for Fuzzy Membership in a Cluster", groups={"FCM Advanced Settings"}, params="displayState=collapsed, slider=true",gravity=20.0)
+	public BoundedDouble membershipThreshold = new BoundedDouble(0.0, 0.2, 1.0, false, false);
 			
 	@Tunable(description = "Maximum number of threads", groups={"Fuzzifier Advanced Settings"}, gravity=21.0)
 	public int maxThreads = 0;
@@ -40,6 +42,9 @@ public class FuzzifierContext implements ClusterAlgorithmContext {
 		
 	@ContainsTunables
 	public AdvancedProperties advancedAttributes;	
+	
+	@ContainsTunables
+	public NetworkVizProperties vizProperties = new NetworkVizProperties();
 	
 	public FuzzifierContext() {
 		advancedAttributes = new AdvancedProperties("__fuzzifierCluster", false);
@@ -54,7 +59,7 @@ public class FuzzifierContext implements ClusterAlgorithmContext {
 			edgeAttributeHandler = new EdgeAttributeHandler(origin.edgeAttributeHandler);
 		
 		
-		clusteringThresh = origin.clusteringThresh;
+		membershipThreshold = origin.membershipThreshold;
 		maxThreads = origin.maxThreads;
 						
 		distanceMetric = new ListSingleSelection<DistanceMetric>(DistanceMetric.VALUE_IS_CORRELATION, DistanceMetric.UNCENTERED_CORRELATION, 
@@ -89,4 +94,7 @@ public class FuzzifierContext implements ClusterAlgorithmContext {
 	}
 
 	public CyNetwork getNetwork() { return network; }
+
+	public String getClusterAttribute() { return advancedAttributes.clusterAttribute;}
+		
 }

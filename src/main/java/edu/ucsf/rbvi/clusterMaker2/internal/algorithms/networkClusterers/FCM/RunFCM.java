@@ -169,9 +169,9 @@ public class RunFCM {
 		*/
 		
 		// Adding the nodes which have memberships greater than the threshold to fuzzy node clusters
-		List<CyNode> fuzzyNodeList;
+		//List<CyNode> fuzzyNodeList;
 		for(int i = 0 ; i < number_clusters; i++){
-			fuzzyNodeList = new ArrayList<CyNode>();
+			List<CyNode> fuzzyNodeList = new ArrayList<CyNode>();
 			HashMap<CyNode, Double> clusterMembershipMap = new HashMap<CyNode, Double>();
 			for( CyNode node: clusterNodes){
 				if (membershipMap.get(node)[i] > membershipThreshold ){

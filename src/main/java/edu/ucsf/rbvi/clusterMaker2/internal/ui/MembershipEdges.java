@@ -113,7 +113,7 @@ public class MembershipEdges {
 			View<CyEdge> edgeView = networkView.getEdgeView(edge);
 			CyNode node = edge.getTarget();
 			edgeView.setVisualProperty(BasicVisualLexicon.EDGE_LINE_TYPE, LineTypeVisualProperty.DASH_DOT);
-			//edgeView.setVisualProperty(BasicVisualLexicon.EDGE_TRANSPARENCY, (int)(FuzzyClusterTable.getRow(node).get("Cluster_"+ cNum, double.class)*250));
+			//edgeView.setVisualProperty(BasicVisualLexicon.EDGE_TRANSPARENCY, (int)(FuzzyClusterTable.getRow(node).get("Cluster_"+ cNum, Double.class)*255));
 
 		}
 		

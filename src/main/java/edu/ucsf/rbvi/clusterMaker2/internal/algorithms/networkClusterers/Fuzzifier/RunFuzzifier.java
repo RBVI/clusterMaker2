@@ -55,19 +55,19 @@ public class RunFuzzifier {
 	private DistanceMatrix distanceMatrix = null;
 	//private Matrix data = null;
 	double [][] clusterMemberships = null;
-	double clusteringThresh = 0;
+	double membershipThreshold = 0;
 	private boolean debug = false;
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
 	
 	public RunFuzzifier (List<NodeCluster> Clusters, DistanceMatrix distanceMatrix, int cClusters,
-			DistanceMetric metric, double clusteringThresh,int maxThreads, TaskMonitor monitor ){
+			DistanceMetric metric, double membershipThreshold,int maxThreads, TaskMonitor monitor ){
 		
 		this.Clusters = Clusters;
 		this.distanceMatrix = distanceMatrix;	
 		this.number_clusters = cClusters;
 		this.metric = metric;
 		this.monitor = monitor;
-		this.clusteringThresh = clusteringThresh;
+		this.membershipThreshold = membershipThreshold;
 	
 		
 		if (maxThreads > 0)
@@ -75,7 +75,7 @@ public class RunFuzzifier {
 		else
 			nThreads = Runtime.getRuntime().availableProcessors()-1;
 		
-		monitor.showMessage(TaskMonitor.Level.INFO,"Clustering Threshold = "+clusteringThresh);
+		monitor.showMessage(TaskMonitor.Level.INFO,"Membership Threshold = "+membershipThreshold);
 		monitor.showMessage(TaskMonitor.Level.INFO,"Threads = "+nThreads);
 		//monitor.showMessage(TaskMonitor.Level.INFO,"Matrix info: = "+distanceMatrix.printMatrixInfo(matrix));
 		monitor.showMessage(TaskMonitor.Level.INFO,"Number of Clusters = "+number_clusters);
@@ -136,7 +136,7 @@ public class RunFuzzifier {
 			fuzzyNodeList = new ArrayList<CyNode>();
 			HashMap<CyNode, Double> clusterMembershipMap = new HashMap<CyNode, Double>();
 			for( CyNode node: nodeList){
-				if (membershipMap.get(node)[i] > clusteringThresh ){
+				if (membershipMap.get(node)[i] > membershipThreshold ){
 					fuzzyNodeList.add(node);
 					clusterMembershipMap.put(node, membershipMap.get(node)[i]);
 				}
