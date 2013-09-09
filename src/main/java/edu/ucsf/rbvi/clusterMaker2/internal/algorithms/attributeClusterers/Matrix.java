@@ -11,6 +11,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 
 // TODO: convert to sparse matrices
 // import cern.colt.matrix.tdouble.DoubleFactory2D;
@@ -212,6 +213,27 @@ public class Matrix extends BaseMatrix {
 				this.nRows = index;
 				this.nColumns = index;
 			}
+		}
+		
+		/**
+		 * The method makes a distance matrix from and instance ofDistanceMatrix
+		 */
+		public void buildDistanceMatrix(DistanceMatrix distanceMatrix){
+			
+			this.nRows = distanceMatrix.getNodes().size();
+			this.nColumns = this.nRows;
+			
+			this.matrix = new Double[nRows][nColumns];
+			this.maxAttribute = Double.MIN_VALUE;
+			
+			for(int i = 0; i < nRows; i++){
+				
+				for(int j = i; j < nRows; j++){
+					
+					matrix[i][j] = distanceMatrix.getEdgeValueFromMatrix(i, j);
+				}
+			}
+			
 		}
 
 		// XXX Do we need a new constructor to clusterMaker.algorithms.DistanceMatrix?
