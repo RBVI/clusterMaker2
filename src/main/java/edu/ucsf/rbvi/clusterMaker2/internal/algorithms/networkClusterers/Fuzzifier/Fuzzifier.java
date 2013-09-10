@@ -71,7 +71,7 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 	
 	RunFuzzifier runFuzzifier = null;
 	public static String SHORTNAME = "fuzzifier";
-	public static String NAME = "Fuzzifier Cluster";
+	public static String NAME = "Cluster Fuzzifier";
 	
 	public static final String NONEATTRIBUTE = "--None--";
 	public final static String GROUP_ATTRIBUTE = "__FuzzyGroups.SUID";
@@ -95,13 +95,14 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 		super(manager);
 		this.context = context;
 		//this.Clusters = Clusters;
-		this.cNumber = Clusters.size();
+		
 		if (network == null){
 			network = clusterManager.getNetwork();
 			tableFactory = clusterManager.getTableFactory();
 			tableManager = clusterManager.getTableManager();
 		}	
 		this.Clusters = getClusters();
+		this.cNumber = Clusters.size();
 		context.setNetwork(network);
 	}
 	
@@ -219,6 +220,8 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 		 */
 		
 		private void createFuzzyTable(List<FuzzyNodeCluster> clusters, CyTable nodeAttributes, Matrix data, double[][] clusterMemberships){
+			
+			System.out.println("Inside createFuzzyTable\n");
 			/*
 			CyNode node; 
 			for(int i = 0; i < data.nRows(); i++ ){
@@ -226,22 +229,27 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 				nodeAttributes.getRow(node).set(clusterAttributeName + "_MembershipValues", clusterMemberships[i]);
 			}
 			*/	
-			CyTable FuzzyClusterTable = tableFactory.createTable("Fuzzy_Cluster_Table", "FuzzyCluster", CyNode.class, true, true);
-			FuzzyClusterTable.createColumn("Fuzzy_Node.SUID", CyNode.class, false);
+			CyTable FuzzyClusterTable = tableFactory.createTable("Fuzzy_Cluster_Table", "Fuzzy_Node.SUID", Long.class, true, true);
+			//FuzzyClusterTable.createColumn("Fuzzy_Node.SUID", CyNode.class, false);
 			
+			System.out.println("Cluster Number:"+ clusters.size());
 			for(FuzzyNodeCluster cluster : clusters){
 				
-				FuzzyClusterTable.createColumn("Cluster_"+cluster.getClusterNumber(), double.class, false);
+				FuzzyClusterTable.createColumn("Cluster_"+cluster.getClusterNumber(), Double.class, false);
+				System.out.println("\n Cluster_"+cluster.getClusterNumber());
 			}
 			
 			CyRow TableRow;
 			for(CyNode node: network.getNodeList()){
-				TableRow = FuzzyClusterTable.getRow(node);
+				TableRow = FuzzyClusterTable.getRow(node.getSUID());
 				for(FuzzyNodeCluster cluster : clusters){
 					TableRow.set("Cluster_"+cluster.getClusterNumber(), cluster.getMembership(node));
+					System.out.println("\n Cluster_"+cluster.getClusterNumber() + ",Node SUID:"+node.getSUID() + ",Membership - "+cluster.getMembership(node));
 				}
 			}
 			
+			network.getDefaultNetworkTable().createColumn("FuzzyClusterTable.SUID", Long.class, false);
+			network.getRow(network).set("FuzzyClusterTable.SUID", FuzzyClusterTable.getSUID());
 			tableManager.addTable(FuzzyClusterTable);			
 			
 			

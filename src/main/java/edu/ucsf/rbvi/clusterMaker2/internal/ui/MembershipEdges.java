@@ -100,7 +100,7 @@ public class MembershipEdges {
 	        centroidView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, y);
 	        
 	        List<CyEdge> edgeList = network.getAdjacentEdgeList(centroid, CyEdge.Type.ANY);  
-	        membershipEdgeStyle(clusterList.indexOf(cluster), edgeList, FuzzyClusterTable);
+	        membershipEdgeStyle(clusterList.indexOf(cluster)+1, edgeList, FuzzyClusterTable);
 	        
 	        networkView.updateView();
 	        
@@ -112,8 +112,10 @@ public class MembershipEdges {
 		for (CyEdge edge : edgeList){
 			View<CyEdge> edgeView = networkView.getEdgeView(edge);
 			CyNode node = edge.getTarget();
-			edgeView.setVisualProperty(BasicVisualLexicon.EDGE_LINE_TYPE, LineTypeVisualProperty.DASH_DOT);
-			//edgeView.setVisualProperty(BasicVisualLexicon.EDGE_TRANSPARENCY, (int)(FuzzyClusterTable.getRow(node).get("Cluster_"+ cNum, Double.class)*255));
+			//edgeView.setVisualProperty(BasicVisualLexicon.EDGE_LINE_TYPE, LineTypeVisualProperty.DASH_DOT);
+			edgeView.setLockedValue(BasicVisualLexicon.EDGE_LINE_TYPE, LineTypeVisualProperty.DASH_DOT);
+
+			edgeView.setLockedValue(BasicVisualLexicon.EDGE_TRANSPARENCY, (int)(FuzzyClusterTable.getRow(node.getSUID()).get("Cluster_"+ cNum, Double.class)*255));
 
 		}
 		

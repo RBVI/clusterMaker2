@@ -189,9 +189,7 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 		
 		boolean isFuzzy = 
 				network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS).getColumn(clusterAttribute).getType().equals(List.class);
-		
-		long FuzzyClusterTableSUID = network.getRow(network).get("FuzzyClusterTable.SUID", Long.class);
-		CyTable FuzzyClusterTable = manager.getTableManager().getTable(FuzzyClusterTableSUID);
+					
 		// Get the clustering parameters
 		Map<String, String> params = getParams();
 
@@ -246,6 +244,9 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 		ViewUtils.setVisualStyle(manager, view, style);
 		
 		if(isFuzzy){
+			
+			long FuzzyClusterTableSUID = network.getRow(network).get("FuzzyClusterTable.SUID", Long.class);
+			CyTable FuzzyClusterTable = manager.getTableManager().getTable(FuzzyClusterTableSUID);
 			new MembershipEdges(newNetwork,view,manager,FuzzyClusterTable);
 		}
 

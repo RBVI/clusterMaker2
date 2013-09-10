@@ -33,9 +33,9 @@ public class FuzzifierContext implements ClusterAlgorithmContext {
 			
 	@Tunable(description = "Maximum number of threads", groups={"Fuzzifier Advanced Settings"}, gravity=21.0)
 	public int maxThreads = 0;
-	
+		
 	@Tunable(description = "Distance Metric", groups={"Fuzzifier Advanced Settings"}, gravity=22.0)
-	public ListSingleSelection<DistanceMetric> distanceMetric;
+	public ListSingleSelection<DistanceMetric> distanceMetric = new ListSingleSelection<DistanceMetric>(DistanceMetric.getDistanceMetricList());
 	
 	@Tunable(description = "The attributes to consider while clustering", groups={"Fuzzifier Advanced Settings"}, gravity=23.0)
 	public ListMultipleSelection<String> attributeList;
