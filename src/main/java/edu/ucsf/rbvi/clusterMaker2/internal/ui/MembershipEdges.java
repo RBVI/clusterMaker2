@@ -74,19 +74,20 @@ public class MembershipEdges {
 			CyNode centroid = network.addNode();
 			
 	        network.getRow(centroid).set(CyNetwork.NAME, "Centroid" + clusterList.indexOf(cluster) );
-	        View<CyNode> nodeView = networkView.getNodeView(centroid);
+	        //System.out.println("Centroid SUID: " + centroid.getSUID());
+	        //View<CyNode> nodeView = networkView.getNodeView(centroid);
 	        double x = 0;
 	        double y = 0;
 	        double count = 0;
 	        
 	        for (CyNode node : cluster) {
-	        	nodeView = networkView.getNodeView(node);
-	        	System.out.println("NodeView SUID: " + nodeView.getSUID());
+	        	View<CyNode> nodeView = networkView.getNodeView(node);
+	        	//System.out.println("NodeView SUID: " + nodeView.getSUID());
 	        	x += nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 	        	y += nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
-	        	System.out.println(x);
+	        	//System.out.println(x);
 	        	count += 1;
-	        	System.out.println("Read x = "+ x +", y = "+ y);
+	        	//System.out.println("Read x = "+ x +", y = "+ y);
 	        	network.addEdge(centroid, node, false);
 	        	networkView.updateView();
 	        }
@@ -94,8 +95,8 @@ public class MembershipEdges {
 	        x = x/count;
 	        y = y/count;
 	        View<CyNode> centroidView = networkView.getNodeView(centroid);
-	        System.out.println("CentroidView SUID: " + nodeView.getSUID());
-	        System.out.println("x = "+ x +", y = "+ y);
+	        //System.out.println("CentroidView SUID: " + centroidView.getSUID());
+	        //System.out.println("x = "+ x +", y = "+ y);
 	        centroidView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, x);
 	        centroidView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, y);
 	        

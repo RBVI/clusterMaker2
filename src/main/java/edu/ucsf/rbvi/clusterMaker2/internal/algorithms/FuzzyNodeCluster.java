@@ -23,9 +23,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster.ScoreComparat
 public class FuzzyNodeCluster extends NodeCluster{
 	
 	private HashMap<CyNode, Double> membershipMap = null;
-		
+	static int fuzzyClusterCount = 0;	
 	public FuzzyNodeCluster() {
 		super();
+		fuzzyClusterCount++;
+		clusterNumber = fuzzyClusterCount;
 		
 	}
 	
@@ -33,6 +35,8 @@ public class FuzzyNodeCluster extends NodeCluster{
 		super(collection);
 		
 		membershipMap = new HashMap<CyNode, Double>();
+		fuzzyClusterCount++;
+		clusterNumber = fuzzyClusterCount;
 		
 		for(CyNode element : clusterMemberships.keySet()){
 			
@@ -51,7 +55,7 @@ public class FuzzyNodeCluster extends NodeCluster{
 		}
 		return retval;
 	}
-	
+	public static void init() { fuzzyClusterCount = 0; hasScore = false; }
 	public Object getMembership(CyNode node){
 		return membershipMap.get(node);	
 
