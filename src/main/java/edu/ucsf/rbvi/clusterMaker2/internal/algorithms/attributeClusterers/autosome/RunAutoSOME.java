@@ -167,105 +167,94 @@ public class RunAutoSOME {
 		Matrix matrix = new Matrix(network, dataAttributes.toArray(new String[0]), 
 				                   false, ignoreMissing, selectedOnly);
 
-		/*  Not sure what this is about?
-		List<EdgeWeightConverter>converters = new ArrayList<EdgeWeightConverter>();
-		converters.add(new NoneConverter());
-		converters.add(new DistanceConverter1());
-		converters.add(new DistanceConverter2());
-		converters.add(new LogConverter());
-		converters.add(new NegLogConverter());
-		converters.add(new SCPSConverter());
-		*/
-		EdgeWeightConverter converter = new NoneConverter();
-		// What's going on here?  DistanceMatrix will only take a single edge attribute,
-		// but dataAttributes is a list of node attributes??
-        DistanceMatrix dm = new DistanceMatrix(network, dataAttributes.get(0), selectedOnly, converter);
-        nodes = dm.getNodes();
+		if (!selectedOnly) {
+			nodes = network.getNodeList();
+		} else {
+			nodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
+		}
 
-        //edges = dm.getEdges();
+		s.input = new dataItem[matrix.nRows()];
+		//matrix.printMatrix();
 
-        s.input = new dataItem[matrix.nRows()];
-        //matrix.printMatrix();
+		Map<String, Integer> key = new HashMap<String, Integer>();
+		for(int i = 0; i < nodes.size(); i++){
+			String id = ModelUtils.getNodeName(network, nodes.get(i));
+			if(!key.containsKey(id)) key.put(id,i);
+		}
 
-        Map<String, Integer> key = new HashMap<String, Integer>();
-        for(int i = 0; i < nodes.size(); i++){
-        	String id = ModelUtils.getNodeName(network, nodes.get(i));
-        	if(!key.containsKey(id)) key.put(id,i);
-        }
+		for(int k = 0, itor=0; k < matrix.nRows(); k++){
+			float[] f = new float[matrix.nColumns()];
+			//System.out.println(matrix.getRowLabels()[k]+" "+nodes.get(k).getIdentifier());
+			if(k==0) {
+				s.columnHeaders=new String[f.length+1];
+				s.columnHeaders[0] = "NAME";
+			}
+			for(int l = 0; l < f.length; l++) {
+				if(k==0) {
+					s.columnHeaders[l+1] = matrix.getColLabel(l);
+					s.columnHeaders[l+1] = s.columnHeaders[l+1].replace("\"","");
+					s.columnHeaders[l+1] = s.columnHeaders[l+1].replace(",","");
 
-        for(int k = 0, itor=0; k < matrix.nRows(); k++){
-        	float[] f = new float[matrix.nColumns()];
-        	//System.out.println(matrix.getRowLabels()[k]+" "+nodes.get(k).getIdentifier());
-        	if(k==0) {
-        		s.columnHeaders=new String[f.length+1];
-        		s.columnHeaders[0] = "NAME";
-        	}
-        	for(int l = 0; l < f.length; l++) {
-        		if(k==0) {
-        			s.columnHeaders[l+1] = matrix.getColLabel(l);
-        			s.columnHeaders[l+1] = s.columnHeaders[l+1].replace("\"","");
-        			s.columnHeaders[l+1] = s.columnHeaders[l+1].replace(",","");
+					//System.out.println(s.columnHeaders[l+1]);
+				}
+				//System.out.println(matrix.getValue(k,l).floatValue());
+				if(matrix.getValue(k,l)!=null) {
+					f[l] = matrix.getValue(k,l).floatValue();
+				} else {
+					f[l] = -99999999;
+					s.fillMissing=true;
+				}
 
-        			//System.out.println(s.columnHeaders[l+1]);
-        		}
-        		//System.out.println(matrix.getValue(k,l).floatValue());
-        		if(matrix.getValue(k,l)!=null) {
-        			f[l] = matrix.getValue(k,l).floatValue();
-        		} else {
-        			f[l] = -99999999;
-        			s.fillMissing=true;
-        		}
+			}
+			s.input[itor++] = new dataItem(f, matrix.getRowLabel(k));
+		}
 
-        	}
-        	s.input[itor++] = new dataItem(f, matrix.getRowLabel(k));
-        }
+		if(s.FCNrows && s.distMatrix) s = transpose(s);
 
-        if(s.FCNrows && s.distMatrix) s = transpose(s);
+		if(s.input == null){
+			monitor.showMessage(TaskMonitor.Level.ERROR, "Insufficient data for clustering (1 or less rows or columns)");
+			return null;
+		} else if(s.input.length<2){
+			monitor.showMessage(TaskMonitor.Level.ERROR, "Insufficient data for clustering (1 or less rows or columns)");
+			return null;
+		} else if(s.input[0].getValues()==null){
+			monitor.showMessage(TaskMonitor.Level.ERROR, "Insufficient data for clustering (1 or less rows or columns)");
+			return null;
+		} else if(s.input[0].getValues().length<2){
+			monitor.showMessage(TaskMonitor.Level.ERROR, "Insufficient data for clustering (1 or less rows or columns)");
+			return null;
+		}
 
-        if(s.input == null){
-        	monitor.showMessage(TaskMonitor.Level.ERROR, "Insufficient data for clustering (1 or less rows or columns)");
-        	return null;
-        } else if(s.input.length<2){
-        	monitor.showMessage(TaskMonitor.Level.ERROR, "Insufficient data for clustering (1 or less rows or columns)");
-        	return null;
-        } else if(s.input[0].getValues()==null){
-        	monitor.showMessage(TaskMonitor.Level.ERROR, "Insufficient data for clustering (1 or less rows or columns)");
-        	return null;
-        } else if(s.input[0].getValues().length<2){
-        	monitor.showMessage(TaskMonitor.Level.ERROR, "Insufficient data for clustering (1 or less rows or columns)");
-        	return null;
-        }
+		autRun = new Run();
+		cr = autRun.runAutoSOMEBasic(s, monitor);
 
-        autRun = new Run();
-        cr = autRun.runAutoSOMEBasic(s, monitor);
+		if(cr==null) {
+			monitor.setStatusMessage("Clustering failed!");
+			return null;
+		}
 
-        if(cr==null) {
-        	monitor.setStatusMessage("Clustering failed!");
-        	return null;
-        }
+		monitor.setStatusMessage("Assigning nodes to clusters");
+		clusterCount = cr.c.length;
+		Map<NodeCluster, NodeCluster> cMap = (!s.distMatrix) ? getNodeClusters(cr, key, matrix, s) : getNodeClustersFCN(cr, matrix, s);
 
-        monitor.setStatusMessage("Assigning nodes to clusters");
-        clusterCount = cr.c.length;
-        Map<NodeCluster, NodeCluster> cMap = (!s.distMatrix) ? getNodeClusters(cr, key, matrix, s) : getNodeClustersFCN(cr, matrix, s);
-
-        if (canceled) {
-        	monitor.setStatusMessage("canceled");
-        	return null;
-        }
+		if (canceled) {
+			monitor.setStatusMessage("canceled");
+			return null;
+		}
 
 
-        //Update node attributes in network to include clusters. Create cygroups from clustered nodes
-        monitor.setStatusMessage("Created "+clusterCount+" clusters");
-        // debugln("Created "+clusterCount+" clusters:");
-        //
-        if (clusterCount == 0) {
-        	monitor.showMessage(TaskMonitor.Level.WARN, "Created 0 clusters!!!!");
-        	return null;
-        }
+		//Update node attributes in network to include clusters. Create cygroups from clustered nodes
+		monitor.setStatusMessage("Created "+clusterCount+" clusters");
+		// debugln("Created "+clusterCount+" clusters:");
+		//
+		if (clusterCount == 0) {
+			monitor.showMessage(TaskMonitor.Level.WARN, "Created 0 clusters!!!!");
+			return null;
+		}
 
 
-        Set<NodeCluster>clusters = cMap.keySet();
-        return new ArrayList<NodeCluster>(clusters);
+		Set<NodeCluster>clusters = cMap.keySet();
+		return new ArrayList<NodeCluster>(clusters);
 	}
 
 
@@ -341,8 +330,6 @@ public class RunAutoSOME {
 			for(int j = 0; j < tokens.length-1; j++) sb.append(tokens[j]+"_");
 			temp = sb.substring(0,sb.length()-1);
 
-			// Should this be in the current network, or a different network?
-			// CyNode cn = Cytoscape.getCyNode(temp, true);
 			CyNode cn = network.addNode();
 			network.getRow(cn).set(CyNetwork.NAME, temp);
 			network.getRow(cn).set(CyRootNetwork.SHARED_NAME, temp);
@@ -380,16 +367,10 @@ public class RunAutoSOME {
 		}
 		if(nc.size()>0)  cMap.put(nc,nc);
 
-
-
 		return cMap;
 	}
 
-
-
-
 	public List<CyEdge> getEdges(int MAXEDGES) {
-
 		edges = new ArrayList<CyEdge>();
 		sortEdges[] se = new sortEdges[cr.fcn_edges.length];
 
