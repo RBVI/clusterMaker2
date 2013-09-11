@@ -39,6 +39,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmedo
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.featureVector.FeatureVectorTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.NetworkClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AP.APClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.ConnectedComponents.ConnectedComponentsTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM.FCMClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Fuzzifier.FuzzifierTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.GLay.GLayClusterTaskFactory;
@@ -99,6 +100,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new NetworkClusterTaskFactory(clusterManager), 
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new APClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new ConnectedComponentsTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new FCMClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new FuzzifierTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new GLayClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
