@@ -245,7 +245,7 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 		
 		if(isFuzzy){
 			
-			long FuzzyClusterTableSUID = network.getRow(network).get("FuzzyClusterTable.SUID", Long.class);
+			long FuzzyClusterTableSUID = network.getRow(network).get(clusterAttribute + "_Table.SUID", Long.class);
 			//System.out.println("NetworkName: "+ network.getRow(network).get(CyNetwork.NAME, String.class));
 			//System.out.println("Fuzzy Table SUID: " + FuzzyClusterTableSUID );
 			CyTable FuzzyClusterTable = manager.getTableManager().getTable(FuzzyClusterTableSUID);

@@ -27,6 +27,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.CyTableUtil;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
@@ -234,16 +235,28 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 				node = data.getRowNode(i);
 				nodeAttributes.getRow(node).set(clusterAttributeName + "_MembershipValues", clusterMemberships[i]);
 			}
-			*/	
-			CyTable FuzzyClusterTable = tableFactory.createTable("Fuzzy_Cluster_Table", "Fuzzy_Node.SUID", Long.class, true, true);
+			*/
+			CyTable networkTable = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
+			CyTable FuzzyClusterTable = null;
+			//CyTable FuzzyClusterTable = new CyTable();
+			if(!CyTableUtil.getColumnNames(networkTable).contains(clusterAttributeName + "_Table.SUID")){
+				
+				network.getDefaultNetworkTable().createColumn(clusterAttributeName + "_Table.SUID", Long.class, false);
+				 FuzzyClusterTable = tableFactory.createTable(clusterAttributeName + "_Table", "Fuzzy_Node.SUID", Long.class, true, true);
+				for(FuzzyNodeCluster cluster : clusters){
+					
+					FuzzyClusterTable.createColumn("Cluster_"+cluster.getClusterNumber(), Double.class, false);
+					//System.out.println("\n Cluster_"+cluster.getClusterNumber());
+				}
+			}
+			else{
+				long FuzzyClusterTableSUID = network.getRow(network).get(clusterAttributeName + "_Table.SUID", Long.class);
+				 FuzzyClusterTable = tableManager.getTable(FuzzyClusterTableSUID);
+			}
 			//FuzzyClusterTable.createColumn("Fuzzy_Node.SUID", CyNode.class, false);
 			
 			//System.out.println("Cluster Number:"+ clusters.size());
-			for(FuzzyNodeCluster cluster : clusters){
-				
-				FuzzyClusterTable.createColumn("Cluster_"+cluster.getClusterNumber(), Double.class, false);
-				//System.out.println("\n Cluster_"+cluster.getClusterNumber());
-			}
+			
 			
 			CyRow TableRow;
 			for(CyNode node: network.getNodeList()){
@@ -254,8 +267,8 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 				}
 			}
 			
-			network.getDefaultNetworkTable().createColumn("FuzzyClusterTable.SUID", Long.class, false);
-			network.getRow(network).set("FuzzyClusterTable.SUID", FuzzyClusterTable.getSUID());
+						
+			network.getRow(network).set(clusterAttributeName + "_Table.SUID", FuzzyClusterTable.getSUID());
 			tableManager.addTable(FuzzyClusterTable);			
 			
 			
