@@ -130,7 +130,7 @@ public class KnnView extends TreeView {
 			String type = myNetwork.getRow(myNetwork).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class);
 			if (!type.equals(KMeansCluster.GROUP_ATTRIBUTE) &&
 			    !type.equals(KMedoidCluster.GROUP_ATTRIBUTE) &&
-			    !type.equals("autosome heatmap") &&
+			    !type.equals("autosome_heatmap") &&
 			    !type.equals("PAM") &&
 			    !type.equals("HOMACH"))
 				return false;

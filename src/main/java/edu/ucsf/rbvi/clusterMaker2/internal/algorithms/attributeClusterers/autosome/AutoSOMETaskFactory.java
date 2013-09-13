@@ -15,18 +15,26 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 public class AutoSOMETaskFactory implements ClusterTaskFactory   {
 	ClusterManager clusterManager;
 	AutoSOMEContext context = null;
+	boolean heatmap = true;
 	
-	public AutoSOMETaskFactory(ClusterManager clusterManager) {
+	public AutoSOMETaskFactory(ClusterManager clusterManager, boolean heatmap) {
 		context = new AutoSOMEContext();
 		this.clusterManager = clusterManager;
+		this.heatmap = heatmap;
 	}
 	
 	public String getShortName() {
-		return AutoSOMECluster.SHORTNAME;
+		if (heatmap)
+			return AutoSOMECluster.SHORTNAME;
+		else
+			return AutoSOMECluster.NET_SHORTNAME;
 	}
 
 	public String getName() {
-		return AutoSOMECluster.NAME;
+		if (heatmap)
+			return AutoSOMECluster.NAME;
+		else
+			return AutoSOMECluster.NET_NAME;
 	}
 
 	public ClusterViz getVisualizer() {
@@ -43,14 +51,17 @@ public class AutoSOMETaskFactory implements ClusterTaskFactory   {
 	}
 
 	public List<ClusterType> getTypeList() {
-		return Collections.singletonList(ClusterType.ATTRIBUTE); 
+		if (heatmap)
+			return Collections.singletonList(ClusterType.ATTRIBUTE); 
+		else
+			return Collections.singletonList(ClusterType.NETWORK); 
 	}
 
 	public TaskIterator createTaskIterator() {
 		// Not sure why we need to do this, but it looks like
 		// the tunable stuff "remembers" objects that it's already
 		// processed this tunable.  So, we use a copy constructor
-		return new TaskIterator(new AutoSOMECluster(context, clusterManager));
+		return new TaskIterator(new AutoSOMECluster(context, clusterManager, heatmap));
 	}
 	
 }

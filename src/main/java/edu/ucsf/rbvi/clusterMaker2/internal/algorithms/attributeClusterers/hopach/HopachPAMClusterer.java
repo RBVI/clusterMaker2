@@ -23,7 +23,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.ui.KnnView;
 
 public class HopachPAMClusterer extends AbstractAttributeClusterer {
 	public static final String SHORTNAME="hopach";
-	public static final String NAME="HOPACH-PAM";
+	public static final String NAME="HOPACH-PAM cluster";
 	
 	
 	@Tunable (description="Network to cluster", context="nogui")
@@ -52,7 +52,7 @@ public class HopachPAMClusterer extends AbstractAttributeClusterer {
 	@Override
 	public void run(TaskMonitor monitor) {
 		this.monitor = monitor;
-		this.monitor = monitor;
+		monitor.setTitle("Performing "+getName());
 		List<String> nodeAttributeList = context.attributeList.getNodeAttributeList();
 		
 		

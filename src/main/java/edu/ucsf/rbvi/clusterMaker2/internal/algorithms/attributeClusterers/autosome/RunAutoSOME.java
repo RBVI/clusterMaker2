@@ -163,9 +163,19 @@ public class RunAutoSOME {
 		s.htmlOut=false;
 		s.textOut=false;
 
+		// System.out.println("network "+network.toString()+" has "+network.getNodeCount()+" nodes");
+		// System.out.println("attributes: "+dataAttributes);
+
+		String[] attrArray = new String[dataAttributes.size()];
+		int att = 0;
+		for (String attribute: dataAttributes) {
+			attrArray[att++] = "node."+attribute;
+		}
+
         // Create the matrix
-		Matrix matrix = new Matrix(network, dataAttributes.toArray(new String[0]), 
-				                   false, ignoreMissing, selectedOnly);
+		Matrix matrix = new Matrix(network, attrArray, false, ignoreMissing, selectedOnly);
+
+		// System.out.println("matrix is "+matrix.nRows()+" by "+matrix.nColumns());
 
 		if (!selectedOnly) {
 			nodes = network.getNodeList();

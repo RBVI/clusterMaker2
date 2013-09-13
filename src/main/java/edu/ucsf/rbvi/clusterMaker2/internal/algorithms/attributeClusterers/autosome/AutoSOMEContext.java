@@ -44,6 +44,7 @@ import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AdvancedProperties;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeList;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.autosome.launch.Settings;
 
@@ -113,6 +114,9 @@ public class AutoSOMEContext  {
 	@Tunable(description="Maximum number of edges to display in fuzzy network", 
 			 groups={"Fuzzy Cluster Network Settings"}, gravity=103)
 	public int maxEdges = 2000;
+    
+	@ContainsTunables
+	public AdvancedProperties advancedAttributes;
 	
 	@Tunable(description="Choose Visualization", groups={"Data Output"}, gravity=125)
 	public ListSingleSelection<String> dataVisualization = 
@@ -126,6 +130,7 @@ public class AutoSOMEContext  {
 		distanceMetric.setSelectedValue("Uncentered Correlation");
 		dataVisualization.setSelectedValue("Network");
 		mode.setSelectedValue("Normal");
+		advancedAttributes = new AdvancedProperties("__autosomeCluster", false);
 	}
 	
 	public void setNetwork(CyNetwork network)
@@ -138,6 +143,8 @@ public class AutoSOMEContext  {
 		else
 			attributeList.setNetwork(network);
 	}
+
+	public String getClusterAttribute() { return advancedAttributes.clusterAttribute;}
 	
 	public List<String> getParams() {
 		List<String> params = new ArrayList<String>();
