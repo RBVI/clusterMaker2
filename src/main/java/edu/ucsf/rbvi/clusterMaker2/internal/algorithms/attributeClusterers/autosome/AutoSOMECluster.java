@@ -63,7 +63,9 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 public class AutoSOMECluster extends AbstractNetworkClusterer  {
 	
 	public final static String GROUP_ATTRIBUTE = "__AutoSOMEGroups.SUID";
-	private boolean heatmap=false;
+	public final static String SHORTNAME = "autosome";
+	public final static String NAME = "AutoSOME Clustering";
+
 	private int cluster_output=0;
 	private boolean finishedClustering = false;
 	private Settings settings;
@@ -82,29 +84,32 @@ public class AutoSOMECluster extends AbstractNetworkClusterer  {
 	@ContainsTunables
 	public AutoSOMEContext context = null;
 	
-	public AutoSOMECluster(AutoSOMEContext context, ClusterManager clusterManager, boolean heatmap) {
+	public AutoSOMECluster(AutoSOMEContext context, ClusterManager clusterManager) {
 		super(clusterManager);
-		this.heatmap = heatmap;
-		if (heatmap) cluster_output = 1;
+		this.context = context;
 
 		// Initialize our settings
 		context.numThreads = Runtime.getRuntime().availableProcessors();
 	}
 
 	public String getShortName() {
-		return (heatmap) ? "autosome_heatmap" : "autosome_network";
+		return SHORTNAME;
 	};
 
 	@ProvidesTitle
-	public String getName() {return "AutoSOME "+((settings.distMatrix) ? "Fuzzy " : "")+"Clustering";};
+	public String getName() {return "AutoSOME "+((context.getSettings().distMatrix) ? "Fuzzy " : "")+"Clustering";}
 
 	public ClusterViz getVisualizer() {
-		return (heatmap) ? new KnnView(clusterManager) : new NewNetworkView(network, clusterManager, true, finishedClustering);
+		return null;
 	}
-
 
 	public void run(TaskMonitor monitor) {
 		this.monitor = monitor;
+		if (network == null)
+			network = clusterManager.getNetwork();
+
+		context.setNetwork(network);
+
 		String networkID = ModelUtils.getNetworkName(network);
 		
 		// Update settings from our context

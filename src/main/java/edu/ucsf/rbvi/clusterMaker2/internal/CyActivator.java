@@ -33,6 +33,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.ClusterManagerImpl;
 
 // Algorithms
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.autosome.AutoSOMETaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hierarchical.HierarchicalTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmeans.KMeansTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmedoid.KMedoidTaskFactory;
@@ -94,6 +95,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new KMedoidTaskFactory(clusterManager), 
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new FeatureVectorTaskFactory(clusterManager), 
+		                ClusterTaskFactory.class, new Properties());
+		registerService(bc, new AutoSOMETaskFactory(clusterManager), 
 		                ClusterTaskFactory.class, new Properties());
 
 		// Network clusterers

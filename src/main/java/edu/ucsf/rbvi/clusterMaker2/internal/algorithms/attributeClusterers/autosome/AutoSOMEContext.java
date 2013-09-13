@@ -40,6 +40,7 @@ import java.util.List;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
