@@ -72,7 +72,7 @@ public class RunFCM {
 		this.metric = metric;
 		this.monitor = monitor;
 		this.membershipThreshold = membershipThreshold;
-		
+		System.out.println("c= "+number_clusters+" ,iterations: "+number_iterations);
 		
 		if (maxThreads > 0)
 			nThreads = maxThreads;
@@ -98,7 +98,7 @@ public class RunFCM {
 	 * @param monitor, Task monitor for the process
 	 * @return List of FuzzyNodeCLusters
 	 */
-	public List<FuzzyNodeCluster> run(CyNetwork network, TaskMonitor monitor){
+	public List<FuzzyNodeCluster> run(CyNetwork network, TaskMonitor monitor, int[] mostRelevantCluster){
 		
 		Long networkID = network.getSUID();		
 
@@ -182,6 +182,18 @@ public class RunFCM {
 			
 			fuzzyClusters.add(new FuzzyNodeCluster(fuzzyNodeList,clusterMembershipMap));
 			
+		}
+		
+		//Setting up the most relevant cluster per node
+		for(int i = 0; i< nelements; i++){
+			//List tempMemList = Arrays.asList(ArrayUtils.toObject(tClusterMemberships[i]));
+			int maxIndex = 0; 
+			for(int j = 1; j < number_clusters; j++) {
+				if(tClusterMemberships[i][j] > tClusterMemberships[i][maxIndex]){
+					maxIndex = j;
+				}
+			}
+			mostRelevantCluster[i] = maxIndex+1;
 		}
 		
 		clusterMemberships = tClusterMemberships;

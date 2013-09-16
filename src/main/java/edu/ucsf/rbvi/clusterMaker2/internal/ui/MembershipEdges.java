@@ -92,8 +92,10 @@ public class MembershipEdges {
 	        	networkView.updateView();
 	        }
 	        
-	        x = x/count;
-	        y = y/count;
+	        if(count!=0){
+	        	x = x/count;
+	        	y = y/count;
+	        }
 	        View<CyNode> centroidView = networkView.getNodeView(centroid);
 	        //System.out.println("CentroidView SUID: " + centroidView.getSUID());
 	        //System.out.println("x = "+ x +", y = "+ y);
@@ -118,7 +120,7 @@ public class MembershipEdges {
 			edgeView.setLockedValue(BasicVisualLexicon.EDGE_LINE_TYPE, LineTypeVisualProperty.DASH_DOT);
 
 			edgeView.setLockedValue(BasicVisualLexicon.EDGE_TRANSPARENCY, (int)(FuzzyClusterTable.getRow(node.getSUID()).get("Cluster_"+ cNum, Double.class)*255));
-			network.getDefaultEdgeTable().getRow(edge).set("Membership_%", 100*(FuzzyClusterTable.getRow(node.getSUID()).get("Cluster_"+ cNum, Double.class)));
+			//network.getRow(edge).set("Membership_%", 100*(FuzzyClusterTable.getRow(node.getSUID()).get("Cluster_"+ cNum, Double.class)));
 		}
 		
 	}
