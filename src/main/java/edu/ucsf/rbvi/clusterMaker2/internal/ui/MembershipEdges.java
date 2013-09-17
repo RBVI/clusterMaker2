@@ -76,8 +76,8 @@ public class MembershipEdges {
 	        network.getRow(centroid).set(CyNetwork.NAME, "Centroid" + clusterList.indexOf(cluster) );
 	        //System.out.println("Centroid SUID: " + centroid.getSUID());
 	        //View<CyNode> nodeView = networkView.getNodeView(centroid);
-	        double x = 0;
-	        double y = 0;
+	        double x = 0.0001;
+	        double y = 0.0001;
 	        double count = 0;
 	        
 	        for (CyNode node : cluster) {
