@@ -84,6 +84,7 @@ public class KMedoidCluster extends AbstractAttributeClusterer {
 
 	public void run(TaskMonitor monitor) {
 		this.monitor = monitor;
+		monitor.setTitle("Performing "+getName());
 		List<String> nodeAttributeList = context.attributeList.getNodeAttributeList();
 		String edgeAttribute = context.attributeList.getEdgeAttribute();
 

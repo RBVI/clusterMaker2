@@ -92,6 +92,7 @@ public class FeatureVectorCluster extends AbstractAttributeClusterer {
 
 	public void run(TaskMonitor monitor) {
 		this.monitor = monitor;
+		monitor.setTitle("Performing "+getName());
 		List<String> nodeAttributeList = context.nodeAttributeList.getSelectedValues();
 
 		// Sanity check all of our settings

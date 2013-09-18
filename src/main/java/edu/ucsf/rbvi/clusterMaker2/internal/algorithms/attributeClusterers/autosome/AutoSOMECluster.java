@@ -63,8 +63,10 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 public class AutoSOMECluster extends AbstractNetworkClusterer  {
 	
 	public final static String GROUP_ATTRIBUTE = "__AutoSOMEGroups.SUID";
-	public final static String SHORTNAME = "autosome";
-	public final static String NAME = "AutoSOME Clustering";
+	public final static String SHORTNAME = "autosome_heatmap";
+	public final static String NAME = "AutoSOME Attribute Clustering";
+	public final static String NET_SHORTNAME = "autosome_network";
+	public final static String NET_NAME = "AutoSOME Network Clustering";
 
 	private int cluster_output=0;
 	private boolean finishedClustering = false;
@@ -77,6 +79,8 @@ public class AutoSOMECluster extends AbstractNetworkClusterer  {
 	private List<String>attrList;
 	private List<String>attrOrderList;
 	private List<String>nodeOrderList;
+
+	private boolean heatmap = true;
 	
 	@Tunable(description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
@@ -84,12 +88,24 @@ public class AutoSOMECluster extends AbstractNetworkClusterer  {
 	@ContainsTunables
 	public AutoSOMEContext context = null;
 	
-	public AutoSOMECluster(AutoSOMEContext context, ClusterManager clusterManager) {
+	public AutoSOMECluster(AutoSOMEContext context, ClusterManager clusterManager, boolean heatmap) {
 		super(clusterManager);
 		this.context = context;
+		this.heatmap = heatmap;
 
 		// Initialize our settings
 		context.numThreads = Runtime.getRuntime().availableProcessors();
+
+		if (network == null)
+			network = clusterManager.getNetwork();
+		context.setNetwork(network);
+
+		if (heatmap)
+			context.dataVisualization.setSelectedValue("Heatmap");
+		else
+			context.dataVisualization.setSelectedValue("Network");
+
+		clusterAttributeName = context.getClusterAttribute();
 	}
 
 	public String getShortName() {
@@ -105,10 +121,7 @@ public class AutoSOMECluster extends AbstractNetworkClusterer  {
 
 	public void run(TaskMonitor monitor) {
 		this.monitor = monitor;
-		if (network == null)
-			network = clusterManager.getNetwork();
-
-		context.setNetwork(network);
+		monitor.setTitle("Performing "+getName());
 
 		String networkID = ModelUtils.getNetworkName(network);
 		
@@ -148,8 +161,6 @@ public class AutoSOMECluster extends AbstractNetworkClusterer  {
 		// Remove any leftover groups from previous runs
 		removeGroups(network, getShortName());
 
-		network.getDefaultNodeTable().deleteColumn(clusterAttributeName);
-
 		monitor.setStatusMessage("Creating groups");
 		
 		if(settings.distMatrix)
@@ -177,6 +188,7 @@ public class AutoSOMECluster extends AbstractNetworkClusterer  {
 				createGroups(network, nodeCluster, GROUP_ATTRIBUTE);		   
 			ClusterResults results = new AbstractClusterResults(network, nodeClusters);
 			monitor.setStatusMessage("Done.  AutoSOME results:\n"+results);
+			System.out.println("Done.  AutoSOME results:\n"+results);
 		} else {
 			nodeClusters = new ArrayList<List<CyNode>>();
 			/*
@@ -189,9 +201,20 @@ public class AutoSOMECluster extends AbstractNetworkClusterer  {
 				nodeClusters.add(nodeList);
 			}
 	   */
+			monitor.setStatusMessage("Done.  AutoSOME results:\n"+nodeCluster.size()+" clusters found.");
+			System.out.println("Done.  AutoSOME results:\n"+nodeCluster.size()+" clusters found.");
 		}
 
-		monitor.setStatusMessage("Done.  AutoSOME results:\n"+nodeCluster.size()+" clusters found.");
+		// List<String> params = context.getParams(runAutoSOME.getMatrix());
+		// updateParams(network, params);
+
+		if (context.showViz) {
+			if (heatmap)
+				insertTasksAfterCurrentTask(new KnnView(clusterManager));
+			else
+				insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true, false));
+		}
+
 
 	}
 

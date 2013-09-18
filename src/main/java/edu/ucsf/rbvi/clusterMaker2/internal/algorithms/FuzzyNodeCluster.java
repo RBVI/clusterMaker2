@@ -23,7 +23,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster.ScoreComparat
 public class FuzzyNodeCluster extends NodeCluster{
 	
 	private HashMap<CyNode, Double> membershipMap = null;
-	static int fuzzyClusterCount = 0;	
+	public static int fuzzyClusterCount = 0;	
 	public FuzzyNodeCluster() {
 		super();
 		fuzzyClusterCount++;

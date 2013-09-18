@@ -77,6 +77,7 @@ public class SilhouetteCalculator {
 				double distancevalue = 0.0;
 				if(bvalues.containsKey(currentclasslabel))
 					distancevalue = bvalues.get(currentclasslabel).doubleValue();
+				System.out.println("i,j = "+ i +","+ j+"dmatij= " + distancematrix[i][j]);
 				distancevalue = distancevalue + distancematrix[i][j];
 				bvalues.put(currentclasslabel, Double.valueOf(distancevalue));
 			}

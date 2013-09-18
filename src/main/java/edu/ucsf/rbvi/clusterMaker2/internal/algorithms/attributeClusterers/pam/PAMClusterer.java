@@ -27,7 +27,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.ui.KnnView;
  */
 public class PAMClusterer extends AbstractAttributeClusterer {
 	public static String SHORTNAME="pam";
-	public static String NAME="Partition Around Medoids";
+	public static String NAME="Partition Around Medoids (PAM) cluster";
 	
 	@Tunable (description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
@@ -60,6 +60,7 @@ public class PAMClusterer extends AbstractAttributeClusterer {
 	@Override
 	public void run(TaskMonitor monitor) {
 		this.monitor = monitor;
+		monitor.setTitle("Performing "+getName());
 		List<String> nodeAttributeList = context.attributeList.getNodeAttributeList();
 		String edgeAttribute = context.attributeList.getEdgeAttribute();
 		

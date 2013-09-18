@@ -96,7 +96,7 @@ public class CyActivator extends AbstractCyActivator {
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new FeatureVectorTaskFactory(clusterManager), 
 		                ClusterTaskFactory.class, new Properties());
-		registerService(bc, new AutoSOMETaskFactory(clusterManager), 
+		registerService(bc, new AutoSOMETaskFactory(clusterManager, true), 
 		                ClusterTaskFactory.class, new Properties());
 
 		// Network clusterers
@@ -111,6 +111,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new MCODEClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new SCPSClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new TransClustClusterTaskFactory(clusterManager), 
+		                ClusterTaskFactory.class, new Properties());
+		registerService(bc, new AutoSOMETaskFactory(clusterManager, false), 
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new FilterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		// registerService(bc, new UITaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());

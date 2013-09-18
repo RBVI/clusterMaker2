@@ -129,6 +129,7 @@ public class MCODECluster extends AbstractNetworkClusterer  {
 
 	public void run(TaskMonitor monitor) {
 		this.monitor = monitor;
+		monitor.setTitle("Performing "+getName());
 		updateSettings();
 
 		NodeCluster.init();

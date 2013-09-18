@@ -235,6 +235,25 @@ public class Matrix extends BaseMatrix {
 			}
 			
 		}
+		
+		public double[][] getMatrix2DArray(){
+			double[][] matrixArray = new double[nRows][nColumns];
+			
+			for(int i = 0; i < nRows; i++){
+				
+				for (int j = 0; j < nColumns ; j++){
+					if(matrix[i][j] != null){
+						matrixArray[i][j] = matrix[i][j];
+					}
+					else{
+						matrixArray[i][j] = 0.0;
+					}
+				}				
+			}
+			
+			return matrixArray;
+			
+		}
 
 		// XXX Do we need a new constructor to clusterMaker.algorithms.DistanceMatrix?
 		@SuppressWarnings("unchecked")
