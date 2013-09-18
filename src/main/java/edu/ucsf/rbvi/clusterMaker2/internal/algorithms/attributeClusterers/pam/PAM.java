@@ -261,14 +261,18 @@ public class PAM implements KClusterable {
 			double bestChange = 0;
 			int bestii = -1, besthh = -1;
 			
-			Iterator<Integer> medIt = medoids.iterator();
+		/*	Iterator<Integer> medIt = medoids.iterator();
 			while (medIt.hasNext()) {
-				int ii = medIt.next().intValue();
+				int ii = medIt.next().intValue(); */
+			Integer[] medIt = new Integer[medoids.size()];
+			for (int ii: medoids.toArray(medIt)) {
 				
-				Iterator<Integer> nonmedIt = nonmedoids.iterator();
+			/*	Iterator<Integer> nonmedIt = nonmedoids.iterator();
 				while (nonmedIt.hasNext()) {
-					int hh = nonmedIt.next().intValue();
-				//	swap(hh, ii);
+					int hh = nonmedIt.next().intValue(); */
+				Integer[] nonmedIt = new Integer[nonmedoids.size()];
+				for (int hh: nonmedoids.toArray(nonmedIt)) {
+					swap(hh, ii);
 
 					// Consider swapping medoid i and nonmedoid h
 					// by calculating gains by all other elements
@@ -302,7 +306,7 @@ public class PAM implements KClusterable {
 							}
 						}
 					}
-				//	swap(ii, hh);
+					swap(ii, hh);
 					if (change < bestChange) {
 						// distance to nearest medoid summed over all nonmedoids is improved: swap
 						//swap(hh, ii);
