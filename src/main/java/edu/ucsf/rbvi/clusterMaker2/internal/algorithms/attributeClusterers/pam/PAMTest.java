@@ -2,6 +2,11 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.pam;
 
 import static org.junit.Assert.*;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+
 import org.junit.Test;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BaseMatrix;
@@ -30,17 +35,17 @@ public class PAMTest {
 
 	@Test
 	public void testCluster() {
-		Double[] data = {
+		Double[] data = {.9, .9, .8, .8, .4, .4, .5, .5, .1, .1}/* = {
 			.9, .9, 
 			.8, .8, 
 			.5, .5, 
 			.4, .4, 
 			.0, .0,
 			.1, .1,
-		};
+		}*/;
 		int k = 3;
 		
-		int[] ans = {0, 0, 1, 1, 2, 2};
+		int[] ans = {0, 0, 1, 1, 2};//{0, 0, 1, 1, 2, 2};
 		
 		BaseMatrix mat = new BaseMatrix(0, 2, data);
 		PAM pam = new PAM(null, mat, DistanceMetric.CITYBLOCK);
@@ -72,6 +77,43 @@ public class PAMTest {
 		//       In contrast, R's cluster::pam passes this test case.
 		//       The algorithm therein likely differs from the one upon which the current
 		//       implementation is based.
+	}
+
+	@Test
+	public void testLarge() {
+		Double[] data;
+		int k = 8;
+		
+		int[] ans = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7};
+
+		BufferedReader reader = new BufferedReader(new InputStreamReader(PAMTest.class.getResourceAsStream("/pam_data.txt")));
+		String line;
+		ArrayList<Double> vectors = new ArrayList<Double>();
+		int vectorWidth = 0;
+		try {
+			while ((line = reader.readLine()) != null) {
+				String [] vector = line.split("\t");
+				vectorWidth = vector.length;
+				for (String v: vector)
+				vectors.add(Double.parseDouble(v));
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		data = new Double[vectors.size()];
+		data = vectors.toArray(data);
+
+		BaseMatrix mat = new BaseMatrix(0, vectorWidth, data);
+		PAM pam = new PAM(null, mat, DistanceMetric.EUCLIDEAN);
+		
+		Clusters c = pam.cluster(k);
+		
+		assertEquals(c.getNumberOfClusters(), k);
+		
+		for (int i = 0; i < c.size(); ++i) {
+			assertEquals(c.getClusterIndex(i), ans[i]);
+		}		
 	}
 
 }

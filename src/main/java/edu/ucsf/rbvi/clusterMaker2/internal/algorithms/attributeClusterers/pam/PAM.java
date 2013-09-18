@@ -251,22 +251,25 @@ public class PAM implements KClusterable {
 	 * SWAP phase. Attempt to improve clustering quality by exchanging medoids with non-medoids.
 	 */
 	private void swapPhase() {
-		boolean notConverged = true;
+	/*	boolean notConverged = true;
 		boolean continueLoop = true;
-		int nSwaps = 0;
+		int nSwaps = 0; */
 		
-		while (notConverged && continueLoop) {
-			notConverged = false;
-			continueLoop = false;
-	
+		while (true) {
+		/*	notConverged = false;
+			continueLoop = false; */
+			double bestChange = 0;
+			int bestii = -1, besthh = -1;
+			
 			Iterator<Integer> medIt = medoids.iterator();
-			while (medIt.hasNext() && continueLoop) {
+			while (medIt.hasNext()) {
 				int ii = medIt.next().intValue();
 				
 				Iterator<Integer> nonmedIt = nonmedoids.iterator();
 				while (nonmedIt.hasNext()) {
 					int hh = nonmedIt.next().intValue();
-				
+				//	swap(hh, ii);
+
 					// Consider swapping medoid i and nonmedoid h
 					// by calculating gains by all other elements
 					
@@ -276,7 +279,7 @@ public class PAM implements KClusterable {
 					while (nonmedIt2.hasNext()) {
 						int jj = nonmedIt2.next().intValue();
 						if (jj == hh) continue;
-					
+						
 						double d = nearestDistances[jj];
 						if (distances.getValue(ii, jj) > d) {
 							// if removed, i will have no impact
@@ -299,14 +302,14 @@ public class PAM implements KClusterable {
 							}
 						}
 					}
-					
-					if (change < 0) {
+				//	swap(ii, hh);
+					if (change < bestChange) {
 						// distance to nearest medoid summed over all nonmedoids is improved: swap
-						swap(hh, ii);
+						//swap(hh, ii);
 						//System.out.print("Swap " + hh + " and " + ii + " for change = " + change + "\n");
 						
 						// non-convergence if any swap occurs, up to a maximum number of swaps (to guard against swap cycles)
-						if (nSwaps++ < maxSwaps) {
+					/*	if (nSwaps++ < maxSwaps) {
 							notConverged = true;
 						} else {
 							continueLoop = false;
@@ -315,13 +318,19 @@ public class PAM implements KClusterable {
 						// reset iterator
 						medIt = medoids.iterator();
 						// break out of inner loop to consider next medoid
-						break;
+						break; */
+						bestChange = change;
+						bestii = ii;
+						besthh = hh;
 					}
 					
 				}
 				
 			}
-			
+			if (bestChange == 0) break;
+			else {
+				swap(besthh,bestii);
+			}
 		}
 	}
 	

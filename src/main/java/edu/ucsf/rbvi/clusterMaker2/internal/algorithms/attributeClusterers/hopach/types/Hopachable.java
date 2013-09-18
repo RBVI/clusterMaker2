@@ -28,7 +28,6 @@ public interface Hopachable extends Subsegregatable {
 	int[] order(Clusters clusters);
 	
 	// Subset
-	@Override
 	Hopachable subset(int[] index);
 	
 }
