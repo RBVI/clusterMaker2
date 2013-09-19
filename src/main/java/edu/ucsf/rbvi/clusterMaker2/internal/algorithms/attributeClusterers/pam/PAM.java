@@ -251,38 +251,28 @@ public class PAM implements KClusterable {
 	 * SWAP phase. Attempt to improve clustering quality by exchanging medoids with non-medoids.
 	 */
 	private void swapPhase() {
-	/*	boolean notConverged = true;
-		boolean continueLoop = true;
-		int nSwaps = 0; */
-		
 		while (true) {
-		/*	notConverged = false;
-			continueLoop = false; */
 			double bestChange = 0;
 			int bestii = -1, besthh = -1;
 			
-		/*	Iterator<Integer> medIt = medoids.iterator();
+			Iterator<Integer> medIt = medoids.iterator();
 			while (medIt.hasNext()) {
-				int ii = medIt.next().intValue(); */
-			Integer[] medIt = new Integer[medoids.size()];
-			for (int ii: medoids.toArray(medIt)) {
+				int ii = medIt.next().intValue();
 				
-			/*	Iterator<Integer> nonmedIt = nonmedoids.iterator();
+				Iterator<Integer> nonmedIt = nonmedoids.iterator();
 				while (nonmedIt.hasNext()) {
-					int hh = nonmedIt.next().intValue(); */
-				Integer[] nonmedIt = new Integer[nonmedoids.size()];
-				for (int hh: nonmedoids.toArray(nonmedIt)) {
-					swap(hh, ii);
+					int hh = nonmedIt.next().intValue();
 
 					// Consider swapping medoid i and nonmedoid h
 					// by calculating gains by all other elements
 					
 					// Calculate cumulative change to distance to nearest medoid for all nonmedoids j != h
 					double change = 0;
-					Iterator<Integer> nonmedIt2 = nonmedoids.iterator();
-					while (nonmedIt2.hasNext()) {
-						int jj = nonmedIt2.next().intValue();
-						if (jj == hh) continue;
+					Integer[] nonmedIt2 = new Integer[nonmedoids.size() + 1];
+					nonmedoids.toArray(nonmedIt2);
+					nonmedIt2[nonmedIt2.length - 1] = ii;
+					for (int jj: nonmedIt2) {
+					//	if (jj == hh) continue;
 						
 						double d = nearestDistances[jj];
 						if (distances.getValue(ii, jj) > d) {
@@ -306,23 +296,7 @@ public class PAM implements KClusterable {
 							}
 						}
 					}
-					swap(ii, hh);
 					if (change < bestChange) {
-						// distance to nearest medoid summed over all nonmedoids is improved: swap
-						//swap(hh, ii);
-						//System.out.print("Swap " + hh + " and " + ii + " for change = " + change + "\n");
-						
-						// non-convergence if any swap occurs, up to a maximum number of swaps (to guard against swap cycles)
-					/*	if (nSwaps++ < maxSwaps) {
-							notConverged = true;
-						} else {
-							continueLoop = false;
-						}
-						
-						// reset iterator
-						medIt = medoids.iterator();
-						// break out of inner loop to consider next medoid
-						break; */
 						bestChange = change;
 						bestii = ii;
 						besthh = hh;
@@ -333,6 +307,7 @@ public class PAM implements KClusterable {
 			}
 			if (bestChange == 0) break;
 			else {
+			//	System.out.println("bestChange: " + bestChange);
 				swap(besthh,bestii);
 			}
 		}
@@ -361,6 +336,26 @@ public class PAM implements KClusterable {
 	 */
 	private void updateNearest(int added, int removed) {
 		int m = size();
+		
+		if (removed >= 0) {
+			// removed index is valid
+			
+			// check if the removed medoid is the nearest or next-nearest of any element
+			for (int ii = 0; ii < m; ++ii) {
+				if (nearestMedoids[ii] == removed) {
+					// promote next-nearest to nearest
+					nearestMedoids[ii] = nextNearestMedoids[ii];
+					nearestDistances[ii] = nextNearestDistances[ii];
+					// find new next-nearest
+					updateNextNearest(ii);
+				} else if (nextNearestMedoids[ii] == removed) {
+					// find new next-nearest
+					updateNextNearest(ii);
+				}
+			}
+			
+		}
+
 		if (added >= 0) {
 			// added index is valid
 			
@@ -384,25 +379,11 @@ public class PAM implements KClusterable {
 			}
 			
 		}
-		
-		if (removed >= 0) {
-			// removed index is valid
-			
-			// check if the removed medoid is the nearest or next-nearest of any element
-			for (int ii = 0; ii < m; ++ii) {
-				if (nearestMedoids[ii] == removed) {
-					// promote next-nearest to nearest
-					nearestMedoids[ii] = nextNearestMedoids[ii];
-					nearestDistances[ii] = nextNearestDistances[ii];
-					// find new next-nearest
-					updateNextNearest(ii);
-				} else if (nextNearestMedoids[ii] == removed) {
-					// find new next-nearest
-					updateNextNearest(ii);
-				}
-			}
-			
-		}
+		Integer [] a = new Integer[medoids.size()];
+	/*	System.out.print("medoids: ");
+		for (int i: medoids.toArray(a))
+			System.out.print(i + " ");
+		System.out.print("\n"); */
 	}
 	
 	/**

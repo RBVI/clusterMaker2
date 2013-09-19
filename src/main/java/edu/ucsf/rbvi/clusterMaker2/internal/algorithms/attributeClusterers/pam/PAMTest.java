@@ -35,6 +35,7 @@ public class PAMTest {
 
 	@Test
 	public void testCluster() {
+		System.out.println("testCluster begin");
 		Double[] data = {.9, .9, .8, .8, .4, .4, .5, .5, .1, .1}/* = {
 			.9, .9, 
 			.8, .8, 
@@ -51,9 +52,11 @@ public class PAMTest {
 		PAM pam = new PAM(null, mat, DistanceMetric.CITYBLOCK);
 		
 		Clusters c = pam.cluster(k);
-		
+		System.out.println("testCluster end");
 		assertEquals(c.getNumberOfClusters(), k);
-		
+		for (int i = 0; i < c.size(); ++i) {
+			System.out.println("c[" + i + "] = " + c.getClusterIndex(i));
+		}
 		for (int i = 0; i < c.size(); ++i) {
 			assertEquals(c.getClusterIndex(i), ans[i]);
 		}
@@ -81,6 +84,7 @@ public class PAMTest {
 
 	@Test
 	public void testLarge() {
+		System.out.println("testLarge begin");
 		Double[] data;
 		int k = 8;
 		
@@ -108,7 +112,7 @@ public class PAMTest {
 		PAM pam = new PAM(null, mat, DistanceMetric.EUCLIDEAN);
 		
 		Clusters c = pam.cluster(k);
-		
+		System.out.println("testLarge end");
 		assertEquals(c.getNumberOfClusters(), k);
 		
 		for (int i = 0; i < c.size(); ++i) {
