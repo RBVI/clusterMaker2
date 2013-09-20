@@ -25,6 +25,9 @@ public class FCMContext implements ClusterAlgorithmContext {
 	
 	@ContainsTunables
 	public EdgeAttributeHandler edgeAttributeHandler;
+	
+	@Tunable(description = "Number of clusters", gravity=19.0)
+	public int cNumber = -1;
 	/*
 	@Tunable(description = "Weak edge weight pruning threshold", groups={"FCM Advanced Settings"}, params="displayState=collapsed",gravity=20.0)
 	public double clusteringThresh = 1e-15;
@@ -41,9 +44,9 @@ public class FCMContext implements ClusterAlgorithmContext {
 	@Tunable(description = "Maximum Number of clusters", groups={"FCM Advanced Settings"}, gravity=24.0)
 	public int cMax = 10;
 	
-	@Tunable(description = "Number of clusters", groups={"FCM Advanced Settings"}, gravity=25.0)
-	public int cNumber = -1;
-	
+	@Tunable(description = "Estimate the number of clusters", groups={"FCM Advanced Settings"}, gravity=25.0)
+	public boolean estimateClusterNumber = true;
+			
 	@Tunable(description = "Fuzziness Index", groups={"FCM Advanced Settings"}, gravity=26.0)
 	public double fIndex = 1.5;
 	

@@ -241,12 +241,14 @@ public class Matrix extends BaseMatrix {
 			
 			for(int i = 0; i < nRows; i++){
 				
-				for (int j = 0; j < nColumns ; j++){
+				for (int j = i; j < nColumns ; j++){
 					if(matrix[i][j] != null){
 						matrixArray[i][j] = matrix[i][j];
+						matrixArray[j][i] = matrix[i][j];
 					}
 					else{
 						matrixArray[i][j] = 0.0;
+						matrixArray[j][i] = 0.0;
 					}
 				}				
 			}

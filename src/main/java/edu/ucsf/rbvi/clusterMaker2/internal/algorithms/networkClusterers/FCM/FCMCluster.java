@@ -151,10 +151,16 @@ public class FCMCluster extends AbstractNetworkClusterer {
 
 		distanceDataMatrix = new Matrix(network,0,0);
 		distanceDataMatrix.buildDistanceMatrix(distanceMatrix);
-				
-		int cEstimate = cEstimate();
-		System.out.println("Estimated number of Clusters: "+ cEstimate);
-		context.cNumber = cEstimate;
+		
+		System.out.println("distanceMatrix (0,1) and (1,3) : "+ distanceMatrix.getEdgeValueFromMatrix(0, 1)+", " + distanceMatrix.getEdgeValueFromMatrix(1, 3));
+		System.out.println("distanceDataMatrix (0,1) and (1,3) : "+distanceDataMatrix.getValue(0, 1) +", " + distanceDataMatrix.getValue(1, 3));
+		
+		if(context.estimateClusterNumber && context.cNumber < 0){		
+			int cEstimate = cEstimate();
+			System.out.println("Estimated number of Clusters: "+ cEstimate);
+			context.cNumber = cEstimate;
+		}
+		
 		int[] mostRelevantCluster = new int[network.getNodeList().size()];
 		distMetric = context.distanceMetric.getSelectedValue();
 		
@@ -329,8 +335,8 @@ public class FCMCluster extends AbstractNetworkClusterer {
 				List<FuzzyNodeCluster> silClusters = silRunFCM.run(network, saveMonitor,clusters);
 				//silhouetteResults[cEstimate] = SilhouetteCalculator.calculate(distanceDataMatrix, context.distanceMetric.getSelectedValue(), clusters);
 				System.out.println("Cluster Size: "+ clusters.length);
-				silhouetteResults[cEstimate] = SilhouetteCalculator.calculate(distanceDataMatrix, context.distanceMetric.getSelectedValue(), clusters);
-				//silhouetteResults[cEstimate] = SilhouetteCalculator.calculate(distanceDataMatrix.getMatrix2DArray(), clusters);
+				//silhouetteResults[cEstimate] = SilhouetteCalculator.calculate(distanceDataMatrix, context.distanceMetric.getSelectedValue(), clusters);
+				silhouetteResults[cEstimate] = SilhouetteCalculator.calculate(distanceDataMatrix.getMatrix2DArray(), clusters);
 			
 			}
 		}
