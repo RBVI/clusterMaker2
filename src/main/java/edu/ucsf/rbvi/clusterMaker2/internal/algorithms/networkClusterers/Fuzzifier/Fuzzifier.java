@@ -233,6 +233,7 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 			else{
 				long FuzzyClusterTableSUID = network.getRow(network).get(clusterAttributeName + "_Table.SUID", Long.class);
 				 FuzzyClusterTable = tableManager.getTable(FuzzyClusterTableSUID);
+				 
 			}
 			
 			for(FuzzyNodeCluster cluster : clusters){

@@ -288,6 +288,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 					boolean result = threadPools[pool].awaitTermination(7, TimeUnit.DAYS);
 				} catch (Exception e) {}
 			}
+			
 		}
 
 		private void runLinearSilhouette(int cMax, int nIterations, TaskMonitor saveMonitor) {
