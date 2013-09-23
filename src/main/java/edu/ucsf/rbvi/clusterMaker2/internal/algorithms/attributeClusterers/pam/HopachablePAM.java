@@ -47,23 +47,19 @@ public class HopachablePAM extends PAM implements Hopachable, Subsegregatable {
 		this.summarizer = summarizer;
 	}
 
-	@Override
 	public Hopachable subset(int[] index) {
 		// shallow copy super class's data and use supplied index
 		return new HopachablePAM(super.data, super.metric, super.distances, index);
 	}
 
-	@Override
 	public double[][] segregations(Clusters clusters) {
 		return DistanceCalculator.segregations(super.distances, clusters);
 	}
 
-	@Override
 	public double[][] separations(Clusters clusters) {
 		return DistanceCalculator.separations(super.distances, clusters.getClusterLabels());
 	}
 	
-	@Override
 	public Clusters split(boolean forceSplit) {
 		switch (splitCost) {
 		case AVERAGE_SILHOUETTE:
@@ -74,7 +70,6 @@ public class HopachablePAM extends PAM implements Hopachable, Subsegregatable {
 		}
 	}
 
-	@Override
 	public Clusters collapse(int i, int j, Clusters clusters) {
 		// NB    In Pollard's implementation, the choice of the new medoid probably does not change downstream results...
 		Clusters c = new Clusters(clusters);
@@ -92,7 +87,6 @@ public class HopachablePAM extends PAM implements Hopachable, Subsegregatable {
 		return c;
 	}
 
-	@Override
 	public int[] order(Clusters clusters) {
 		// put elements of same cluster together, and order the elements within each cluster based on neighbouring clusters
 		return null;
