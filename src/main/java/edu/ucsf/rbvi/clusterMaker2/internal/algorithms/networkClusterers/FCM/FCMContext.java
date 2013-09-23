@@ -28,10 +28,7 @@ public class FCMContext implements ClusterAlgorithmContext {
 	
 	@Tunable(description = "Number of clusters", gravity=19.0)
 	public int cNumber = -1;
-	/*
-	@Tunable(description = "Weak edge weight pruning threshold", groups={"FCM Advanced Settings"}, params="displayState=collapsed",gravity=20.0)
-	public double clusteringThresh = 1e-15;
-	*/
+	
 	@Tunable(description = "Threshold for Fuzzy Membership in a Cluster", groups={"FCM Advanced Settings"}, params="displayState=collapsed, slider=true",gravity=20.0)
 	public BoundedDouble membershipThreshold = new BoundedDouble(0.0, 0.2, 1.0, false, false);
 	
@@ -55,10 +52,7 @@ public class FCMContext implements ClusterAlgorithmContext {
 	
 	@Tunable(description = "Distance Metric", groups={"FCM Advanced Settings"}, gravity=28.0)
 	public ListSingleSelection<DistanceMetric> distanceMetric = new ListSingleSelection<DistanceMetric>(DistanceMetric.getDistanceMetricList());
-	/*
-	@Tunable(description = "The attributes to consider while clustering", groups={"FCM Advanced Settings"}, gravity=29.0)
-	public ListMultipleSelection<String> attributeList;
-	*/	
+		
 	@ContainsTunables
 	public AdvancedProperties advancedAttributes;
 	
@@ -86,16 +80,6 @@ public class FCMContext implements ClusterAlgorithmContext {
 		fIndex = origin.fIndex;
 		beta = origin.beta;
 		
-		/*
-		// Retrieving the possible node attributes, required for selecting data to be considered for clustering
-		List<CyColumn> columnList =  (List<CyColumn>) network.getDefaultEdgeTable().getColumns();
-		List<String> columnNameList = new ArrayList<String>();
-		for (CyColumn column : columnList){
-			columnNameList.add(column.getName());
-		}
-		
-		attributeList = new ListMultipleSelection<String>(columnNameList);
-		*/
 	}
 	
 	public void setNetwork(CyNetwork network) {

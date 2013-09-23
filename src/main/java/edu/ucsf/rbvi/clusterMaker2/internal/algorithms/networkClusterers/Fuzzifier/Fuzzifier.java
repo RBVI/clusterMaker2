@@ -95,7 +95,6 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 	public Fuzzifier(FuzzifierContext context, ClusterManager manager) {
 		super(manager);
 		this.context = context;
-		//this.Clusters = Clusters;
 		
 		if (network == null){
 			network = clusterManager.getNetwork();
@@ -134,9 +133,7 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 		DistanceMetric distMetric = context.distanceMetric.getSelectedValue();
 		runFuzzifier = new RunFuzzifier(Clusters, distanceMatrix,cNumber, distMetric, 
 									context.membershipThreshold.getValue(), context.maxThreads, monitor);
-
 		
-		//RunFCM (Matrix data,DistanceMatrix dMat, int num_iterations, int cClusters,DistanceMetric metric, double findex, double beta, int maxThreads, Logger logger)
 		runFuzzifier.setDebug(debug);
 
 		if (canceled) return;
@@ -183,14 +180,11 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 	
 	public List<NodeCluster> getClusters(){
 		
-		//System.out.println("Inside getClusters\n");
 		List<NodeCluster> nodeClusters = new ArrayList<NodeCluster>();
 		HashMap<Integer,List<CyNode>> clusterMap = new HashMap<Integer,List<CyNode>>();
 		List<CyNode> nodeList = network.getNodeList();
 		clusterAttributeName = network.getRow(network).get("__clusterAttribute", String.class);
-		//clusterAttributeName = network.getRow(network, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
-		//System.out.println("cluster name: "+clusterAttributeName);
-		
+				
 		for(CyNode node : nodeList){
 			System.out.println("Node SUID:"+node.getSUID());
 			if (ModelUtils.hasAttribute(network, node, clusterAttributeName)){
@@ -227,43 +221,32 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 		 */
 		
 		private void createFuzzyTable(List<FuzzyNodeCluster> clusters, CyTable nodeAttributes, Matrix data, double[][] clusterMemberships){
-			
-			//System.out.println("Inside createFuzzyTable\n");
-			/*
-			CyNode node; 
-			for(int i = 0; i < data.nRows(); i++ ){
-				node = data.getRowNode(i);
-				nodeAttributes.getRow(node).set(clusterAttributeName + "_MembershipValues", clusterMemberships[i]);
-			}
-			*/
+						
 			CyTable networkTable = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
 			CyTable FuzzyClusterTable = null;
-			//CyTable FuzzyClusterTable = new CyTable();
 			if(!CyTableUtil.getColumnNames(networkTable).contains(clusterAttributeName + "_Table.SUID")){
 				
 				network.getDefaultNetworkTable().createColumn(clusterAttributeName + "_Table.SUID", Long.class, false);
-				 FuzzyClusterTable = tableFactory.createTable(clusterAttributeName + "_Table", "Fuzzy_Node.SUID", Long.class, true, true);
-				for(FuzzyNodeCluster cluster : clusters){
-					
-					FuzzyClusterTable.createColumn("Cluster_"+cluster.getClusterNumber(), Double.class, false);
-					//System.out.println("\n Cluster_"+cluster.getClusterNumber());
-				}
+				FuzzyClusterTable = tableFactory.createTable(clusterAttributeName + "_Table", "Fuzzy_Node.SUID", Long.class, true, true);
+				
 			}
 			else{
 				long FuzzyClusterTableSUID = network.getRow(network).get(clusterAttributeName + "_Table.SUID", Long.class);
 				 FuzzyClusterTable = tableManager.getTable(FuzzyClusterTableSUID);
 			}
-			//FuzzyClusterTable.createColumn("Fuzzy_Node.SUID", CyNode.class, false);
 			
-			//System.out.println("Cluster Number:"+ clusters.size());
+			for(FuzzyNodeCluster cluster : clusters){
+				if(FuzzyClusterTable.getColumn("Cluster_"+cluster.getClusterNumber()) == null){
+					FuzzyClusterTable.createColumn("Cluster_"+cluster.getClusterNumber(), Double.class, false);
+				}
+			}
 			
-			
+						
 			CyRow TableRow;
 			for(CyNode node: network.getNodeList()){
 				TableRow = FuzzyClusterTable.getRow(node.getSUID());
 				for(FuzzyNodeCluster cluster : clusters){
 					TableRow.set("Cluster_"+cluster.getClusterNumber(), cluster.getMembership(node));
-					//System.out.println("\n Cluster_"+cluster.getClusterNumber() + ",Node SUID:"+node.getSUID() + ",Membership - "+cluster.getMembership(node));
 				}
 			}
 			
@@ -274,7 +257,5 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 			
 		}
 		
-	
-	
 
 }

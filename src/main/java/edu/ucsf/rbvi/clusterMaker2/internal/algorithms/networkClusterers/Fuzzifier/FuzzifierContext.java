@@ -27,7 +27,7 @@ public class FuzzifierContext implements ClusterAlgorithmContext {
 	
 	@ContainsTunables
 	public EdgeAttributeHandler edgeAttributeHandler;
-	
+		
 	@Tunable(description = "Threshold for Fuzzy Membership in a Cluster", groups={"Fuzzifier Advanced Settings"}, params="displayState=collapsed, slider=true",gravity=20.0)
 	public BoundedDouble membershipThreshold = new BoundedDouble(0.0, 0.2, 1.0, false, false);
 			

@@ -110,7 +110,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 	public void run( TaskMonitor taskmonitor) {
 		this.monitor = taskmonitor;
 		monitor.setTitle("Performing FCM cluster");
-		//this.monitor = monitor;
+		
 		if (network == null)
 			network = clusterManager.getNetwork();
 		
@@ -130,25 +130,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		
 		// Update our tunable results
 		clusterAttributeName = context.getClusterAttribute();
-		/*
-		if (canceled) return;
 		
-		// Getting the attribute array to make the data matrix context.getAttributeList()
-		List <String> dataAttributes = context.attributeList.getSelectedValues();
-		String[] attributeArray = new String[dataAttributes.size()];
-		for (int i = 0; i < dataAttributes.size(); i++){
-			
-			attributeArray[i] = dataAttributes.get(i);
-		}
-		
-		Arrays.sort(attributeArray);
-		
-		// Create the matrix of data with the attributes for calculating distances
-		dataMatrix = new Matrix(network, attributeArray, true, ignoreMissing, selectedOnly);
-		dataMatrix.setUniformWeights();
-		//Cluster the nodes
-		*/
-
 		distanceDataMatrix = new Matrix(network,0,0);
 		distanceDataMatrix.buildDistanceMatrix(distanceMatrix);
 		
@@ -167,16 +149,12 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		FuzzyNodeCluster.fuzzyClusterCount = 0;
 		runFCM = new RunFCM(distanceMatrix, context.iterations, context.cNumber, distMetric, 
 									context.fIndex, context.beta, context.membershipThreshold.getValue(), context.maxThreads, this.monitor);
-
 		
-		//RunFCM (Matrix data,DistanceMatrix dMat, int num_iterations, int cClusters,DistanceMetric metric, double findex, double beta, int maxThreads, Logger logger)
 		runFCM.setDebug(debug);
 
 		if (canceled) return;
 		
 		monitor.showMessage(TaskMonitor.Level.INFO,"Clustering...");
-
-		// results = runMCL.run(monitor);
 		
 		List<FuzzyNodeCluster> clusters = runFCM.run(network, monitor,mostRelevantCluster);
 		if (clusters == null) return; // Canceled?
@@ -230,33 +208,23 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		 */
 		
 		private void createFuzzyTable(List<FuzzyNodeCluster> clusters, CyTable nodeAttributes, double[][] clusterMemberships){
-			/*
-			CyNode node; 
-			for(int i = 0; i < data.nRows(); i++ ){
-				node = data.getRowNode(i);
-				nodeAttributes.getRow(node).set(clusterAttributeName + "_MembershipValues", clusterMemberships[i]);
-			}
-			*/	
+				
 			CyTable networkTable = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
 			CyTable FuzzyClusterTable = null;
-			//CyTable FuzzyClusterTable = new CyTable();
 			if(!CyTableUtil.getColumnNames(networkTable).contains(clusterAttributeName + "_Table.SUID")){
 				
 				network.getDefaultNetworkTable().createColumn(clusterAttributeName + "_Table.SUID", Long.class, false);
-				 FuzzyClusterTable = tableFactory.createTable(clusterAttributeName + "_Table", "Fuzzy_Node.SUID", Long.class, true, true);
+				FuzzyClusterTable = tableFactory.createTable(clusterAttributeName + "_Table", "Fuzzy_Node.SUID", Long.class, true, true);
 				
 			}
 			else{
 				long FuzzyClusterTableSUID = network.getRow(network).get(clusterAttributeName + "_Table.SUID", Long.class);
 				 FuzzyClusterTable = tableManager.getTable(FuzzyClusterTableSUID);
 			}
-			//FuzzyClusterTable.createColumn("Fuzzy_Node.SUID", CyNode.class, false);
-			
-			//System.out.println("Cluster Number:"+ clusters.size());
+		
 			for(FuzzyNodeCluster cluster : clusters){
 				if(FuzzyClusterTable.getColumn("Cluster_"+cluster.getClusterNumber()) == null){
 					FuzzyClusterTable.createColumn("Cluster_"+cluster.getClusterNumber(), Double.class, false);
-					//System.out.println("\n Cluster_"+cluster.getClusterNumber());
 				}
 			}
 			
@@ -277,7 +245,6 @@ public class FCMCluster extends AbstractNetworkClusterer {
 		private int cEstimate(){
 			int nClusters = -1;
 			TaskMonitor saveMonitor = monitor;
-			//monitor = null;
 			silhouetteResults = new Silhouettes[context.cMax];
 
 			int nThreads = Runtime.getRuntime().availableProcessors()-1;
@@ -290,7 +257,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 			double maxSil = -Double.MAX_VALUE;
 			for (int cEstimate = 2; cEstimate < context.cMax; cEstimate++) {
 				double sil = silhouetteResults[cEstimate].getMean();
-				System.out.println("Average silhouette for "+cEstimate+" clusters is "+sil);
+				//System.out.println("Average silhouette for "+cEstimate+" clusters is "+sil);
 				if (sil > maxSil) {
 					maxSil = sil;
 					nClusters = cEstimate;
@@ -360,7 +327,6 @@ public class FCMCluster extends AbstractNetworkClusterer {
 				int[] clusters = new int[matrix.nRows()];
 				if (cancelled()) return;
 				if (saveMonitor != null) saveMonitor.setStatusMessage("Getting silhouette with a c estimate of "+cEstimate);
-				//int ifound = kcluster(kEstimate, nIterations, matrix, metric, clusters);
 				try {
 					silhouetteResults[cEstimate] = SilhouetteCalculator.calculate(matrix, context.distanceMetric.getSelectedValue(), clusters);
 				} catch (Exception e) { e.printStackTrace(); }
