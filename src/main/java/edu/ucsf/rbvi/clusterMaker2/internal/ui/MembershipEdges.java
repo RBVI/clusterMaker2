@@ -47,7 +47,9 @@ public class MembershipEdges {
 		
 		createMembershipEdges();
 	}
-	
+	/**
+	 * Method to add the membership edges
+	 */
 	private void createMembershipEdges(){
 				
         List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
@@ -112,6 +114,13 @@ public class MembershipEdges {
 		
 	}
 	
+	/**
+	 * method to add additional styling to newly created membership edges
+	 * 
+	 * @param cNum Cluster Number
+	 * @param edgeList List of added membership edges for the cluster
+	 * @param FuzzyClusterTable table having information about the fuzzy clusters
+	 */
 	private void membershipEdgeStyle(int cNum, List<CyEdge> edgeList, CyTable FuzzyClusterTable){
 		for (CyEdge edge : edgeList){
 			View<CyEdge> edgeView = networkView.getEdgeView(edge);

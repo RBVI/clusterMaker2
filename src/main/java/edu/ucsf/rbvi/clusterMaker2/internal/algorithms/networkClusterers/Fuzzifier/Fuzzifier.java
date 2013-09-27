@@ -111,6 +111,12 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 	@ProvidesTitle
 	public String getName() { return NAME; }
 	
+	/**
+	 * The method run creates an instance of the RunFuzzifier and creates the fuzzy clusters by calling the fuzzifier algorithm.
+	 * Also creates fuzzy groups and the Fuzzy Cluster Table
+	 * 
+	 * @param Task Monitor
+	 */
 	public void run( TaskMonitor monitor) {
 		monitor.setTitle("Performing Fuzzifier clustering");
 		this.monitor = monitor;
@@ -169,7 +175,7 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 			monitor.showMessage(TaskMonitor.Level.INFO, "Done.  FCM results:\n"+results);
 		}
 		
-		createFuzzyTable(FuzzyClusters, nodeAttributes, dataMatrix, runFuzzifier.clusterMemberships);
+		createFuzzyTable(FuzzyClusters);
 		
 	}	
 	
@@ -178,6 +184,11 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 		runFuzzifier.cancel();
 	}
 	
+	/**
+	 * The method creates a list of NodeCLusters from the cluster attributes of the network
+	 * This serves as the input for the fuzzifeir algorithm
+	 * @return A list of NodeClusters
+	 */
 	public List<NodeCluster> getClusters(){
 		
 		List<NodeCluster> nodeClusters = new ArrayList<NodeCluster>();
@@ -207,20 +218,15 @@ public class Fuzzifier extends AbstractNetworkClusterer{
 
 	@Override
 	public void setUIHelper(TunableUIHelper helper) {context.setUIHelper(helper); }
-
-		
+	
+	
 		/**
-		 * This method adds the membership value array of each CyNode to the node attributes table 
-		 * Method also creates a new table- FuzzyClusterTable which stores all the FuzzyNodeClusters and 
-		 * the corresponding membership values of the nodes in the network
+		 * Method creates a table to store the information about Fuzzy Clusters and adds it to the network
 		 * 
-		 * @param clusters the list of FuzzyNodeCluster for the current network
-		 * @param nodeAttributes :Attribute Table for nodes
-		 * @param data : data matrix for the current set of nodes
-		 * @param clusterMemberships : 2D array of membership values
+		 * @param clusters List of FuzzyNodeCLusters, which have to be put in the table
+		 * 
 		 */
-		
-		private void createFuzzyTable(List<FuzzyNodeCluster> clusters, CyTable nodeAttributes, Matrix data, double[][] clusterMemberships){
+		private void createFuzzyTable(List<FuzzyNodeCluster> clusters){
 						
 			CyTable networkTable = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
 			CyTable FuzzyClusterTable = null;

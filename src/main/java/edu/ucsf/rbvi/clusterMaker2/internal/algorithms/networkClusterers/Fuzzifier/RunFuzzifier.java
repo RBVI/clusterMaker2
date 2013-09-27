@@ -39,6 +39,14 @@ import cern.colt.matrix.tdouble.DoubleFactory2D;
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 
+/**
+ * Run Fuzzifier has the actual implementation of the fuzzifier algorithm
+ * The algorithm calculates the fuzzy nature of nodes with respect to existing clusters
+ * by the ratio of distance of a node from the centroid of a cluster over the sum of distances from centroids of all the clusters
+ * @author Abhiraj
+ *
+ */
+
 public class RunFuzzifier {
 	
 	HashMap<String,List<CyNode>> groupMap = null;
@@ -151,6 +159,12 @@ public class RunFuzzifier {
 		
 	}
 	
+	/**
+	 * The method calculates the centers of fuzzy clusters
+	 * 
+	 * @param cData matrix to store the data for cluster centers
+	 */
+	
 	public void getFuzzyCenters(Matrix cData){
 		
 		// To store the sum of memberships(raised to fuzziness index) corresponding to each cluster
@@ -176,6 +190,12 @@ public class RunFuzzifier {
 		
 	}
 	
+	/**
+	 * Creates a Map from nodes to their respective membership arrays
+	 * 
+	 * @param membershipArray A double array of membership values
+	 * @return membershipHM  A map from CyNodes to array of membership values 
+	 */
 	public HashMap <CyNode, double[]> createMembershipMap(double[][] membershipArray){
 		
 		HashMap<CyNode, double[]> membershipHM = new HashMap<CyNode, double[]>();

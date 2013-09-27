@@ -107,6 +107,12 @@ public class FCMCluster extends AbstractNetworkClusterer {
 	@ProvidesTitle
 	public String getName() { return NAME; }
 	
+	/**
+	 * The method run creates an instance of the RunFCM and creates the fuzzy clusters by applying the fuzzy c means algorithm.
+	 * Also creates fuzzy groups and the Fuzzy Cluster Table
+	 * 
+	 * @param Task Monitor
+	 */
 	public void run( TaskMonitor taskmonitor) {
 		this.monitor = taskmonitor;
 		monitor.setTitle("Performing FCM cluster");
@@ -183,7 +189,7 @@ public class FCMCluster extends AbstractNetworkClusterer {
 			monitor.showMessage(TaskMonitor.Level.INFO, "Done.  FCM results:\n"+results);
 		}
 		
-		createFuzzyTable(clusters, nodeAttributes, runFCM.clusterMemberships);
+		createFuzzyTable(clusters);
 		
 	}
 	
@@ -197,17 +203,13 @@ public class FCMCluster extends AbstractNetworkClusterer {
 
 		
 		/**
-		 * This method adds the membership value array of each CyNode to the node attributes table 
-		 * Method also creates a new table- FuzzyClusterTable which stores all the FuzzyNodeClusters and 
-		 * the corresponding membership values of the nodes in the network
+		 * Method creates a table to store the information about Fuzzy Clusters and adds it to the network
 		 * 
-		 * @param clusters the list of FuzzyNodeCluster for the current network
-		 * @param nodeAttributes :Attribute Table for nodes
-		 * @param data : data matrix for the current set of nodes
-		 * @param clusterMemberships : 2D array of membership values
+		 * @param clusters List of FuzzyNodeCLusters, which have to be put in the table
+		 * 
 		 */
 		
-		private void createFuzzyTable(List<FuzzyNodeCluster> clusters, CyTable nodeAttributes, double[][] clusterMemberships){
+		private void createFuzzyTable(List<FuzzyNodeCluster> clusters){
 				
 			CyTable networkTable = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
 			CyTable FuzzyClusterTable = null;
@@ -242,6 +244,11 @@ public class FCMCluster extends AbstractNetworkClusterer {
 			
 		}
 		
+		/**
+		 * Method calculates an estimated value for the number of clusters, based on Silhouette code
+		 * 
+		 * @return nClusters The estimated value of number of clusters
+		 */
 		private int cEstimate(){
 			int nClusters = -1;
 			TaskMonitor saveMonitor = monitor;

@@ -39,6 +39,12 @@ import cern.colt.matrix.tdouble.DoubleFactory2D;
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 
+
+/**
+ * RunFCM has the actual implementation of the fuzzy c-means algorithm
+ * @author Abhiraj
+ *
+ */
 public class RunFCM {
 
 	Random random = null;
