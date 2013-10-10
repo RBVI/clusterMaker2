@@ -274,13 +274,15 @@ public class TreeView extends TreeViewApp implements Observer,
 				List<CyNode> nodesToClear = CyTableUtil.getNodesInState(currentNetwork, CyNetwork.SELECTED, true);
 				ignoreSelection = true;
 				for (CyNode node: nodesToClear) {
-					myNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.FALSE);
+					if (myNetwork.containsNode(node))
+						myNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.FALSE);
 					if (currentNetwork.containsNode(node))
 						currentNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.FALSE);
 				}
 
 				for (CyNode node: selectedNodes) {
-					myNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.TRUE);
+					if (myNetwork.containsNode(node))
+						myNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.TRUE);
 					if (currentNetwork.containsNode(node))
 						currentNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.TRUE);
 				}
@@ -319,7 +321,8 @@ public class TreeView extends TreeViewApp implements Observer,
 		ignoreSelection = true;
 		List<CyEdge> edgesToClear = CyTableUtil.getEdgesInState(currentNetwork, CyNetwork.SELECTED, true);
 		for (CyEdge edge: edgesToClear) {
-			myNetwork.getRow(edge).set(CyNetwork.SELECTED, Boolean.FALSE);
+			if (myNetwork.containsEdge(edge))
+				myNetwork.getRow(edge).set(CyNetwork.SELECTED, Boolean.FALSE);
 			if (currentNetwork.containsEdge(edge))
 				currentNetwork.getRow(edge).set(CyNetwork.SELECTED, Boolean.FALSE);
 		}
@@ -333,7 +336,8 @@ public class TreeView extends TreeViewApp implements Observer,
 				for (CyEdge edge: edges) {
 					if (currentNetwork.containsEdge(edge))
 						currentNetwork.getRow(edge).set(CyNetwork.SELECTED, Boolean.TRUE);
-					myNetwork.getRow(edge).set(CyNetwork.SELECTED, Boolean.TRUE);
+					if (myNetwork.containsEdge(edge))
+						myNetwork.getRow(edge).set(CyNetwork.SELECTED, Boolean.TRUE);
 				}
 			}
 		}
