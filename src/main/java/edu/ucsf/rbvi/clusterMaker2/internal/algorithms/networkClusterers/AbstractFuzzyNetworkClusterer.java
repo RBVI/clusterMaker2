@@ -15,6 +15,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 
 public abstract class AbstractFuzzyNetworkClusterer extends AbstractNetworkClusterer  {
 	
+	
 	CyTableManager tableManager = null;
 	private CyTableFactory tableFactory = null;
 	
