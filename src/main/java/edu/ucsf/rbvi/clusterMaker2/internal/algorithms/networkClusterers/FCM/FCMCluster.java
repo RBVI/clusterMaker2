@@ -190,8 +190,7 @@ public class FCMCluster extends AbstractFuzzyNetworkClusterer {
 			monitor.showMessage(TaskMonitor.Level.INFO, "Done.  FCM results:\n"+results);
 		}
 		
-		createFuzzyTable(clusters);
-		
+		createFuzzyTable(clusters);		
 	}
 	
 	public void cancel() {
