@@ -65,13 +65,15 @@ public class DistanceMatrix {
 
 		edgeWeights = new double[edges.size()];
 
+		// System.out.println("Creating matrix with "+edges.size()+" edges");
+
 		// We do a fair amount of massaging the data, so let's just do it once
 		for(int edgeIndex = 0; edgeIndex < edges.size(); edgeIndex++) {
 			CyEdge edge = edges.get(edgeIndex);
 
 			edgeWeights[edgeIndex] = Double.MIN_VALUE;
 
-			if( edgeAttributes.getColumn(edgeAttributeName) == null ) //if( !edgeAttributes.hasAttribute(id,edgeAttributeName))
+			if( edgeAttributes.getColumn(edgeAttributeName) == null)
 			{
 				// Special-case for "None" attribute.  We just assign an edge value of 1.
 				if (edgeAttributeName.equals(ModelUtils.NONEATTRIBUTE))
@@ -79,10 +81,13 @@ public class DistanceMatrix {
 				continue;
 			}
 
+      if (edgeAttributes.getRow(edge.getSUID()).getRaw(edgeAttributeName) == null) 
+				continue;
+
 			double edgeWeight = 0.0;
-			if(edgeAttributes.getColumn(edgeAttributeName).getType() == Double.class) 
+			if (edgeAttributes.getColumn(edgeAttributeName).getType() == Double.class)
 				edgeWeight = network.getRow(edge).get(edgeAttributeName,Double.class).doubleValue();
-			else if(edgeAttributes.getColumn(edgeAttributeName).getType() == Integer.class)
+			else if (edgeAttributes.getColumn(edgeAttributeName).getType() == Integer.class)
 				edgeWeight = network.getRow(edge).get(edgeAttributeName,Integer.class).doubleValue();
 			else {
 				// System.out.println("Attribute "+edgeAttributeName+" is not a number");
