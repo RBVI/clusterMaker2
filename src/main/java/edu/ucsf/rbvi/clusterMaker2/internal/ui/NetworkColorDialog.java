@@ -40,13 +40,19 @@ package edu.ucsf.rbvi.clusterMaker2.internal.ui;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
@@ -229,41 +235,41 @@ public class NetworkColorDialog extends JDialog
 			// 2) Write it into a column for every node
 			// 3) Add a passthrough mapper for custom graphics
 
-/*
-			Map<String, Object> args = new HashMap<String, Object>();
-			args.put("nodelist","all");
-
-			try {
-				// Clear any nodecharts
-				CyCommandManager.execute(NODECHARTS, "clear", args);
-			} catch (Exception e1) {
-				// Ignore the clear...
-			}
-
-
-			// Construct our command
-			List<String> attributeList = new ArrayList<String>();
-			for (Object attr: attributeArray) {
-				attributeList.add(attr.toString());
-			}
-			// attributeList = attributeList.substring(1);
-			args.put("attributelist",attributeList);
-			// Get our colors
+			String heatstrip = "heatstripchart: separation=\"1\" attributelist=\"";
+			for (Object attr: attributeArray)
+				heatstrip += attr.toString()+",";
+			heatstrip = heatstrip.substring(0, heatstrip.length()-1); // strip off the extra comma
 			String colorSpec = getColorSpec();
-			// System.out.println("ColorSpec = "+colorSpec);
-			args.put("colorlist",colorSpec);
-			args.put("position","south");
-			args.put("showlabels","false");
-			args.put("size","30x60");
+			heatstrip += "\" colorlist=\""+colorSpec+"\" position=south showlabels=false size=30x60\"";
 
-			try {
-				// Execute
-				CyCommandManager.execute(NODECHARTS, "heatstrip", args);
-			} catch (Exception e2) {
-				CyLogger.getLogger(this.getClass()).error("Error from nodecharts: "+e2.getMessage());
+			CyNetwork net = clusterManager.getNetwork();
+			String columnName = "clusterMaker-heatStrip";
+			CyTable nodeTable = net.getDefaultNodeTable();
+			if (nodeTable.getColumn(columnName) == null)
+				nodeTable.createColumn(columnName, String.class, false);
+			for (CyNode node: net.getNodeList()) {
+				nodeTable.getRow(node.getSUID()).set(columnName, heatstrip);
 			}
-*/
-			clusterManager.getNetworkView().updateView();
+
+			VisualStyle style = ViewUtils.getCurrentVisualStyle(clusterManager);
+			if (!style.getTitle().endsWith("-heatStrip"))
+				style = ViewUtils.copyStyle(clusterManager, style, "-heatStrip");
+
+			// Get the default lexicon (CUSTOMGRAPHICS aren't in the basic lexicon)
+			VisualLexicon currentLexicon = 
+				((RenderingEngineManager) clusterManager.getService(RenderingEngineManager.class)).getDefaultVisualLexicon();
+			VisualProperty customGraphicsVP = currentLexicon.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_1");
+			if (customGraphicsVP == null) System.err.println("couldn't get NODE CUSTOM GRAPHICS");
+
+			// Get a function factory
+			VisualMappingFunctionFactory vmff = clusterManager.getService(VisualMappingFunctionFactory.class, 
+		                                                              "(mapping.type=passthrough)");
+			PassthroughMapping map = (PassthroughMapping)vmff.createVisualMappingFunction(columnName, String.class, customGraphicsVP);
+			style.addVisualMappingFunction(map);
+
+			// TODO: Do we want to mess with the CUSTOMGRAPHICS_POSITION?
+
+			ViewUtils.setVisualStyle(clusterManager, clusterManager.getNetworkView(), style);
 		}
 	}
 
@@ -429,13 +435,12 @@ public class NetworkColorDialog extends JDialog
 		animateButton.addActionListener(this);
 		animateButton.setEnabled(false);
 
-		if (checkNodeCharts()) {
-			nodeChartButton = new JButton("Create HeatStrips");
-			nodeChartButton.setActionCommand("heatstrip");
-			nodeChartButton.addActionListener(this);
-			nodeChartButton.setEnabled(false);
-			buttonBox.add(nodeChartButton);
-		}
+		// This will only have an impact if the enhanced graphics are loaded
+		nodeChartButton = new JButton("Create HeatStrips");
+		nodeChartButton.setActionCommand("heatstrip");
+		nodeChartButton.addActionListener(this);
+		nodeChartButton.setEnabled(false);
+		buttonBox.add(nodeChartButton);
 
 		buttonBox.add(animateButton);
 		buttonBox.add(vizmapButton);
@@ -512,20 +517,6 @@ public class NetworkColorDialog extends JDialog
 
 		// And reset our animator
 		currentAttribute = null;
-	}
-
-	private static String NODECHARTS = "nodecharts";
-	private boolean checkNodeCharts() {
-/*
-		try {
-			CyCommandManager.getCommand(NODECHARTS, "clear");
-		} catch (RuntimeException e) {
-			System.out.println("Got runtime error: "+e);
-			return false;
-		}
-		return true;
-*/
-		return false;
 	}
 
 	private String getColorSpec() {
