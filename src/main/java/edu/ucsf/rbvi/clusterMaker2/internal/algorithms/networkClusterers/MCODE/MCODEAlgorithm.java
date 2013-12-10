@@ -697,16 +697,16 @@ public class MCODEAlgorithm {
 			return (-1.0);
 		}
 
-		if (includeLoops) {
+		if (!includeLoops) {
 			//count loops
 			for (CyNode node: gpInputGraph.getNodeList()) {
 				if (gpInputGraph.getConnectingEdgeList(node, node, CyEdge.Type.ANY).size() > 0)
 					loopCount++;
 			}
-			possibleEdgeNum = gpInputGraph.getNodeCount() * gpInputGraph.getNodeCount();
+			possibleEdgeNum = (gpInputGraph.getNodeCount() * (gpInputGraph.getNodeCount()-1)) / 2;
 			actualEdgeNum = gpInputGraph.getEdgeCount() - loopCount;
 		} else {
-			possibleEdgeNum = gpInputGraph.getNodeCount() * gpInputGraph.getNodeCount();
+			possibleEdgeNum = (gpInputGraph.getNodeCount() * (gpInputGraph.getNodeCount()-1)) / 2;
 			actualEdgeNum = gpInputGraph.getEdgeCount();
 		}
 
