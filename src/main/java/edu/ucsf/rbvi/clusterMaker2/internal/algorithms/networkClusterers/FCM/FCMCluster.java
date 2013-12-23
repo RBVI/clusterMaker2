@@ -141,12 +141,12 @@ public class FCMCluster extends AbstractFuzzyNetworkClusterer {
 		distanceDataMatrix = new Matrix(network,0,0);
 		distanceDataMatrix.buildDistanceMatrix(distanceMatrix);
 		
-		System.out.println("distanceMatrix (0,1) and (1,3) : "+ distanceMatrix.getEdgeValueFromMatrix(0, 1)+", " + distanceMatrix.getEdgeValueFromMatrix(1, 3));
-		System.out.println("distanceDataMatrix (0,1) and (1,3) : "+distanceDataMatrix.getValue(0, 1) +", " + distanceDataMatrix.getValue(1, 3));
+		// System.out.println("distanceMatrix (0,1) and (1,3) : "+ distanceMatrix.getEdgeValueFromMatrix(0, 1)+", " + distanceMatrix.getEdgeValueFromMatrix(1, 3));
+		// System.out.println("distanceDataMatrix (0,1) and (1,3) : "+distanceDataMatrix.getValue(0, 1) +", " + distanceDataMatrix.getValue(1, 3));
 		
 		if(context.estimateClusterNumber && context.cNumber < 0){		
 			int cEstimate = cEstimate();
-			System.out.println("Estimated number of Clusters: "+ cEstimate);
+			// System.out.println("Estimated number of Clusters: "+ cEstimate);
 			context.cNumber = cEstimate;
 		}
 		
@@ -261,12 +261,12 @@ public class FCMCluster extends AbstractFuzzyNetworkClusterer {
 				if (cancelled()) return;
 				if (saveMonitor != null) saveMonitor.setStatusMessage("Getting silhouette with a c estimate of "+cEstimate);
 				//int ifound = kcluster(kEstimate, nIterations, dataMatrix, metric, clusters);
-				System.out.println("for cEstimate: "+cEstimate +", iterations= "+context.iterations+", Monitor: "+ saveMonitor.toString() );
+				// System.out.println("for cEstimate: "+cEstimate +", iterations= "+context.iterations+", Monitor: "+ saveMonitor.toString() );
 				RunFCM silRunFCM = new RunFCM(distanceMatrix, context.iterations,cEstimate, distMetric, 
 						context.fIndex, context.beta, context.membershipThreshold.getValue(), context.maxThreads, saveMonitor);
 				List<FuzzyNodeCluster> silClusters = silRunFCM.run(network, saveMonitor,clusters);
 				//silhouetteResults[cEstimate] = SilhouetteCalculator.calculate(distanceDataMatrix, context.distanceMetric.getSelectedValue(), clusters);
-				System.out.println("Cluster Size: "+ clusters.length);
+				// System.out.println("Cluster Size: "+ clusters.length);
 				//silhouetteResults[cEstimate] = SilhouetteCalculator.calculate(distanceDataMatrix, context.distanceMetric.getSelectedValue(), clusters);
 				silhouetteResults[cEstimate] = SilhouetteCalculator.calculate(distanceDataMatrix.getMatrix2DArray(), clusters);
 			
