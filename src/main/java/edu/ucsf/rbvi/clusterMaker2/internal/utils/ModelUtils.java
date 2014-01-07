@@ -106,17 +106,17 @@ public class ModelUtils {
 		return newNetwork;
 	}
 
-	public static void createAndSetLocal(CyNetwork net, CyIdentifiable obj, String column, 
+	public static void createAndSetLocal(CyNetwork net, CyIdentifiable obj, String column,
 	                                     Object value, Class type, Class elementType) {
 		createAndSet(net, obj, column, value, type, elementType, CyNetwork.LOCAL_ATTRS);
 	}
 
-	public static void createAndSet(CyNetwork net, CyIdentifiable obj, String column, 
+	public static void createAndSet(CyNetwork net, CyIdentifiable obj, String column,
 	                                Object value, Class type, Class elementType) {
 		createAndSet(net, obj, column, value, type, elementType, CyNetwork.DEFAULT_ATTRS);
 	}
 
-	public static void createAndSet(CyNetwork net, CyIdentifiable obj, String column, 
+	public static void createAndSet(CyNetwork net, CyIdentifiable obj, String column,
 	                                Object value, Class type, Class elementType, String namespace) {
 		CyTable tab = net.getRow(obj, namespace).getTable();
 		if (tab.getColumn(column) == null) {
@@ -126,6 +126,32 @@ public class ModelUtils {
 				tab.createColumn(column, type, false);
 		}
 		net.getRow(obj, namespace).set(column, value);
+	}
+
+	public static void copyLocalColumn(CyNetwork source, CyNetwork target, 
+	                                   Class<? extends CyIdentifiable> clazz, String column) {
+		CyTable sourceTable = source.getTable(clazz, CyNetwork.LOCAL_ATTRS);
+		CyColumn sourceColumn = sourceTable.getColumn(column);
+		if (sourceColumn == null) return;
+
+		CyTable targetTable = target.getTable(clazz, CyNetwork.LOCAL_ATTRS);
+		boolean isImmutable = sourceColumn.isImmutable();
+		if (sourceColumn.getType().equals(List.class))
+			targetTable.createListColumn(column, sourceColumn.getListElementType(), isImmutable);
+		else
+			targetTable.createColumn(column, sourceColumn.getType(), isImmutable);
+
+		// We need to handle things a little differently for CyNetworks...
+		if (clazz.equals(CyNetwork.class)) {
+			Object v = sourceTable.getRow(source.getSUID()).getRaw(column);
+			targetTable.getRow(target.getSUID()).set(column, v);
+		} else {
+			for (CyRow targetRow: targetTable.getAllRows()) {
+				Long key = targetRow.get(CyIdentifiable.SUID, Long.class);
+				Object v = sourceTable.getRow(key).getRaw(column);
+				targetRow.set(column, v);
+			}
+		}
 	}
 
 	public static ListMultipleSelection<String> updateAttributeList(CyNetwork network, 

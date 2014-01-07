@@ -43,14 +43,19 @@ import java.util.Map;
 import java.util.Set;
 
 // Cytoscape imports
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
+import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
@@ -100,7 +105,7 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 	}
 
 	public NewNetworkView(CyNetwork network, ClusterManager manager, 
-	                      boolean available, boolean restoreEdges) {
+			              boolean available, boolean restoreEdges) {
 		this(null, manager, true);
 		this.network = network;
 		this.restoreEdges = restoreEdges;
@@ -158,7 +163,7 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 			clusterAttribute = context.attribute.getSelectedValue();
 			return true;
 		}
-		
+
 		CyTable networkTable = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
 		if (!CyTableUtil.getColumnNames(networkTable).contains(ClusterManager.CLUSTER_TYPE_ATTRIBUTE))
 			return false;
@@ -186,10 +191,10 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 
 	@SuppressWarnings("unchecked")
 	private void createClusteredNetwork(String clusterAttribute, TaskMonitor monitor) {
-		
-		boolean isFuzzy = 
-				network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS).getColumn(clusterAttribute).getType().equals(List.class);
-					
+
+		boolean isFuzzy = isFuzzy(clusterAttribute);
+		// System.out.println("isFuzzy = "+isFuzzy);
+
 		// Get the clustering parameters
 		Map<String, String> params = getParams();
 
@@ -206,6 +211,7 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 
 		HashMap<CyEdge,CyEdge> edgeMap = new HashMap<CyEdge,CyEdge>();
 		List<CyEdge> edgeList = new ArrayList<CyEdge>();
+		// System.out.println("Getting the edges");
 		for (Integer cluster: clusterMap.keySet()) {
 			// Get the list of nodes
 			List<CyNode> clusterNodes = clusterMap.get(cluster); 
@@ -223,9 +229,28 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 			}
 		}
 
+		// System.out.println("Getting the style");
 		VisualStyle style = ViewUtils.getCurrentVisualStyle(manager);
 
+		// System.out.println("Creating the network");
 		CyNetwork newNetwork = ModelUtils.createChildNetwork(manager, network, nodeList, edgeList, "--clustered");
+		// Now, copy the cluster attribute from the original network to this one
+		ModelUtils.copyLocalColumn(network, newNetwork, CyNode.class, clusterAttribute);
+
+		// Copy the clustering information over
+		ModelUtils.copyLocalColumn(network, newNetwork, CyNetwork.class, "__clusterType");
+		ModelUtils.copyLocalColumn(network, newNetwork, CyNetwork.class, "__clusterAttribute");
+		ModelUtils.copyLocalColumn(network, newNetwork, CyNetwork.class, "__clusterParams");
+
+		// Finally, if we're fuzzy, see if we had an initial seed and copy that over
+		if (isFuzzy && ModelUtils.hasAttribute(network, network, "__fuzzifierSeed")) {
+			ModelUtils.copyLocalColumn(network, newNetwork, CyNetwork.class, "__fuzzifierSeed");
+			String seedAttribute =
+				network.getRow(network, CyNetwork.LOCAL_ATTRS).get("__fuzzifierSeed", String.class);
+			ModelUtils.copyLocalColumn(network, newNetwork, CyNode.class, seedAttribute);
+		}
+
+		// System.out.println("Getting the view");
 		CyNetworkView view = ViewUtils.createView(manager, newNetwork, false);
 
 		ViewUtils.doLayout(manager, view, monitor, "force-directed");
@@ -235,24 +260,26 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 			for (CyEdge edge: (List<CyEdge>)network.getEdgeList()) {
 				if (!edgeMap.containsKey(edge)) {
 					((CySubNetwork)view.getModel()).addEdge(edge);
-					ModelUtils.createAndSetLocal(view.getModel(), edge, clusterAttribute, 
-					                             new Integer(0), Integer.class, null);
+					ModelUtils.createAndSetLocal(view.getModel(), edge, clusterAttribute,
+							                     new Integer(0), Integer.class, null);
 				}
 			}
 			style = styleNewView(style, clusterAttribute);
 		}
+		// System.out.println("Setting the style");
 		ViewUtils.setVisualStyle(manager, view, style);
-		
+
 		if(isFuzzy){
-			
-			long FuzzyClusterTableSUID = network.getRow(network).get(clusterAttribute + "_Table.SUID", Long.class);
+
+			long fuzzyClusterTableSUID = network.getRow(network).get(clusterAttribute + "_Table.SUID", Long.class);
+			newNetwork.getRow(newNetwork).set(clusterAttribute + "_Table.SUID", fuzzyClusterTableSUID);
 			//System.out.println("NetworkName: "+ network.getRow(network).get(CyNetwork.NAME, String.class));
-			//System.out.println("Fuzzy Table SUID: " + FuzzyClusterTableSUID );
-			CyTable FuzzyClusterTable = manager.getTableManager().getTable(FuzzyClusterTableSUID);
-			new MembershipEdges(newNetwork,view,manager,FuzzyClusterTable);
+			//System.out.println("Fuzzy Table SUID: " + fuzzyClusterTableSUID );
+			CyTable fuzzyClusterTable = manager.getTableManager().getTable(fuzzyClusterTableSUID);
+			// System.out.println("Creating membership edges");
+			createMembershipEdges(newNetwork,view,manager,fuzzyClusterTable);
 		}
 
-		
 		ViewUtils.registerView(manager, view);
 
 		return;
@@ -289,13 +316,13 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 		VisualMappingFunctionFactory vmff = manager.getService(VisualMappingFunctionFactory.class);
 		DiscreteMapping edgeWidth = 
 			(DiscreteMapping) vmff.createVisualMappingFunction(clusterAttribute, Integer.class, 
-			                                                   BasicVisualLexicon.EDGE_WIDTH);
+					                                           BasicVisualLexicon.EDGE_WIDTH);
 		edgeWidth.putMapValue(new Integer(0), new Double(1));
 		edgeWidth.putMapValue(new Integer(1), new Double(5));
 
 		DiscreteMapping edgeTrans = 
 			(DiscreteMapping) vmff.createVisualMappingFunction(clusterAttribute, Integer.class, 
-			                                                   BasicVisualLexicon.EDGE_TRANSPARENCY);
+					                                           BasicVisualLexicon.EDGE_TRANSPARENCY);
 		edgeTrans.putMapValue(new Integer(0), new Integer(50));
 		edgeTrans.putMapValue(new Integer(1), new Integer(255));
 
@@ -311,7 +338,7 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 	}
 
 	private boolean edgeWeightCheck(CyEdge edge, String dataAttribute,
-	                                EdgeWeightConverter converter, double cutoff) {
+			                        EdgeWeightConverter converter, double cutoff) {
 		if (!ModelUtils.hasAttribute(network, edge, dataAttribute))
 			return false;
 		Class type = network.getRow(edge).getTable().getColumn(dataAttribute).getType();
@@ -326,54 +353,6 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 		return true;
 	}
 
-/*
-	@SuppressWarnings("deprecation")
-	private VisualStyle createNewStyle(String attribute, String suffix) { 
-		boolean newStyle = false;
-
-		// Get our current vizmap
-		VisualMappingManager manager = Cytoscape.getVisualMappingManager();
-		CalculatorCatalog calculatorCatalog = manager.getCalculatorCatalog();
-
-		// Get the current style
-		VisualStyle style = Cytoscape.getCurrentNetworkView().getVisualStyle();
-		// Create a new vizmap
-		Set<String> styles = calculatorCatalog.getVisualStyleNames();
-		if (styles.contains(style.getName()+suffix))
-			style = calculatorCatalog.getVisualStyle(style.getName()+suffix);
-		else {
-			style = new VisualStyle(style, style.getName()+suffix);
-			newStyle = true;
-		}
-
-		// Set up our line width descrete mapper
-		DiscreteMapping lineWidth = new DiscreteMapping(new Double(.5), attribute, ObjectMapping.EDGE_MAPPING);
-		lineWidth.putMapValue(new Integer(0), new Double(1));
-		lineWidth.putMapValue(new Integer(1), new Double(5));
-   	Calculator widthCalculator = new BasicCalculator("Edge Width Calculator",
-		                                                 lineWidth, VisualPropertyType.EDGE_LINE_WIDTH);
-
-		DiscreteMapping lineOpacity = new DiscreteMapping(new Integer(50), attribute, ObjectMapping.EDGE_MAPPING);
-		lineOpacity.putMapValue(new Integer(0), new Integer(50));
-		lineOpacity.putMapValue(new Integer(1), new Integer(255));
-   	Calculator opacityCalculator = new BasicCalculator("Edge Opacity Calculator",
-		                                                 lineOpacity, VisualPropertyType.EDGE_OPACITY);
-
-		
-		EdgeAppearanceCalculator edgeAppCalc = style.getEdgeAppearanceCalculator();
-   	edgeAppCalc.setCalculator(widthCalculator);
-   	edgeAppCalc.setCalculator(opacityCalculator);
-		style.setEdgeAppearanceCalculator(edgeAppCalc);
-		if (newStyle) {
-			calculatorCatalog.addVisualStyle(style);
-			manager.setVisualStyle(style);
-		} 
-		return style;
-		return null;
-	}
-*/
-
-	
 	Map<String, String> getParams() {
 		Map<String, String> map = new HashMap<String, String>();
 		if (!ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE))
@@ -396,4 +375,107 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 		return params.get(key);
 	}
 
+	/**
+	 * Method to add the membership edges
+	 */
+	private void createMembershipEdges(CyNetwork network, CyNetworkView networkView, 
+	                                   ClusterManager manager,CyTable fuzzyClusterTable){
+
+		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
+
+		int numC = fuzzyClusterTable.getColumns().size() - 1;
+		for(int i = 0; i < numC; i++){
+			clusterList.add(new ArrayList<CyNode>());
+		}
+
+		List<CyNode> nodeList = network.getNodeList();
+		for (CyNode node : nodeList){
+			CyRow nodeRow = fuzzyClusterTable.getRow(node.getSUID());
+			for(int i = 1; i <= numC; i++){
+				if(nodeRow.get("Cluster_"+ i, Double.class) != null){
+					clusterList.get(i-1).add(node);
+				}
+			}
+		}
+
+		CyTable localTable = network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS);
+		localTable.createColumn("isCentroid", Boolean.class, false, Boolean.FALSE);
+
+		int clusterNumber = 0;
+		for(List<CyNode> cluster :clusterList){
+			CyNode centroid = network.addNode();
+			clusterNumber++;
+
+			network.getRow(centroid).set(CyNetwork.NAME, "Centroid" + clusterList.indexOf(cluster) );
+			network.getRow(centroid).set("isCentroid", Boolean.TRUE);
+			// System.out.println("Centroid SUID: " + centroid.getSUID());
+			//View<CyNode> nodeView = networkView.getNodeView(centroid);
+			double x = 0.0001;
+			double y = 0.0001;
+			double count = 0;
+
+
+			List<CyEdge> membershipEdges = new ArrayList<CyEdge>();
+
+			for (CyNode node : cluster) {
+				View<CyNode> nodeView = networkView.getNodeView(node);
+				//System.out.println("NodeView SUID: " + nodeView.getSUID());
+				x += nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
+				y += nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
+				//System.out.println(x);
+				count += 1;
+				//System.out.println("Read x = "+ x +", y = "+ y);
+				CyEdge membershipEdge = network.addEdge(centroid, node, false);
+				ModelUtils.createAndSetLocal(network, membershipEdge, "MembershipEdge", 
+	                                   Boolean.TRUE, Boolean.class, null);
+				Double membership = fuzzyClusterTable.getRow(node.getSUID()).get("Cluster_"+clusterNumber, Double.class);
+				ModelUtils.createAndSetLocal(network, membershipEdge, "Membership_%", 100*membership, Double.class, null);
+				membershipEdges.add(membershipEdge);
+			}
+			networkView.updateView();
+
+			if(count!=0){
+				x = x/count;
+				y = y/count;
+			}
+			View<CyNode> centroidView = networkView.getNodeView(centroid);
+			// System.out.println("CentroidView SUID: " + centroidView.getSUID());
+			// System.out.println("x = "+ x +", y = "+ y);
+			centroidView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, x);
+			centroidView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, y);
+
+			membershipEdgeStyle(networkView, clusterNumber, membershipEdges, fuzzyClusterTable);
+		}
+		networkView.updateView();
+	}
+
+	/**
+	 * method to add additional styling to newly created membership edges
+	 *
+	 * @param networkView the new network view
+	 * @param cNum Cluster Number
+	 * @param edgeList List of added membership edges for the cluster
+	 * @param fuzzyClusterTable table having information about the fuzzy clusters
+	 */
+	private void membershipEdgeStyle(CyNetworkView networkView, int cNum,
+	                                 List<CyEdge> edgeList, CyTable fuzzyClusterTable){
+		for (CyEdge edge : edgeList){
+			View<CyEdge> edgeView = networkView.getEdgeView(edge);
+			CyNode node = edge.getTarget();
+			//edgeView.setVisualProperty(BasicVisualLexicon.EDGE_LINE_TYPE, LineTypeVisualProperty.DASH_DOT);
+			edgeView.setLockedValue(BasicVisualLexicon.EDGE_LINE_TYPE, LineTypeVisualProperty.DASH_DOT);
+
+			edgeView.setLockedValue(BasicVisualLexicon.EDGE_TRANSPARENCY,
+											(int)(fuzzyClusterTable.getRow(node.getSUID()).get("Cluster_"+ cNum, Double.class)*255));
+		}
+
+	}
+
+	private boolean isFuzzy(String clusterAttribute) {
+		CyColumn column = network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS).getColumn(clusterAttribute);
+		if (column == null) return false;
+		if (column.getType().equals(List.class))
+			return true;
+		return false;
+	}
 }

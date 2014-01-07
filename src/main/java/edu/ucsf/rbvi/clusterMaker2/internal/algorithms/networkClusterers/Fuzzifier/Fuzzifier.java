@@ -70,11 +70,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
  */
 
 public class Fuzzifier extends AbstractFuzzyNetworkClusterer{
-	
+
 	RunFuzzifier runFuzzifier = null;
 	public static String SHORTNAME = "fuzzifier";
 	public static String NAME = "Cluster Fuzzifier";
-	
+
 	public static final String NONEATTRIBUTE = "--None--";
 	public final static String GROUP_ATTRIBUTE = "__FuzzyGroups.SUID";
 	protected Matrix dataMatrix;
@@ -83,35 +83,36 @@ public class Fuzzifier extends AbstractFuzzyNetworkClusterer{
 	CyTableFactory tableFactory = null;
 	CyTableManager tableManager = null;
 	private List<NodeCluster> Clusters = null;
-	private int cNumber;	
+	private int cNumber;
 	private String[] attributeArray = new String[1];
-	
+
 	@Tunable(description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
-	
+
 	@ContainsTunables
 	public FuzzifierContext context = null;
-	
-	
+
+
 	public Fuzzifier(FuzzifierContext context, ClusterManager manager) {
 		super(manager);
 		this.context = context;
-		
+
 		if (network == null){
 			network = clusterManager.getNetwork();
 			tableFactory = clusterManager.getTableFactory();
 			tableManager = clusterManager.getTableManager();
-		}	
+		}
 		this.Clusters = getClusters();
 		this.cNumber = Clusters.size();
 		context.setNetwork(network);
+		super.network = network;
 	}
-	
+
 	public String getShortName() {return SHORTNAME;};
-	
+
 	@ProvidesTitle
 	public String getName() { return NAME; }
-	
+
 	/**
 	 * The method run creates an instance of the RunFuzzifier and creates the fuzzy clusters by calling the fuzzifier algorithm.
 	 * Also creates fuzzy groups and the Fuzzy Cluster Table
@@ -123,40 +124,41 @@ public class Fuzzifier extends AbstractFuzzyNetworkClusterer{
 		this.monitor = monitor;
 		if (network == null)
 			network = clusterManager.getNetwork();
-		
+		super.network = network;
+
 		Long networkID = network.getSUID();
 
 		CyTable nodeAttributes = network.getDefaultNodeTable();
-		
+
 		DistanceMatrix distanceMatrix = context.edgeAttributeHandler.getMatrix();
 		if (distanceMatrix == null) {
 			monitor.showMessage(TaskMonitor.Level.ERROR, "Can't get distance matrix: no attribute value?");
 			return;
 		}
-		
+
 		// Update our tunable results
 		clusterAttributeName = context.getClusterAttribute();
-				
+
 		DistanceMetric distMetric = context.distanceMetric.getSelectedValue();
 		runFuzzifier = new RunFuzzifier(Clusters, distanceMatrix,cNumber, distMetric, 
 									context.membershipThreshold.getValue(), context.maxThreads, monitor);
-		
+
 		runFuzzifier.setDebug(debug);
 
 		if (canceled) return;
-		
+
 		monitor.showMessage(TaskMonitor.Level.INFO,"Clustering...");
 
 		// results = runMCL.run(monitor);
-		
+
 		List<FuzzyNodeCluster> FuzzyClusters = runFuzzifier.run(network, monitor);
 		if (FuzzyClusters == null) return; // Canceled?
-		
+
 		monitor.showMessage(TaskMonitor.Level.INFO,"Removing groups");
 
 		// Remove any leftover groups from previous runs
 		removeGroups(network, GROUP_ATTRIBUTE);
-		
+
 		monitor.showMessage(TaskMonitor.Level.INFO,"Creating groups");
 
 		params = new ArrayList<String>();
@@ -166,7 +168,7 @@ public class Fuzzifier extends AbstractFuzzyNetworkClusterer{
 
 		results = new AbstractClusterResults(network, nodeClusters);
 		monitor.showMessage(TaskMonitor.Level.INFO, "Done.  Fuzzifier results:\n"+results);
-		
+
 		if (context.vizProperties.showUI) {
 			monitor.showMessage(TaskMonitor.Level.INFO, 
 		                      "Creating network");
@@ -175,52 +177,58 @@ public class Fuzzifier extends AbstractFuzzyNetworkClusterer{
 		} else {
 			monitor.showMessage(TaskMonitor.Level.INFO, "Done.  FCM results:\n"+results);
 		}
-		
+
+		System.out.println("Creating fuzzy table");
 		createFuzzyTable(FuzzyClusters);
-		
-	}	
-	
+		System.out.println("Done");
+
+	}
+
 	public void cancel() {
 		canceled = true;
 		runFuzzifier.cancel();
 	}
-	
+
 	/**
 	 * The method creates a list of NodeCLusters from the cluster attributes of the network
 	 * This serves as the input for the fuzzifeir algorithm
 	 * @return A list of NodeClusters
 	 */
 	public List<NodeCluster> getClusters(){
-		
+
 		List<NodeCluster> nodeClusters = new ArrayList<NodeCluster>();
 		HashMap<Integer,List<CyNode>> clusterMap = new HashMap<Integer,List<CyNode>>();
 		List<CyNode> nodeList = network.getNodeList();
 		clusterAttributeName = network.getRow(network).get("__clusterAttribute", String.class);
-				
+
+		// Save the seed cluster we used
+		ModelUtils.createAndSetLocal(network, network, "__fuzzifierSeed", 
+		                             clusterAttributeName, String.class, null);
+
 		for(CyNode node : nodeList){
-			System.out.println("Node SUID:"+node.getSUID());
+			// System.out.println("Node SUID:"+node.getSUID());
 			if (ModelUtils.hasAttribute(network, node, clusterAttributeName)){
-				
+
 				Integer cluster = network.getRow(node).get(clusterAttributeName, Integer.class);
-				System.out.println("Cluster for "+node.getSUID()+"--"+cluster);
+				// System.out.println("Cluster for "+node.getSUID()+"--"+cluster);
 				if (!clusterMap.containsKey(cluster))
 					clusterMap.put(cluster, new ArrayList<CyNode>());
 				clusterMap.get(cluster).add(node);
-								
-			}			
+
+			}
 		}
-		
+
 		for (int key : clusterMap.keySet()){
 			nodeClusters.add(new NodeCluster(clusterMap.get(key)));
 		}
-		System.out.println("NodeCluster Size : " +nodeClusters.size());
+		// System.out.println("NodeCluster Size : " +nodeClusters.size());
 		return nodeClusters;
 	}
 
 	@Override
 	public void setUIHelper(TunableUIHelper helper) {context.setUIHelper(helper); }
-	
-	
-		
+
+
+
 
 }

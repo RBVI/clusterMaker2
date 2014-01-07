@@ -48,13 +48,12 @@ public abstract class AbstractFuzzyNetworkClusterer extends AbstractNetworkClust
 			long FuzzyClusterTableSUID = network.getRow(network).get(clusterAttributeName + "_Table.SUID", Long.class);
 			 FuzzyClusterTable = tableManager.getTable(FuzzyClusterTableSUID);
 		}
-	
+
 		for(FuzzyNodeCluster cluster : clusters){
 			if(FuzzyClusterTable.getColumn("Cluster_"+cluster.getClusterNumber()) == null){
 				FuzzyClusterTable.createColumn("Cluster_"+cluster.getClusterNumber(), Double.class, false);
 			}
 		}
-		
 		
 		CyRow TableRow;
 		for(CyNode node: network.getNodeList()){
@@ -66,8 +65,5 @@ public abstract class AbstractFuzzyNetworkClusterer extends AbstractNetworkClust
 		
 		network.getRow(network).set(clusterAttributeName + "_Table.SUID", FuzzyClusterTable.getSUID());
 		tableManager.addTable(FuzzyClusterTable);			
-		
 	}
-	
-
 }

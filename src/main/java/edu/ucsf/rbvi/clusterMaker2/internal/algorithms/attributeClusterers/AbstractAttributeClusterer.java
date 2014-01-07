@@ -71,91 +71,8 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 		super(clusterManager);
 	}
 
-/*
-	protected void addKTunables() {
-		Tunable t = new Tunable("useSilhouette",
-		                        "Estimate k using silhouette",
-		                        Tunable.BOOLEAN, (Object)new Boolean(useSilhouette),
-		                        (Object) null, (Object) null, 0);
-		t.addTunableValueListener(this);
-		clusterProperties.add(t);
-
-		t = new Tunable("kMax",
-		                "Maximum number of clusters",
-		                Tunable.INTEGER, new Integer(kMax),
-		                (Object)null, (Object)null, 0);
-		if (!useSilhouette) t.setImmutable(true);
-		clusterProperties.add(t);
-
-		t = new Tunable("kNumber",
-		                "Number of clusters (k)",
-		                Tunable.INTEGER, new Integer(kNumber),
-		                (Object)null, (Object)null, 0);
-		if (useSilhouette) t.setImmutable(true);
-		clusterProperties.add(t);
-
-		// Whether to initialize cluster centers by choosing the most central elements
-		clusterProperties.add(new Tunable("initializeNearCenter",
-				                          "Initialize cluster centers from most central elements",
-				                          Tunable.BOOLEAN, new Boolean(initializeNearCenter)));
-	}
-
-	protected void updateKTunables(boolean force) {
-		Tunable t = clusterProperties.get("useSilhouette");
-		if ((t != null) && (t.valueChanged() || force))
-			useSilhouette = ((Boolean) t.getValue()).booleanValue();
-
-		t = clusterProperties.get("kMax");
-		if ((t != null) && (t.valueChanged() || force))
-			kMax = ((Integer) t.getValue()).intValue();
-
-		t = clusterProperties.get("kNumber");
-		if ((t != null) && (t.valueChanged() || force))
-			kNumber = ((Integer) t.getValue()).intValue();
-		
-		t = clusterProperties.get("initializeNearCenter");
-		if ((t != null) && (t.valueChanged() || force)) {
-			initializeNearCenter = ((Boolean) t.getValue()).booleanValue();
-		}
-	}
-*/
-
 	protected void updateKEstimates(CyNetwork network) {
-/*
-		// We also want to update the number our "guestimate" for k
-		double nodeCount = (double)network.getNodeCount();
-		if (selectedOnly) {
-			int selNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true).size();
-			if (selNodes > 0) nodeCount = (double)selNodes;
-		}
-
-		Tunable kTunable = clusterProperties.get("kNumber");
-		double kinit = Math.sqrt(nodeCount/2);
-		if (kinit > 1)
-			kTunable.setValue((int)kinit);
-		else
-			kTunable.setValue(1);
-
-		Tunable kMaxTunable = clusterProperties.get("kMax");
-		kMaxTunable.setValue((int)kinit*2); // Double our kNumber estimate
-*/
 	}
-
-/*
-	public void tunableChanged(Tunable t) {
-		// System.out.println("Tunable changed");
-		if (t.getName().equals("useSilhouette")) {
-			useSilhouette = ((Boolean) t.getValue()).booleanValue();
-			if (useSilhouette) {
-				clusterProperties.get("kMax").setImmutable(false);
-				clusterProperties.get("kNumber").setImmutable(true);
-			} else {
-				clusterProperties.get("kMax").setImmutable(true);
-				clusterProperties.get("kNumber").setImmutable(false);
-			}
-		}
-	}
-*/
 
 	/**
  	 * This method resets (clears) all of the existing network attributes.
@@ -182,13 +99,6 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 		// See if we have any old groups in this network
 		if (ModelUtils.hasAttributeLocal(network, network, group_attr)) {
 			List<String>clList = network.getRow(network).getList(group_attr, String.class);
-			/*
-			for (String groupName: clList) {
-				CyGroup group = CyGroupManager.findGroup(groupName);
-				if (group != null)
-					CyGroupManager.removeGroup(group);
-			}
-			*/
 			ModelUtils.deleteAttributeLocal(network, network, group_attr);
 		}
 	}

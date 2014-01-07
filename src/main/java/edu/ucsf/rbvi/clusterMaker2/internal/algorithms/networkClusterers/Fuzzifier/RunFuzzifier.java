@@ -48,9 +48,9 @@ import cern.colt.matrix.tdouble.DoubleMatrix2D;
  */
 
 public class RunFuzzifier {
-	
+
 	HashMap<String,List<CyNode>> groupMap = null;
-	
+
 	private List<NodeCluster> Clusters = null;
 	private int number_clusters;
 	private List<CyNode> nodeList= null;
@@ -66,78 +66,78 @@ public class RunFuzzifier {
 	double membershipThreshold = 0;
 	private boolean debug = false;
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
-	
+
 	public RunFuzzifier (List<NodeCluster> Clusters, DistanceMatrix distanceMatrix, int cClusters,
 			DistanceMetric metric, double membershipThreshold,int maxThreads, TaskMonitor monitor ){
-		
+
 		this.Clusters = Clusters;
-		this.distanceMatrix = distanceMatrix;	
+		this.distanceMatrix = distanceMatrix;
 		this.number_clusters = cClusters;
 		this.metric = metric;
 		this.monitor = monitor;
 		this.membershipThreshold = membershipThreshold;
-	
-		
+
+
 		if (maxThreads > 0)
 			nThreads = maxThreads;
 		else
 			nThreads = Runtime.getRuntime().availableProcessors()-1;
-		
+
 		monitor.showMessage(TaskMonitor.Level.INFO,"Membership Threshold = "+membershipThreshold);
 		monitor.showMessage(TaskMonitor.Level.INFO,"Threads = "+nThreads);
 		//monitor.showMessage(TaskMonitor.Level.INFO,"Matrix info: = "+distanceMatrix.printMatrixInfo(matrix));
 		monitor.showMessage(TaskMonitor.Level.INFO,"Number of Clusters = "+number_clusters);
-		
+
 	}
-	
+
 	public void cancel () { canceled = true; }
 
 	public void setDebug(boolean debug) { this.debug = debug; }
-	
+
 	/**
 	 * The method run has the actual implementation of the fuzzifier code
 	 * @param monitor, Task monitor for the process
 	 * @return List of FuzzyNodeCLusters
 	 */
-	
+
 	public List<FuzzyNodeCluster> run(CyNetwork network, TaskMonitor monitor){
-		
-		Long networkID = network.getSUID();		
+
+		Long networkID = network.getSUID();
 		nodeList = network.getNodeList();
 
-		long startTime = System.currentTimeMillis();		
+		long startTime = System.currentTimeMillis();
 		int nelements = distanceMatrix.getNodes().size();
-		
+
 		//Matrix to store the temporary cluster membership values of elements 
 		double [][] ClusterMemberships = new double[nelements][number_clusters];
-		
+
 		//Initializing all membership values to 0
 		for (int i = 0; i < nelements; i++){
 			for (int j = 0; j < number_clusters; j++){
 				ClusterMemberships[i][j] = 0;
 			}
 		}
-		
+
 		// This matrix will store the centroid data
 		Matrix cData = new Matrix(network, number_clusters, nelements);
-		
+
 		getFuzzyCenters(cData);
-		
+
 		for (CyNode node : nodeList){
 			int nodeIndex = nodeList.indexOf(node);
 			double sumDistances = 0;
 			for (int i = 0 ; i < Clusters.size(); i++){
 				sumDistances += cData.getValue(i, nodeIndex);
 			}
-			for(int i = 0 ; i < Clusters.size(); i++){				
-				ClusterMemberships[nodeIndex][i] = 	cData.getValue(i, nodeIndex)/sumDistances;			
-			} 			
+			for(int i = 0 ; i < Clusters.size(); i++){
+				ClusterMemberships[nodeIndex][i] = 	cData.getValue(i, nodeIndex)/sumDistances;
+			} 
 		}
-		
+
 		HashMap <CyNode, double[]> membershipMap = createMembershipMap(ClusterMemberships);
-		
+
 		List<FuzzyNodeCluster> fuzzyClusters = new ArrayList<FuzzyNodeCluster>();
-		
+
 		// Adding the nodes which have memberships greater than the threshold to fuzzy node clusters
 		List<CyNode> fuzzyNodeList;
 		for(int i = 0 ; i < number_clusters; i++){
@@ -149,27 +149,27 @@ public class RunFuzzifier {
 					clusterMembershipMap.put(node, membershipMap.get(node)[i]);
 				}
 			}
-			
+
 			fuzzyClusters.add(new FuzzyNodeCluster(fuzzyNodeList,clusterMembershipMap));
-			
+
 		}
-				
+
 		return fuzzyClusters;
-			
-		
+
+
 	}
-	
+
 	/**
 	 * The method calculates the centers of fuzzy clusters
 	 * 
 	 * @param cData matrix to store the data for cluster centers
 	 */
-	
+
 	public void getFuzzyCenters(Matrix cData){
-		
+
 		// To store the sum of memberships(raised to fuzziness index) corresponding to each cluster
 		int nelements = distanceMatrix.getNodes().size();
-		
+
 		for (NodeCluster cluster : Clusters){
 			int c = Clusters.indexOf(cluster);
 			double numerator = 0;
@@ -180,16 +180,16 @@ public class RunFuzzifier {
 				for(CyNode node : cluster){
 					i = nodeList.indexOf(node);
 					distance = distanceMatrix.getEdgeValueFromMatrix(i,e);
-					numerator += distance;					
+					numerator += distance;
 				}
 				cData.setValue(c,e,(numerator/cluster.size()));
-				
+
 			}
 		}
-		
-		
+
+
 	}
-	
+
 	/**
 	 * Creates a Map from nodes to their respective membership arrays
 	 * 
@@ -197,14 +197,14 @@ public class RunFuzzifier {
 	 * @return membershipHM  A map from CyNodes to array of membership values 
 	 */
 	public HashMap <CyNode, double[]> createMembershipMap(double[][] membershipArray){
-		
+
 		HashMap<CyNode, double[]> membershipHM = new HashMap<CyNode, double[]>();
 		List<CyNode> nodeList = distanceMatrix.getNodes();
 		for ( int i = 0; i<distanceMatrix.getNodes().size(); i++){
-			
+
 			membershipHM.put(nodeList.get(i), membershipArray[i]);
 		}
-			
+
 		return membershipHM;
 	}
 }
