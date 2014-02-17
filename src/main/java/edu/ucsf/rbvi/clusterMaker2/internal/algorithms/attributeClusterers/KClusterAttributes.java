@@ -80,6 +80,11 @@ public class KClusterAttributes {
 	public KClusterAttributes() {
 	}
 
+	/* TODO: This doesn't quite work right.  Ideally, if this is called and
+	 * the number changes (either kNumber or kMax) the value in the tunable
+	 * would also change.  This doesn't work -- when we change the value via
+	 * setValue, it doesn't update the UI element, so the user isn't informaed
+	 */
 	public void updateKEstimates(CyNetwork network, boolean selectedOnly) {
 		// We also want to update the number our "guestimate" for k
 		double nodeCount = (double)network.getNodeCount();

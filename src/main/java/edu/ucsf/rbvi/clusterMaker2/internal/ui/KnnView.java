@@ -126,8 +126,13 @@ public class KnnView extends TreeView {
 	public String getName() { return NAME; }
 
 	public boolean isAvailable() {
-		if (ModelUtils.hasAttribute(myNetwork, myNetwork, ClusterManager.CLUSTER_TYPE_ATTRIBUTE)) {
-			String type = myNetwork.getRow(myNetwork).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class);
+		return KnnView.isReady(myNetwork);
+	}
+
+	public static boolean isReady(CyNetwork network) {
+		if (network == null) return false;
+		if (ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE)) {
+			String type = network.getRow(network).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class);
 			if (!type.equals(KMeansCluster.GROUP_ATTRIBUTE) &&
 			    !type.equals(KMedoidCluster.GROUP_ATTRIBUTE) &&
 			    !type.equals("autosome_heatmap") &&
@@ -136,8 +141,8 @@ public class KnnView extends TreeView {
 				return false;
 		}
 
-		if (ModelUtils.hasAttribute(myNetwork, myNetwork, ClusterManager.CLUSTER_NODE_ATTRIBUTE) ||
-		    ModelUtils.hasAttribute(myNetwork, myNetwork, ClusterManager.CLUSTER_ATTR_ATTRIBUTE)) {
+		if (ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE) ||
+		    ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE)) {
 			return true;
 		}
 

@@ -143,7 +143,7 @@ public abstract class AbstractKClusterAlgorithm {
 			double maxSil = Double.MIN_VALUE;
 			for (int kEstimate = 2; kEstimate < context.kMax; kEstimate++) {
 				double sil = silhouetteResults[kEstimate].getMean();
-				// System.out.println("Average silhouette for "+kEstimate+" clusters is "+sil);
+				saveMonitor.showMessage(TaskMonitor.Level.INFO,"Average silhouette for "+kEstimate+" clusters is "+sil);
 				if (sil > maxSil) {
 					maxSil = sil;
 					nClusters = kEstimate;
@@ -160,7 +160,7 @@ public abstract class AbstractKClusterAlgorithm {
 		// Cluster
 		int nClustersFound = kcluster(nClusters, nIterations, matrix, metric, clusters);
 		if (cancelled()) return null;
-		
+
 		// TODO Change other algorithms s.t. the number of clusters found is returned
 		if (nClusters == 0) nClusters = nClustersFound;
 
@@ -188,11 +188,13 @@ public abstract class AbstractKClusterAlgorithm {
 		String resultString =  "Created "+nClusters+" clusters with average silhouette = "+sResult.getMean();
 		monitor.showMessage(TaskMonitor.Level.INFO,resultString);
 		
+		/*
 		String s = "Clusters: ";
 		for (int i = 0; i < clusters.length; ++i) {
 			s += clusters[i] + ", ";
 		}
 		monitor.showMessage(TaskMonitor.Level.INFO,s);
+		*/
 		
 		return rowOrder;
 	}
@@ -274,10 +276,20 @@ public abstract class AbstractKClusterAlgorithm {
 	
 	protected int[] chooseRandomElementsAsCenters(int nElements, int nClusters) {
 		int[] centers = new int[nClusters];
+		List<Integer> candidates = new ArrayList<Integer>(nElements);
+		for (int i = 0; i < nElements; i++)
+			candidates.add(i);
 
 		for (int i = 0; i < nClusters; i++) {
-			centers[i] = (int) Math.floor(Math.random() * nElements);
+			int index = (int) Math.floor(Math.random() * candidates.size());
+			centers[i] = candidates.get(index);
+			candidates.remove(index);
 		}
+		/*
+		for (int i = 0; i < nClusters; i++) {
+			System.out.println("nClusters = "+nClusters+", i = " + i + ", center = " + centers[i]);
+		}
+		*/
 		return centers;
 	}
 
@@ -317,7 +329,7 @@ public abstract class AbstractKClusterAlgorithm {
 		// initialize the centers
 		for (int i = 0; i < nClusters; i++) {
 			centers[i] = pairs[i].value;
-			//System.out.println("i = " + i + ", center = " + centers[i]);
+			// System.out.println("nClusters = "+nClusters+", i = " + i + ", center = " + centers[i]);
 		}
 		
 		return centers;
@@ -434,8 +446,8 @@ public abstract class AbstractKClusterAlgorithm {
 			int[] clusters = new int[matrix.nRows()];
 			if (cancelled()) return;
 			if (saveMonitor != null) saveMonitor.setStatusMessage("Getting silhouette with a k estimate of "+kEstimate);
-			int ifound = kcluster(kEstimate, nIterations, matrix, metric, clusters);
 			try {
+				int ifound = kcluster(kEstimate, nIterations, matrix, metric, clusters);
 				silhouetteResults[kEstimate] = SilhouetteCalculator.calculate(matrix, metric, clusters);
 			} catch (Exception e) { e.printStackTrace(); }
 		}
