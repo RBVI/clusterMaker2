@@ -165,6 +165,13 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 			return true;
 		}
 
+		boolean available = NewNetworkView.isReady(network, manager);
+		String clusterAttribute =
+			network.getRow(network, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
+		return available;
+	}
+
+	public static boolean isReady(CyNetwork network, ClusterManager manager) {
 		CyTable networkTable = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
 		if (!CyTableUtil.getColumnNames(networkTable).contains(ClusterManager.CLUSTER_TYPE_ATTRIBUTE))
 			return false;
@@ -176,7 +183,7 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 			return false;
 
 		if (CyTableUtil.getColumnNames(networkTable).contains(ClusterManager.CLUSTER_ATTRIBUTE)) {
-			clusterAttribute = network.getRow(network, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
+			String clusterAttribute = network.getRow(network, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
 			if (clusterAttribute != null) return true;
 		}
 		return false;
@@ -427,6 +434,7 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 				count += 1;
 				//System.out.println("Read x = "+ x +", y = "+ y);
 				CyEdge membershipEdge = network.addEdge(centroid, node, false);
+				// System.out.println("Added edge: "+membershipEdge);
 				ModelUtils.createAndSetLocal(network, membershipEdge, "MembershipEdge", 
 	                                   Boolean.TRUE, Boolean.class, null);
 				Double membership = fuzzyClusterTable.getRow(node.getSUID()).get("Cluster_"+clusterNumber, Double.class);

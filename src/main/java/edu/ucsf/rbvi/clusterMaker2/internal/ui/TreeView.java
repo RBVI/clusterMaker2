@@ -159,6 +159,7 @@ public class TreeView extends TreeViewApp implements Observer,
 		myNetwork = manager.getNetwork();
 		myView = manager.getNetworkView();
 		this.monitor = monitor;
+		monitor.setTitle(getName());
 		// Sanity check
 		if (isAvailable()) {
 			startup();
@@ -168,13 +169,22 @@ public class TreeView extends TreeViewApp implements Observer,
 	}
 
 	public boolean isAvailable() {
-		if (ModelUtils.hasAttribute(myNetwork, myNetwork, ClusterManager.CLUSTER_TYPE_ATTRIBUTE) &&
-		    !myNetwork.getRow(myNetwork).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class).equals(HierarchicalCluster.GROUP_ATTRIBUTE)) {
+		return TreeView.isReady(myNetwork);
+	}
+
+	public static boolean isReady(CyNetwork network) {
+		if (network == null) return false;
+
+		if (!ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE))
+			return false;
+
+		if (!network.getRow(network).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class)
+										.equals(HierarchicalCluster.GROUP_ATTRIBUTE)) {
 			return false;
 		}
 
-		if (ModelUtils.hasAttribute(myNetwork, myNetwork, ClusterManager.CLUSTER_NODE_ATTRIBUTE) ||
-		    ModelUtils.hasAttribute(myNetwork, myNetwork, ClusterManager.CLUSTER_ATTR_ATTRIBUTE)) {
+		if (ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE) ||
+		    ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE)) {
 			return true;
 		}
 		return false;

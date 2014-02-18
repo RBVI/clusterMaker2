@@ -78,9 +78,9 @@ public class KMedoidContext {
 	@Tunable(description="Use only selected nodes/edges for cluster",
 	         groups={"K-Medoid Parameters"}, gravity=100)
 	public boolean getselectedOnly() { return selectedOnly; }
-	public void setselectedOnly(boolean selectedOnly) {
-		this.selectedOnly = selectedOnly;
-		if (network != null) kcluster.updateKEstimates(network, selectedOnly);
+	public void setselectedOnly(boolean sel) {
+		if (network != null && this.selectedOnly != sel) kcluster.updateKEstimates(network, sel);
+		this.selectedOnly = sel;
 	}
 
 	@Tunable(description="Cluster attributes as well as nodes", 

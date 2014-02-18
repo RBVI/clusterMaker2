@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 //Cytoscape imports
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskIterator;
 
 
@@ -34,7 +35,8 @@ public class KnnViewTaskFactory implements ClusterVizFactory   {
 	}
 
 	public boolean isReady() {
-		return true;
+		CyNetwork myNetwork = clusterManager.getNetwork();
+		return KnnView.isReady(myNetwork);
 	}
 
 	public boolean isAvailable() {

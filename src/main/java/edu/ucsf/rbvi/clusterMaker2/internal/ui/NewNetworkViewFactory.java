@@ -46,7 +46,9 @@ public class NewNetworkViewFactory implements ClusterVizFactory   {
 	}
 
 	public boolean isReady() {
-		return true;
+		if (!checkAvailable)
+			return true;
+		return NewNetworkView.isReady(clusterManager.getNetwork(), clusterManager);
 	}
 
 	public boolean isAvailable() {
