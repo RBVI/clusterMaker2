@@ -54,7 +54,6 @@ public class RunFCM {
 	private int number_clusters;
 	private double findex; // fuzziness index
 	private double beta; // Termination Criterion
-	private DistanceMetric metric;
 	private boolean canceled = false;
 	private TaskMonitor monitor;
 	protected int clusterCount = 0;
@@ -67,7 +66,7 @@ public class RunFCM {
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
 	
 	public RunFCM (DistanceMatrix distanceMatrix, int num_iterations, int cClusters,
-				DistanceMetric metric, double findex, double beta, double membershipThreshold,int maxThreads, TaskMonitor monitor ){
+				double findex, double beta, double membershipThreshold,int maxThreads, TaskMonitor monitor ){
 		
 		
 		this.distanceMatrix = distanceMatrix;
@@ -75,7 +74,6 @@ public class RunFCM {
 		this.number_clusters = cClusters;
 		this.findex = findex;
 		this.beta = beta;
-		this.metric = metric;
 		this.monitor = monitor;
 		this.membershipThreshold = membershipThreshold;
 		// System.out.println("c= "+number_clusters+" ,iterations: "+number_iterations);
