@@ -27,7 +27,12 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
  *	Average cluster size
  *	Maximum cluster size
  *	Minimum cluster size
- *	Cluster coefficient (intra-cluster edges / total edges)
+ *	Modularity, defined as:
+ *        M = sum(I(Ci)/|E| - (D(Ci)/2*|E|)**2
+ *    where Ci is a cluster,
+ *          I(Ci) is the number of internal edges in the cluster
+ *          D(Ci) is the degree (number of external edges) of the cluster
+ *          |E| is the total number of edges in the network
  */
 
 public class AbstractClusterResults implements ClusterResults {
@@ -84,7 +89,8 @@ public class AbstractClusterResults implements ClusterResults {
 		minSize = Integer.MAX_VALUE;
 		clusterCoefficient = 0.0;
 		modularity = 0.0;
-		double edgeCount = (double)network.getEdgeCount();
+		// double edgeCount = (double)network.getEdgeCount();
+		double edgeCount = getReducedEdgeCount();
 
 		int clusterNumber = 0;
 		for (List<CyNode> cluster: clusters) {
@@ -95,9 +101,14 @@ public class AbstractClusterResults implements ClusterResults {
 			double outerEdges = (double)getOuterEdgeCount(cluster);
 			clusterCoefficient += (innerEdges / (innerEdges+outerEdges)) / (double)(clusterCount);
 
-			double percentEdgesInCluster = innerEdges/edgeCount;
-			double percentEdgesTouchingCluster = (innerEdges+outerEdges)/edgeCount;
-			modularity += percentEdgesInCluster - percentEdgesTouchingCluster*percentEdgesTouchingCluster;
+			// double percentEdgesInCluster = innerEdges/edgeCount;
+			// double percentEdgesTouchingCluster = (innerEdges+outerEdges)/edgeCount;
+			// modularity += percentEdgesInCluster - percentEdgesTouchingCluster*percentEdgesTouchingCluster;
+
+			double proportionEdgesInCluster = innerEdges/edgeCount;
+			double proportionEdgesOutCluster = outerEdges/edgeCount;
+
+			modularity += proportionEdgesInCluster - (proportionEdgesOutCluster/2)*(proportionEdgesOutCluster/2);
 			clusterNumber++;
 		}
 	}
@@ -116,6 +127,16 @@ public class AbstractClusterResults implements ClusterResults {
 			}
 		}
 		return outerEdges.size();
+	}
+
+	private double getReducedEdgeCount() {
+		int edges = 0;
+		for (List<CyNode> cluster: clusters) {
+			for (CyNode node: cluster) {
+				edges += network.getAdjacentEdgeList(node, CyEdge.Type.ANY).size();
+			}
+		}
+		return (double)edges/2.0;
 	}
 
 }

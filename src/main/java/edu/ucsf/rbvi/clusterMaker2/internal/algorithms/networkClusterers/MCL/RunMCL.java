@@ -50,7 +50,7 @@ public class RunMCL {
 	private boolean createMetaNodes = false;
 	private DistanceMatrix distanceMatrix = null;
 	private DoubleMatrix2D matrix = null;
-	private boolean debug = true;
+	private boolean debug = false;
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
 	
 	public RunMCL(DistanceMatrix dMat, double inflationParameter, int num_iterations, 

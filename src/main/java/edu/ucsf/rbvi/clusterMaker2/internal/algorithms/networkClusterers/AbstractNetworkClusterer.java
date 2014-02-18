@@ -51,15 +51,13 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 	@SuppressWarnings("unchecked")
 	public List<List<CyNode>> getNodeClusters(String clusterAttribute) {
 		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
-		CyTable nodeAttributes = network.getDefaultNodeTable();
-		
 
 		// Create the cluster Map
 		HashMap<Integer, List<CyNode>> clusterMap = new HashMap<Integer, List<CyNode>>();
 		for (CyNode node: (List<CyNode>)network.getNodeList()) {
 			// For each node -- see if it's in a cluster.  If so, add it to our map
-			if (nodeAttributes.getRow(node).get(clusterAttribute, Integer.class) != null) {
-				Integer cluster = nodeAttributes.getRow(node).get(clusterAttribute, Integer.class);
+			if (network.getRow(node).get(clusterAttribute, Integer.class) != null) {
+				Integer cluster = network.getRow(node).get(clusterAttribute, Integer.class);
 				if (!clusterMap.containsKey(cluster)) {
 					List<CyNode> nodeList = new ArrayList<CyNode>();
 					clusterMap.put(cluster, nodeList);
@@ -73,9 +71,6 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 	
 	@SuppressWarnings("unchecked")
 	public List<List<CyNode>> getFuzzyNodeClusters() {
-		CyTable networkAttributes = network.getDefaultNetworkTable();
-		Long netId = network.getSUID();
-
 		String clusterAttribute = network.getRow(network, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
 		return getFuzzyNodeClusters(clusterAttribute);
 	}

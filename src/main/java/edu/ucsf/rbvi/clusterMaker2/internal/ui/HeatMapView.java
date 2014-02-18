@@ -169,6 +169,7 @@ public class HeatMapView extends TreeViewApp implements Observer,
 	public ClusterResults getResults() { return null; }
 
 	public void run(TaskMonitor monitor) {
+		monitor.setTitle("Creating heat map");
 		myView = manager.getNetworkView();
 		this.monitor = monitor;
 		// Sanity check

@@ -81,6 +81,8 @@ public class SCPSCluster extends AbstractNetworkClusterer  {
 	}
 
 	public String getShortName() {return SHORTNAME;};
+
+	@ProvidesTitle
 	public String getName() {return NAME;};
 
 	public ClusterViz getVisualizer() {

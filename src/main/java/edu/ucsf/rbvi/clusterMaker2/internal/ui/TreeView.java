@@ -155,6 +155,7 @@ public class TreeView extends TreeViewApp implements Observer,
 	public ClusterResults getResults() { return null; }
 
 	public void run(TaskMonitor monitor) {
+		monitor.setTitle("Creating a tree view with cluster results");
 		myNetwork = manager.getNetwork();
 		myView = manager.getNetworkView();
 		this.monitor = monitor;

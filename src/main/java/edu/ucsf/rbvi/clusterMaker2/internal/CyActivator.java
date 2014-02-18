@@ -49,6 +49,10 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCODE.M
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.SCPS.SCPSClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.TransClustClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.FilterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.BestNeighbor.BestNeighborFilterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.CuttingEdge.CuttingEdgeFilterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.Density.DensityFilterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.HairCut.HairCutFilterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkViewFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.TreeViewTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.KnnViewTaskFactory;
@@ -88,45 +92,52 @@ public class CyActivator extends AbstractCyActivator {
 		// Attribute clusterers
 		registerService(bc, new AttributeClusterTaskFactory(clusterManager), 
 		                ClusterTaskFactory.class, new Properties());
+		registerService(bc, new AutoSOMETaskFactory(clusterManager, true), 
+		                ClusterTaskFactory.class, new Properties());
+		registerService(bc, new FeatureVectorTaskFactory(clusterManager), 
+		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new HierarchicalTaskFactory(clusterManager), 
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new KMeansTaskFactory(clusterManager), 
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new KMedoidTaskFactory(clusterManager), 
 		                ClusterTaskFactory.class, new Properties());
-		registerService(bc, new FeatureVectorTaskFactory(clusterManager), 
-		                ClusterTaskFactory.class, new Properties());
-		registerService(bc, new AutoSOMETaskFactory(clusterManager, true), 
-		                ClusterTaskFactory.class, new Properties());
 
 		// Network clusterers
 		registerService(bc, new NetworkClusterTaskFactory(clusterManager), 
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new APClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
-		registerService(bc, new ConnectedComponentsTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
-		registerService(bc, new FCMClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new AutoSOMETaskFactory(clusterManager, false), 
+		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new FuzzifierTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new GLayClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new ConnectedComponentsTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new FCMClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new MCLClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new MCODEClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new SCPSClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new TransClustClusterTaskFactory(clusterManager), 
 		                ClusterTaskFactory.class, new Properties());
-		registerService(bc, new AutoSOMETaskFactory(clusterManager, false), 
-		                ClusterTaskFactory.class, new Properties());
+
+		// Filters
 		registerService(bc, new FilterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new BestNeighborFilterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new CuttingEdgeFilterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new DensityFilterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new HairCutFilterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+
 		// registerService(bc, new UITaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 
 		// Visualizations
-		registerService(bc, new NewNetworkViewFactory(clusterManager, true), ClusterVizFactory.class, 
-		                new Properties());
 		registerService(bc, new NewNetworkViewFactory(clusterManager, false), ClusterVizFactory.class, 
 		                new Properties());
-		registerService(bc, new TreeViewTaskFactory(clusterManager), ClusterVizFactory.class, 
+		registerService(bc, new NewNetworkViewFactory(clusterManager, true), ClusterVizFactory.class, 
+		                new Properties());
+		registerService(bc, new HeatMapViewTaskFactory(clusterManager), ClusterVizFactory.class, 
 		                new Properties());
 		registerService(bc, new KnnViewTaskFactory(clusterManager), ClusterVizFactory.class, 
 		                new Properties());
-		registerService(bc, new HeatMapViewTaskFactory(clusterManager), ClusterVizFactory.class, 
+		registerService(bc, new TreeViewTaskFactory(clusterManager), ClusterVizFactory.class, 
 		                new Properties());
 	}
 

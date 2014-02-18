@@ -42,6 +42,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
@@ -71,6 +72,7 @@ public class DensityFilter extends AbstractNetworkFilter {
 
 	public String getShortName() { return SHORTNAME; }
 
+	@ProvidesTitle
 	public String getName() { return NAME; }
 
 	public String getClusterAttribute() {

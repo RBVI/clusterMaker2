@@ -154,6 +154,7 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 	public ClusterResults getResults() { return null; }
 
 	public void run(TaskMonitor monitor) {
+		monitor.setTitle("Creating a new network view with cluster results");
 		if (isAvailable())
 			createClusteredNetwork(clusterAttribute, monitor);
 	}
@@ -399,15 +400,15 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 		}
 
 		CyTable localTable = network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS);
-		localTable.createColumn("isCentroid", Boolean.class, false, Boolean.FALSE);
+		localTable.createColumn("isFClusterNode", Boolean.class, false, Boolean.FALSE);
 
 		int clusterNumber = 0;
 		for(List<CyNode> cluster :clusterList){
 			CyNode centroid = network.addNode();
 			clusterNumber++;
 
-			network.getRow(centroid).set(CyNetwork.NAME, "Centroid" + clusterList.indexOf(cluster) );
-			network.getRow(centroid).set("isCentroid", Boolean.TRUE);
+			network.getRow(centroid).set(CyNetwork.NAME, "FCluster" + clusterList.indexOf(cluster) );
+			network.getRow(centroid).set("isFClusterNode", Boolean.TRUE);
 			// System.out.println("Centroid SUID: " + centroid.getSUID());
 			//View<CyNode> nodeView = networkView.getNodeView(centroid);
 			double x = 0.0001;
