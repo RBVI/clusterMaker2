@@ -248,7 +248,7 @@ public class RunFCM {
 	 * The method getClusterMemberships calculates the new cluster memberships of elements
 	 * 
 	 * @param cData is a matrix has the attribute values for the fuzzy cluster centers
-	 * @param the new fuzzy membership values of elements for the clusters will be stored in tClusterMemberships
+	 * @param tClusterMemberships the new fuzzy membership values of elements for the clusters
 	 */
 	
 	public void getClusterMemberships(Matrix cData, double [][]tClusterMemberships){

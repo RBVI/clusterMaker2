@@ -15,11 +15,9 @@ import org.cytoscape.work.swing.TunableUIHelper;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithmContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AdvancedProperties;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.NetworkVizProperties;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM.FCMContext;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLContext;
 
 public class FuzzifierContext implements ClusterAlgorithmContext {
 		
@@ -33,12 +31,14 @@ public class FuzzifierContext implements ClusterAlgorithmContext {
 			
 	@Tunable(description = "Maximum number of threads", groups={"Fuzzifier Advanced Settings"}, gravity=21.0)
 	public int maxThreads = 0;
-		
+
+/*		
 	@Tunable(description = "Distance Metric", groups={"Fuzzifier Advanced Settings"}, gravity=22.0)
 	public ListSingleSelection<DistanceMetric> distanceMetric = new ListSingleSelection<DistanceMetric>(DistanceMetric.getDistanceMetricList());
 	
 	@Tunable(description = "The attributes to consider while clustering", groups={"Fuzzifier Advanced Settings"}, gravity=23.0)
 	public ListMultipleSelection<String> attributeList;
+*/
 		
 	@ContainsTunables
 	public AdvancedProperties advancedAttributes;	
@@ -62,6 +62,7 @@ public class FuzzifierContext implements ClusterAlgorithmContext {
 		membershipThreshold = origin.membershipThreshold;
 		maxThreads = origin.maxThreads;
 						
+/*
 		distanceMetric = new ListSingleSelection<DistanceMetric>(DistanceMetric.VALUE_IS_CORRELATION, DistanceMetric.UNCENTERED_CORRELATION, 
 								DistanceMetric.CORRELATION, DistanceMetric.ABS_UNCENTERED_CORRELATION,DistanceMetric.ABS_CORRELATION,
 								DistanceMetric.SPEARMANS_RANK, DistanceMetric.KENDALLS_TAU, DistanceMetric.EUCLIDEAN, DistanceMetric.CITYBLOCK);
@@ -74,6 +75,7 @@ public class FuzzifierContext implements ClusterAlgorithmContext {
 		}
 		
 		attributeList = new ListMultipleSelection<String>(columnNameList);
+*/
 		
 	}	
 

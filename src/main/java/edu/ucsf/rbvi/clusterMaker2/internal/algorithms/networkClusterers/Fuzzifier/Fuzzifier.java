@@ -33,11 +33,6 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractFuzzyNetworkClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM.FCMContext;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM.RunFCM;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLCluster;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLContext;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.RunMCL;
 
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
@@ -55,7 +50,6 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeWeightConverter;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.SilhouetteCalculator;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.Silhouettes;
@@ -139,8 +133,7 @@ public class Fuzzifier extends AbstractFuzzyNetworkClusterer{
 		// Update our tunable results
 		clusterAttributeName = context.getClusterAttribute();
 
-		DistanceMetric distMetric = context.distanceMetric.getSelectedValue();
-		runFuzzifier = new RunFuzzifier(Clusters, distanceMatrix,cNumber, distMetric, 
+		runFuzzifier = new RunFuzzifier(Clusters, distanceMatrix,cNumber, 
 									context.membershipThreshold.getValue(), context.maxThreads, monitor);
 
 		runFuzzifier.setDebug(debug);
@@ -175,7 +168,7 @@ public class Fuzzifier extends AbstractFuzzyNetworkClusterer{
 			insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true,
 			                                               context.vizProperties.restoreEdges));
 		} else {
-			monitor.showMessage(TaskMonitor.Level.INFO, "Done.  FCM results:\n"+results);
+			monitor.showMessage(TaskMonitor.Level.INFO, "Done.  Fizzifier results:\n"+results);
 		}
 
 		System.out.println("Creating fuzzy table");

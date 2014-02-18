@@ -54,7 +54,6 @@ public class RunFuzzifier {
 	private List<NodeCluster> Clusters = null;
 	private int number_clusters;
 	private List<CyNode> nodeList= null;
-	private DistanceMetric metric;
 	private boolean canceled = false;
 	private TaskMonitor monitor;
 	public final static String GROUP_ATTRIBUTE = "__FuzzifierGroups";
@@ -68,12 +67,11 @@ public class RunFuzzifier {
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
 
 	public RunFuzzifier (List<NodeCluster> Clusters, DistanceMatrix distanceMatrix, int cClusters,
-			DistanceMetric metric, double membershipThreshold,int maxThreads, TaskMonitor monitor ){
+			 double membershipThreshold,int maxThreads, TaskMonitor monitor ){
 
 		this.Clusters = Clusters;
 		this.distanceMatrix = distanceMatrix;
 		this.number_clusters = cClusters;
-		this.metric = metric;
 		this.monitor = monitor;
 		this.membershipThreshold = membershipThreshold;
 
