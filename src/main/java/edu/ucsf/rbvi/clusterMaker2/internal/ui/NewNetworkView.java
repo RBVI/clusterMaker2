@@ -166,7 +166,7 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 		}
 
 		boolean available = NewNetworkView.isReady(network, manager);
-		String clusterAttribute =
+		clusterAttribute =
 			network.getRow(network, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
 		return available;
 	}
