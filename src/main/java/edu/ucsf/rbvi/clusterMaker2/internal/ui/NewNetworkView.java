@@ -172,6 +172,9 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 	}
 
 	public static boolean isReady(CyNetwork network, ClusterManager manager) {
+		if (network == null) 
+			return false;
+
 		CyTable networkTable = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
 		if (!CyTableUtil.getColumnNames(networkTable).contains(ClusterManager.CLUSTER_TYPE_ATTRIBUTE))
 			return false;

@@ -25,6 +25,13 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.osgi.framework.BundleContext;
 
+import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+
 // clusterMaker imports
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
@@ -57,6 +64,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkViewFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.TreeViewTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.KnnViewTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.HeatMapViewTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.LinkSelectionTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.UnlinkSelectionTaskFactory;
 // import edu.ucsf.rbvi.clusterMaker2.internal.ui.UITaskFactory;
 
 public class CyActivator extends AbstractCyActivator {
@@ -139,6 +148,34 @@ public class CyActivator extends AbstractCyActivator {
 		                new Properties());
 		registerService(bc, new TreeViewTaskFactory(clusterManager), ClusterVizFactory.class, 
 		                new Properties());
-	}
 
+		// Link Network Selections
+		LinkSelectionTaskFactory linkTaskFactory = new LinkSelectionTaskFactory(clusterManager);
+		Properties linkSelectionProps = new Properties();
+    linkSelectionProps.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+    linkSelectionProps.setProperty(PREFERRED_MENU, "Apps.clusterMaker Visualizations");
+    linkSelectionProps.setProperty(TITLE, "Link selection across networks");
+    linkSelectionProps.setProperty(COMMAND, "linkSelection");
+    linkSelectionProps.setProperty(COMMAND_NAMESPACE, "clusterViz");
+    linkSelectionProps.setProperty(ENABLE_FOR, "networkAndView");
+    linkSelectionProps.setProperty(IN_MENU_BAR, "true");
+    linkSelectionProps.setProperty(MENU_GRAVITY, "100.0");
+		registerService(bc, linkTaskFactory, NetworkTaskFactory.class, linkSelectionProps);
+
+		// UnLink Network Selections
+		UnlinkSelectionTaskFactory unlinkTaskFactory = new UnlinkSelectionTaskFactory(clusterManager);
+		Properties unlinkSelectionProps = new Properties();
+    unlinkSelectionProps.setProperty(PREFERRED_MENU, "Apps.clusterMaker Visualizations");
+    unlinkSelectionProps.setProperty(TITLE, "Unlink selection across networks");
+    unlinkSelectionProps.setProperty(COMMAND, "unlinkSelection");
+    unlinkSelectionProps.setProperty(COMMAND_NAMESPACE, "clusterViz");
+    unlinkSelectionProps.setProperty(ENABLE_FOR, "networkAndView");
+    unlinkSelectionProps.setProperty(IN_MENU_BAR, "true");
+    unlinkSelectionProps.setProperty(MENU_GRAVITY, "100.0");
+		registerService(bc, unlinkTaskFactory, NetworkTaskFactory.class, unlinkSelectionProps);
+
+		// Commands
+		// These task factories provide useful commands that only make sense in the context of REST or 
+		// the command interface
+	}
 }

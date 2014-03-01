@@ -7,6 +7,7 @@ import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
 import static org.cytoscape.work.ServiceProperties.TITLE;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
@@ -23,16 +25,19 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskFactory;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterVizFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.NetworkSelectionLinker;
 
 public class ClusterManagerImpl implements ClusterManager {
 // public class ClusterManagerImpl {
@@ -44,10 +49,11 @@ public class ClusterManagerImpl implements ClusterManager {
 	Map<String, ClusterVizFactory> vizMap;
 	CyTableFactory tableFactory;
 	CyTableManager tableManager;
+	Map<CyRootNetwork, NetworkSelectionLinker> linkedNetworks;
 	double networkClusterIndex = 50.0;
 	double attributeClusterIndex = 1.0;
 	double filterIndex = 100.0;
-	double visIndex = 150.0;
+	double vizClusterIndex = 1.0;
 
 	public ClusterManagerImpl(CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar,
  	                          CyGroupFactory groupFactory, CyGroupManager groupMgr, 
@@ -60,6 +66,7 @@ public class ClusterManagerImpl implements ClusterManager {
 		this.vizMap = new HashMap<String, ClusterVizFactory>();
 		this.tableFactory = tableFactory;
 		this.tableManager = tableManager;
+		this.linkedNetworks = new HashMap<CyRootNetwork, NetworkSelectionLinker>();
 	}
 
 	public Collection<ClusterTaskFactory> getAllAlgorithms() {
@@ -142,6 +149,8 @@ public class ClusterManagerImpl implements ClusterManager {
 		props.setProperty(IN_MENU_BAR, "true");
 		props.setProperty(PREFERRED_MENU, "Apps.clusterMaker Visualizations");
 		props.setProperty(TITLE, viz.getName());
+		vizClusterIndex += 1.0;
+		props.setProperty(MENU_GRAVITY, ""+vizClusterIndex);
 		serviceRegistrar.registerService(viz, TaskFactory.class, props);
 	}
 
@@ -176,8 +185,8 @@ public class ClusterManagerImpl implements ClusterManager {
 	}
 
 	public CyGroup createGroup(CyNetwork network, String name, List<CyNode> nodeList, 
-	                           List<CyEdge> edgeList, boolean register) {
-		CyGroup group =  groupFactory.createGroup(network, nodeList, edgeList, register);
+	                           List<CyEdge> edgeList, boolean registerGroup) {
+		CyGroup group =  groupFactory.createGroup(network, nodeList, edgeList, registerGroup);
 		if (group != null) {
 			CyRootNetwork rootNetwork = ((CySubNetwork)network).getRootNetwork();
 			// The name of the group node is the name of the group
@@ -219,5 +228,30 @@ public class ClusterManagerImpl implements ClusterManager {
 
 	public void unregisterService(Object service, Class serviceClass) {
 		serviceRegistrar.unregisterService(service, serviceClass);
+	}
+
+	public boolean isLinked(CyNetwork network) {
+		CyRootNetwork rootNetwork = ((CySubNetwork)network).getRootNetwork();
+		if (linkedNetworks.containsKey(rootNetwork))
+			return true;
+		return false;
+	}
+
+	public void linkNetworkSelection(CyNetwork network) {
+		if (isLinked(network))
+			return;
+		CyRootNetwork rootNetwork = ((CySubNetwork)network).getRootNetwork();
+		CyEventHelper helper = serviceRegistrar.getService(CyEventHelper.class);
+		NetworkSelectionLinker linker = new NetworkSelectionLinker(rootNetwork, helper, this);
+		registerService(linker, RowsSetListener.class, new Properties());
+		linkedNetworks.put(rootNetwork, linker);
+	}
+
+	public void unlinkNetworkSelection(CyNetwork network) {
+		if (!isLinked(network))
+			return;
+		CyRootNetwork rootNetwork = ((CySubNetwork)network).getRootNetwork();
+		unregisterService(linkedNetworks.get(rootNetwork), RowsSetListener.class);
+		linkedNetworks.remove(rootNetwork);
 	}
 }
