@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 //Cytoscape imports
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskIterator;
 
 
@@ -51,8 +52,14 @@ public class NewNetworkViewFactory implements ClusterVizFactory   {
 		return NewNetworkView.isReady(clusterManager.getNetwork(), clusterManager);
 	}
 
-	public boolean isAvailable() {
-		return false;
+	public boolean isAvailable(CyNetwork network) {
+		if (!checkAvailable)
+			return true;
+
+		if (network == null)
+			return false;
+
+		return NewNetworkView.isReady(network, clusterManager);
 	}
 
 	public List<ClusterType> getTypeList() {

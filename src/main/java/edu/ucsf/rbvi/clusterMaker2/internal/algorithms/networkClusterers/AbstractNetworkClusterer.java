@@ -28,36 +28,28 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm {
-	
 	// Shared instance variables
 	CyTableManager tableManager = null;
 	//TODO: add group support
-	
-	public AbstractNetworkClusterer(ClusterManager clusterManager) { 
-		super(clusterManager); 
-		tableManager = clusterManager.getTableManager();
-	}
 
 	@SuppressWarnings("unchecked")
-	public List<List<CyNode>> getNodeClusters() {
-		CyTable networkAttributes = network.getDefaultNetworkTable();
-		Long netId = network.getSUID();
-
-		String clusterAttribute = network.getRow(network, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
-		return getNodeClusters(clusterAttribute);
+	public static List<List<CyNode>> getNodeClusters(CyNetwork net) {
+		String clusterAttribute = 
+			net.getRow(net, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
+		return getNodeClusters(net, clusterAttribute);
 	}
 
 
 	@SuppressWarnings("unchecked")
-	public List<List<CyNode>> getNodeClusters(String clusterAttribute) {
+	public static List<List<CyNode>> getNodeClusters(CyNetwork net, String clusterAttribute) {
 		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
 
 		// Create the cluster Map
 		HashMap<Integer, List<CyNode>> clusterMap = new HashMap<Integer, List<CyNode>>();
-		for (CyNode node: (List<CyNode>)network.getNodeList()) {
+		for (CyNode node: (List<CyNode>)net.getNodeList()) {
 			// For each node -- see if it's in a cluster.  If so, add it to our map
-			if (network.getRow(node).get(clusterAttribute, Integer.class) != null) {
-				Integer cluster = network.getRow(node).get(clusterAttribute, Integer.class);
+			if (net.getRow(node).get(clusterAttribute, Integer.class) != null) {
+				Integer cluster = net.getRow(node).get(clusterAttribute, Integer.class);
 				if (!clusterMap.containsKey(cluster)) {
 					List<CyNode> nodeList = new ArrayList<CyNode>();
 					clusterMap.put(cluster, nodeList);
@@ -68,36 +60,10 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 		}
 		return clusterList;
 	}
-	
-	@SuppressWarnings("unchecked")
-	public List<List<CyNode>> getFuzzyNodeClusters() {
-		String clusterAttribute = network.getRow(network, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
-		return getFuzzyNodeClusters(clusterAttribute);
-	}
-	
-	@SuppressWarnings("unchecked")
-	public List<List<CyNode>> getFuzzyNodeClusters(String clusterAttribute){
-		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
-		
-		long FuzzyClusterTableSUID = network.getRow(network, CyNetwork.LOCAL_ATTRS).get(clusterAttributeName + "_Table.SUID", Long.class);
-		CyTable FuzzyClusterTable = tableManager.getTable(FuzzyClusterTableSUID);
-		
-		int numC = FuzzyClusterTable.getColumns().size() - 1;
-		for(int i = 0; i < numC; i++){
-			clusterList.add(new ArrayList<CyNode>());
-		}
-		
-		List<CyNode> nodeList = network.getNodeList();
-		for (CyNode node : nodeList){
-			CyRow nodeRow = FuzzyClusterTable.getRow(node.getSUID());
-			for(int i = 1; i <= numC; i++){
-				if(nodeRow.get("Cluster_"+ i, double.class) != null){
-					clusterList.get(i).add(node);
-				}
-			}			
-		}
-						
-		return clusterList;
+
+	public AbstractNetworkClusterer(ClusterManager clusterManager) { 
+		super(clusterManager); 
+		tableManager = clusterManager.getTableManager();
 	}
 
 	protected List<List<CyNode>> createGroups(CyNetwork network, List<NodeCluster> clusters, String group_attr) {

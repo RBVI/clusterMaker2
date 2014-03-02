@@ -184,6 +184,10 @@ public class HeatMapView extends TreeViewApp implements Observer,
 		return true;
 	}
 
+	public boolean isAvailable(CyNetwork network) {
+		return true;
+	}
+
 	public void cancel() {}
 
 	protected void startup() {

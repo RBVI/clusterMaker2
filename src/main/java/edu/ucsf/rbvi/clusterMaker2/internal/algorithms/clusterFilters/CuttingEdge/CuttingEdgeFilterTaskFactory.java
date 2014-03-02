@@ -6,13 +6,13 @@ import java.util.List;
 //Cytoscape imports
 import org.cytoscape.work.TaskIterator;
 
-
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
-public class CuttingEdgeFilterTaskFactory implements ClusterTaskFactory   {
+public class CuttingEdgeFilterTaskFactory extends AbstractClusterTaskFactory {
 	ClusterManager clusterManager;
 	CuttingEdgeContext context = null;
 	
@@ -31,10 +31,6 @@ public class CuttingEdgeFilterTaskFactory implements ClusterTaskFactory   {
 
 	public boolean isReady() {
 		return true;
-	}
-
-	public boolean isAvailable() {
-		return false;
 	}
 
 	public List<ClusterType> getTypeList() {

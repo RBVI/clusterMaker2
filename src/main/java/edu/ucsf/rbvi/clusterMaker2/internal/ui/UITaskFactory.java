@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 //Cytoscape imports
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskIterator;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
@@ -30,7 +31,7 @@ public class UITaskFactory implements ClusterTaskFactory   {
 		return false;
 	}
 
-	public boolean isAvailable() {
+	public boolean isAvailable(CyNetwork network) {
 		return false;
 	}
 

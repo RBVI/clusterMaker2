@@ -39,8 +39,9 @@ public class KnnViewTaskFactory implements ClusterVizFactory   {
 		return KnnView.isReady(myNetwork);
 	}
 
-	public boolean isAvailable() {
-		return false;
+	public boolean isAvailable(CyNetwork network) {
+		if (network == null) return false;
+		return KnnView.isReady(network);
 	}
 
 	public List<ClusterType> getTypeList() {

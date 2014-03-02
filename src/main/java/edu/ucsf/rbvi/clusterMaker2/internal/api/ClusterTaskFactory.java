@@ -30,11 +30,13 @@ public interface ClusterTaskFactory extends TaskFactory {
 	public ClusterViz getVisualizer();
 
 	/**
- 	 * Returns 'true' if this algorithm has already been run on this network
- 	 *
- 	 * @return true if the algorithm attributes exist
- 	 */
-	public boolean isAvailable();
+	 * Returns true if this algorithm has been run on this network
+	 * and the results are available
+	 *
+	 * @param network the network to look at
+	 * @return true if the clustering information is available
+	 */
+	public boolean isAvailable(CyNetwork network);
 
 	/**
  	 * Returns the list of types this algorithm supports.  This allows us

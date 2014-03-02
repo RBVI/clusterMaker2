@@ -1,15 +1,6 @@
 package edu.ucsf.rbvi.clusterMaker2.internal;
 
 
-import static org.cytoscape.work.ServiceProperties.COMMAND;
-import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
-import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
-import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
-
 // Java imports
 import java.util.Properties;
 
@@ -23,14 +14,18 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
 import static org.cytoscape.work.ServiceProperties.COMMAND;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
 import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
 import static org.cytoscape.work.ServiceProperties.TITLE;
+
 
 // clusterMaker imports
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
@@ -39,6 +34,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterVizFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ClusterManagerImpl;
 
 // Algorithms
+import edu.ucsf.rbvi.clusterMaker2.internal.commands.CommandTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.autosome.AutoSOMETaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hierarchical.HierarchicalTaskFactory;
@@ -156,7 +152,7 @@ public class CyActivator extends AbstractCyActivator {
     linkSelectionProps.setProperty(PREFERRED_MENU, "Apps.clusterMaker Visualizations");
     linkSelectionProps.setProperty(TITLE, "Link selection across networks");
     linkSelectionProps.setProperty(COMMAND, "linkSelection");
-    linkSelectionProps.setProperty(COMMAND_NAMESPACE, "clusterViz");
+    linkSelectionProps.setProperty(COMMAND_NAMESPACE, "clusterviz");
     linkSelectionProps.setProperty(ENABLE_FOR, "networkAndView");
     linkSelectionProps.setProperty(IN_MENU_BAR, "true");
     linkSelectionProps.setProperty(MENU_GRAVITY, "100.0");
@@ -168,7 +164,7 @@ public class CyActivator extends AbstractCyActivator {
     unlinkSelectionProps.setProperty(PREFERRED_MENU, "Apps.clusterMaker Visualizations");
     unlinkSelectionProps.setProperty(TITLE, "Unlink selection across networks");
     unlinkSelectionProps.setProperty(COMMAND, "unlinkSelection");
-    unlinkSelectionProps.setProperty(COMMAND_NAMESPACE, "clusterViz");
+    unlinkSelectionProps.setProperty(COMMAND_NAMESPACE, "clusterviz");
     unlinkSelectionProps.setProperty(ENABLE_FOR, "networkAndView");
     unlinkSelectionProps.setProperty(IN_MENU_BAR, "true");
     unlinkSelectionProps.setProperty(MENU_GRAVITY, "100.0");
@@ -177,5 +173,30 @@ public class CyActivator extends AbstractCyActivator {
 		// Commands
 		// These task factories provide useful commands that only make sense in the context of REST or 
 		// the command interface
+		{
+			TaskFactory commandTaskFactory = new CommandTaskFactory(clusterManager, "hascluster");
+			Properties props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "cluster");
+			props.setProperty(COMMAND, CommandTaskFactory.HASCLUSTER);
+  		props.setProperty(TITLE, "Test to see if this network has a cluster of the requested type");
+			registerService(bc, commandTaskFactory, TaskFactory.class, props);
+		}
+		{
+			TaskFactory commandTaskFactory = new CommandTaskFactory(clusterManager, "getnetworkcluster");
+			Properties props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "cluster");
+			props.setProperty(COMMAND, CommandTaskFactory.GETNETWORKCLUSTER);
+  		props.setProperty(TITLE, 
+				"Get a cluster of the requested type and the requested clustertype (node or attribute)");
+			registerService(bc, commandTaskFactory, TaskFactory.class, props);
+		}
+		{
+			TaskFactory commandTaskFactory = new CommandTaskFactory(clusterManager, "getcluster");
+			Properties props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "cluster");
+			props.setProperty(COMMAND, CommandTaskFactory.GETCLUSTER);
+  		props.setProperty(TITLE, "Get a cluster of the requested clustertype (node or attribute)");
+			registerService(bc, commandTaskFactory, TaskFactory.class, props);
+		}
 	}
 }

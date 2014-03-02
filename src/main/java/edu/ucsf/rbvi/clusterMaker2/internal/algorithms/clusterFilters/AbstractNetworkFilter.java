@@ -84,7 +84,7 @@ public abstract class AbstractNetworkFilter extends AbstractNetworkClusterer {
 		clusterAttributeName = getClusterAttributeName();
 
 		// get the cluster list
-		List<List<CyNode>> clusterList = getNodeClusters(getClusterAttribute());
+		List<List<CyNode>> clusterList = AbstractNetworkClusterer.getNodeClusters(network, getClusterAttribute());
 		List<NodeCluster> newClusterList = new ArrayList<NodeCluster>();
 
 		System.out.println("ClusterList has "+clusterList.size()+" clusters");

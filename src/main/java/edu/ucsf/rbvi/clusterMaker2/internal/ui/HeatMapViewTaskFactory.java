@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 //Cytoscape imports
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskIterator;
 
 
@@ -39,7 +40,7 @@ public class HeatMapViewTaskFactory implements ClusterVizFactory   {
 		return true;
 	}
 
-	public boolean isAvailable() {
+	public boolean isAvailable(CyNetwork network) {
 		return false;
 	}
 

@@ -40,8 +40,9 @@ public class TreeViewTaskFactory implements ClusterVizFactory   {
 		return TreeView.isReady(myNetwork);
 	}
 
-	public boolean isAvailable() {
-		return false;
+	public boolean isAvailable(CyNetwork network) {
+		if (network == null) return false;
+		return TreeView.isReady(network);
 	}
 
 	public List<ClusterType> getTypeList() {

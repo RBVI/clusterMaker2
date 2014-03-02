@@ -7,6 +7,7 @@ import java.util.List;
 import org.cytoscape.work.TaskIterator;
 
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM.FCMCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM.FCMContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
@@ -14,7 +15,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
-public class FuzzifierTaskFactory implements ClusterTaskFactory {
+public class FuzzifierTaskFactory extends AbstractClusterTaskFactory {
 	ClusterManager clusterManager;
 	FuzzifierContext context = null;
 	
@@ -33,10 +34,6 @@ public class FuzzifierTaskFactory implements ClusterTaskFactory {
 
 	public boolean isReady() {
 		return true;
-	}
-
-	public boolean isAvailable() {
-		return false;
 	}
 
 	public List<ClusterType> getTypeList() {

@@ -74,8 +74,9 @@ public class ClusterManagerImpl implements ClusterManager {
 	}
 
 	public ClusterTaskFactory getAlgorithm(String name) {
-		if (algMap.containsKey(name))
+		if (algMap.containsKey(name)) {
 		 	return algMap.get(name);
+		}
 		return null;
 	}
 

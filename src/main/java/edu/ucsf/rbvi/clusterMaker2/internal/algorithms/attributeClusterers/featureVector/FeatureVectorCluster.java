@@ -214,8 +214,4 @@ public class FeatureVectorCluster extends AbstractAttributeClusterer {
 
 	}
 
-	public boolean isAvailable() {
-		return false;
-	}
-
 }

@@ -80,4 +80,5 @@ public abstract class AbstractClusterAlgorithm extends AbstractTask
 	}
 
   public void setUIHelper(TunableUIHelper helper) { }
+
 }
