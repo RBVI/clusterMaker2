@@ -152,7 +152,7 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 			edgeWeighter = new ListSingleSelection<EdgeWeightConverter>();
 		}
 		
-		edgeCutOff = new BoundedDouble(0.0, 100.0, 100.0, false, false);
+		edgeCutOff = new BoundedDouble(0.0, 0.0, 100.0, false, false);
 	}
 
 	public void setNetwork(CyNetwork network) {
@@ -161,7 +161,7 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 	}
 
 	public BoundedDouble updateBounds() {
-		double cutOff = 100.0;
+		double cutOff = 0.0;
 		double max = 100.0;
 		double min = 0.0;
 
