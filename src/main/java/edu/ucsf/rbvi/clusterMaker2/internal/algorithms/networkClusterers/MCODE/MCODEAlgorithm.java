@@ -494,8 +494,8 @@ public class MCODEAlgorithm {
 
 		//extract neighborhood subgraph
 		CyNetwork gpNodeNeighborhood = createCyNetwork(neighborList, inputNetwork);
-		System.out.println("neighborhood subgraph has "+gpNodeNeighborhood.getNodeCount()+" nodes and "+
-		                   gpNodeNeighborhood.getEdgeCount()+" edges");
+		// System.out.println("neighborhood subgraph has "+gpNodeNeighborhood.getNodeCount()+" nodes and "+
+		//                    gpNodeNeighborhood.getEdgeCount()+" edges");
 		if (gpNodeNeighborhood == null) {
 			//this shouldn't happen
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "In " + callerID + ": gpNodeNeighborhood was null.");
@@ -507,7 +507,7 @@ public class MCODEAlgorithm {
 		//density
 		if (gpNodeNeighborhood != null) {
 			nodeInfo.density = calcDensity(gpNodeNeighborhood, params.isIncludeLoops());
-			System.out.println("density is "+nodeInfo.density);
+			// System.out.println("density is "+nodeInfo.density);
 		}
 		nodeInfo.numNodeNeighbors = neighborList.size();
 
@@ -520,7 +520,7 @@ public class MCODEAlgorithm {
 		//that of less connected regions
 		if (gpCore != null) {
 			nodeInfo.coreDensity = calcDensity(gpCore, params.isIncludeLoops());
-			System.out.println("coreDensity is "+nodeInfo.coreDensity);
+			// System.out.println("coreDensity is "+nodeInfo.coreDensity);
 		}
 		//record neighbor array for later use in cluster detection step
 		nodeInfo.nodeNeighbors = neighborList;
@@ -686,6 +686,8 @@ public class MCODEAlgorithm {
 	public double calcDensity(CyNetwork gpInputGraph, boolean includeLoops) {
 		int possibleEdgeNum = 0, actualEdgeNum = 0, loopCount = 0;
 		double density = 0;
+		int nodeCount = gpInputGraph.getNodeCount();
+		int edgeCount = gpInputGraph.getEdgeCount();
 
 		String callerID = "MCODEAlgorithm.calcDensity";
 		if (gpInputGraph == null) {
@@ -696,14 +698,16 @@ public class MCODEAlgorithm {
 		if (!includeLoops) {
 			//count loops
 			for (CyNode node: gpInputGraph.getNodeList()) {
-				if (gpInputGraph.getConnectingEdgeList(node, node, CyEdge.Type.ANY).size() > 0)
+				List<CyEdge> loopEdges = gpInputGraph.getConnectingEdgeList(node, node, CyEdge.Type.ANY);
+
+				if (loopEdges != null && loopEdges.size() > 0)
 					loopCount++;
 			}
-			possibleEdgeNum = (gpInputGraph.getNodeCount() * (gpInputGraph.getNodeCount()-1)) / 2;
-			actualEdgeNum = gpInputGraph.getEdgeCount() - loopCount;
+			possibleEdgeNum = (nodeCount * (nodeCount-1)) / 2;
+			actualEdgeNum = edgeCount - loopCount;
 		} else {
-			possibleEdgeNum = (gpInputGraph.getNodeCount() * (gpInputGraph.getNodeCount()-1)) / 2;
-			actualEdgeNum = gpInputGraph.getEdgeCount();
+			possibleEdgeNum = (nodeCount * (nodeCount+1)) / 2;
+			actualEdgeNum = edgeCount;
 		}
 
 		density = (double) actualEdgeNum / (double) possibleEdgeNum;
@@ -785,7 +789,7 @@ public class MCODEAlgorithm {
 		Object[] returnArray = new Object[2];
 		returnArray[0] = k;
 		returnArray[1] = gpPrevCore;    //in the last iteration, gpCurCore is null (loop termination condition)
-		System.out.println("highest kcore = "+k);
+		// System.out.println("highest kcore = "+k);
 
 		return (returnArray);
 	}
