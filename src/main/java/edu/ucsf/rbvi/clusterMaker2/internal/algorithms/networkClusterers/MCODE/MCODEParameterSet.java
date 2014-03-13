@@ -36,6 +36,11 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCODE;
  ** Description: Stores an MCODE parameter set
  **/
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.cytoscape.model.CyNode;
+
 /**
  * Stores an MCODE parameter set
  */
@@ -46,7 +51,7 @@ public class MCODEParameterSet {
     public static String NETWORK = "network";
     public static String SELECTION = "selection";
     private String scope;
-    private Long[] selectedNodes;
+    private List<CyNode> selectedNodes;
 
     //used in scoring stage
     private boolean includeLoops;
@@ -105,7 +110,7 @@ public class MCODEParameterSet {
      */
     public MCODEParameterSet(
             String scope,
-            Long[] selectedNodes,
+            List<CyNode> selectedNodes,
             boolean includeLoops,
             int degreeCutoff,
             int kCore,
@@ -138,7 +143,7 @@ public class MCODEParameterSet {
      * Method for setting all parameters to their default values
      */
     public void setDefaultParams() {
-        setAllAlgorithmParams(NETWORK, new Long[0], false, 2, 2, false, 100, 0.2, false, true, 0.1);
+        setAllAlgorithmParams(NETWORK, new ArrayList<CyNode>(), false, 2, 2, false, 100, 0.2, false, true, 0.1);
     }
 
     /**
@@ -158,7 +163,7 @@ public class MCODEParameterSet {
      */
     public void setAllAlgorithmParams(
             String scope,
-            Long[] selectedNodes,
+            List<CyNode> selectedNodes,
             boolean includeLoops,
             int degreeCutoff,
             int kCore,
@@ -214,11 +219,11 @@ public class MCODEParameterSet {
         this.scope = scope;
     }
 
-    public Long[] getSelectedNodes() {
+    public List<CyNode> getSelectedNodes() {
         return selectedNodes;
     }
 
-    public void setSelectedNodes(Long[] selectedNodes) {
+    public void setSelectedNodes(List<CyNode> selectedNodes) {
         this.selectedNodes = selectedNodes;
     }
 

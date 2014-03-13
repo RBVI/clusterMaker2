@@ -57,6 +57,7 @@ public class GSimpleGraphData {
     }
     
     private void simplify(){
+				// System.out.println("nodeCount = "+nodeCount+", edgeCount = "+edgeCount);
 
         //Assign index and degree
         for(int i=0; i<nodeList.size(); i++){
@@ -74,10 +75,10 @@ public class GSimpleGraphData {
                 //Count the number of edges
                 if (undirectedEdges) {
                 	jiEdge = network.getConnectingEdgeList(graphIndices[j], graphIndices[i], CyEdge.Type.ANY).size(); //Count un-directional
-                	ijEdge = network.getConnectingEdgeList(graphIndices[i], graphIndices[j], CyEdge.Type.ANY).size(); //Count un-directional
+                	// ijEdge = network.getConnectingEdgeList(graphIndices[i], graphIndices[j], CyEdge.Type.ANY).size(); //Count un-directional
 								} else {
                 	ijEdge = network.getConnectingEdgeList(graphIndices[i], graphIndices[j], CyEdge.Type.DIRECTED).size(); //Doesn't count un-directional
-                	jiEdge = network.getConnectingEdgeList(graphIndices[j], graphIndices[i], CyEdge.Type.ANY).size(); //Count un-directional
+                	jiEdge = network.getConnectingEdgeList(graphIndices[j], graphIndices[i], CyEdge.Type.DIRECTED).size(); //Count un-directional
 								}
                 //ijUEdge = network.getEdgeCount(graphIndices[i], graphIndices[j], true);
                 totalEdge = ijEdge + jiEdge;

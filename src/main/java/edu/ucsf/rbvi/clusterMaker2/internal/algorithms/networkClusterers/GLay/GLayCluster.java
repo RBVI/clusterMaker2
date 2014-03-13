@@ -94,6 +94,7 @@ public class GLayCluster extends AbstractNetworkClusterer  {
 		this.monitor = monitor;
 		monitor.setTitle("Performing community clustering (GLay)");
 		createGroups = context.advancedAttributes.createGroups;
+		clusterAttributeName = context.getClusterAttribute();
 
     GSimpleGraphData simpleGraph = new GSimpleGraphData(network, context.selectedOnly, context.undirectedEdges);
 		fa = new FastGreedyAlgorithm();
@@ -114,7 +115,7 @@ public class GLayCluster extends AbstractNetworkClusterer  {
       clusterList.get(cluster).add(simpleGraph.graphIndices[index]);
     }
 
-		monitor.showMessage(TaskMonitor.Level.INFO,"Removing groups");
+		monitor.showMessage(TaskMonitor.Level.INFO,"Found "+clusterList.size()+" clusters");
 
 		// Remove any leftover groups from previous runs
 		removeGroups(network, GROUP_ATTRIBUTE);

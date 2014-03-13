@@ -93,6 +93,8 @@ public class MCODECluster extends AbstractNetworkClusterer  {
 		if (network == null)
 			network = clusterManager.getNetwork();
 		context.setNetwork(network);
+		currentParamsCopy = MCODECurrentParameters.getInstance().getParamsCopy(null);
+		currentParamsCopy.setDefaultParams();
 	}
 
 	public String getShortName() { return SHORTNAME; }
@@ -106,6 +108,8 @@ public class MCODECluster extends AbstractNetworkClusterer  {
 	}
 
 	public void updateSettings() {
+		if (currentParamsCopy == null)
+			currentParamsCopy = new MCODEParameterSet();
 
 		if (context.selectedOnly)
 			currentParamsCopy.setScope(MCODEParameterSet.SELECTION);
@@ -135,24 +139,27 @@ public class MCODECluster extends AbstractNetworkClusterer  {
 		NodeCluster.init();
 		if(currentParamsCopy.getScope().equals(MCODEParameterSet.SELECTION)) {
 			List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
-			Long[] selectedNodesRGI = new Long[selectedNodes.size()];
-			int c = 0;
-			for (CyNode node: selectedNodes) 
-				selectedNodesRGI[c++] = node.getSUID();
-			currentParamsCopy.setSelectedNodes(selectedNodesRGI);
+			currentParamsCopy.setSelectedNodes(selectedNodes);
 		}
 
 		MCODECurrentParameters.getInstance().setParams(currentParamsCopy, "MCODE Result", ModelUtils.getNetworkName(network));
 
-		runMCODE = new RunMCODE(RESCORE, clusterAttributeName, network, monitor);
+		runMCODE = new RunMCODE(RESCORE, "MCODE", network, monitor);
 		List<NodeCluster> clusters = runMCODE.run(monitor);
 		if (canceled) {
 			monitor.showMessage(TaskMonitor.Level.INFO,"Canceled by user");
 			return;
 		}
 
+		monitor.showMessage(TaskMonitor.Level.INFO,"Found "+clusters.size()+" clusters");
+		if (clusters == null || clusters.size() == 0) {
+			monitor.showMessage(TaskMonitor.Level.WARN,"Didn't find any clusters!");
+			return;
+	}
+
 		// Now, sort our list of clusters by score
 		clusters = NodeCluster.rankListByScore(clusters);
+		clusterAttributeName = context.getClusterAttribute();
 		createGroups = context.advancedAttributes.createGroups;
 
 		monitor.showMessage(TaskMonitor.Level.INFO,"Removing groups");

@@ -75,37 +75,31 @@ public class RunMCODE {
 	 * Run MCODE (Both score and find steps)
 	 */
 	public List<NodeCluster> run(TaskMonitor monitor) {
-		try {
-			//run MCODE scoring algorithm - node scores are saved in the alg object
-			alg.setTaskMonitor(monitor, ModelUtils.getNetworkName(network));
-			//only (re)score the graph if the scoring parameters have been changed
-			if (analyze == MCODECluster.RESCORE) {
-				monitor.setProgress(0);
-				monitor.setStatusMessage("Scoring Network (Step 1 of 3)");
-				alg.scoreGraph(network, resultSet);
-				if (interrupted) {
-					return null;
-				}
-				monitor.showMessage(TaskMonitor.Level.INFO,"Network was scored in " + alg.getLastScoreTime() + " ms.");
-			}
-
+		//run MCODE scoring algorithm - node scores are saved in the alg object
+		alg.setTaskMonitor(monitor, ModelUtils.getNetworkName(network));
+		//only (re)score the graph if the scoring parameters have been changed
+		if (analyze == MCODECluster.RESCORE) {
 			monitor.setProgress(0);
-			monitor.setStatusMessage("Finding Clusters (Step 2 of 3)");
-
-			List<NodeCluster> clusters = alg.findClusters(network, resultSet);
-
+			monitor.setStatusMessage("Scoring Network (Step 1 of 3)");
+			alg.scoreGraph(network, resultSet);
 			if (interrupted) {
 				return null;
 			}
+			monitor.showMessage(TaskMonitor.Level.INFO,"Network was scored in " + alg.getLastScoreTime() + " ms.");
+		}
 
-			monitor.setProgress(0);
-			monitor.setStatusMessage("Drawing Results (Step 3 of 3)");
-			return clusters;
-		} catch (Exception e) {
-			//TODO: ask Ethan if interrupt exception should be thrown from within code or should 'return' just be used?
-			monitor.showMessage(TaskMonitor.Level.ERROR, "MCODE Error: "+e.getMessage());
+		monitor.setProgress(0);
+		monitor.setStatusMessage("Finding Clusters (Step 2 of 3)");
+
+		List<NodeCluster> clusters = alg.findClusters(network, resultSet);
+
+		if (interrupted) {
 			return null;
 		}
+
+		monitor.setProgress(0);
+		monitor.setStatusMessage("Drawing Results (Step 3 of 3)");
+		return clusters;
 	}
 
 	/**

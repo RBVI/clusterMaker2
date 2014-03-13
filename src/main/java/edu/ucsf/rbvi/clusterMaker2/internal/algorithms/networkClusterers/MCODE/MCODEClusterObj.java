@@ -8,8 +8,9 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * * Copyright (c) 2004 Memorial Sloan-Kettering Cancer Center
@@ -51,10 +52,10 @@ import java.util.HashMap;
  * Stores various cluster information for simple get/set purposes.
  */
 public class MCODEClusterObj {
-	private ArrayList alCluster = null;
+	private List<CyNode> alCluster = null;
 	private CyNetwork gpCluster = null;
-	private Long seedNode;
-	private HashMap nodeSeenHashMap; //stores the nodes that have already been included in higher ranking clusters
+	private CyNode seedNode;
+	private Map<CyNode, Boolean> nodeSeenHashMap; //stores the nodes that have already been included in higher ranking clusters
 	private double clusterScore;
 	private String clusterName; //Pretty much unsed so far, but could store name by user's input
 	private int rank;
@@ -94,27 +95,27 @@ public class MCODEClusterObj {
 		this.gpCluster = gpCluster;
 	}
 
-	public ArrayList getALCluster() {
+	public List<CyNode> getALCluster() {
 		return alCluster;
 	}
 
-	public void setALCluster(ArrayList alCluster) {
+	public void setALCluster(List<CyNode> alCluster) {
 		this.alCluster = alCluster;
 	}
 
-	public Long getSeedNode() {
+	public CyNode getSeedNode() {
 		return seedNode;
 	}
 
-	public void setSeedNode(Long seedNode) {
+	public void setSeedNode(CyNode seedNode) {
 		this.seedNode = seedNode;
 	}
 
-	public HashMap getNodeSeenHashMap() {
+	public Map<CyNode, Boolean> getNodeSeenHashMap() {
 		return nodeSeenHashMap;
 	}
 
-	public void setNodeSeenHashMap(HashMap nodeSeenHashMap) {
+	public void setNodeSeenHashMap(Map<CyNode, Boolean> nodeSeenHashMap) {
 		this.nodeSeenHashMap = nodeSeenHashMap;
 	}
 

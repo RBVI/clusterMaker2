@@ -108,6 +108,7 @@ public class FastGreedyAlgorithm implements GAlgorithm {
         int jtoiDirectedEdgecount = 0;
         int ijUndirectedEdgeCount = 0;
         int ijTotalEdgeCount = 0;
+				// System.out.println("Nodecount = "+g.nodeCount+" EdgeCount = "+g.edgeCount);
         
         for(int i=0; i<g.nodeCount; i++){
             for(int j=0; j<g.nodeCount; j++){
@@ -116,6 +117,7 @@ public class FastGreedyAlgorithm implements GAlgorithm {
                     continue;
                 }
                 if (g.hasEdge(i, j) && i < j) {
+										// System.out.println("Looking at "+i+","+j+": degree[i]="+g.degree[i]+", g.degree[j]="+g.degree[j]);
                     deltaQ = (1.0d/(2*g.edgeCount)-(g.degree[i]*g.degree[j])/(4.0*Math.pow(g.edgeCount, 2.0))) * 2;                    
                     deltaQMx.setQuick(i, j, deltaQ);
                     if(maxDeltaQ <= deltaQ){
@@ -148,15 +150,16 @@ public class FastGreedyAlgorithm implements GAlgorithm {
 				if (halt)
 					return;
 
-        //System.out.println("qInitial:" + qInitial);
+        // System.out.println("qInitial:" + qInitial);
+        // System.out.println("maxDeltaQ:" + maxDeltaQ);
         while(maxDeltaQ > 0){
             counter++;
             //this.progress = (int)(100.0*counter/nodeCount);
             q += maxDeltaQ;
 
-            //System.out.println(q);
+            // System.out.println(q);
         
-        for(int k=0; k<g.nodeCount; k++){
+            for(int k=0; k<g.nodeCount; k++){
                 if (halt)
                     return;
                 if(k==maxJ || k==maxI){
@@ -168,10 +171,6 @@ public class FastGreedyAlgorithm implements GAlgorithm {
                     
                     if(deltaQMx.getQuick(maxI, k)!=0 && deltaQMx.getQuick(maxJ, k)!=0){
                         deltaQMx.setQuick(maxJ, k, deltaQMx.getQuick(maxJ, k)+deltaQMx.getQuick(maxI, k));
-                        
-                        
-                        
-                        //System.out.println("added");
                     }
                     else if(deltaQMx.getQuick(maxI, k)==0 && deltaQMx.getQuick(maxJ, k)!=0){
                         deltaQMx.setQuick(maxJ, k, deltaQMx.getQuick(maxJ, k)-2*ai[maxI]*ai[k]);
@@ -186,8 +185,8 @@ public class FastGreedyAlgorithm implements GAlgorithm {
                         //it seems that nothing is wrong.
                         //but the result is not quite correct
                         //both are zero, no need to update
-                        //System.out.println("This is wrong!");
-                        //System.out.println("Do nothing.");
+                        // System.out.println("This is wrong!");
+                        // System.out.println("Do nothing.");
                     }
                 }
             }//end update jth row
@@ -225,7 +224,7 @@ public class FastGreedyAlgorithm implements GAlgorithm {
                 maxJ = temp;
             }
             
-            //System.out.println("maxDeltaQ" + maxDeltaQ);
+            // System.out.println("maxDeltaQ" + maxDeltaQ);
         }//end of while loop
         
         
@@ -242,7 +241,7 @@ public class FastGreedyAlgorithm implements GAlgorithm {
             }
         }
 
-        //System.out.println("NumOfClusters:" + membershipMapping.keySet().size());
+        // System.out.println("NumOfClusters:" + membershipMapping.keySet().size());
         this.clusterNumber = membershipMapping.keySet().size();
         
         for(int i=0; i<membership.length; i++){
@@ -259,11 +258,11 @@ public class FastGreedyAlgorithm implements GAlgorithm {
 					monitor.setProgress(this.progress);
         //This notifies that the current thread is over
         //this.progress = 100;
-        //System.out.println("The result modularity is:" + q);
+        // System.out.println("The result modularity is:" + q);
 
-        //for(int i=0; i<membership.length; i++){
-        //    System.out.println(membership[i]);
-        //}
+        // for(int i=0; i<membership.length; i++){
+        //     System.out.println(membership[i]);
+        // }
     }
  
 

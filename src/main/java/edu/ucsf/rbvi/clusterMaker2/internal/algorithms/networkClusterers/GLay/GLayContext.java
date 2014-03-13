@@ -51,7 +51,7 @@ public class GLayContext implements ClusterAlgorithmContext {
 
 	public CyNetwork getNetwork() { return network; }
 
-	public String getClusterAttribute() { return null;}
+	public String getClusterAttribute() { return advancedAttributes.clusterAttribute;}
 
 	public void setUIHelper(TunableUIHelper helper) { }
 	

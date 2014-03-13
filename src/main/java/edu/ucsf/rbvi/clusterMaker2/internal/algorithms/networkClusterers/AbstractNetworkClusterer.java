@@ -77,15 +77,17 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 			for (CyNode node: cluster) {
 				nodeList.add(node);
 				ModelUtils.createAndSetLocal(network, node, clusterAttributeName, clusterNumber, Integer.class, null);
-				if (NodeCluster.hasScore()) {
-					ModelUtils.createAndSetLocal(network, node, clusterAttributeName+"_Score", clusterNumber, Double.class, null);
-				}
 			}
 
 			if (createGroups) {
         CyGroup group = clusterManager.createGroup(network, clusterAttributeName+"_"+clusterNumber, nodeList, null, true);
-				if (group != null)
+				if (group != null) {
 					groupList.add(group.getGroupNode().getSUID());
+					if (NodeCluster.hasScore()) {
+						ModelUtils.createAndSetLocal(network, group.getGroupNode(), 
+						                             clusterAttributeName+"_Score", cluster.getClusterScore(), Double.class, null);
+					}
+				}
 			}
 			clusterList.add(nodeList);
 		}
