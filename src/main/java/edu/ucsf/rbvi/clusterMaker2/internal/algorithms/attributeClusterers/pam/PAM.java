@@ -305,7 +305,7 @@ public class PAM implements KClusterable {
 				}
 				
 			}
-			if (bestChange == 0) break;
+			if (bestChange >= 0) break;// changed from bestChange == 0
 			else {
 			//	System.out.println("bestChange: " + bestChange);
 				swap(besthh,bestii);
