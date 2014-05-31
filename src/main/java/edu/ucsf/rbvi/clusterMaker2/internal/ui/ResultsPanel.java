@@ -1,13 +1,23 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Image;
+import java.text.NumberFormat;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.table.AbstractTableModel;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 
@@ -18,73 +28,42 @@ import org.cytoscape.view.model.CyNetworkView;
 
 public class ResultsPanel extends JPanel implements CytoPanelComponent{
 
-	private final Algorithm alg;
-	private final int resultId;
-	private final List<NodeCluster> clusters;
+	public final List<NodeCluster> clusters;
 	private final CyNetwork network;
 	private CyNetworkView networkView;
-	private MCODEDiscardResultAction discardResultAction;
+	private final int resultId;
 	
-	private MCODECollapsiblePanel explorePanel;
 	private JPanel[] exploreContent;
-	private JButton closeButton;
-
 	
 	/**
 	 * Constructor for the Results Panel which displays the clusters in a
 	 * browswer table and explore panels for each cluster.
 	 * 
 	 * @param clusters Found clusters from the algorithm used
-	 * @param alg A reference to the alg for this particular network
 	 * @param network Network were these clusters were found
-	 * @param clusterImages A list of images of the found clusters
 	 * @param resultId Title of this result as determined by MCODESCoreAndFindAction
 	 */
-	public ResultsPanel(final List<NodeCluster> clusters,
-							 final Algorithm alg,
-							 final MCODEUtil mcodeUtil,
+	public ResultsPanel(final List<NodeCluster> clusters,							 
 							 final CyNetwork network,
 							 final CyNetworkView networkView,
-							 final int resultId,
-							 final MCODEDiscardResultAction discardResultAction) {
+							 final int resultId) {
 		setLayout(new BorderLayout());
-
-		this.alg = alg;
-		this.mcodeUtil = mcodeUtil;
-		this.resultId = resultId;
-		this.clusters = Collections.synchronizedList(clusters);
+		
+		this.clusters = clusters;
 		this.network = network;
-		// The view may not exist, but we only test for that when we need to (in the TableRowSelectionHandler below)
 		this.networkView = networkView;
-		this.discardResultAction = discardResultAction;
-		this.currentParamsCopy = mcodeUtil.getCurrentParameters().getResultParams(resultId);
-
-		this.clusterBrowserPanel = new MCODEClusterBrowserPanel();
-		add(clusterBrowserPanel, BorderLayout.CENTER);
-		add(createBottomPanel(), BorderLayout.SOUTH);
-
-		this.setSize(this.getMinimumSize());
+		this.resultId = resultId;
 	}
 	
-	//@Override
-	public Component getComponent() {
-		return this;
-	}
-
-	//@Override
-	public CytoPanelName getCytoPanelName() {
-		return CytoPanelName.EAST;
-	}
 	
-	//@Override
 	public String getTitle() {
 		return "Result " + getResultId();
 	}
-
+	
 	public int getResultId() {
 		return this.resultId;
 	}
-
+	
 	public CyNetworkView getNetworkView() {
 		return networkView;
 	}
@@ -97,61 +76,121 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		return network;
 	}
 	
-	public int getSelectedClusterRow() {
-		return clusterBrowserPanel.getSelectedRow();
-	}
-	
-	public void discard(final boolean requestUserConfirmation) {
-		SwingUtilities.invokeLater(new Runnable() {
 
-			//@Override
-			public void run() {
-				boolean oldRequestUserConfirmation = Boolean.valueOf(discardResultAction
-						.getValue(MCODEDiscardResultAction.REQUEST_USER_CONFIRMATION_COMMAND).toString());
+	private static StringBuffer getClusterScore(final NodeCluster cluster) {
+		StringBuffer details = new StringBuffer();
 
-				discardResultAction.putValue(MCODEDiscardResultAction.REQUEST_USER_CONFIRMATION_COMMAND,
-											 requestUserConfirmation);
-				closeButton.doClick();
-				discardResultAction.putValue(MCODEDiscardResultAction.REQUEST_USER_CONFIRMATION_COMMAND,
-											 oldRequestUserConfirmation);
-			}
-		});
+		details.append("Score: ");
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setMaximumFractionDigits(3);
+		details.append(nf.format(cluster.getClusterScore()));
+		
+		return details;
 	}
 	
 	
 	/**
-	 * Creates a panel containing the explore collapsable panel and result set
-	 * specific buttons
-	 * 
-	 * @return Panel containing the explore cluster collapsable panel and button
-	 *         panel
+	 * Panel that contains the browser table with a scroll bar.
 	 */
-	private JPanel createBottomPanel() {
-		JPanel panel = new JPanel();
-		panel.setLayout(new BorderLayout());
+	private class ClusterBrowserPanel extends JPanel {
 
-		explorePanel = new MCODECollapsiblePanel("Explore");
-		explorePanel.setCollapsed(false);
-		explorePanel.setVisible(false);
+		private final ResultsPanel.ClusterBrowserTableModel browserModel;
+		private final JTable table;
 
-		JPanel buttonPanel = new JPanel();
+		public ClusterBrowserPanel() {
+			super();
+			setLayout(new BorderLayout());
+			setBorder(BorderFactory.createTitledBorder("Cluster Browser"));
 
-		// The Export button
-		JButton exportButton = new JButton("Export");
-		exportButton.addActionListener(new MCODEResultsPanel.ExportAction());
-		exportButton.setToolTipText("Export result set to a text file");
+			// main data table
+			browserModel = new ResultsPanel.ClusterBrowserTableModel();
 
-		// The close button
-		closeButton = new JButton(discardResultAction);
-		discardResultAction.putValue(MCODEDiscardResultAction.REQUEST_USER_CONFIRMATION_COMMAND, true);
+			table = new JTable(browserModel);
+			table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			table.setDefaultRenderer(StringBuffer.class, new ResultsPanel.JTextAreaRenderer(defaultRowHeight));
+			table.setIntercellSpacing(new Dimension(0, 4)); // gives a little vertical room between clusters
+			table.setFocusable(false); // removes an outline that appears when the user clicks on the images
 
-		buttonPanel.add(exportButton);
-		buttonPanel.add(closeButton);
+			// Ask to be notified of selection changes.
+			ListSelectionModel rowSM = table.getSelectionModel();
+			rowSM.addListSelectionListener(new ResultsPanel.TableRowSelectionHandler());
 
-		panel.add(explorePanel, BorderLayout.NORTH);
-		panel.add(buttonPanel, BorderLayout.SOUTH);
+			JScrollPane tableScrollPane = new JScrollPane(table);
+			tableScrollPane.getViewport().setBackground(Color.WHITE);
 
-		return panel;
+			add(tableScrollPane, BorderLayout.CENTER);
+		}
+
+		public int getSelectedRow() {
+			return table.getSelectedRow();
+		}
+
+		public void update(final ImageIcon image, final int row) {
+			table.setValueAt(image, row, 0);
+		}
+
+		public void update(final NodeCluster cluster, final int row) {
+			final StringBuffer details = getClusterDetails(cluster);
+			table.setValueAt(details, row, 1);
+		}
+
+		JTable getTable() { 
+			return table;
+		}
 	}
+	
+	/**
+	 * Handles the data to be displayed in the cluster browser table
+	 */
+	private class ClusterBrowserTableModel extends AbstractTableModel {
 
+		private final String[] columnNames = { "Network", "Score" };
+		private final Object[][] data; // the actual table data
+
+		public ClusterBrowserTableModel() {
+			exploreContent = new JPanel[clusters.size()];
+			data = new Object[clusters.size()][columnNames.length];
+
+			for (int i = 0; i < clusters.size(); i++) {
+				final NodeCluster c = clusters.get(i);
+				//c.setRank(i);
+				StringBuffer details = getClusterScore(c);
+				data[i][1] = new StringBuffer(details);
+
+				// get an image for each cluster - make it a nice layout of the cluster
+				final Image image = c.getImage();
+				data[i][0] = image != null ? new ImageIcon(image) : new ImageIcon();
+			}
+		}
+
+		@Override
+		public String getColumnName(int col) {
+			return columnNames[col];
+		}
+
+		public int getColumnCount() {
+			return columnNames.length;
+		}
+
+		public int getRowCount() {
+			return data.length;
+		}
+
+		public Object getValueAt(int row, int col) {
+			return data[row][col];
+		}
+
+		@Override
+		public void setValueAt(Object object, int row, int col) {
+			data[row][col] = object;
+			fireTableCellUpdated(row, col);
+		}
+
+		@Override
+		public Class<?> getColumnClass(int c) {
+			return getValueAt(0, c).getClass();
+		}
+	}
+	
+	
 }
