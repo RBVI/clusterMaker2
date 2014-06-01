@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.text.NumberFormat;
 import java.util.Collections;
@@ -18,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JWindow;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
@@ -28,7 +30,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.vizmap.VisualStyle;
 
 public class ResultsPanel extends JPanel implements CytoPanelComponent{
 
@@ -220,6 +226,185 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 			return getValueAt(0, c).getClass();
 		}
 	}
+	
+	
+	/**
+	 * Convert a network to an image.  This is used by the MCODEResultsPanel.
+	 * 
+	 * @param cluster Input network to convert to an image
+	 * @param height  Height that the resulting image should be
+	 * @param width   Width that the resulting image should be
+	 * @param layouter Reference to the layout algorithm
+	 * @param layoutNecessary Determinant of cluster size growth or shrinkage, the former requires layout
+	 * @param loader Graphic loader displaying progress and process
+	 * @return The resulting image
+	 */
+	public Image createClusterImage(final NodeCluster cluster,
+									final int height,
+									final int width,
+									SpringEmbeddedLayouter layouter,
+									boolean layoutNecessary,
+									final MCODELoader loader) {
+		
+		//need to create a method get the subnetwork for a cluster
+		final CyNetwork net = cluster.getNetwork();
+
+		// Progress reporters.
+		// There are three basic tasks, the progress of each is calculated and then combined
+		// using the respective weighting to get an overall progress global progress
+		int weightSetupNodes = 20; // setting up the nodes and edges is deemed as 25% of the whole task
+		int weightSetupEdges = 5;
+		double weightLayout = 75.0; // layout it is 70%
+		double goalTotal = weightSetupNodes + weightSetupEdges;
+
+		if (layoutNecessary) {
+			goalTotal += weightLayout;
+		}
+
+		// keeps track of progress as a percent of the totalGoal
+		double progress = 0;
+
+		final VisualStyle vs = getClusterStyle();
+		final CyNetworkView clusterView = createNetworkView(net, vs);
+
+		clusterView.setVisualProperty(NETWORK_WIDTH, new Double(width));
+		clusterView.setVisualProperty(NETWORK_HEIGHT, new Double(height));
+
+		for (View<CyNode> nv : clusterView.getNodeViews()) {
+			if (interrupted) {
+				logger.debug("Interrupted: Node Setup");
+				// before we short-circuit the method we reset the interruption so that the method can run without
+				// problems the next time around
+				if (layouter != null) layouter.resetDoLayout();
+				resetLoading();
+
+				return null;
+			}
+
+			// Node position
+			final double x;
+			final double y;
+
+			// First we check if the MCODECluster already has a node view of this node (posing the more generic condition
+			// first prevents the program from throwing a null pointer exception in the second condition)
+			if (cluster.getView() != null && cluster.getView().getNodeView(nv.getModel()) != null) {
+				//If it does, then we take the layout position that was already generated for it
+				x = cluster.getView().getNodeView(nv.getModel()).getVisualProperty(NODE_X_LOCATION);
+				y = cluster.getView().getNodeView(nv.getModel()).getVisualProperty(NODE_Y_LOCATION);
+			} else {
+				// Otherwise, randomize node positions before layout so that they don't all layout in a line
+				// (so they don't fall into a local minimum for the SpringEmbedder)
+				// If the SpringEmbedder implementation changes, this code may need to be removed
+				// size is small for many default drawn graphs, thus +100
+				x = (clusterView.getVisualProperty(NETWORK_WIDTH) + 100) * Math.random();
+				y = (clusterView.getVisualProperty(NETWORK_HEIGHT) + 100) * Math.random();
+
+				if (!layoutNecessary) {
+					goalTotal += weightLayout;
+					progress /= (goalTotal / (goalTotal - weightLayout));
+					layoutNecessary = true;
+				}
+			}
+
+			nv.setVisualProperty(NODE_X_LOCATION, x);
+			nv.setVisualProperty(NODE_Y_LOCATION, y);
+
+			// Node shape
+			if (cluster.getSeedNode() == nv.getModel().getSUID()) {
+				nv.setLockedValue(NODE_SHAPE, NodeShapeVisualProperty.RECTANGLE);
+			} else {
+				nv.setLockedValue(NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
+			}
+
+			// Update loader
+			if (loader != null) {
+				progress += 100.0 * (1.0 / (double) clusterView.getNodeViews().size()) *
+							((double) weightSetupNodes / (double) goalTotal);
+				loader.setProgress((int) progress, "Setup: nodes");
+			}
+		}
+
+		if (clusterView.getEdgeViews() != null) {
+			for (int i = 0; i < clusterView.getEdgeViews().size(); i++) {
+				if (interrupted) {
+					logger.error("Interrupted: Edge Setup");
+					if (layouter != null) layouter.resetDoLayout();
+					resetLoading();
+
+					return null;
+				}
+
+				if (loader != null) {
+					progress += 100.0 * (1.0 / (double) clusterView.getEdgeViews().size()) *
+								((double) weightSetupEdges / (double) goalTotal);
+					loader.setProgress((int) progress, "Setup: edges");
+				}
+			}
+		}
+
+		if (layoutNecessary) {
+			if (layouter == null) {
+				layouter = new SpringEmbeddedLayouter();
+			}
+
+			layouter.setGraphView(clusterView);
+
+			// The doLayout method should return true if the process completes without interruption
+			if (!layouter.doLayout(weightLayout, goalTotal, progress, loader)) {
+				// Otherwise, if layout is not completed, set the interruption to false, and return null, not an image
+				resetLoading();
+
+				return null;
+			}
+		}
+
+		final Image image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		final Graphics2D g = (Graphics2D) image.getGraphics();
+
+		SwingUtilities.invokeLater(new Runnable() {
+			//@Override
+			public void run() {
+				try {
+					final Dimension size = new Dimension(width, height);
+
+					JPanel panel = new JPanel();
+					panel.setPreferredSize(size);
+					panel.setSize(size);
+					panel.setMinimumSize(size);
+					panel.setMaximumSize(size);
+					panel.setBackground((Color) vs.getDefaultValue(NETWORK_BACKGROUND_PAINT));
+
+					JWindow window = new JWindow();
+					window.getContentPane().add(panel, BorderLayout.CENTER);
+
+					RenderingEngine<CyNetwork> re = renderingEngineFactory.createRenderingEngine(panel, clusterView);
+
+					vs.apply(clusterView);
+					clusterView.fitContent();
+					clusterView.updateView();
+					window.pack();
+					window.repaint();
+
+					re.createImage(width, height);
+					re.printCanvas(g);
+					g.dispose();
+
+					if (clusterView.getNodeViews().size() > 0) {
+						cluster.setView(clusterView);
+					}
+				} catch (Exception ex) {
+					throw new RuntimeException(ex);
+				}
+			}
+		});
+
+		layouter.resetDoLayout();
+		resetLoading();
+
+		return image;
+	}
+	
+	
 	
 	/**
 	 * A text area renderer that creates a line wrapped, non-editable text area
