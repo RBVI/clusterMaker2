@@ -5,11 +5,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.SavePolicy;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 
 
 /**
@@ -101,5 +107,45 @@ public class NodeCluster extends ArrayList<CyNode> {
 	
 	public boolean isFuzzy(){
 		return false;
+	}
+	
+	
+	/* Method to get the subnetwork formed by the nodes in the cluster
+	 * 
+	 * @param net parent network
+	 * @param nodes
+	 */
+	public CySubNetwork getSubNetwork(final CyNetwork net, final SavePolicy policy){
+		
+		final CyRootNetwork root = rootNetworkMgr.getRootNetwork(net);
+		final Set<CyEdge> edges = new HashSet<CyEdge>();
+		
+		for (CyNode n : this) {
+			Set<CyEdge> adjacentEdges = new HashSet<CyEdge>(net.getAdjacentEdgeList(n, CyEdge.Type.ANY));
+
+			// Get only the edges that connect nodes that belong to the subnetwork:
+			for (CyEdge e : adjacentEdges) {
+				if (this.contains(e.getSource()) && this.contains(e.getTarget())) {
+					edges.add(e);
+				}
+			}
+		}
+
+		final CySubNetwork subNet = root.addSubNetwork(this, edges, policy);
+
+		// Not sure if this is required for a basic results panel
+		/*
+		// Save it for later disposal
+		Set<CySubNetwork> snSet = createdSubNetworks.get(root);
+
+		if (snSet == null) {
+			snSet = new HashSet<CySubNetwork>();
+			createdSubNetworks.put(root, snSet);
+		}
+
+		snSet.add(subNet);
+		*/
+		return subNet;
+		
 	}
 }
