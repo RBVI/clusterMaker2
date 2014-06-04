@@ -1,5 +1,24 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.ui;
 
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_SELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_UNSELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_HEIGHT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_HEIGHT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SHAPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SIZE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -26,30 +45,53 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.SavePolicy;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngineFactory;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
+import org.cytoscape.view.presentation.property.values.NodeShape;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.VisualStyleFactory;
+
 
 public class ResultsPanel extends JPanel implements CytoPanelComponent{
 
 	private static final long serialVersionUID = 868213052692609076L;
 	
+	protected ClusterManager clusterManager;
 	public final List<NodeCluster> clusters;
 	private final CyNetwork network;
 	private CyNetworkView networkView;
 	private final int resultId;
+	private final CyApplicationManager applicationMgr;
 	
 	// table size parameters
 	private static final int graphPicSize = 80;
 	private static final int defaultRowHeight = graphPicSize + 8;
+	private final VisualStyleFactory visualStyleFactory;
 	
 	private JPanel[] exploreContent;
+	
+	private VisualStyle clusterStyle;
+	
 	
 	public Component getComponent() {
 		return this;
@@ -78,13 +120,17 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	public ResultsPanel(final List<NodeCluster> clusters,							 
 							 final CyNetwork network,
 							 final CyNetworkView networkView,
-							 final int resultId) {
+							 final int resultId,
+							 ClusterManager clusterManager) {
 		setLayout(new BorderLayout());
 		
+		this.clusterManager = clusterManager;
 		this.clusters = clusters;
 		this.network = network;
 		this.networkView = networkView;
 		this.resultId = resultId;
+		visualStyleFactory = clusterManager.getService(VisualStyleFactory.class);
+		applicationMgr = clusterManager.getService(CyApplicationManager.class);
 	}
 	
 	
@@ -246,8 +292,9 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 									boolean layoutNecessary,
 									final MCODELoader loader) {
 		
+		final CyRootNetwork root =  clusterManager.getService(CyRootNetworkManager.class).getRootNetwork(network);
 		//need to create a method get the subnetwork for a cluster
-		final CyNetwork net = cluster.getNetwork();
+		final CyNetwork net = cluster.getSubNetwork(network, root, SavePolicy.DO_NOT_SAVE);
 
 		// Progress reporters.
 		// There are three basic tasks, the progress of each is calculated and then combined
@@ -404,7 +451,37 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		return image;
 	}
 	
-	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public VisualStyle getClusterStyle() {
+		if (clusterStyle == null) {
+			clusterStyle = visualStyleFactory.createVisualStyle("Cluster");
+
+			clusterStyle.setDefaultValue(NODE_SIZE, 40.0);
+			clusterStyle.setDefaultValue(NODE_WIDTH, 40.0);
+			clusterStyle.setDefaultValue(NODE_HEIGHT, 40.0);
+			clusterStyle.setDefaultValue(NODE_PAINT, Color.RED);
+			clusterStyle.setDefaultValue(NODE_FILL_COLOR, Color.RED);
+			clusterStyle.setDefaultValue(NODE_BORDER_WIDTH, 0.0);
+
+			clusterStyle.setDefaultValue(EDGE_WIDTH, 5.0);
+			clusterStyle.setDefaultValue(EDGE_PAINT, Color.BLUE);
+			clusterStyle.setDefaultValue(EDGE_UNSELECTED_PAINT, Color.BLUE);
+			clusterStyle.setDefaultValue(EDGE_STROKE_UNSELECTED_PAINT, Color.BLUE);
+			clusterStyle.setDefaultValue(EDGE_SELECTED_PAINT, Color.BLUE);
+			clusterStyle.setDefaultValue(EDGE_STROKE_SELECTED_PAINT, Color.BLUE);
+			clusterStyle.setDefaultValue(EDGE_STROKE_SELECTED_PAINT, Color.BLUE);
+
+			VisualLexicon lexicon = applicationMgr.getCurrentRenderingEngine().getVisualLexicon();
+			VisualProperty vp = lexicon.lookup(CyEdge.class, "edgeTargetArrowShape");
+
+			if (vp != null) {
+				Object arrowValue = vp.parseSerializableString("ARROW");
+				if (arrowValue != null) clusterStyle.setDefaultValue(vp, arrowValue);
+			}
+		}
+
+		return clusterStyle;
+	}
 	
 	/**
 	 * A text area renderer that creates a line wrapped, non-editable text area
