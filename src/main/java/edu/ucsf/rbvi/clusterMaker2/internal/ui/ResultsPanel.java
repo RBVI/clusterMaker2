@@ -26,6 +26,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.text.NumberFormat;
 import java.util.Collections;
 import java.util.List;
@@ -57,6 +58,7 @@ import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.model.VisualLexicon;
@@ -87,6 +89,8 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	private static final int graphPicSize = 80;
 	private static final int defaultRowHeight = graphPicSize + 8;
 	private final VisualStyleFactory visualStyleFactory;
+	private final CyNetworkViewFactory networkViewFactory;
+	private final VisualMappingManager visualMappingMgr;
 	
 	private JPanel[] exploreContent;
 	
@@ -131,6 +135,8 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		this.resultId = resultId;
 		visualStyleFactory = clusterManager.getService(VisualStyleFactory.class);
 		applicationMgr = clusterManager.getService(CyApplicationManager.class);
+		networkViewFactory = clusterManager.getService(CyNetworkViewFactory.class);
+		visualMappingMgr = clusterManager.getService(VisualMappingManager.class);
 	}
 	
 	
@@ -356,13 +362,15 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 			nv.setVisualProperty(NODE_X_LOCATION, x);
 			nv.setVisualProperty(NODE_Y_LOCATION, y);
 
+			//Might be specific to MCODE
+			/*
 			// Node shape
 			if (cluster.getSeedNode() == nv.getModel().getSUID()) {
 				nv.setLockedValue(NODE_SHAPE, NodeShapeVisualProperty.RECTANGLE);
 			} else {
 				nv.setLockedValue(NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
 			}
-
+			 */
 			// Update loader
 			if (loader != null) {
 				progress += 100.0 * (1.0 / (double) clusterView.getNodeViews().size()) *
@@ -481,6 +489,17 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		}
 
 		return clusterStyle;
+	}
+	
+	public CyNetworkView createNetworkView(final CyNetwork net, VisualStyle vs) {
+		final CyNetworkView view = networkViewFactory.createNetworkView(net);
+
+		if (vs == null) vs = visualMappingMgr.getDefaultVisualStyle();
+		visualMappingMgr.setVisualStyle(vs, view);
+		vs.apply(view);
+		view.updateView();
+
+		return view;
 	}
 	
 	/**
