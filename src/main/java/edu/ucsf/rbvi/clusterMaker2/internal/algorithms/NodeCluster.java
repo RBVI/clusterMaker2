@@ -115,9 +115,9 @@ public class NodeCluster extends ArrayList<CyNode> {
 	 * @param net parent network
 	 * @param nodes
 	 */
-	public CySubNetwork getSubNetwork(final CyNetwork net, final SavePolicy policy){
+	public CySubNetwork getSubNetwork(final CyNetwork net,final CyRootNetwork root, final SavePolicy policy){
 		
-		final CyRootNetwork root = rootNetworkMgr.getRootNetwork(net);
+		//final CyRootNetwork root = rootNetworkMgr.getRootNetwork(net);
 		final Set<CyEdge> edges = new HashSet<CyEdge>();
 		
 		for (CyNode n : this) {
