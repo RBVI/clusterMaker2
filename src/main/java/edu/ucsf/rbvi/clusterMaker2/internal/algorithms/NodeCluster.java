@@ -16,6 +16,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.view.model.CyNetworkView;
 
 
 /**
@@ -29,6 +30,9 @@ public class NodeCluster extends ArrayList<CyNode> {
 	static int clusterCount = 0;
 	static boolean hasScore = false;
 	protected double score = 0.0;
+	
+	private CyNetworkView view; // keeps track of layout so that layout process doesn't have to be repeated unnecessarily
+	private boolean disposed;
 
 	public NodeCluster() {
 		super();
@@ -147,5 +151,27 @@ public class NodeCluster extends ArrayList<CyNode> {
 		*/
 		return subNet;
 		
+	}
+	
+	public synchronized CyNetworkView getView() {
+		return view;
+	}
+	
+	public synchronized void setView(final CyNetworkView view) {
+		throwExceptionIfDisposed();
+
+		if (this.view != null)
+			this.view.dispose();
+
+		this.view = view;
+	}
+	
+	private void throwExceptionIfDisposed() {
+		if (isDisposed())
+			throw new RuntimeException("NodeCluster has been disposed and cannot be used anymore: ");
+	}
+	
+	public synchronized boolean isDisposed() {
+		return disposed;
 	}
 }

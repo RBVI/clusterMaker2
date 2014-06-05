@@ -96,6 +96,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	
 	private VisualStyle clusterStyle;
 	
+	private boolean interrupted;
 	
 	public Component getComponent() {
 		return this;
@@ -569,6 +570,14 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 
 			return this;
 		}
+	}
+	
+	public void interruptLoading() {
+		interrupted = true;
+	}
+
+	public void resetLoading() {
+		interrupted = false;
 	}
 	
 }
