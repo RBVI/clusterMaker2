@@ -92,6 +92,8 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	private final CyNetworkViewFactory networkViewFactory;
 	private final VisualMappingManager visualMappingMgr;
 	
+	private final RenderingEngineFactory<CyNetwork> renderingEngineFactory;
+	
 	private JPanel[] exploreContent;
 	
 	private VisualStyle clusterStyle;
@@ -107,6 +109,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		return CytoPanelName.EAST;
 	}
 
+	
 	//@Override
 	public Icon getIcon() {
 		URL iconURL = MCODEResources.getUrl(ImageName.LOGO_SMALL);
@@ -138,6 +141,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		applicationMgr = clusterManager.getService(CyApplicationManager.class);
 		networkViewFactory = clusterManager.getService(CyNetworkViewFactory.class);
 		visualMappingMgr = clusterManager.getService(VisualMappingManager.class);
+		renderingEngineFactory = clusterManager.getService(RenderingEngineFactory.class);
 	}
 	
 	
@@ -244,9 +248,10 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 				//c.setRank(i);
 				StringBuffer details = getClusterScore(c);
 				data[i][1] = new StringBuffer(details);
-
+				
+				SpringEmbeddedLayouter layouter = new SpringEmbeddedLayouter();
 				// get an image for each cluster - make it a nice layout of the cluster
-				final Image image = c.getImage();
+				final Image image = createClusterImage(c, graphPicSize, graphPicSize, layouter, false,loader);
 				data[i][0] = image != null ? new ImageIcon(image) : new ImageIcon();
 			}
 		}
@@ -326,7 +331,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 
 		for (View<CyNode> nv : clusterView.getNodeViews()) {
 			if (interrupted) {
-				logger.debug("Interrupted: Node Setup");
+				//logger.debug("Interrupted: Node Setup");
 				// before we short-circuit the method we reset the interruption so that the method can run without
 				// problems the next time around
 				if (layouter != null) layouter.resetDoLayout();
@@ -383,7 +388,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		if (clusterView.getEdgeViews() != null) {
 			for (int i = 0; i < clusterView.getEdgeViews().size(); i++) {
 				if (interrupted) {
-					logger.error("Interrupted: Edge Setup");
+					//logger.error("Interrupted: Edge Setup");
 					if (layouter != null) layouter.resetDoLayout();
 					resetLoading();
 
