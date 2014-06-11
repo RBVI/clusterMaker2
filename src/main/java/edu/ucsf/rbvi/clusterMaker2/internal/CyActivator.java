@@ -38,8 +38,10 @@ import edu.ucsf.rbvi.clusterMaker2.internal.commands.CommandTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.autosome.AutoSOMETaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hierarchical.HierarchicalTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hopach.HopachPAMTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmeans.KMeansTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmedoid.KMedoidTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.pam.PAMTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.featureVector.FeatureVectorTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.NetworkClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AP.APClusterTaskFactory;
@@ -107,6 +109,10 @@ public class CyActivator extends AbstractCyActivator {
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new KMedoidTaskFactory(clusterManager), 
 		                ClusterTaskFactory.class, new Properties());
+		registerService(bc, new HopachPAMTaskFactory(clusterManager), 
+                ClusterTaskFactory.class, new Properties());
+		registerService(bc, new PAMTaskFactory(clusterManager), 
+                ClusterTaskFactory.class, new Properties());
 
 		// Network clusterers
 		registerService(bc, new NetworkClusterTaskFactory(clusterManager), 
