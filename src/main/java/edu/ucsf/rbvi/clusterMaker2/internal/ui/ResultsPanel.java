@@ -72,6 +72,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.work.TaskMonitor;
 
 
 public class ResultsPanel extends JPanel implements CytoPanelComponent{
@@ -82,8 +83,8 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	public final List<NodeCluster> clusters;
 	private final CyNetwork network;
 	private CyNetworkView networkView;
-	private final int resultId;
 	private final CyApplicationManager applicationMgr;
+	private final TaskMonitor monitor;
 	
 	// table size parameters
 	private static final int graphPicSize = 80;
@@ -112,8 +113,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	
 	//@Override
 	public Icon getIcon() {
-		URL iconURL = MCODEResources.getUrl(ImageName.LOGO_SMALL);
-		return new ImageIcon(iconURL);
+		return null;
 	}
 	
 	
@@ -128,15 +128,16 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	public ResultsPanel(final List<NodeCluster> clusters,							 
 							 final CyNetwork network,
 							 final CyNetworkView networkView,
-							 final int resultId,
-							 ClusterManager clusterManager) {
+							 ClusterManager clusterManager,
+							 TaskMonitor monitor) {
+		
 		setLayout(new BorderLayout());
 		
 		this.clusterManager = clusterManager;
 		this.clusters = clusters;
 		this.network = network;
 		this.networkView = networkView;
-		this.resultId = resultId;
+		this.monitor = monitor;
 		visualStyleFactory = clusterManager.getService(VisualStyleFactory.class);
 		applicationMgr = clusterManager.getService(CyApplicationManager.class);
 		networkViewFactory = clusterManager.getService(CyNetworkViewFactory.class);
@@ -146,13 +147,10 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	
 	
 	public String getTitle() {
-		return "Result " + getResultId();
+		return "Result ";
 	}
 	
-	public int getResultId() {
-		return this.resultId;
-	}
-	
+		
 	public CyNetworkView getNetworkView() {
 		return networkView;
 	}
