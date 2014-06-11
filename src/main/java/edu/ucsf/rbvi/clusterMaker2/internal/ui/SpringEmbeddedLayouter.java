@@ -19,7 +19,6 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 
-import ca.utoronto.tdccbr.mcode.internal.view.MCODELoader;
 
 /**
  * An implementation of Kamada and Kawai's spring embedded layout algorithm.
@@ -105,7 +104,7 @@ public class SpringEmbeddedLayouter {
 	 * @param loader Loading animation which displays the progress of this process
 	 * @return true if the layout was completed without interruption, false otherwise
 	 */
-	public boolean doLayout(double weightLayout, double goalTotal, double progress, MCODELoader loader) {
+	public boolean doLayout(double weightLayout, double goalTotal, double progress) {
 		// Initialize the layouting.
 		nodeCount = graphView.getModel().getNodeCount();
 		edgeCount = graphView.getModel().getEdgeCount();
@@ -168,10 +167,12 @@ public class SpringEmbeddedLayouter {
 
 				progress += 100.0 * (((double) 1 / (double) (num_iterations * numLayoutPasses))) *
 							((double) weightLayout / (double) goalTotal);
-
+				
+				/*
 				if (loader != null) {
 					loader.setProgress((int) progress, "Laying out");
 				}
+				*/
 
 			} // End for each iteration, attempt to minimize the total potential
 			// energy by moving the node that is furthest from where it should be.

@@ -251,7 +251,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 				
 				SpringEmbeddedLayouter layouter = new SpringEmbeddedLayouter();
 				// get an image for each cluster - make it a nice layout of the cluster
-				final Image image = createClusterImage(c, graphPicSize, graphPicSize, layouter, false,loader);
+				final Image image = createClusterImage(c, graphPicSize, graphPicSize, layouter, false);
 				data[i][0] = image != null ? new ImageIcon(image) : new ImageIcon();
 			}
 		}
@@ -301,8 +301,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 									final int height,
 									final int width,
 									SpringEmbeddedLayouter layouter,
-									boolean layoutNecessary,
-									final MCODELoader loader) {
+									boolean layoutNecessary) {
 		
 		final CyRootNetwork root =  clusterManager.getService(CyRootNetworkManager.class).getRootNetwork(network);
 		//need to create a method get the subnetwork for a cluster
@@ -377,12 +376,16 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 				nv.setLockedValue(NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
 			}
 			 */
+			
+			/*
 			// Update loader
 			if (loader != null) {
 				progress += 100.0 * (1.0 / (double) clusterView.getNodeViews().size()) *
 							((double) weightSetupNodes / (double) goalTotal);
 				loader.setProgress((int) progress, "Setup: nodes");
 			}
+			
+			*/
 		}
 
 		if (clusterView.getEdgeViews() != null) {
@@ -394,12 +397,13 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 
 					return null;
 				}
-
+				/*
 				if (loader != null) {
 					progress += 100.0 * (1.0 / (double) clusterView.getEdgeViews().size()) *
 								((double) weightSetupEdges / (double) goalTotal);
 					loader.setProgress((int) progress, "Setup: edges");
 				}
+				*/
 			}
 		}
 
@@ -411,7 +415,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 			layouter.setGraphView(clusterView);
 
 			// The doLayout method should return true if the process completes without interruption
-			if (!layouter.doLayout(weightLayout, goalTotal, progress, loader)) {
+			if (!layouter.doLayout(weightLayout, goalTotal, progress)) {
 				// Otherwise, if layout is not completed, set the interruption to false, and return null, not an image
 				resetLoading();
 
