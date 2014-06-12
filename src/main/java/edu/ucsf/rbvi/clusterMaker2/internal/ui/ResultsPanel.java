@@ -101,6 +101,8 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	
 	private boolean interrupted;
 	
+	private ClusterBrowserPanel clusterBrowserPanel;
+	
 	public Component getComponent() {
 		return this;
 	}
@@ -143,6 +145,10 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		networkViewFactory = clusterManager.getService(CyNetworkViewFactory.class);
 		visualMappingMgr = clusterManager.getService(VisualMappingManager.class);
 		renderingEngineFactory = clusterManager.getService(RenderingEngineFactory.class);
+		
+		this.clusterBrowserPanel = new ClusterBrowserPanel();
+		add(clusterBrowserPanel, BorderLayout.CENTER);
+		this.setSize(this.getMinimumSize());
 	}
 	
 	
