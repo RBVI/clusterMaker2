@@ -8,6 +8,8 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.model.CyNetworkView;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.ResultsPanel;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -43,6 +45,10 @@ public interface ClusterManager {
 	public CyTableManager getTableManager();
 	public CyGroup createGroup(CyNetwork network, String name, List<CyNode> nodeList, List<CyEdge> edgeList, boolean register);
 	public void removeGroup(CyNetwork network, Long suid);
+	
+	//getter and setter methods for ResultsPanel
+	public ResultsPanel getResultsPanel();
+	public void setResultsPanel(ResultsPanel resultsPanel);
 
 	public <T> T getService(Class <? extends T> clazz);
 	public <T> T getService(Class<? extends T> clazz, String filter);

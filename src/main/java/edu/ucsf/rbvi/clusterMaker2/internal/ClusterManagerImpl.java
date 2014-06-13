@@ -38,6 +38,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterVizFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.NetworkSelectionLinker;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.ResultsPanel;
 
 public class ClusterManagerImpl implements ClusterManager {
 // public class ClusterManagerImpl {
@@ -54,6 +55,7 @@ public class ClusterManagerImpl implements ClusterManager {
 	double attributeClusterIndex = 1.0;
 	double filterIndex = 100.0;
 	double vizClusterIndex = 1.0;
+	ResultsPanel resultsPanel;
 
 	public ClusterManagerImpl(CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar,
  	                          CyGroupFactory groupFactory, CyGroupManager groupMgr, 
@@ -215,6 +217,14 @@ public class ClusterManagerImpl implements ClusterManager {
 		groupMgr.destroyGroup(group);
 	}
 
+	public ResultsPanel getResultsPanel(){
+		return resultsPanel;
+		
+	}
+	public void setResultsPanel(ResultsPanel resultsPanel){
+		this.resultsPanel = resultsPanel;
+	}
+	
 	public <T> T getService(Class<? extends T> clazz) {
 		return serviceRegistrar.getService(clazz);
 	}
