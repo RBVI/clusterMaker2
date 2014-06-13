@@ -57,7 +57,7 @@ public class CreateResultsPanelTaskFactory implements ClusterVizFactory {
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new ResultsPanelTask(clusterManager, checkAvailable));
+		return new TaskIterator(new ResultsPanelTask(clusterManager, checkAvailable, true));
 
 	}
 
