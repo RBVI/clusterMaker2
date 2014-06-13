@@ -99,10 +99,12 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 			
 			resultsPanel = new ResultsPanel(clusters, network,networkView,manager,monitor);
 			registrar.registerService(resultsPanel, CytoPanelComponent.class, new Properties());
+			manager.setResultsPanel(resultsPanel);
 			
 		}
 		else{
 			//need to retrieve the saved resultsPanel to unregister it
+			resultsPanel = manager.getResultsPanel();
 			registrar.unregisterService(resultsPanel, CytoPanelComponent.class);
 		}
 		
