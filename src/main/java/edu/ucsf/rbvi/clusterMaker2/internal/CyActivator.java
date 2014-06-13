@@ -58,6 +58,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.BestNeighb
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.CuttingEdge.CuttingEdgeFilterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.Density.DensityFilterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.HairCut.HairCutFilterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.CreateResultsPanelTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.DestroyResultsPanelTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkViewFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.TreeViewTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.KnnViewTaskFactory;
@@ -150,6 +152,10 @@ public class CyActivator extends AbstractCyActivator {
 		                new Properties());
 		registerService(bc, new TreeViewTaskFactory(clusterManager), ClusterVizFactory.class, 
 		                new Properties());
+		registerService(bc, new CreateResultsPanelTaskFactory(clusterManager,true), ClusterVizFactory.class, 
+                new Properties());
+		registerService(bc, new DestroyResultsPanelTaskFactory(clusterManager,true), ClusterVizFactory.class, 
+                new Properties());
 
 		// Link Network Selections
 		LinkSelectionTaskFactory linkTaskFactory = new LinkSelectionTaskFactory(clusterManager);

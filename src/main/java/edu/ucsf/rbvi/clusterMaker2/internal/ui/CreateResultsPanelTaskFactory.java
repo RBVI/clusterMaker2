@@ -23,7 +23,7 @@ public class CreateResultsPanelTaskFactory implements ClusterVizFactory {
 
 	public String getShortName() {
 		if (checkAvailable) {
-			return ResultsPanelTask.CLUSTERSHORTNAME;
+			return "create_"+ResultsPanelTask.CLUSTERSHORTNAME;
 		} else {
 			return null; 
 		}
@@ -31,7 +31,7 @@ public class CreateResultsPanelTaskFactory implements ClusterVizFactory {
 
 	public String getName() {
 		if (checkAvailable) {
-			return ResultsPanelTask.CLUSTERNAME;
+			return "create_"+ResultsPanelTask.CLUSTERNAME;
 		} else {
 			return null; 
 		}
