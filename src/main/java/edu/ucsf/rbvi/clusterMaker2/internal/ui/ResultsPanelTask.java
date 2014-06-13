@@ -35,18 +35,27 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 	public CyNetwork network = null;
 	
 	public ResultsPanelTask(CyNetwork network, ClusterManager manager,List<NodeCluster> clusters) {
-		this(manager, true, clusters);
+		this(manager, true);
 		this.network = network;
 	}
 
 	
-	public ResultsPanelTask( ClusterManager manager, boolean available,List<NodeCluster> clusters) {
+	public ResultsPanelTask( ClusterManager manager, boolean available) {
 		this.manager = manager;
 		networkView = manager.getNetworkView();
-		this.clusters = clusters;
+		
+		this.clusters = getClusters();
 		checkForAvailability = available;
 		if (network == null)
 			network = manager.getNetwork();
+		
+	}
+	
+	public List<NodeCluster> getClusters(){
+		List<NodeCluster> clusters = null;
+		
+		return clusters;
+		
 	}
 	
 
