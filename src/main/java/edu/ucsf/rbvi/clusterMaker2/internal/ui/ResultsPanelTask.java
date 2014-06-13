@@ -57,15 +57,22 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 		networkView = manager.getNetworkView();
 		
 		registrar = manager.getService(CyServiceRegistrar.class);
-		this.clusters = getClusters();
+		
 		checkForAvailability = available;
 		if (network == null)
 			network = manager.getNetwork();
+		
+		this.clusters = getClusters();
 		
 	}
 	
 	public List<NodeCluster> getClusters(){
 		List<NodeCluster> clusters = new ArrayList<NodeCluster>();
+		/*
+		System.out.println(network.NAME);
+		System.out.println(CyNetwork.LOCAL_ATTRS);
+		System.out.println(ClusterManager.CLUSTER_ATTRIBUTE);
+		*/
 		clusterAttribute =
 				network.getRow(network, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
 		
