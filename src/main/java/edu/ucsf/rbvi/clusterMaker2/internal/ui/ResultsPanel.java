@@ -132,7 +132,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 							 final CyNetworkView networkView,
 							 ClusterManager clusterManager,
 							 TaskMonitor monitor) {
-		
+		System.out.println("RP: Inside constructor");
 		setLayout(new BorderLayout());
 		
 		this.clusterManager = clusterManager;
@@ -145,10 +145,14 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		networkViewFactory = clusterManager.getService(CyNetworkViewFactory.class);
 		visualMappingMgr = clusterManager.getService(VisualMappingManager.class);
 		renderingEngineFactory = clusterManager.getService(RenderingEngineFactory.class);
+		System.out.println("RP: after setting variables and fields");
 		
 		this.clusterBrowserPanel = new ClusterBrowserPanel();
+		System.out.println("RP: after creating new cluster browser panel");
 		add(clusterBrowserPanel, BorderLayout.CENTER);
+		System.out.println("RP: after adding clusterBrowserPanel");
 		this.setSize(this.getMinimumSize());
+		System.out.println("RP: after this.setSize");
 	}
 	
 	
@@ -191,19 +195,25 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		private final JTable table;
 
 		public ClusterBrowserPanel() {
+			
 			super();
+			System.out.println("CBP: inside constructor, after super()");
 			setLayout(new BorderLayout());
 			setBorder(BorderFactory.createTitledBorder("Cluster Browser"));
-
+			
+			System.out.println("CBP: after setLayout n setBorder");
 			// main data table
 			browserModel = new ResultsPanel.ClusterBrowserTableModel();
+			System.out.println("CBP: after creating browser model");
 
 			table = new JTable(browserModel);
+			System.out.println("CBP: after creating new JTable");
 			table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			table.setDefaultRenderer(StringBuffer.class, new ResultsPanel.JTextAreaRenderer(defaultRowHeight));
 			table.setIntercellSpacing(new Dimension(0, 4)); // gives a little vertical room between clusters
 			table.setFocusable(false); // removes an outline that appears when the user clicks on the images
-
+			
+			System.out.println("CBP: after setting table params");
 			
 			/*
 			// Ask to be notified of selection changes.
@@ -212,9 +222,11 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 			*/
 			
 			JScrollPane tableScrollPane = new JScrollPane(table);
+			System.out.println("CBP: after creating JScrollPane");
 			tableScrollPane.getViewport().setBackground(Color.WHITE);
 
 			add(tableScrollPane, BorderLayout.CENTER);
+			System.out.println("CBP: after adding JScrollPane");
 		}
 
 		public int getSelectedRow() {
@@ -244,18 +256,23 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		private final Object[][] data; // the actual table data
 
 		public ClusterBrowserTableModel() {
+			System.out.println("CBTM: inside constructor");
 			exploreContent = new JPanel[clusters.size()];
 			data = new Object[clusters.size()][columnNames.length];
-
+			System.out.println("CBTM: after initialising exploreContent and data");
+			
 			for (int i = 0; i < clusters.size(); i++) {
+				System.out.println("CBTM: cluster num: "+ i);
 				final NodeCluster c = clusters.get(i);
 				//c.setRank(i);
 				StringBuffer details = getClusterScore(c);
 				data[i][1] = new StringBuffer(details);
 				
 				SpringEmbeddedLayouter layouter = new SpringEmbeddedLayouter();
+				System.out.println("CBTM: after invoking SpringEmbeddedLayouter");
 				// get an image for each cluster - make it a nice layout of the cluster
 				final Image image = createClusterImage(c, graphPicSize, graphPicSize, layouter, false);
+				System.out.println("CBTM: after createClusterImage");
 				data[i][0] = image != null ? new ImageIcon(image) : new ImageIcon();
 			}
 		}
@@ -306,11 +323,12 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 									final int width,
 									SpringEmbeddedLayouter layouter,
 									boolean layoutNecessary) {
-		
+		System.out.println("CCI: inside method");
 		final CyRootNetwork root =  clusterManager.getService(CyRootNetworkManager.class).getRootNetwork(network);
 		//need to create a method get the subnetwork for a cluster
 		final CyNetwork net = cluster.getSubNetwork(network, root, SavePolicy.DO_NOT_SAVE);
-
+		
+		System.out.println("CCI: after getting root and network ");
 		// Progress reporters.
 		// There are three basic tasks, the progress of each is calculated and then combined
 		// using the respective weighting to get an overall progress global progress
@@ -327,7 +345,9 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		double progress = 0;
 
 		final VisualStyle vs = getClusterStyle();
+		System.out.println("CCI: after getClusterStyle");
 		final CyNetworkView clusterView = createNetworkView(net, vs);
+		System.out.println("CCI: after createNetworkView");
 
 		clusterView.setVisualProperty(NETWORK_WIDTH, new Double(width));
 		clusterView.setVisualProperty(NETWORK_HEIGHT, new Double(height));
@@ -492,9 +512,10 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 			clusterStyle.setDefaultValue(EDGE_SELECTED_PAINT, Color.BLUE);
 			clusterStyle.setDefaultValue(EDGE_STROKE_SELECTED_PAINT, Color.BLUE);
 			clusterStyle.setDefaultValue(EDGE_STROKE_SELECTED_PAINT, Color.BLUE);
-
+			System.out.println("GCS: before getVisual Lexicon");
 			VisualLexicon lexicon = applicationMgr.getCurrentRenderingEngine().getVisualLexicon();
 			VisualProperty vp = lexicon.lookup(CyEdge.class, "edgeTargetArrowShape");
+			System.out.println("CCI: after setting visual property");
 
 			if (vp != null) {
 				Object arrowValue = vp.parseSerializableString("ARROW");
@@ -507,7 +528,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	
 	public CyNetworkView createNetworkView(final CyNetwork net, VisualStyle vs) {
 		final CyNetworkView view = networkViewFactory.createNetworkView(net);
-
+		System.out.println("inside createNetworkView");
 		if (vs == null) vs = visualMappingMgr.getDefaultVisualStyle();
 		visualMappingMgr.setVisualStyle(vs, view);
 		vs.apply(view);
@@ -520,7 +541,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	 * A text area renderer that creates a line wrapped, non-editable text area
 	 */
 	private static class JTextAreaRenderer extends JTextArea implements TableCellRenderer {
-
+		
 		int minHeight;
 
 		/**
@@ -531,6 +552,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		 *            graph picture or zero
 		 */
 		public JTextAreaRenderer(int minHeight) {
+			System.out.println("JTAR: inside constructor ");
 			this.setLineWrap(true);
 			this.setWrapStyleWord(true);
 			this.setEditable(false);
@@ -558,6 +580,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 													   boolean hasFocus,
 													   int row,
 													   int column) {
+			System.out.println("JTAR: inside getTableCellRendererComponent");
 			StringBuffer sb = (StringBuffer) value;
 			this.setText(sb.toString());
 
