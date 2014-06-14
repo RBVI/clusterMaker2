@@ -15,6 +15,8 @@ public class DestroyResultsPanelTaskFactory implements ClusterVizFactory {
 
 	ClusterManager clusterManager;
 	boolean checkAvailable;
+	public static String CLUSTERNAME = "Destroy Results Panel from Clusters";
+	public static String CLUSTERSHORTNAME = "destroyResultsPanel";
 	
 	public DestroyResultsPanelTaskFactory(ClusterManager clusterManager, boolean checkAvailable) {
 		this.clusterManager = clusterManager;
@@ -23,7 +25,7 @@ public class DestroyResultsPanelTaskFactory implements ClusterVizFactory {
 
 	public String getShortName() {
 		if (checkAvailable) {
-			return "destroy_"+ResultsPanelTask.CLUSTERSHORTNAME;
+			return CLUSTERSHORTNAME;
 		} else {
 			return null; 
 		}
@@ -31,7 +33,7 @@ public class DestroyResultsPanelTaskFactory implements ClusterVizFactory {
 
 	public String getName() {
 		if (checkAvailable) {
-			return "destroy_"+ResultsPanelTask.CLUSTERNAME;
+			return CLUSTERNAME;
 		} else {
 			return null; 
 		}

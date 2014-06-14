@@ -15,6 +15,8 @@ public class CreateResultsPanelTaskFactory implements ClusterVizFactory {
 	
 	ClusterManager clusterManager;
 	boolean checkAvailable;
+	public static String CLUSTERNAME = "Create Results Panel from Clusters";
+	public static String CLUSTERSHORTNAME = "createResultsPanel";
 	
 	public CreateResultsPanelTaskFactory(ClusterManager clusterManager, boolean checkAvailable) {
 		this.clusterManager = clusterManager;
@@ -23,7 +25,7 @@ public class CreateResultsPanelTaskFactory implements ClusterVizFactory {
 
 	public String getShortName() {
 		if (checkAvailable) {
-			return "create_"+ResultsPanelTask.CLUSTERSHORTNAME;
+			return CLUSTERSHORTNAME;
 		} else {
 			return null; 
 		}
@@ -31,7 +33,7 @@ public class CreateResultsPanelTaskFactory implements ClusterVizFactory {
 
 	public String getName() {
 		if (checkAvailable) {
-			return "create_"+ResultsPanelTask.CLUSTERNAME;
+			return CLUSTERNAME;
 		} else {
 			return null; 
 		}
