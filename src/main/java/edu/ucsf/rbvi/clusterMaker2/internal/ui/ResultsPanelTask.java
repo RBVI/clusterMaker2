@@ -63,7 +63,7 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 			network = manager.getNetwork();
 		
 		this.clusters = getClusters();
-		System.out.println("Number of clusters: "+clusters.size());
+		//System.out.println("Number of clusters: "+clusters.size());
 		
 	}
 	
@@ -93,7 +93,7 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 		for(int clustNum : clusterMap.keySet()){
 			NodeCluster cluster = new NodeCluster(clusterMap.get(clustNum));
 			cluster.setClusterNumber(clustNum);
-			System.out.println("Adding cluster number "+clustNum);
+			//System.out.println("Adding cluster number "+clustNum);
 			clusters.add(cluster);
 		}
 		return clusters;
@@ -105,13 +105,13 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 		if (createFlag){
 			
 			monitor.setTitle("Creating a new results panel with cluster results");
-			System.out.println("Before invoking RP");
+			//System.out.println("Before invoking RP");
 			resultsPanel = new ResultsPanel(clusters, network,networkView,manager,monitor);
-			System.out.println("Before registering RP as cytoPanel");
+			//System.out.println("Before registering RP as cytoPanel");
 			registrar.registerService(resultsPanel, CytoPanelComponent.class, new Properties());
-			System.out.println("After registering RP as cytoPanel");
+			//System.out.println("After registering RP as cytoPanel");
 			manager.setResultsPanel(resultsPanel);
-			System.out.println("After saving RP in manager");
+			//System.out.println("After saving RP in manager");
 			
 		}
 		else{
