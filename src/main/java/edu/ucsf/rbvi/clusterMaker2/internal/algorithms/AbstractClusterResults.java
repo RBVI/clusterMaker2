@@ -72,6 +72,19 @@ public class AbstractClusterResults implements ClusterResults {
 		return result;
 	}
 
+	public String toHTML() {
+		NumberFormat nf = NumberFormat.getInstance();
+		String result = "<b>Clusters:</b> "+clusterCount+"<br/>";
+		result += "<b>Average size:</b> "+nf.format(averageSize)+"<br/>";
+		result += "<b>Maximum size:</b> "+maxSize+"<br/>";
+		result += "<b>Minimum size:</b> "+minSize+"<br/>";
+		result += "<b>Modularity:</b> "+nf.format(modularity)+"<br/>";
+		if (extraText != null)
+			result += extraText;
+		return result;
+	}
+
+
 	public double getScore() { return modularity; }
 
 	public List<List<CyNode>> getClusters() {
@@ -112,7 +125,7 @@ public class AbstractClusterResults implements ClusterResults {
 
 			double proportionEdgesInCluster = innerEdges/edgeCount;
 			double proportionEdgesOutCluster = outerEdges/edgeCount;
-			
+
 			double clusterModularity = proportionEdgesInCluster - (proportionEdgesOutCluster/2)*(proportionEdgesOutCluster/2);
 			modularityList.add(clusterModularity);
 			modularity += clusterModularity;

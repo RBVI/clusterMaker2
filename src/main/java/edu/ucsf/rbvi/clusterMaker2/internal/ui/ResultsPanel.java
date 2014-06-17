@@ -1,9 +1,12 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.ui;
 
+import static org.cytoscape.view.presentation.property.ArrowShapeVisualProperty.NONE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_SELECTED_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_UNSELECTED_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_WIDTH;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
@@ -18,7 +21,6 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_S
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -30,12 +32,15 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.text.NumberFormat;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -43,11 +48,15 @@ import javax.swing.JTextArea;
 import javax.swing.JWindow;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -82,6 +91,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	
 	protected ClusterManager clusterManager;
 	public final List<NodeCluster> clusters;
+	public final AbstractClusterResults clusterResults;
 	private final CyNetwork network;
 	private CyNetworkView networkView;
 	private final CyApplicationManager applicationMgr;
@@ -103,6 +113,8 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	private boolean interrupted;
 	
 	private ClusterBrowserPanel clusterBrowserPanel;
+
+	private String clusterType = null;
 	
 	public Component getComponent() {
 		return this;
@@ -128,7 +140,8 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	 * @param network Network were these clusters were found
 	 * @param resultId Title of this result as determined by MCODESCoreAndFindAction
 	 */
-	public ResultsPanel(final List<NodeCluster> clusters,							 
+	public ResultsPanel(final List<NodeCluster> clusters,
+							 final AbstractClusterResults clusterResults,
 							 final CyNetwork network,
 							 final CyNetworkView networkView,
 							 ClusterManager clusterManager,
@@ -138,6 +151,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		
 		this.clusterManager = clusterManager;
 		this.clusters = clusters;
+		this.clusterResults = clusterResults;
 		this.network = network;
 		this.networkView = networkView;
 		this.monitor = monitor;
@@ -146,6 +160,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		networkViewFactory = clusterManager.getService(CyNetworkViewFactory.class);
 		visualMappingMgr = clusterManager.getService(VisualMappingManager.class);
 		renderingEngineFactory = clusterManager.getService(RenderingEngineFactory.class);
+		clusterType = network.getRow(network).get("__clusterType", String.class);
 		//System.out.println("RP: after setting variables and fields");
 		
 		this.clusterBrowserPanel = new ClusterBrowserPanel();
@@ -154,11 +169,12 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		//System.out.println("RP: after adding clusterBrowserPanel");
 		this.setSize(this.getMinimumSize());
 		//System.out.println("RP: after this.setSize");
+		//
 	}
 	
 	
 	public String getTitle() {
-		return "Result ";
+		return clusterType+" Cluster Results";
 	}
 	
 		
@@ -190,7 +206,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	/**
 	 * Panel that contains the browser table with a scroll bar.
 	 */
-	private class ClusterBrowserPanel extends JPanel {
+	private class ClusterBrowserPanel extends JPanel implements ListSelectionListener {
 
 		private final ResultsPanel.ClusterBrowserTableModel browserModel;
 		private final JTable table;
@@ -201,6 +217,16 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 			//System.out.println("CBP: inside constructor, after super()");
 			setLayout(new BorderLayout());
 			setBorder(BorderFactory.createTitledBorder("Cluster Browser"));
+			String resultsString = "<html>";
+			resultsString += 
+							"<p style=\"text-align:center;color:blue;margin-top:1px;margin-bottom:1px\">";
+			resultsString += getTitle()+" summary for "+ModelUtils.getNetworkName(network)+"</p>";
+			resultsString += clusterResults.toHTML() + "</html>";
+
+			JLabel summary = new JLabel(resultsString);
+			summary.setBorder(BorderFactory.createEtchedBorder());
+			summary.setText(resultsString);
+			add(summary, BorderLayout.NORTH);
 			
 			//System.out.println("CBP: after setLayout n setBorder");
 			// main data table
@@ -209,19 +235,18 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 
 			table = new JTable(browserModel);
 			//System.out.println("CBP: after creating new JTable");
-			table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+			table.setAutoCreateRowSorter(true);
 			table.setDefaultRenderer(StringBuffer.class, new ResultsPanel.JTextAreaRenderer(defaultRowHeight));
 			table.setIntercellSpacing(new Dimension(0, 4)); // gives a little vertical room between clusters
 			table.setFocusable(false); // removes an outline that appears when the user clicks on the images
-			
+
 			//System.out.println("CBP: after setting table params");
-			
-			/*
+
 			// Ask to be notified of selection changes.
 			ListSelectionModel rowSM = table.getSelectionModel();
-			rowSM.addListSelectionListener(new ResultsPanel.TableRowSelectionHandler());
-			*/
-			
+			rowSM.addListSelectionListener(this);
+
 			JScrollPane tableScrollPane = new JScrollPane(table);
 			//System.out.println("CBP: after creating JScrollPane");
 			tableScrollPane.getViewport().setBackground(Color.WHITE);
@@ -246,6 +271,33 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		JTable getTable() { 
 			return table;
 		}
+
+		public void valueChanged(ListSelectionEvent e) {
+			ListSelectionModel lsm = (ListSelectionModel) e.getSource();
+			// Get the rows
+			int[] rowIndices = table.getSelectedRows();
+			Map<CyNode, CyNode> selectedMap = new HashMap<CyNode, CyNode>();
+			// Get the clusters
+			for (int i = 0; i < rowIndices.length; i++) {
+				ClusterImageIcon cii = (ClusterImageIcon)table.getValueAt(rowIndices[i], 0);
+				if (cii.getNodeCluster() != null) {
+					for (CyNode node: cii.getNodeCluster()) {
+						selectedMap.put(node, node);
+					}
+				}
+			}
+			// Select the nodes
+			for (CyNode node: network.getNodeList()) {
+				if (selectedMap.containsKey(node))
+					network.getRow(node).set(CyNetwork.SELECTED, true);
+				else
+					network.getRow(node).set(CyNetwork.SELECTED, false);
+			}
+
+			// I wish we didn't need to do this, but if we don't, the selection
+			// doesn't update
+			networkView.updateView();
+		}
 	}
 	
 	/**
@@ -261,20 +313,20 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 			exploreContent = new JPanel[clusters.size()];
 			data = new Object[clusters.size()][columnNames.length];
 			//System.out.println("CBTM: after initialising exploreContent and data");
-			
+
 			for (int i = 0; i < clusters.size(); i++) {
 				//System.out.println("CBTM: cluster num: "+ i);
 				final NodeCluster c = clusters.get(i);
 				//c.setRank(i);
 				StringBuffer details = getClusterScore(c);
 				data[i][1] = new StringBuffer(details);
-				
+
 				SpringEmbeddedLayouter layouter = new SpringEmbeddedLayouter();
 				//System.out.println("CBTM: after invoking SpringEmbeddedLayouter");
 				// get an image for each cluster - make it a nice layout of the cluster
 				final Image image = createClusterImage(c, graphPicSize, graphPicSize, layouter, false);
 				//System.out.println("CBTM: after createClusterImage");
-				data[i][0] = image != null ? new ImageIcon(image) : new ImageIcon();
+				data[i][0] = image != null ? new ClusterImageIcon(image, c) : new ClusterImageIcon();
 			}
 		}
 
@@ -306,8 +358,8 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 			return getValueAt(0, c).getClass();
 		}
 	}
-	
-	
+
+
 	/**
 	 * Convert a network to an image.  This is used by the MCODEResultsPanel.
 	 * 
@@ -512,8 +564,10 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 			clusterStyle.setDefaultValue(EDGE_STROKE_UNSELECTED_PAINT, Color.BLUE);
 			clusterStyle.setDefaultValue(EDGE_SELECTED_PAINT, Color.BLUE);
 			clusterStyle.setDefaultValue(EDGE_STROKE_SELECTED_PAINT, Color.BLUE);
-			clusterStyle.setDefaultValue(EDGE_TARGET_ARROW_SHAPE, null);
-			
+			clusterStyle.setDefaultValue(EDGE_TARGET_ARROW_SHAPE, NONE);
+			clusterStyle.setDefaultValue(EDGE_SOURCE_ARROW_SHAPE, NONE);
+
+			/*
 			//System.out.println("GCS: before getVisual Lexicon");
 			VisualLexicon lexicon = applicationMgr.getCurrentRenderingEngine().getVisualLexicon();
 			VisualProperty vp = lexicon.lookup(CyEdge.class, "edgeTargetArrowShape");
@@ -521,13 +575,15 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 
 			if (vp != null) {
 				Object arrowValue = vp.parseSerializableString("ARROW");
+				System.out.println("Edge target arrow value = "+arrowValue.toString());
 				if (arrowValue != null) clusterStyle.setDefaultValue(vp, arrowValue);
 			}
+			*/
 		}
 
 		return clusterStyle;
 	}
-	
+
 	public CyNetworkView createNetworkView(final CyNetwork net, VisualStyle vs) {
 		final CyNetworkView view = networkViewFactory.createNetworkView(net);
 		//System.out.println("inside createNetworkView");
@@ -609,7 +665,36 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 			return this;
 		}
 	}
-	
+
+	private class ClusterImageIcon extends ImageIcon implements Comparable<ClusterImageIcon> {
+		protected NodeCluster nodeCluster;
+		static final long serialVersionUID = 1L;
+
+
+		public ClusterImageIcon() {
+			super();
+			nodeCluster = null;
+		}
+
+		public ClusterImageIcon(Image image, NodeCluster c) {
+			super(image);
+			nodeCluster = c;
+		}
+
+		public int compareTo(ClusterImageIcon cii2) {
+			if ((nodeCluster == null && cii2.nodeCluster == null) ||
+					(nodeCluster.size() == cii2.nodeCluster.size()))
+				return 0;
+			else if (nodeCluster == null || nodeCluster.size() < cii2.nodeCluster.size())
+				return -1;
+			return 1;
+		}
+
+		public NodeCluster getNodeCluster() {
+			return nodeCluster;
+		}
+	}
+
 	public void interruptLoading() {
 		interrupted = true;
 	}
