@@ -17,6 +17,7 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
@@ -69,6 +70,7 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 	
 	public List<NodeCluster> getClusters(){
 		List<NodeCluster> clusters = new ArrayList<NodeCluster>();
+		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>();
 		/*
 		System.out.println(network.NAME);
 		System.out.println(CyNetwork.LOCAL_ATTRS);
@@ -78,7 +80,7 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 				network.getRow(network, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
 		
 		//Create a temporary cluster map
-		Map<Integer, List<CyNode>> clusterMap = new HashMap<Integer, List<CyNode>>();
+		Map<Integer, ArrayList<CyNode>> clusterMap = new HashMap<Integer, ArrayList<CyNode>>();
 		for (CyNode node: (List<CyNode>)network.getNodeList()) {
 			// For each node -- see if it's in a cluster.  If so, add it to our map
 			if (ModelUtils.hasAttribute(network, node, clusterAttribute)) {
@@ -92,9 +94,18 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 		
 		for(int clustNum : clusterMap.keySet()){
 			NodeCluster cluster = new NodeCluster(clusterMap.get(clustNum));
+			clusterList.add(clusterMap.get(clustNum));
+			
 			cluster.setClusterNumber(clustNum);
 			//System.out.println("Adding cluster number "+clustNum);
 			clusters.add(cluster);
+		}
+		
+		//calculating the scores for each cluster
+		AbstractClusterResults results =  new AbstractClusterResults(network,clusterList);
+		List<Double> modularityList = results.getModularityList();
+		for(int i = 0; i < clusters.size() ;i++){
+			clusters.get(i).setClusterScore(modularityList.get(i));
 		}
 		return clusters;
 		

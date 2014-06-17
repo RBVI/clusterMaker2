@@ -44,6 +44,7 @@ public class AbstractClusterResults implements ClusterResults {
 	private int maxSize;
 	private int minSize;
 	private double clusterCoefficient;
+	private List<Double> modularityList;
 	private double modularity;
 	private String extraText = null;
 
@@ -51,6 +52,7 @@ public class AbstractClusterResults implements ClusterResults {
 		this.network = network;
 		clusters = cl; 
 		extraText = extraInformation;
+		modularityList = new ArrayList<Double>();
 		calculate();
 	}
 
@@ -74,6 +76,9 @@ public class AbstractClusterResults implements ClusterResults {
 
 	public List<List<CyNode>> getClusters() {
 		return clusters;
+	}
+	public List<Double> getModularityList(){
+		return modularityList;
 	}
 
 	public Object getResults(Class requestedType) {
@@ -107,8 +112,11 @@ public class AbstractClusterResults implements ClusterResults {
 
 			double proportionEdgesInCluster = innerEdges/edgeCount;
 			double proportionEdgesOutCluster = outerEdges/edgeCount;
-
-			modularity += proportionEdgesInCluster - (proportionEdgesOutCluster/2)*(proportionEdgesOutCluster/2);
+			
+			double clusterModularity = proportionEdgesInCluster - (proportionEdgesOutCluster/2)*(proportionEdgesOutCluster/2);
+			modularityList.add(clusterModularity);
+			modularity += clusterModularity;
+			//modularity += proportionEdgesInCluster - (proportionEdgesOutCluster/2)*(proportionEdgesOutCluster/2);
 			clusterNumber++;
 		}
 	}

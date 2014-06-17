@@ -18,6 +18,7 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_S
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -511,7 +512,8 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 			clusterStyle.setDefaultValue(EDGE_STROKE_UNSELECTED_PAINT, Color.BLUE);
 			clusterStyle.setDefaultValue(EDGE_SELECTED_PAINT, Color.BLUE);
 			clusterStyle.setDefaultValue(EDGE_STROKE_SELECTED_PAINT, Color.BLUE);
-			clusterStyle.setDefaultValue(EDGE_STROKE_SELECTED_PAINT, Color.BLUE);
+			clusterStyle.setDefaultValue(EDGE_TARGET_ARROW_SHAPE, null);
+			
 			//System.out.println("GCS: before getVisual Lexicon");
 			VisualLexicon lexicon = applicationMgr.getCurrentRenderingEngine().getVisualLexicon();
 			VisualProperty vp = lexicon.lookup(CyEdge.class, "edgeTargetArrowShape");
