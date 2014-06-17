@@ -74,13 +74,16 @@ public class AbstractClusterResults implements ClusterResults {
 
 	public String toHTML() {
 		NumberFormat nf = NumberFormat.getInstance();
-		String result = "<b>Clusters:</b> "+clusterCount+"<br/>";
-		result += "<b>Average size:</b> "+nf.format(averageSize)+"<br/>";
-		result += "<b>Maximum size:</b> "+maxSize+"<br/>";
-		result += "<b>Minimum size:</b> "+minSize+"<br/>";
-		result += "<b>Modularity:</b> "+nf.format(modularity)+"<br/>";
+		String result = "<ul style=\"margin-top:0px;margin-bottom:5px;";
+		result+= "padding-left:5px;margin-left:5px;list-style-type:none\">";
+		result += "<li><b>Clusters:</b> "+clusterCount+"</li>";
+		result += "<li><b>Average size:</b> "+nf.format(averageSize)+"</li>";
+		result += "<li><b>Maximum size:</b> "+maxSize+"</li>";
+		result += "<li><b>Minimum size:</b> "+minSize+"</li>";
+		result += "<li><b>Modularity:</b> "+nf.format(modularity)+"</li>";
 		if (extraText != null)
-			result += extraText;
+			result += "<li>"+extraText+"</li>";
+		result += "</ul>";
 		return result;
 	}
 

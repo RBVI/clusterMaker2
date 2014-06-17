@@ -48,6 +48,7 @@ import javax.swing.JTextArea;
 import javax.swing.JWindow;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
@@ -217,15 +218,17 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 			//System.out.println("CBP: inside constructor, after super()");
 			setLayout(new BorderLayout());
 			setBorder(BorderFactory.createTitledBorder("Cluster Browser"));
-			String resultsString = "<html>";
-			resultsString += 
-							"<p style=\"text-align:center;color:blue;margin-top:1px;margin-bottom:1px\">";
-			resultsString += getTitle()+" summary for "+ModelUtils.getNetworkName(network)+"</p>";
-			resultsString += clusterResults.toHTML() + "</html>";
 
-			JLabel summary = new JLabel(resultsString);
-			summary.setBorder(BorderFactory.createEtchedBorder());
-			summary.setText(resultsString);
+			// Create the summary panel
+			String title = clusterType+" cluster summary for "+ModelUtils.getNetworkName(network);
+			TitledBorder border = 
+				BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), title);
+			border.setTitlePosition(TitledBorder.TOP);
+			border.setTitleJustification(TitledBorder.LEFT);
+			border.setTitleColor(Color.BLUE);
+
+			JLabel summary = new JLabel("<html>"+clusterResults.toHTML()+"</html>");
+			summary.setBorder(border);
 			add(summary, BorderLayout.NORTH);
 			
 			//System.out.println("CBP: after setLayout n setBorder");
