@@ -64,9 +64,12 @@ public class CreateResultsPanelTaskFactory implements ClusterVizFactory {
 	}
 
 	public boolean isReady() {
-		if (!checkAvailable)
+		if (clusterManager.getResultsPanel() != null)
+		    return false;
+		else if (!checkAvailable)
 			return true;
-		return ResultsPanelTask.isReady(clusterManager.getNetwork(), clusterManager);
+		else
+			return ResultsPanelTask.isReady(clusterManager.getNetwork(), clusterManager);
 	}
 
 

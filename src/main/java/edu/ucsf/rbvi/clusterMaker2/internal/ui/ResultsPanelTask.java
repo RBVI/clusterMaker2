@@ -119,6 +119,7 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 			monitor.setTitle("Deleting the results panel");
 			resultsPanel = manager.getResultsPanel();
 			registrar.unregisterService(resultsPanel, CytoPanelComponent.class);
+			manager.setResultsPanel(null);
 		}
 		
 	}

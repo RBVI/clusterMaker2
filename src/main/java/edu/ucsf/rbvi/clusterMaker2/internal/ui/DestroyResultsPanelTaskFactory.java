@@ -64,9 +64,15 @@ public class DestroyResultsPanelTaskFactory implements ClusterVizFactory {
 	}
 
 	public boolean isReady() {
+		
+		if (clusterManager.getResultsPanel() != null)
+		    return true;
+		return false;
+		/*
 		if (!checkAvailable)
 			return true;
 		return ResultsPanelTask.isReady(clusterManager.getNetwork(), clusterManager);
+		*/
 	}
 
 }
