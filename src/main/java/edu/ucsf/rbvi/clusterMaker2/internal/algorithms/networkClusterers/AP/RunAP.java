@@ -248,6 +248,7 @@ public class RunAP {
 					if (exemplar != i)
 						iCluster.add(nodes, exemplar);
 					// System.out.println("New cluster ["+iCluster+"]");
+					clusterCount++;
 				}
 				updateClusters(iCluster, clusterMap);
 			}
