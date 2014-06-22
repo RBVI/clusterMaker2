@@ -19,6 +19,12 @@ public class DBSCANContext {
 	@ContainsTunables
 	public KClusterAttributes kcluster = new KClusterAttributes();
 
+	@Tunable(description = "Density Neighborhood Distance", gravity=9.0)
+	public double eps = 1.0;
+	
+	@Tunable(description = "Minimum number of points for dense region", gravity=10.0)
+	public int minPts = 1;
+	
 	@Tunable(description="Distance Metric", gravity=11)
 	public ListSingleSelection<DistanceMetric> metric = 
 		new ListSingleSelection<DistanceMetric>(BaseMatrix.distanceTypes);
@@ -29,7 +35,7 @@ public class DBSCANContext {
 	public boolean selectedOnly = false;
 	
 	@Tunable(description="Use only selected nodes/edges for cluster", 
-	         groups={"FFT Parameters"}, gravity=100)
+	         groups={"DBSCAN Parameters"}, gravity=100)
 	public boolean getselectedOnly() { return selectedOnly; }
 	
 	public void setselectedOnly(boolean sel) {
@@ -38,7 +44,7 @@ public class DBSCANContext {
 	}
 
 	@Tunable(description="Cluster attributes as well as nodes", 
-	         groups={"FFT Parameters"}, gravity=101)
+	         groups={"DBSCAN Parameters"}, gravity=101)
 	public boolean clusterAttributes = false;
 	
 	@Tunable(description="Create groups from clusters", groups={"Visualization Options"}, gravity=150)

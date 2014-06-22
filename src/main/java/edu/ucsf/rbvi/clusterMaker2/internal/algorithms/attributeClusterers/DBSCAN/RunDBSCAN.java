@@ -17,6 +17,7 @@ public class RunDBSCAN extends AbstractKClusterAlgorithm {
 	double eps;
 	int minPts;
 	ArrayList<Integer> unvisited;
+	double distanceMatrix[][];
 
 	public RunDBSCAN(CyNetwork network, String weightAttributes[], DistanceMetric metric, 
             TaskMonitor monitor, DBSCANContext context) {
@@ -31,6 +32,15 @@ public class RunDBSCAN extends AbstractKClusterAlgorithm {
 		int nelements = matrix.nRows();
 		int ifound = 1;
 		int currentC = -1;
+		
+		// calculate the distances and store in distance matrix
+		distanceMatrix = new double[nelements][nelements];
+		for (int i = 0; i < nelements; i++) {
+			for (int j = i+1; j < nelements; j++) {
+ 				double distance = context.metric.getSelectedValue().getMetric(matrix, matrix, matrix.getWeights(), i, j);				
+				distanceMatrix[i][j] = distance;
+			}			
+		}
 		
 		unvisited = new ArrayList<Integer>();
 		
@@ -92,10 +102,18 @@ public class RunDBSCAN extends AbstractKClusterAlgorithm {
 	}
 
 	private ArrayList<Integer> regionQuery(int p) {
+		
 		ArrayList<Integer> neighborPts = new ArrayList<Integer>();
+		int nelements = distanceMatrix[p].length;
+		
+		for(int i = 0; i < nelements; i++){
+			if (i == p) continue;
+			
+			if(distanceMatrix[p][i] <= eps){
+				neighborPts.add(i);
+			}
+		}
 		
 		return neighborPts;
 	}
-	
-
 }
