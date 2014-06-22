@@ -34,6 +34,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import org.cytoscape.group.CyGroup;
@@ -66,7 +67,8 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
                                                  implements RequestsUIHelper {
 	// Common instance variables
 	protected DistanceMetric distanceMetric = DistanceMetric.EUCLIDEAN;
-
+	protected List<String>attrList;
+	
 	public AbstractAttributeClusterer(ClusterManager clusterManager) {
 		super(clusterManager);
 	}
@@ -175,4 +177,39 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, 
 		                             params, List.class, String.class);
 	}
+	
+	 /**
+		 * This protected method is called to create all of our groups (if desired).
+		 * It is used by all of the k-clustering algorithms.
+		 *
+		 * @param nClusters the number of clusters we created
+		 * @param cluster the list of values and the assigned clusters
+		 */
+
+	  protected void createGroups(Matrix matrix,int nClusters, int[] clusters, String algorithm) {
+	    if (matrix.isTransposed()) {
+	      return;
+	    }
+
+	    if (monitor != null)
+	      monitor.setStatusMessage("Creating groups");
+
+	    HashMap<String,List<CyNode>> groupMap = new HashMap<String,List<CyNode>>();
+	    attrList = new ArrayList<String>(matrix.nRows());
+	    // Create the attribute list
+	    for (int cluster = 0; cluster < nClusters; cluster++) {
+	      List<CyNode> memberList = new ArrayList<CyNode>();
+	      for (int i = 0; i < matrix.nRows(); i++) {
+	        if (clusters[i] == cluster) {
+	          attrList.add(matrix.getRowLabel(i)+"\t"+cluster);
+	          memberList.add(matrix.getRowNode(i));
+						ModelUtils.createAndSetLocal(network, matrix.getRowNode(i), algorithm+" Cluster", 
+						                             new Integer(cluster), Integer.class, null);
+	        }
+	      }
+	      groupMap.put("Cluster_"+cluster, memberList);
+	    }
+	  }
+	  
+	  public List<String> getAttributeList() { return attrList; }
 }
