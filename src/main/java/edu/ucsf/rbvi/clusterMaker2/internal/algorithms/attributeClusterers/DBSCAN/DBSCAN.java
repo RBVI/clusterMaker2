@@ -11,6 +11,7 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractAttributeClusterer;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.fft.FFTContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.fft.RunFFT;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
@@ -92,25 +93,34 @@ public class DBSCAN extends AbstractAttributeClusterer {
 
 		resetAttributes(network, GROUP_ATTRIBUTE);
 		
+		
 		// Create a new clusterer
 		RunDBSCAN algorithm = new RunDBSCAN(network, attributeArray, distanceMetric, monitor, context);
-
+						
 		String resultsString = "DBSCAN results:";
 
 		// Cluster the attributes, if requested
 		if (context.clusterAttributes && attributeArray.length > 1) {
 			monitor.setStatusMessage("Clustering attributes");
-			Integer[] rowOrder = algorithm.cluster(context.kcluster.kNumber, 
-			                                       1, true, "dbscan", context.kcluster);
-			updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, algorithm.getAttributeList(), 
+			int[] clusters = algorithm.cluster(true);
+			if (!algorithm.getMatrix().isTransposed())
+				createGroups(algorithm.getMatrix(),algorithm.getNClusters(), clusters, "dbscan");
+			
+			Integer[] rowOrder = algorithm.getMatrix().indexSort(clusters, clusters.length);
+			//Integer[] rowOrder = algorithm.cluster(context.kcluster.kNumber,1, true, "dbscan", context.kcluster);
+			updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, getAttributeList(), 
 			                 algorithm.getMatrix());
 		}
 
 		// Cluster the nodes
 		monitor.setStatusMessage("Clustering nodes");
-		Integer[] rowOrder = algorithm.cluster(context.kcluster.kNumber, 
-			                                     1, false, "fft", context.kcluster);
-		updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, algorithm.getAttributeList(), 
+		int[] clusters = algorithm.cluster(false);
+		if (!algorithm.getMatrix().isTransposed())
+			createGroups(algorithm.getMatrix(),algorithm.getNClusters(), clusters, "dbscan");
+		
+		Integer[] rowOrder = algorithm.getMatrix().indexSort(clusters, clusters.length);
+		//Integer[] rowOrder = algorithm.cluster(context.kcluster.kNumber,1, false, "dbscan", context.kcluster);
+		updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, getAttributeList(), 
 		                 algorithm.getMatrix());
 
 		// System.out.println(resultsString);

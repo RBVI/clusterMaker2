@@ -16,16 +16,13 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.KClus
 public class DBSCANContext {
 	CyNetwork network;
 
-	@ContainsTunables
-	public KClusterAttributes kcluster = new KClusterAttributes();
-
-	@Tunable(description = "Density Neighborhood Distance", gravity=9.0)
+	@Tunable(description = "Density Neighborhood Distance", gravity=1.0)
 	public double eps = 1.0;
 	
-	@Tunable(description = "Minimum number of points for dense region", gravity=10.0)
+	@Tunable(description = "Minimum number of points for dense region", gravity=2.0)
 	public int minPts = 1;
 	
-	@Tunable(description="Distance Metric", gravity=11)
+	@Tunable(description="Distance Metric", gravity=3)
 	public ListSingleSelection<DistanceMetric> metric = 
 		new ListSingleSelection<DistanceMetric>(BaseMatrix.distanceTypes);
 	
@@ -39,7 +36,7 @@ public class DBSCANContext {
 	public boolean getselectedOnly() { return selectedOnly; }
 	
 	public void setselectedOnly(boolean sel) {
-		if (network != null && this.selectedOnly != sel) kcluster.updateKEstimates(network, sel);
+		//if (network != null && this.selectedOnly != sel) kcluster.updateKEstimates(network, sel);
 		this.selectedOnly = sel;
 	}
 
@@ -67,7 +64,7 @@ public class DBSCANContext {
 		else
 			attributeList.setNetwork(network);
 
-		kcluster.updateKEstimates(network, selectedOnly);
+		//kcluster.updateKEstimates(network, selectedOnly);
 	}
 
 	public CyNetwork getNetwork() { return network; }
@@ -78,7 +75,7 @@ public class DBSCANContext {
 
 	public List<String> getParams() {
 		List<String> params = new ArrayList<String>();
-		kcluster.addParams(params);		
+		//kcluster.addParams(params);		
 		params.add("metric="+metric.getSelectedValue().toString());
 		params.add("nodeAttributeList="+attributeList.getNodeAttributeList().toString());
 		params.add("edgeAttribute="+attributeList.getEdgeAttribute());

@@ -11,9 +11,17 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Dista
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.fft.FFTContext;
 
-public class RunDBSCAN extends AbstractKClusterAlgorithm {
+public class RunDBSCAN  {
 	
+	protected CyNetwork network;
+	protected String[] weightAttributes;
+	protected DistanceMetric metric;
+	protected Matrix matrix;
+	protected TaskMonitor monitor;
+	protected boolean ignoreMissing = true;
+	protected boolean selectedOnly = false;
 	DBSCANContext context;
+	protected int nClusters;
 	double eps;
 	int minPts;
 	ArrayList<Integer> unvisited;
@@ -21,17 +29,36 @@ public class RunDBSCAN extends AbstractKClusterAlgorithm {
 
 	public RunDBSCAN(CyNetwork network, String weightAttributes[], DistanceMetric metric, 
             TaskMonitor monitor, DBSCANContext context) {
-		super(network, weightAttributes, metric, monitor);
+		//super(network, weightAttributes, metric, monitor);
+		this.network = network;
+		this.weightAttributes = weightAttributes;
+		this.metric = metric;
+		this.monitor = monitor;
 		this.context = context;
+		this.eps = context.eps;
+		this.minPts = context.minPts;
+		this.nClusters = 0;		
 	}
 
-	@Override
-	public int kcluster(int nClusters, int nIterations, Matrix matrix,
-			DistanceMetric metric, int[] clusters) {
+	public Matrix getMatrix() { return matrix; }
+	public int getNClusters() {return nClusters;}
+	
+	public int[] cluster(boolean transpose) {
+		
+		// Create the matrix
+		matrix = new Matrix(network, weightAttributes, transpose, ignoreMissing, selectedOnly);
+		monitor.showMessage(TaskMonitor.Level.INFO,"cluster matrix has "+matrix.nRows()+" rows");
+		
+		// Create a weight vector of all ones (we don't use individual weighting, yet)
+		matrix.setUniformWeights();
+				
+		if (monitor != null) 
+			monitor.setStatusMessage("Clustering...");
 		
 		int nelements = matrix.nRows();
 		int ifound = 1;
 		int currentC = -1;
+		int[] clusters = new int[nelements];
 		
 		// calculate the distances and store in distance matrix
 		distanceMatrix = new double[nelements][nelements];
@@ -64,7 +91,8 @@ public class RunDBSCAN extends AbstractKClusterAlgorithm {
 				expandCluster(p,neighborPts,currentC,clusters);
 			}			
 		}		
-		return ifound;
+		nClusters = currentC+1;
+		return clusters;
 	}
 
 	private void expandCluster(int p, ArrayList<Integer> neighborPts,
