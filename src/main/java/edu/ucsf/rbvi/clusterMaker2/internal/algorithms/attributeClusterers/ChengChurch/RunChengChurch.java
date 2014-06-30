@@ -2,6 +2,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Chen
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskMonitor;
@@ -211,9 +212,45 @@ public class RunChengChurch {
 			}
 			
 			if(changed == false) break;
+			msr = calcMSR(rows,cols);
 					
 		}
 		return changed;
+	}
+	
+	public void singleNodeDeletion(ArrayList<Integer> rows, ArrayList<Integer> cols){
+		double msr = calcMSR(rows,cols);
+		
+		while(msr > delta){
+			HashMap<Integer,Double> rowMSRs = calcRowMSR(rows,cols);
+			HashMap<Integer,Double> colMSRs = calcColMSR(rows,cols);
+			
+			int maxRow = getMax(rowMSRs);
+			int maxCol = getMax(colMSRs);
+			
+			if(rowMSRs.get(maxRow) > colMSRs.get(maxCol) ){
+				rows.remove(maxRow);
+			}
+			else{
+				cols.remove(maxCol);
+			}
+			msr = calcMSR(rows,cols);
+		}		
+	}
+	
+	public int getMax(HashMap<Integer,Double> map){
+		Integer maxkey = null;
+		Map.Entry<Integer,Double> maxEntry = null;
+
+		for (Map.Entry<Integer,Double> entry : map.entrySet())
+		{
+		    if (maxEntry == null || entry.getValue().compareTo(maxEntry.getValue()) > 0)
+		    {
+		        maxEntry = entry;
+		    }
+		}
+		maxkey = maxEntry.getKey();
+		return maxkey;
 	}
 	
 }
