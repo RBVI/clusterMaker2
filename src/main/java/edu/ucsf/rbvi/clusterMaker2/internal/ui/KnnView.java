@@ -136,8 +136,8 @@ public class KnnView extends TreeView {
 			if (!type.equals(KMeansCluster.GROUP_ATTRIBUTE) &&
 			    !type.equals(KMedoidCluster.GROUP_ATTRIBUTE) &&
 			    !type.equals("autosome_heatmap") &&
-			    !type.equals("PAM") &&
-			    !type.equals("HOMACH"))
+			    !type.equals("pam") &&
+			    !type.equals("hopach"))
 				return false;
 		}
 
