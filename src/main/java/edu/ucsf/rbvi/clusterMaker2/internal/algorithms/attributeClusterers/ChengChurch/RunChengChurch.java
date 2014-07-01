@@ -180,11 +180,125 @@ public class RunChengChurch {
 				
 				colMsr += Math.pow(residue, 2);				
 			}	
-			colMsr = colMsr/colSize;
+			colMsr = colMsr/rowSize;
 			colMSRs.put(j, colMsr);
 		}
 		
 		return colMSRs;
+	}
+	
+	public HashMap<Integer,Double> calcOtherRowMSR(ArrayList<Integer> rows, ArrayList<Integer> cols){
+		ArrayList<Integer> otherRows = new ArrayList<Integer>();
+		ArrayList<Integer> otherCols = new ArrayList<Integer>();
+		
+		int nRows = matrix.nRows();
+		int nCols = matrix.nColumns();
+		
+		for(int i = 0; i< nRows; i++ ){
+			if( !(rows.contains(i)) ){
+				otherRows.add(i);
+			}
+		}
+		
+		for(int j = 0; j< nCols; j++ ){
+			if( !(cols.contains(j)) ){
+				otherCols.add(j);
+			}
+		}
+		
+		int rowSize = rows.size();
+		int colSize = cols.size();
+		int otherRowSize = otherRows.size();
+		int otherColSize = otherCols.size();
+		
+		HashMap<Integer,Double> rowMSRs = new HashMap<Integer,Double>();
+		
+		HashMap<Integer,Double> rowSums = getRowSums(rows,cols);
+		HashMap<Integer,Double> colSums = getColSums(rows,cols);
+		
+		//normalized sum of all elements of sub matrix
+		double aIJ = 0;
+		for(Integer i: rowSums.keySet()){
+			aIJ += rowSums.get(i);
+		}
+		
+		aIJ = aIJ/(rowSize*colSize);
+		
+		HashMap<Integer,Double> otherRowSums = getRowSums(otherRows,cols);
+		
+		for(Integer i: otherRows){
+			double rowMsr = 0.0;
+			for(Integer j: cols){
+				
+				double aiJ = otherRowSums.get(i)/colSize;
+				double aIj = colSums.get(j)/rowSize;				
+				double residue = matrix.getValue(i, j) - aiJ - aIj + aIJ;
+				
+				rowMsr += Math.pow(residue, 2);				
+			}	
+			rowMsr = rowMsr/colSize;
+			rowMSRs.put(i, rowMsr);
+		}
+		
+		return rowMSRs;
+	}
+	
+	public HashMap<Integer,Double> calcOtherColMSR(ArrayList<Integer> rows, ArrayList<Integer> cols){
+		
+		ArrayList<Integer> otherRows = new ArrayList<Integer>();
+		ArrayList<Integer> otherCols = new ArrayList<Integer>();
+		
+		int nRows = matrix.nRows();
+		int nCols = matrix.nColumns();
+		
+		for(int i = 0; i< nRows; i++ ){
+			if( !(rows.contains(i)) ){
+				otherRows.add(i);
+			}
+		}
+		
+		for(int j = 0; j< nCols; j++ ){
+			if( !(cols.contains(j)) ){
+				otherCols.add(j);
+			}
+		}
+		
+		int rowSize = rows.size();
+		int colSize = cols.size();
+		int otherRowSize = otherRows.size();
+		int otherColSize = otherCols.size();
+		
+		HashMap<Integer,Double> colMSRs = new HashMap<Integer,Double>();
+		
+		HashMap<Integer,Double> rowSums = getRowSums(rows,cols);
+		HashMap<Integer,Double> colSums = getColSums(rows,cols);
+		
+		//normalized sum of all elements of sub matrix
+		double aIJ = 0;
+		for(Integer i: rowSums.keySet()){
+			aIJ += rowSums.get(i);
+		}
+		
+		aIJ = aIJ/(rowSize*colSize);
+		
+		HashMap<Integer,Double> otherColSums = getColSums(rows,otherCols);
+		
+		for(Integer j: otherCols){
+			double colMsr = 0.0;
+			for(Integer i: rows){
+				
+				double aiJ = rowSums.get(i)/colSize;
+				double aIj = otherColSums.get(j)/rowSize;				
+				double residue = matrix.getValue(i, j) - aiJ - aIj + aIJ;
+				
+				colMsr += Math.pow(residue, 2);				
+			}	
+			colMsr = colMsr/rowSize;
+			colMSRs.put(j, colMsr);
+		}
+		
+		return colMSRs;
+		
 	}
 	
 	public boolean multipleNodeDeletion(ArrayList<Integer> rows, ArrayList<Integer> cols){
@@ -236,6 +350,29 @@ public class RunChengChurch {
 			}
 			msr = calcMSR(rows,cols);
 		}		
+	}
+	
+	public void nodeAddition(ArrayList<Integer> rows, ArrayList<Integer> cols){
+			
+		double msr = calcMSR(rows,cols);
+		
+		HashMap<Integer,Double> otherColMSRs = calcOtherColMSR(rows,cols);
+		for (Integer j : otherColMSRs.keySet()){
+			if(otherColMSRs.get(j) <= msr){
+				cols.add(j);
+			}
+		}
+		
+		msr = calcMSR(rows,cols);
+		HashMap<Integer,Double> otherRowMSRs = calcOtherRowMSR(rows,cols,false);
+		HashMap<Integer,Double> otherRowMSRs_inverted = calcOtherRowMSR(rows,cols,true);
+		
+		for (Integer i : otherRowMSRs.keySet()){
+			if(otherRowMSRs.get(i) <= msr){
+				rows.add(i);
+			}
+		}
+		
 	}
 	
 	public int getMax(HashMap<Integer,Double> map){
