@@ -187,7 +187,7 @@ public class RunChengChurch {
 		return colMSRs;
 	}
 	
-	public HashMap<Integer,Double> calcOtherRowMSR(ArrayList<Integer> rows, ArrayList<Integer> cols){
+	public HashMap<Integer,Double> calcOtherRowMSR(ArrayList<Integer> rows, ArrayList<Integer> cols, boolean inverted){
 		ArrayList<Integer> otherRows = new ArrayList<Integer>();
 		ArrayList<Integer> otherCols = new ArrayList<Integer>();
 		
@@ -231,8 +231,15 @@ public class RunChengChurch {
 			for(Integer j: cols){
 				
 				double aiJ = otherRowSums.get(i)/colSize;
-				double aIj = colSums.get(j)/rowSize;				
-				double residue = matrix.getValue(i, j) - aiJ - aIj + aIJ;
+				double aIj = colSums.get(j)/rowSize;
+				double residue = 0.0;
+				
+				if(!inverted){
+					residue = matrix.getValue(i, j) - aiJ - aIj + aIJ;
+				}
+				else{
+					residue = -matrix.getValue(i, j) + aiJ - aIj + aIJ;
+				}
 				
 				rowMsr += Math.pow(residue, 2);				
 			}	
@@ -353,24 +360,40 @@ public class RunChengChurch {
 	}
 	
 	public void nodeAddition(ArrayList<Integer> rows, ArrayList<Integer> cols){
+		
+		while (true){
+			int rowSize = rows.size();
+			int colSize = cols.size();
 			
-		double msr = calcMSR(rows,cols);
-		
-		HashMap<Integer,Double> otherColMSRs = calcOtherColMSR(rows,cols);
-		for (Integer j : otherColMSRs.keySet()){
-			if(otherColMSRs.get(j) <= msr){
-				cols.add(j);
+			double msr = calcMSR(rows,cols);
+			
+			HashMap<Integer,Double> otherColMSRs = calcOtherColMSR(rows,cols);
+			for (Integer j : otherColMSRs.keySet()){
+				if(otherColMSRs.get(j) <= msr){
+					cols.add(j);
+				}
 			}
-		}
-		
-		msr = calcMSR(rows,cols);
-		HashMap<Integer,Double> otherRowMSRs = calcOtherRowMSR(rows,cols,false);
-		HashMap<Integer,Double> otherRowMSRs_inverted = calcOtherRowMSR(rows,cols,true);
-		
-		for (Integer i : otherRowMSRs.keySet()){
-			if(otherRowMSRs.get(i) <= msr){
-				rows.add(i);
+			
+			msr = calcMSR(rows,cols);
+			HashMap<Integer,Double> otherRowMSRs = calcOtherRowMSR(rows,cols,false);
+			HashMap<Integer,Double> otherRowMSRs_inverted = calcOtherRowMSR(rows,cols,true);
+			
+			for (Integer i : otherRowMSRs.keySet()){
+				if(otherRowMSRs.get(i) <= msr){
+					rows.add(i);
+				}
 			}
+			
+			for (Integer i : otherRowMSRs_inverted.keySet()){
+				if( rows.contains(i) ) continue;
+				
+				if(otherRowMSRs_inverted.get(i) <= msr){
+					rows.add(i);
+				}
+			}
+			
+			//end iteration if nothing is added to either rows or columns
+			if(rowSize == rows.size() && colSize == cols.size()) break;
 		}
 		
 	}
