@@ -3,6 +3,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Chen
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskMonitor;
@@ -23,6 +24,8 @@ public class RunChengChurch {
 	protected int nClusters;
 	double delta;
 	double alpha;
+	double MatrixMax;
+	double MatrixMin;
 	
 	ArrayList<Integer> unvisited;
 	double distanceMatrix[][];	
@@ -54,11 +57,77 @@ public class RunChengChurch {
 			monitor.setStatusMessage("Clustering...");
 		
 		int nelements = matrix.nRows();
+		int nattrs = matrix.nColumns();
 		int ifound = 1;
 		int currentC = -1;
 		int[] clusters = new int[nelements];
+		//Initialising all clusters to -1
+		for(int i = 0; i < nelements; i++) clusters[i] = -1;
+		
+		setMatrixMinMax();
+		
+		//The Cheng and Church algorithm
+		for(int iter = 0; iter < nClusters; iter++){
+			ArrayList<Integer> rows = new ArrayList<Integer>();
+			ArrayList<Integer> cols = new ArrayList<Integer>();
+			
+			//Initialize rows and cols to all rows and columns
+			for(int i = 0; i < nelements; i++){
+				rows.add(i);
+			}
+			for(int j = 0; j < nattrs; j++){
+				cols.add(j);
+			}
+			
+			boolean changed = multipleNodeDeletion(rows,cols);
+			
+			if(changed == false){
+				singleNodeDeletion(rows,cols);
+			}
+			
+			nodeAddition(rows,cols);
+			for (int i = 0; i < rows.size(); i++){
+				if(clusters[rows.get(i)] == -1){
+					clusters[rows.get(i)] = iter;
+				}
+			}
+			
+			maskMatrix(rows,cols);			
+		}
 		
 		return clusters;
+	}
+	
+	public void setMatrixMinMax(){
+		MatrixMax = Double.MIN_VALUE;
+		MatrixMin = Double.MAX_VALUE;
+		
+		int nelements = matrix.nRows();
+		int nattrs = matrix.nColumns();
+		
+		for(int i = 0; i < nelements; i++){
+			for(int j = 0; j < nattrs; j++){
+				double value = matrix.getValue(i, j);
+				if(value > MatrixMax) MatrixMax = value;
+				if(value < MatrixMin) MatrixMin = value;
+			}
+		}		
+	}
+	
+	//For masking the array values corresponding to found bicluster with random values
+	public void maskMatrix(ArrayList<Integer> rows, ArrayList<Integer> cols){
+		
+		int nRows= rows.size();
+		int nCols = cols.size();
+		Random generator = new Random();
+		double range = MatrixMax - MatrixMin;
+		for(int i = 0; i< nRows; i++){
+			for(int j = 0; j< nCols; j++){
+				double maskVal = generator.nextDouble()*range + MatrixMin;
+				//matrix.setValue(rows.get(i), rows.get(j), maskVal);
+				
+			}
+		}
 	}
 	
 	//For computing the MSR of a bicluster
