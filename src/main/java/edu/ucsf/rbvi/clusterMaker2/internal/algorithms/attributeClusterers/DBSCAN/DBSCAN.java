@@ -93,9 +93,9 @@ public class DBSCAN extends AbstractAttributeClusterer {
 
 		resetAttributes(network, GROUP_ATTRIBUTE);
 		
-		
+		distanceMetric = context.getDistanceMetric();
 		// Create a new clusterer
-		RunDBSCAN algorithm = new RunDBSCAN(network, attributeArray, distanceMetric, monitor, context);
+		RunDBSCAN algorithm = new RunDBSCAN(network, attributeArray,distanceMetric , monitor, context);
 						
 		String resultsString = "DBSCAN results:";
 
