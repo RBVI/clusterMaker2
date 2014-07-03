@@ -15,7 +15,7 @@ public class RunChengChurch {
 
 	protected CyNetwork network;
 	protected String[] weightAttributes;
-	protected DistanceMetric metric;
+	//protected DistanceMetric metric;
 	protected Matrix matrix;
 	protected TaskMonitor monitor;
 	protected boolean ignoreMissing = true;
@@ -30,16 +30,16 @@ public class RunChengChurch {
 	ArrayList<Integer> unvisited;
 	double distanceMatrix[][];	
 	
-	public RunChengChurch(CyNetwork network, String weightAttributes[], DistanceMetric metric, 
-            TaskMonitor monitor, ChengChurchContext context, double delta) {
+	public RunChengChurch(CyNetwork network, String weightAttributes[],
+            TaskMonitor monitor, ChengChurchContext context) {
 		//super(network, weightAttributes, metric, monitor);
 		this.network = network;
 		this.weightAttributes = weightAttributes;
-		this.metric = metric;
+		//this.metric = metric;
 		this.monitor = monitor;
 		this.context = context;
 		this.nClusters = 0;	
-		this.delta = delta;
+		this.delta = context.delta;
 	}
 
 	public Matrix getMatrix() { return matrix; }
