@@ -17,6 +17,7 @@ public class RunChengChurch {
 	protected String[] weightAttributes;
 	//protected DistanceMetric metric;
 	protected Matrix matrix;
+	protected double Arr[][];
 	protected TaskMonitor monitor;
 	protected boolean ignoreMissing = true;
 	protected boolean selectedOnly = false;
@@ -58,6 +59,14 @@ public class RunChengChurch {
 		
 		int nelements = matrix.nRows();
 		int nattrs = matrix.nColumns();
+		
+		Arr = new double[nelements][nattrs];
+		for(int i= 0 ;i < nelements; i++){
+			for(int j = 0; j < nattrs; j++){
+				Arr[i][j] = matrix.getValue(i, j);
+			}
+		}
+		
 		int ifound = 1;
 		int currentC = -1;
 		int[] clusters = new int[nelements];
@@ -107,7 +116,8 @@ public class RunChengChurch {
 		
 		for(int i = 0; i < nelements; i++){
 			for(int j = 0; j < nattrs; j++){
-				double value = matrix.getValue(i, j);
+				//double value = matrix.getValue(i, j);
+				double value = Arr[i][j];
 				if(value > MatrixMax) MatrixMax = value;
 				if(value < MatrixMin) MatrixMin = value;
 			}
@@ -124,8 +134,8 @@ public class RunChengChurch {
 		for(int i = 0; i< nRows; i++){
 			for(int j = 0; j< nCols; j++){
 				double maskVal = generator.nextDouble()*range + MatrixMin;
-				//matrix.setValue(rows.get(i), rows.get(j), maskVal);
-				
+				//matrix.setValue(rows.get(i), cols.get(j), maskVal);
+				Arr[rows.get(i)][cols.get(j)] = maskVal;				
 			}
 		}
 	}
@@ -152,7 +162,7 @@ public class RunChengChurch {
 				
 				double aiJ = rowSums.get(i)/colSize;
 				double aIj = colSums.get(j)/rowSize;				
-				double residue = matrix.getValue(i, j) - aiJ - aIj + aIJ;
+				double residue = Arr[i][j] - aiJ - aIj + aIJ;
 				
 				msr += Math.pow(residue, 2);				
 			}			
@@ -168,7 +178,7 @@ public class RunChengChurch {
 		for(Integer i : rows){
 			double rowSum = 0;
 			for(Integer j : cols){
-				rowSum += matrix.getValue(i, j);
+				rowSum += Arr[i][j];
 			}
 			rowSums.put(i, rowSum);			
 		}
@@ -181,7 +191,7 @@ public class RunChengChurch {
 		for(Integer j : cols){
 			double colSum = 0;
 			for(Integer i : rows){
-				colSum += matrix.getValue(i, j);
+				colSum += Arr[i][j];
 			}
 			colSums.put(j, colSum);			
 		}
@@ -211,7 +221,7 @@ public class RunChengChurch {
 				
 				double aiJ = rowSums.get(i)/colSize;
 				double aIj = colSums.get(j)/rowSize;				
-				double residue = matrix.getValue(i, j) - aiJ - aIj + aIJ;
+				double residue = Arr[i][j] - aiJ - aIj + aIJ;
 				
 				rowMsr += Math.pow(residue, 2);				
 			}	
@@ -245,7 +255,7 @@ public class RunChengChurch {
 				
 				double aiJ = rowSums.get(i)/colSize;
 				double aIj = colSums.get(j)/rowSize;				
-				double residue = matrix.getValue(i, j) - aiJ - aIj + aIJ;
+				double residue = Arr[i][j] - aiJ - aIj + aIJ;
 				
 				colMsr += Math.pow(residue, 2);				
 			}	
@@ -304,10 +314,10 @@ public class RunChengChurch {
 				double residue = 0.0;
 				
 				if(!inverted){
-					residue = matrix.getValue(i, j) - aiJ - aIj + aIJ;
+					residue = Arr[i][j] - aiJ - aIj + aIJ;
 				}
 				else{
-					residue = -matrix.getValue(i, j) + aiJ - aIj + aIJ;
+					residue = -Arr[i][j] + aiJ - aIj + aIJ;
 				}
 				
 				rowMsr += Math.pow(residue, 2);				
@@ -365,7 +375,7 @@ public class RunChengChurch {
 				
 				double aiJ = rowSums.get(i)/colSize;
 				double aIj = otherColSums.get(j)/rowSize;				
-				double residue = matrix.getValue(i, j) - aiJ - aIj + aIJ;
+				double residue = Arr[i][j] - aiJ - aIj + aIJ;
 				
 				colMsr += Math.pow(residue, 2);				
 			}	
