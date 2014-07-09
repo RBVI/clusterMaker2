@@ -5,13 +5,14 @@ import java.util.List;
 
 import org.cytoscape.work.TaskIterator;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.ChengChurch.ChengChurch;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.ChengChurch.ChengChurchContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 
-public class ChengChurchTaskFactory {
+public class ChengChurchTaskFactory extends AbstractClusterTaskFactory {
 
 	ClusterManager clusterManager;
 	ChengChurchContext context = null;

@@ -79,7 +79,7 @@ public class RunDBSCAN  {
 		
 		while(unvisited.size() > 0){
 			int p = unvisited.get(0);
-			unvisited.remove(p);
+			unvisited.remove(0);
 			
 			ArrayList<Integer> neighborPts = regionQuery(p);
 			
@@ -109,7 +109,7 @@ public class RunDBSCAN  {
 			if(unvisited.contains(np)){
 				
 				//make neighboring point visited
-				unvisited.remove(np);
+				unvisited.remove(unvisited.indexOf(np));
 				
 				//Now fetch new neighboring points
 				ArrayList<Integer> newNeighborPts = regionQuery(np);

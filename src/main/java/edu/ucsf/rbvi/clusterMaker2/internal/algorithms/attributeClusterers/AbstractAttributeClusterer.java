@@ -186,11 +186,12 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 		 * @param cluster the list of values and the assigned clusters
 		 */
 
-	  protected void createGroups(Matrix matrix,int nClusters, int[] clusters, String algorithm) {
+	  protected void createGroups(CyNetwork net,Matrix matrix,int nClusters, int[] clusters, String algorithm) {
 	    if (matrix.isTransposed()) {
 	      return;
 	    }
 
+	    network = net;
 	    if (monitor != null)
 	      monitor.setStatusMessage("Creating groups");
 

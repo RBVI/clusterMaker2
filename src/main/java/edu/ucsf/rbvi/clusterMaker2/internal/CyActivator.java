@@ -121,7 +121,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new FFTTaskFactory(clusterManager), 
                 ClusterTaskFactory.class, new Properties());
 		registerService(bc, new DBSCANTaskFactory(clusterManager), 
-                ClusterTaskFactory.class, new Properties());
+               ClusterTaskFactory.class, new Properties());
 		registerService(bc, new ChengChurchTaskFactory(clusterManager), 
                 ClusterTaskFactory.class, new Properties());
 

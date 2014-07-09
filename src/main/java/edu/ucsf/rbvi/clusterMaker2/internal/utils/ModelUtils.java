@@ -19,7 +19,6 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CySubNetwork;
-
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
@@ -117,7 +116,7 @@ public class ModelUtils {
 	}
 
 	public static void createAndSet(CyNetwork net, CyIdentifiable obj, String column,
-	                                Object value, Class type, Class elementType, String namespace) {
+	                                Object value, Class type, Class elementType, String namespace) {				
 		CyTable tab = net.getRow(obj, namespace).getTable();
 		if (tab.getColumn(column) == null) {
 			if (type.equals(List.class))

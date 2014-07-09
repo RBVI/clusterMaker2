@@ -39,8 +39,9 @@ public class RunChengChurch {
 		//this.metric = metric;
 		this.monitor = monitor;
 		this.context = context;
-		this.nClusters = 0;	
+		this.nClusters = context.nClusters;	
 		this.delta = context.delta;
+		this.alpha = context.alpha.getValue();
 	}
 
 	public Matrix getMatrix() { return matrix; }

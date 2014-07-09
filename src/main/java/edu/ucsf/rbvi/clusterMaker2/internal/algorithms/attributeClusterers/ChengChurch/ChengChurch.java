@@ -102,7 +102,7 @@ public class ChengChurch extends AbstractAttributeClusterer {
 			monitor.setStatusMessage("Clustering attributes");
 			int[] clusters = algorithm.cluster(true);
 			if (!algorithm.getMatrix().isTransposed())
-				createGroups(algorithm.getMatrix(),algorithm.getNClusters(), clusters, "cheng&hurch");
+				createGroups(network,algorithm.getMatrix(),algorithm.getNClusters(), clusters, "cheng&hurch");
 			
 			Integer[] rowOrder = algorithm.getMatrix().indexSort(clusters, clusters.length);
 			updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, getAttributeList(), 
@@ -112,8 +112,10 @@ public class ChengChurch extends AbstractAttributeClusterer {
 		// Cluster the nodes
 		monitor.setStatusMessage("Clustering nodes");
 		int[] clusters = algorithm.cluster(false);
+		//System.out.println("Nclusters: "+algorithm.getNClusters());
+		//if (algorithm.getMatrix()==null)System.out.println("get matrix returns null : ");
 		if (!algorithm.getMatrix().isTransposed())
-			createGroups(algorithm.getMatrix(),algorithm.getNClusters(), clusters, "cheng&hurch");
+			createGroups(network,algorithm.getMatrix(),algorithm.getNClusters(), clusters, "cheng&hurch");
 		
 		Integer[] rowOrder = algorithm.getMatrix().indexSort(clusters, clusters.length);
 		updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, getAttributeList(), 
