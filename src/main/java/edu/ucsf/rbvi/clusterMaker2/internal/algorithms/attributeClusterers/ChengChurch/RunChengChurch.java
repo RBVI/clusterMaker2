@@ -71,6 +71,9 @@ public class RunChengChurch {
 		int ifound = 1;
 		int currentC = -1;
 		int[] clusters = new int[nelements];
+		HashMap<Integer,ArrayList<Integer>> clusterRows = new HashMap<Integer,ArrayList<Integer>>();
+		HashMap<Integer,ArrayList<Integer>> clusterCols = new HashMap<Integer,ArrayList<Integer>>();
+		
 		//Initialising all clusters to -1
 		for(int i = 0; i < nelements; i++) clusters[i] = -1;
 		
@@ -97,9 +100,13 @@ public class RunChengChurch {
 			
 			nodeAddition(rows,cols);
 			for (int i = 0; i < rows.size(); i++){
+				/*
 				if(clusters[rows.get(i)] == -1){
 					clusters[rows.get(i)] = iter;
 				}
+				*/
+				clusterRows.put(iter, rows);
+				clusterCols.put(iter, cols);
 			}
 			
 			maskMatrix(rows,cols);			
