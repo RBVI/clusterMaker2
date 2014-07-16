@@ -397,19 +397,32 @@ public class RunChengChurch {
 			HashMap<Integer,Double> rowMSRs = calcRowMSR(rows,cols);			
 			double cutoff = alpha*msr;
 			
+			ArrayList<Integer> remRows = new ArrayList<Integer>();
+			
 			for(Integer i : rows){				
 				if(rowMSRs.get(i) > cutoff){
-					rows.remove(rows.indexOf(i));
+					//rows.remove(rows.indexOf(i));
+					remRows.add(i);
 					changed = true;
 				}
 			}
 			
+			for(Integer i : remRows){
+				rows.remove(rows.indexOf(i));
+			}
+			
+			ArrayList<Integer> remCols = new ArrayList<Integer>();
 			HashMap<Integer,Double> colMSRs = calcColMSR(rows,cols);
 			for(Integer j : cols){				
 				if(colMSRs.get(j) > cutoff){
-					cols.remove(cols.indexOf(j));
+					//cols.remove(cols.indexOf(j));
+					remCols.add(j);
 					changed = true;
 				}
+			}
+			
+			for(Integer j : remCols){
+				cols.remove(cols.indexOf(j));
 			}
 			
 			if(changed == false) break;
