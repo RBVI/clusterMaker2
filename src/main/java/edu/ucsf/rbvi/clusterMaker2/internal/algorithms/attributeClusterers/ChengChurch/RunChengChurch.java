@@ -27,6 +27,8 @@ public class RunChengChurch {
 	double alpha;
 	double MatrixMax;
 	double MatrixMin;
+	protected HashMap<Integer,ArrayList<Integer>> clusterRows;
+	protected HashMap<Integer,ArrayList<Integer>> clusterCols;
 	
 	ArrayList<Integer> unvisited;
 	double distanceMatrix[][];	
@@ -71,8 +73,8 @@ public class RunChengChurch {
 		int ifound = 1;
 		int currentC = -1;
 		int[] clusters = new int[nelements];
-		HashMap<Integer,ArrayList<Integer>> clusterRows = new HashMap<Integer,ArrayList<Integer>>();
-		HashMap<Integer,ArrayList<Integer>> clusterCols = new HashMap<Integer,ArrayList<Integer>>();
+		clusterRows = new HashMap<Integer,ArrayList<Integer>>();
+		clusterCols = new HashMap<Integer,ArrayList<Integer>>();
 		
 		//Initialising all clusters to -1
 		for(int i = 0; i < nelements; i++) clusters[i] = -1;
@@ -511,6 +513,14 @@ public class RunChengChurch {
 		}
 		maxkey = maxEntry.getKey();
 		return maxkey;
+	}
+	
+	public HashMap<Integer, ArrayList<Integer>> getClusterRows(){
+		return clusterRows;
+	}
+	
+	public HashMap<Integer, ArrayList<Integer>> getClusterCols(){
+		return clusterCols;
 	}
 	
 }

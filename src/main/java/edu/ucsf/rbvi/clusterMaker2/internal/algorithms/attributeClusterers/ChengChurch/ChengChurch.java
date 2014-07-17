@@ -1,9 +1,14 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.ChengChurch;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
@@ -23,6 +28,9 @@ public class ChengChurch extends AbstractAttributeClusterer {
 	public static String NAME = "Cheng & Church's  bi-cluster";
 	public static String GROUP_ATTRIBUTE = SHORTNAME;
 	
+	CyTableManager tableManager = null;
+	private CyTableFactory tableFactory = null;
+	
 	@Tunable(description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
 
@@ -35,6 +43,9 @@ public class ChengChurch extends AbstractAttributeClusterer {
 		if (network == null)
 			network = clusterManager.getNetwork();
 		context.setNetwork(network);
+		
+		tableManager = clusterManager.getTableManager();
+		tableFactory = clusterManager.getTableFactory();
 	}
 
 	public String getShortName() {return SHORTNAME;}
@@ -125,6 +136,23 @@ public class ChengChurch extends AbstractAttributeClusterer {
 		if (context.showUI) {
 			insertTasksAfterCurrentTask(new KnnView(clusterManager));
 		}
+	}
+	
+	public void createBiclusterTable(HashMap<Integer, ArrayList<Integer>> clusterRows ,HashMap<Integer, ArrayList<Integer>> clusterCols){
+		CyTable networkTable = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
+		CyTable BiClusterTable = null;
+		
+		if(!CyTableUtil.getColumnNames(networkTable).contains(clusterAttributeName + "_Table.SUID")){
+			
+			network.getDefaultNetworkTable().createColumn(clusterAttributeName + "_Table.SUID", Long.class, false);
+			BiClusterTable = tableFactory.createTable(clusterAttributeName + "_Table", "Fuzzy_Node.SUID", Long.class, true, true);
+			
+		}
+		else{
+			long BiClusterTableSUID = network.getRow(network).get(clusterAttributeName + "_Table.SUID", Long.class);
+			BiClusterTable = tableManager.getTable(BiClusterTableSUID);
+		}
+		
 	}
 
 }
