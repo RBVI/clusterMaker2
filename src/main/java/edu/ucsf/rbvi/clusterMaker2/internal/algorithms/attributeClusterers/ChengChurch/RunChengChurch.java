@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Random;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.work.TaskMonitor;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
@@ -29,6 +30,8 @@ public class RunChengChurch {
 	double MatrixMin;
 	protected HashMap<Integer,ArrayList<Integer>> clusterRows;
 	protected HashMap<Integer,ArrayList<Integer>> clusterCols;
+	protected HashMap<Integer,ArrayList<Long>> clusterNodes;
+	protected HashMap<Integer,ArrayList<String>> clusterAttrs;
 	
 	ArrayList<Integer> unvisited;
 	double distanceMatrix[][];	
@@ -76,6 +79,9 @@ public class RunChengChurch {
 		clusterRows = new HashMap<Integer,ArrayList<Integer>>();
 		clusterCols = new HashMap<Integer,ArrayList<Integer>>();
 		
+		clusterNodes = new HashMap<Integer,ArrayList<Long>>();
+		clusterAttrs = new HashMap<Integer,ArrayList<String>>();
+		
 		//Initialising all clusters to -1
 		for(int i = 0; i < nelements; i++) clusters[i] = -1;
 		
@@ -101,16 +107,21 @@ public class RunChengChurch {
 			}
 			
 			nodeAddition(rows,cols);
-			for (int i = 0; i < rows.size(); i++){
-				/*
-				if(clusters[rows.get(i)] == -1){
-					clusters[rows.get(i)] = iter;
-				}
-				*/
-				clusterRows.put(iter, rows);
-				clusterCols.put(iter, cols);
-			}
 			
+			ArrayList<Long> nodes = new ArrayList<Long>();
+			for (int i = 0; i < rows.size(); i++){
+				nodes.add(matrix.getRowNode(rows.get(i)).getSUID());				
+			}
+			clusterNodes.put(iter, nodes);
+			
+			ArrayList<String> attrs = new ArrayList<String>();
+			for (int j = 0; j < cols.size(); j++){
+				attrs.add(matrix.getColLabel(cols.get(j)));				
+			}
+			clusterAttrs.put(iter, attrs);
+			
+			clusterRows.put(iter, rows);
+			clusterCols.put(iter, cols);
 			maskMatrix(rows,cols);			
 		}
 		
@@ -523,4 +534,11 @@ public class RunChengChurch {
 		return clusterCols;
 	}
 	
+	public HashMap<Integer, ArrayList<Long>> getClusterNodes(){
+		return clusterNodes;
+	}
+	
+	public HashMap<Integer, ArrayList<String>> getClusterAttrs(){
+		return clusterAttrs;
+	}
 }
