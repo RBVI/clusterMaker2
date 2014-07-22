@@ -12,6 +12,10 @@ import java.util.Properties;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.property.CyProperty;
@@ -52,6 +56,9 @@ public class BiclusterView extends TreeViewApp implements Observer,
 	private boolean ignoreSelection = false;
 	protected ClusterManager manager = null;
 	protected CyNetworkTableManager networkTableManager = null;
+	protected CyTableManager tableManager = null;
+	protected CyTableFactory tableFactory = null;
+	protected String clusterAttribute = null;
 
 	@Tunable(description="Network to view bicluster heatmap for", context="nogui")
 	public CyNetwork myNetwork = null;
@@ -69,8 +76,14 @@ public class BiclusterView extends TreeViewApp implements Observer,
 		this.manager = manager;
 		this.context = context;
 		networkTableManager = manager.getService(CyNetworkTableManager.class);
+		tableManager = manager.getTableManager();
+		tableFactory = manager.getTableFactory();
+				
 		if (myNetwork == null) myNetwork = manager.getNetwork();
 		context.setNetwork(myNetwork);
+		
+		clusterAttribute =
+				myNetwork.getRow(myNetwork, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
 	}
 
 	public BiclusterView(PropertyConfig propConfig) {
@@ -196,13 +209,45 @@ public class BiclusterView extends TreeViewApp implements Observer,
 	}
 	
 	public HashMap<Integer, ArrayList<String>> getBiclusterNodes(){
+		long BiClusterTableSUID = myNetwork.getRow(myNetwork).get(clusterAttribute + "_NodeTable.SUID", Long.class);
+		CyTable BiClusterNodeTable = tableManager.getTable(BiClusterTableSUID);
 		
-		return null;
+		HashMap<Integer, ArrayList<String>> clusterNodes = new HashMap<Integer, ArrayList<String>>();
+		int numNodes = BiClusterNodeTable.getRowCount();
+		List<CyNode> nodeList = myNetwork.getNodeList();
+		
+		for (CyNode node : nodeList){
+			CyRow nodeRow = BiClusterNodeTable.getRow(node.getSUID());
+			ArrayList<Integer> temp = (ArrayList<Integer>) nodeRow.get("Bicluster List", List.class);
+			
+			for(Integer biclust : temp){
+				if(clusterNodes.containsKey(biclust)){
+					clusterNodes.get(biclust).add(ModelUtils.getName(myNetwork, node));
+				}
+				else{
+					ArrayList<String> newlist = new ArrayList<String>();
+					newlist.add(ModelUtils.getName(myNetwork, node));
+					clusterNodes.put(biclust, newlist);
+				}
+			}						
+		}
+						
+		return clusterNodes;
 	}
 	
 	public HashMap<Integer, ArrayList<String>> getBiclusterAttributes(){
+		long BiClusterTableSUID = myNetwork.getRow(myNetwork).get(clusterAttribute + "_AttrTable.SUID", Long.class);
+		CyTable BiClusterAttrTable = tableManager.getTable(BiClusterTableSUID);
 		
-		return null;
+		HashMap<Integer, ArrayList<String>> clusterAttrs = new HashMap<Integer, ArrayList<String>>();
+		int numClust = BiClusterAttrTable.getRowCount();
+		
+		List<CyRow> tableRows = BiClusterAttrTable.getAllRows();
+		for(CyRow row: tableRows){
+			clusterAttrs.put(row.get("BiCluster Number", Integer.class), (ArrayList<String>) row.get("Bicluster Attribute List", List.class));			
+		}
+		
+		return clusterAttrs;
 	}
 	
 	@Override
