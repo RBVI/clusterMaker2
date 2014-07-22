@@ -152,11 +152,12 @@ public class ChengChurch extends AbstractAttributeClusterer {
 		if(!CyTableUtil.getColumnNames(networkTable).contains(clusterAttributeName + "_NodeTable.SUID")){
 			
 			network.getDefaultNetworkTable().createColumn(clusterAttributeName + "_NodeTable.SUID", Long.class, false);
-			BiClusterNodeTable = tableFactory.createTable(clusterAttributeName + "_NodeTable", "Node Number", Integer.class, true, true);
+			BiClusterNodeTable = tableFactory.createTable(clusterAttributeName + "_NodeTable", "Node.SUID", Long.class, true, true);
 		}
 		else{
 			long BiClusterTableSUID = network.getRow(network).get(clusterAttributeName + "_NodeTable.SUID", Long.class);
 			BiClusterNodeTable = tableManager.getTable(BiClusterTableSUID);
+			BiClusterNodeTable.createColumn("Bicluster List", List.class, false);
 		}
 		
 		if(!CyTableUtil.getColumnNames(networkTable).contains(clusterAttributeName + "_AttrTable.SUID")){
@@ -169,8 +170,28 @@ public class ChengChurch extends AbstractAttributeClusterer {
 			long BiClusterTableSUID = network.getRow(network).get(clusterAttributeName + "_AttrTable.SUID", Long.class);
 			BiClusterAttrTable = tableManager.getTable(BiClusterTableSUID);
 		}
+				
+		HashMap<Long,ArrayList<Integer>> biclusterList = new HashMap<Long,ArrayList<Integer>>();
+		for(Integer clust : clusterNodes.keySet()){
+			ArrayList<Long> temp = clusterNodes.get(clust);
+			for(Long node : temp){
+				if(biclusterList.containsKey(node)){
+					biclusterList.get(node).add(clust);
+				}
+				else{
+					ArrayList<Integer> newlist = new ArrayList<Integer>();
+					newlist.add(clust);
+					biclusterList.put(node, newlist);
+				}
+			}
+		}
 		
 		CyRow TableRow;
+		
+		for(Long node:biclusterList.keySet()){
+			TableRow = BiClusterNodeTable.getRow(node);
+			TableRow.set("Bicluster List", biclusterList.get(node));			
+		}
 		
 		for(Integer clust : clusterAttrs.keySet()){
 			TableRow = BiClusterAttrTable.getRow(clust);
