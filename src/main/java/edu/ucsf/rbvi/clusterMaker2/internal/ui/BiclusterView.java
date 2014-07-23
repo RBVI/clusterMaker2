@@ -3,8 +3,14 @@ package edu.ucsf.rbvi.clusterMaker2.internal.ui;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
@@ -210,6 +216,32 @@ public class BiclusterView extends TreeViewApp implements Observer,
 
 		manager.registerService(this, RowsSetListener.class, new Properties());
 	
+	}
+	
+	public void mergeBiclusters(HashMap<Integer, ArrayList<String>> clusterNodes,HashMap<Integer, ArrayList<String>> clusterAttrs){
+		HashMap<Integer,Integer> biclusterSizes = new HashMap<Integer,Integer>();
+		List templist = new LinkedList(clusterNodes.entrySet());
+		
+		for(Integer key: clusterNodes.keySet()){
+			biclusterSizes.put(key, clusterNodes.get(key).size());
+			
+		}
+		//sort the Biclusters by size
+		//ArrayList<Integer> list = new ArrayList<Integer>(biclusterSizes.entrySet());
+		
+		Collections.sort(templist, new Comparator() {
+			public int compare(Object o1, Object o2) {
+				return ((Comparable) ((Map.Entry) (o1)).getValue())
+                                       .compareTo(((Map.Entry) (o2)).getValue());
+			}
+		});
+		
+		Map sortedMap = new LinkedHashMap();
+		for (Iterator it = templist.iterator(); it.hasNext();) {
+			Map.Entry entry = (Map.Entry) it.next();
+			sortedMap.put(entry.getKey(), entry.getValue());
+		}
+		
 	}
 	
 	public HashMap<Integer, ArrayList<String>> getBiclusterNodes(){
