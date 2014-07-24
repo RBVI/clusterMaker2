@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
+import java.util.Set;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
@@ -220,7 +222,7 @@ public class BiclusterView extends TreeViewApp implements Observer,
 	
 	public void mergeBiclusters(HashMap<Integer, ArrayList<String>> clusterNodes,HashMap<Integer, ArrayList<String>> clusterAttrs){
 		HashMap<Integer,Integer> biclusterSizes = new HashMap<Integer,Integer>();
-		List templist = new LinkedList(clusterNodes.entrySet());
+		
 		
 		for(Integer key: clusterNodes.keySet()){
 			biclusterSizes.put(key, clusterNodes.get(key).size());
@@ -228,18 +230,65 @@ public class BiclusterView extends TreeViewApp implements Observer,
 		}
 		//sort the Biclusters by size
 		//ArrayList<Integer> list = new ArrayList<Integer>(biclusterSizes.entrySet());
-		
+		List templist = new LinkedList(biclusterSizes.entrySet());
 		Collections.sort(templist, new Comparator() {
 			public int compare(Object o1, Object o2) {
-				return ((Comparable) ((Map.Entry) (o1)).getValue())
-                                       .compareTo(((Map.Entry) (o2)).getValue());
+				return ((Comparable) ((Map.Entry) (o2)).getValue())
+                                       .compareTo(((Map.Entry) (o1)).getValue());
 			}
 		});
 		
+		/*
 		Map sortedMap = new LinkedHashMap();
 		for (Iterator it = templist.iterator(); it.hasNext();) {
 			Map.Entry entry = (Map.Entry) it.next();
 			sortedMap.put(entry.getKey(), entry.getValue());
+		}
+		*/
+		
+		ArrayList<String> rowList = new ArrayList<String>();
+		ArrayList<String> colList = new ArrayList<String>();
+		
+		ArrayList<String> rowPrev = new ArrayList<String>();
+		ArrayList<String> colPrev = new ArrayList<String>();
+		ArrayList<String> rowNew;
+		ArrayList<String> colNew;
+		
+		boolean initial = true;
+		//now checking biclusters in decreasing order of size
+		for (Iterator it = templist.iterator(); it.hasNext();) {
+			Map.Entry entry = (Map.Entry) it.next();
+			int clust = (int) entry.getKey();
+			if(initial == true){
+				rowPrev.addAll(clusterNodes.get(clust));
+				colPrev.addAll(clusterAttrs.get(clust));
+				initial = false;
+			}
+			else{
+				rowNew = new ArrayList<String>();
+				colNew = new ArrayList<String>();
+				
+				rowNew.addAll(clusterNodes.get(clust));
+				colNew.addAll(clusterAttrs.get(clust));
+				if(rowList.size()==0){
+					ArrayList<String> rowOverlap = new ArrayList(rowPrev);
+					rowOverlap.retainAll(rowNew);
+					rowPrev.removeAll(rowOverlap);
+					Collections.sort(rowPrev);
+					rowList.addAll(rowPrev);
+					Collections.sort(rowOverlap);
+					rowList.addAll(rowOverlap);
+					
+					ArrayList<String> colOverlap = new ArrayList(colPrev);
+					colOverlap.retainAll(colNew);
+					colPrev.removeAll(colOverlap);
+					Collections.sort(colPrev);
+					colList.addAll(colPrev);
+					Collections.sort(colOverlap);
+					colList.addAll(colOverlap);
+				}
+				
+			}
 		}
 		
 	}
