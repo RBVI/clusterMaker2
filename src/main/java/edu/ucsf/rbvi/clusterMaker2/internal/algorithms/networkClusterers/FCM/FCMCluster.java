@@ -134,7 +134,7 @@ public class FCMCluster extends AbstractFuzzyNetworkClusterer {
 		createGroups = context.advancedAttributes.createGroups;
 		
 		// Update our tunable results
-		clusterAttributeName = context.getClusterAttribute();
+		clusterAttributeName = "CnC_Bicluster";
 		
 		distanceDataMatrix = new Matrix(network,0,0);
 		distanceDataMatrix.buildDistanceMatrix(distanceMatrix);

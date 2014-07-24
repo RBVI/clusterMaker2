@@ -1,14 +1,11 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.ChengChurch;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
@@ -20,8 +17,6 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractAttributeClusterer;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DBSCAN.DBSCANContext;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DBSCAN.RunDBSCAN;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.KnnView;
@@ -67,6 +62,8 @@ public class ChengChurch extends AbstractAttributeClusterer {
 		monitor.setTitle("Performing "+getName());
 		List<String> nodeAttributeList = context.attributeList.getNodeAttributeList();
 		String edgeAttribute = context.attributeList.getEdgeAttribute();
+		
+		clusterAttributeName = "CnC_Bicluster";
 		
 		if (nodeAttributeList == null && edgeAttribute == null) {
 			monitor.showMessage(TaskMonitor.Level.ERROR, "Must select either one edge column or two or more node columns");
@@ -153,18 +150,19 @@ public class ChengChurch extends AbstractAttributeClusterer {
 			
 			network.getDefaultNetworkTable().createColumn(clusterAttributeName + "_NodeTable.SUID", Long.class, false);
 			BiClusterNodeTable = tableFactory.createTable(clusterAttributeName + "_NodeTable", "Node.SUID", Long.class, true, true);
+			BiClusterNodeTable.createListColumn("Bicluster List", Integer.class, false);
 		}
 		else{
 			long BiClusterTableSUID = network.getRow(network).get(clusterAttributeName + "_NodeTable.SUID", Long.class);
 			BiClusterNodeTable = tableManager.getTable(BiClusterTableSUID);
-			BiClusterNodeTable.createColumn("Bicluster List", List.class, false);
+			
 		}
 		
 		if(!CyTableUtil.getColumnNames(networkTable).contains(clusterAttributeName + "_AttrTable.SUID")){
 			
 			network.getDefaultNetworkTable().createColumn(clusterAttributeName + "_AttrTable.SUID", Long.class, false);
 			BiClusterAttrTable = tableFactory.createTable(clusterAttributeName + "_AttrTable", "BiCluster Number", Integer.class, true, true);
-			BiClusterAttrTable.createColumn("Bicluster Attribute List", List.class, false);
+			BiClusterAttrTable.createListColumn("Bicluster Attribute List", String.class, false);
 		}
 		else{
 			long BiClusterTableSUID = network.getRow(network).get(clusterAttributeName + "_AttrTable.SUID", Long.class);
