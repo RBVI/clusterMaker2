@@ -71,8 +71,8 @@ public class BiclusterView extends TreeViewApp implements Observer,
 	protected CyTableManager tableManager = null;
 	protected CyTableFactory tableFactory = null;
 	protected String clusterAttribute = null;
-	ArrayList<String> rowList;
-	ArrayList<String> colList;
+	List<String> rowList;
+	List<String> colList;
 
 	@Tunable(description="Network to view bicluster heatmap for", context="nogui")
 	public CyNetwork myNetwork = null;
@@ -170,8 +170,8 @@ public class BiclusterView extends TreeViewApp implements Observer,
 			return;
 		}
 		
-		HashMap<Integer, ArrayList<String>> clusterNodes = getBiclusterNodes();
-		HashMap<Integer, ArrayList<String>> clusterAttrs = getBiclusterAttributes();
+		Map<Integer, List<String>> clusterNodes = getBiclusterNodes();
+		Map<Integer, List<String>> clusterAttrs = getBiclusterAttributes();
 		
 		/*
 		ArrayList<String> nodeArrayL = new ArrayList<String>();
@@ -231,8 +231,8 @@ public class BiclusterView extends TreeViewApp implements Observer,
 	
 	}
 	
-	public void mergeBiclusters(HashMap<Integer, ArrayList<String>> clusterNodes,HashMap<Integer, ArrayList<String>> clusterAttrs){
-		HashMap<Integer,Integer> biclusterSizes = new HashMap<Integer,Integer>();
+	public void mergeBiclusters(Map<Integer, List<String>> clusterNodes, Map<Integer, List<String>> clusterAttrs){
+		Map<Integer,Integer> biclusterSizes = new HashMap<Integer,Integer>();
 		
 		
 		for(Integer key: clusterNodes.keySet()){
@@ -241,11 +241,10 @@ public class BiclusterView extends TreeViewApp implements Observer,
 		}
 		//sort the Biclusters by size
 		//ArrayList<Integer> list = new ArrayList<Integer>(biclusterSizes.entrySet());
-		List templist = new LinkedList(biclusterSizes.entrySet());
-		Collections.sort(templist, new Comparator() {
-			public int compare(Object o1, Object o2) {
-				return ((Comparable) ((Map.Entry) (o2)).getValue())
-                                       .compareTo(((Map.Entry) (o1)).getValue());
+		List<Map.Entry<Integer,Integer>> templist = new LinkedList<Map.Entry<Integer,Integer>>(biclusterSizes.entrySet());
+		Collections.sort(templist, new Comparator<Map.Entry<Integer,Integer>>() {
+			public int compare(Map.Entry<Integer,Integer> o1, Map.Entry<Integer,Integer> o2) {
+				return o2.getValue().compareTo(o1.getValue());
 			}
 		});
 		
@@ -260,16 +259,15 @@ public class BiclusterView extends TreeViewApp implements Observer,
 		rowList = new ArrayList<String>();
 		colList = new ArrayList<String>();
 		
-		ArrayList<String> rowPrev = new ArrayList<String>();
-		ArrayList<String> colPrev = new ArrayList<String>();
-		ArrayList<String> rowNew;
-		ArrayList<String> colNew;
+		List<String> rowPrev = new ArrayList<String>();
+		List<String> colPrev = new ArrayList<String>();
+		List<String> rowNew;
+		List<String> colNew;
 		
 		boolean initial = true;
 		//now checking biclusters in decreasing order of size
-		for (Iterator it = templist.iterator(); it.hasNext();) {
-			Map.Entry entry = (Map.Entry) it.next();
-			int clust = (int) entry.getKey();
+		for (Map.Entry<Integer,Integer> entry: templist) {
+			int clust = entry.getKey().intValue();
 			if(initial == true){
 				rowPrev.addAll(clusterNodes.get(clust));
 				colPrev.addAll(clusterAttrs.get(clust));
@@ -283,7 +281,7 @@ public class BiclusterView extends TreeViewApp implements Observer,
 				colNew.addAll(clusterAttrs.get(clust));
 				
 				//Find the common rows
-				ArrayList<String> rowOverlap = new ArrayList(rowPrev);					
+				List<String> rowOverlap = new ArrayList<String>(rowPrev);					
 				rowOverlap.retainAll(rowNew);
 				//Separate out other rows
 				rowPrev.removeAll(rowOverlap);
@@ -295,7 +293,7 @@ public class BiclusterView extends TreeViewApp implements Observer,
 				rowList.addAll(rowOverlap);
 				
 				//Find the common columns
-				ArrayList<String> colOverlap = new ArrayList(colPrev);
+				List<String> colOverlap = new ArrayList<String>(colPrev);
 				colOverlap.retainAll(colNew);
 				//Separate out other columns
 				colPrev.removeAll(colOverlap);
@@ -312,7 +310,7 @@ public class BiclusterView extends TreeViewApp implements Observer,
 				rowNew.removeAll(rowOverlap);
 				colNew.removeAll(colOverlap);
 				rowPrev = rowNew;
-				colPrev = colNew;				
+				colPrev = colNew;
 			}
 		}
 		//Now insert the remaining rows and columns for the last bicluster
@@ -321,39 +319,39 @@ public class BiclusterView extends TreeViewApp implements Observer,
 		Collections.sort(colPrev);
 		colList.addAll(colPrev);
 	}
-	
-	public HashMap<Integer, ArrayList<String>> getBiclusterNodes(){
+
+	public Map<Integer, List<String>> getBiclusterNodes(){
 		long BiClusterTableSUID = myNetwork.getRow(myNetwork).get(clusterAttribute + "_NodeTable.SUID", Long.class);
 		CyTable BiClusterNodeTable = tableManager.getTable(BiClusterTableSUID);
-		
-		HashMap<Integer, ArrayList<String>> clusterNodes = new HashMap<Integer, ArrayList<String>>();
+
+		Map<Integer, List<String>> clusterNodes = new HashMap<Integer, List<String>>();
 		int numNodes = BiClusterNodeTable.getRowCount();
 		List<CyNode> nodeList = myNetwork.getNodeList();
-		
+
 		for (CyNode node : nodeList){
 			CyRow nodeRow = BiClusterNodeTable.getRow(node.getSUID());
-			ArrayList<Integer> temp = (ArrayList<Integer>) nodeRow.get("Bicluster List", List.class);
-			
+			List<Integer> temp = (ArrayList<Integer>) nodeRow.get("Bicluster List", List.class);
+
 			for(Integer biclust : temp){
 				if(clusterNodes.containsKey(biclust)){
 					clusterNodes.get(biclust).add(ModelUtils.getName(myNetwork, node));
 				}
 				else{
-					ArrayList<String> newlist = new ArrayList<String>();
+					List<String> newlist = new ArrayList<String>();
 					newlist.add(ModelUtils.getName(myNetwork, node));
 					clusterNodes.put(biclust, newlist);
 				}
-			}						
+			}
 		}
-						
+
 		return clusterNodes;
 	}
 	
-	public HashMap<Integer, ArrayList<String>> getBiclusterAttributes(){
+	public Map<Integer, List<String>> getBiclusterAttributes(){
 		long BiClusterTableSUID = myNetwork.getRow(myNetwork).get(clusterAttribute + "_AttrTable.SUID", Long.class);
 		CyTable BiClusterAttrTable = tableManager.getTable(BiClusterTableSUID);
 		
-		HashMap<Integer, ArrayList<String>> clusterAttrs = new HashMap<Integer, ArrayList<String>>();
+		Map<Integer, List<String>> clusterAttrs = new HashMap<Integer, List<String>>();
 		int numClust = BiClusterAttrTable.getRowCount();
 		
 		List<CyRow> tableRows = BiClusterAttrTable.getAllRows();
@@ -384,7 +382,7 @@ public class BiclusterView extends TreeViewApp implements Observer,
 			List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(net, CyNetwork.SELECTED, true);
 			setEdgeSelection(selectedEdges, true);
 		}
-		
+
 	}
 
 	public void update(Observable o, Object arg) {
@@ -464,7 +462,7 @@ public class BiclusterView extends TreeViewApp implements Observer,
 			}
 		}
 
-		HashMap<CyEdge,CyEdge>edgesToSelect = new HashMap<CyEdge,CyEdge>();
+		Map<CyEdge,CyEdge>edgesToSelect = new HashMap<CyEdge,CyEdge>();
 		ignoreSelection = true;
 		List<CyEdge> edgesToClear = CyTableUtil.getEdgesInState(currentNetwork, CyNetwork.SELECTED, true);
 		for (CyEdge edge: edgesToClear) {
