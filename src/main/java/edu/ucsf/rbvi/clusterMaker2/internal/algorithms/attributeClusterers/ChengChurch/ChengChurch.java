@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -19,7 +20,7 @@ import org.cytoscape.work.Tunable;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractAttributeClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.KnnView;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.BiclusterView;
 
 public class ChengChurch extends AbstractAttributeClusterer {
 
@@ -137,11 +138,11 @@ public class ChengChurch extends AbstractAttributeClusterer {
 		
 		// System.out.println(resultsString);
 		if (context.showUI) {
-			insertTasksAfterCurrentTask(new KnnView(clusterManager));
+			insertTasksAfterCurrentTask(new BiclusterView(clusterManager));
 		}
 	}
 	
-	public void createBiclusterTable(HashMap<Integer, ArrayList<Long>> clusterNodes ,HashMap<Integer, ArrayList<String>> clusterAttrs){
+	public void createBiclusterTable(Map<Integer, List<Long>> clusterNodes ,Map<Integer, List<String>> clusterAttrs){
 		CyTable networkTable = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
 		CyTable BiClusterNodeTable = null;
 		CyTable BiClusterAttrTable = null;		
@@ -169,15 +170,15 @@ public class ChengChurch extends AbstractAttributeClusterer {
 			BiClusterAttrTable = tableManager.getTable(BiClusterTableSUID);
 		}
 				
-		HashMap<Long,ArrayList<Integer>> biclusterList = new HashMap<Long,ArrayList<Integer>>();
+		Map<Long,List<Integer>> biclusterList = new HashMap<Long,List<Integer>>();
 		for(Integer clust : clusterNodes.keySet()){
-			ArrayList<Long> temp = clusterNodes.get(clust);
+			List<Long> temp = clusterNodes.get(clust);
 			for(Long node : temp){
 				if(biclusterList.containsKey(node)){
 					biclusterList.get(node).add(clust);
 				}
 				else{
-					ArrayList<Integer> newlist = new ArrayList<Integer>();
+					List<Integer> newlist = new ArrayList<Integer>();
 					newlist.add(clust);
 					biclusterList.put(node, newlist);
 				}

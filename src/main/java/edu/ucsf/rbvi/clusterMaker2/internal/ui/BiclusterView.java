@@ -77,24 +77,19 @@ public class BiclusterView extends TreeViewApp implements Observer,
 	@Tunable(description="Network to view bicluster heatmap for", context="nogui")
 	public CyNetwork myNetwork = null;
 
-	@ContainsTunables
-	public HeatMapContext context = null;
-
 	private static String appName = "clusterMaker BiclusterView";
 	
-	public BiclusterView(HeatMapContext context, ClusterManager manager) {
+	public BiclusterView(ClusterManager manager) {
 		super();
 		// setExitOnWindowsClosed(false);
 		selectedNodes = new ArrayList<CyNode>();
 		selectedArrays = new ArrayList<CyNode>();
 		this.manager = manager;
-		this.context = context;
 		networkTableManager = manager.getService(CyNetworkTableManager.class);
 		tableManager = manager.getTableManager();
 		tableFactory = manager.getTableFactory();
 				
 		if (myNetwork == null) myNetwork = manager.getNetwork();
-		context.setNetwork(myNetwork);
 		
 		clusterAttribute =
 				myNetwork.getRow(myNetwork, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
@@ -116,7 +111,7 @@ public class BiclusterView extends TreeViewApp implements Observer,
 		return appName;
 	}
 
-	public Object getContext() { return context; }
+	public Object getContext() { return null; }
 
 	// ClusterViz methods
 	public String getShortName() { return SHORTNAME; }
@@ -152,24 +147,6 @@ public class BiclusterView extends TreeViewApp implements Observer,
 		CyProperty cyProperty = manager.getService(CyProperty.class, 
                 "(cyPropertyName=cytoscape3.props)");
 
-		List<String> nodeAttributeList = context.attributeList.getNodeAttributeList();
-		String edgeAttribute = context.attributeList.getEdgeAttribute();
-		
-		if (nodeAttributeList == null && edgeAttribute == null) {
-			monitor.showMessage(TaskMonitor.Level.ERROR, "Must select either one edge column or two or more node columns");
-			return;
-		}
-		
-		if (nodeAttributeList != null && nodeAttributeList.size() > 0 && edgeAttribute != null) {
-			monitor.showMessage(TaskMonitor.Level.ERROR,"Can't have both node and edge columns selected");
-			return;
-		}
-		
-		if (nodeAttributeList != null && nodeAttributeList.size() < 2) {
-			monitor.showMessage(TaskMonitor.Level.ERROR,"Must have at least two node columns for cluster weighting");
-			return;
-		}
-		
 		Map<Integer, List<String>> clusterNodes = getBiclusterNodes();
 		Map<Integer, List<String>> clusterAttrs = getBiclusterAttributes();
 		
@@ -195,15 +172,15 @@ public class BiclusterView extends TreeViewApp implements Observer,
 		ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
 				attrArrayL, List.class, String.class);
 		*/
-		
+
 		//Using the overlapping and reordering for node and array order attributes
 		mergeBiclusters(clusterNodes,clusterAttrs);
 		ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.NODE_ORDER_ATTRIBUTE, 
                 rowList, List.class, String.class);
 		ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
 				colList, List.class, String.class);
-		
-		
+
+
 		// Get our data model
 		dataModel = new TreeViewModel(monitor, myNetwork, myView, manager);
 

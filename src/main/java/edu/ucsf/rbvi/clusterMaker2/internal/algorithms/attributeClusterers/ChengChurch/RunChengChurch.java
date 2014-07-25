@@ -2,6 +2,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Chen
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -18,7 +19,7 @@ public class RunChengChurch {
 	protected String[] weightAttributes;
 	//protected DistanceMetric metric;
 	protected Matrix matrix;
-	protected double Arr[][];
+	protected double arr[][];
 	protected TaskMonitor monitor;
 	protected boolean ignoreMissing = true;
 	protected boolean selectedOnly = false;
@@ -28,12 +29,12 @@ public class RunChengChurch {
 	double alpha;
 	double MatrixMax;
 	double MatrixMin;
-	protected HashMap<Integer,ArrayList<Integer>> clusterRows;
-	protected HashMap<Integer,ArrayList<Integer>> clusterCols;
-	protected HashMap<Integer,ArrayList<Long>> clusterNodes;
-	protected HashMap<Integer,ArrayList<String>> clusterAttrs;
+	protected Map<Integer,List<Integer>> clusterRows;
+	protected Map<Integer,List<Integer>> clusterCols;
+	protected Map<Integer,List<Long>> clusterNodes;
+	protected Map<Integer,List<String>> clusterAttrs;
 	
-	ArrayList<Integer> unvisited;
+	List<Integer> unvisited;
 	double distanceMatrix[][];	
 	
 	public RunChengChurch(CyNetwork network, String weightAttributes[],
@@ -66,21 +67,22 @@ public class RunChengChurch {
 		int nelements = matrix.nRows();
 		int nattrs = matrix.nColumns();
 		
-		Arr = new double[nelements][nattrs];
+		System.out.println("nelements = "+nelements+", nattrs = "+nattrs);
+		arr = new double[nelements][nattrs];
 		for(int i= 0 ;i < nelements; i++){
 			for(int j = 0; j < nattrs; j++){
-				Arr[i][j] = matrix.getValue(i, j);
+				arr[i][j] = matrix.getValue(i, j);
 			}
 		}
 		
 		int ifound = 1;
 		int currentC = -1;
 		int[] clusters = new int[nelements];
-		clusterRows = new HashMap<Integer,ArrayList<Integer>>();
-		clusterCols = new HashMap<Integer,ArrayList<Integer>>();
+		clusterRows = new HashMap<Integer,List<Integer>>();
+		clusterCols = new HashMap<Integer,List<Integer>>();
 		
-		clusterNodes = new HashMap<Integer,ArrayList<Long>>();
-		clusterAttrs = new HashMap<Integer,ArrayList<String>>();
+		clusterNodes = new HashMap<Integer,List<Long>>();
+		clusterAttrs = new HashMap<Integer,List<String>>();
 		
 		//Initialising all clusters to -1
 		for(int i = 0; i < nelements; i++) clusters[i] = -1;
@@ -89,8 +91,8 @@ public class RunChengChurch {
 		
 		//The Cheng and Church algorithm
 		for(int iter = 0; iter < nClusters; iter++){
-			ArrayList<Integer> rows = new ArrayList<Integer>();
-			ArrayList<Integer> cols = new ArrayList<Integer>();
+			List<Integer> rows = new ArrayList<Integer>();
+			List<Integer> cols = new ArrayList<Integer>();
 			
 			//Initialize rows and cols to all rows and columns
 			for(int i = 0; i < nelements; i++){
@@ -108,13 +110,13 @@ public class RunChengChurch {
 			
 			nodeAddition(rows,cols);
 			
-			ArrayList<Long> nodes = new ArrayList<Long>();
+			List<Long> nodes = new ArrayList<Long>();
 			for (int i = 0; i < rows.size(); i++){
 				nodes.add(matrix.getRowNode(rows.get(i)).getSUID());				
 			}
 			clusterNodes.put(iter, nodes);
 			
-			ArrayList<String> attrs = new ArrayList<String>();
+			List<String> attrs = new ArrayList<String>();
 			for (int j = 0; j < cols.size(); j++){
 				attrs.add(matrix.getColLabel(cols.get(j)));				
 			}
@@ -138,7 +140,7 @@ public class RunChengChurch {
 		for(int i = 0; i < nelements; i++){
 			for(int j = 0; j < nattrs; j++){
 				//double value = matrix.getValue(i, j);
-				double value = Arr[i][j];
+				double value = arr[i][j];
 				if(value > MatrixMax) MatrixMax = value;
 				if(value < MatrixMin) MatrixMin = value;
 			}
@@ -146,7 +148,7 @@ public class RunChengChurch {
 	}
 	
 	//For masking the array values corresponding to found bicluster with random values
-	public void maskMatrix(ArrayList<Integer> rows, ArrayList<Integer> cols){
+	public void maskMatrix(List<Integer> rows, List<Integer> cols){
 		
 		int nRows= rows.size();
 		int nCols = cols.size();
@@ -156,19 +158,19 @@ public class RunChengChurch {
 			for(int j = 0; j< nCols; j++){
 				double maskVal = generator.nextDouble()*range + MatrixMin;
 				//matrix.setValue(rows.get(i), cols.get(j), maskVal);
-				Arr[rows.get(i)][cols.get(j)] = maskVal;				
+				arr[rows.get(i)][cols.get(j)] = maskVal;				
 			}
 		}
 	}
 	
 	//For computing the MSR of a bicluster
-	public double calcMSR(ArrayList<Integer> rows, ArrayList<Integer> cols){
+	public double calcMSR(List<Integer> rows, List<Integer> cols){
 		double msr = 0;
 		int rowSize = rows.size();
 		int colSize = cols.size();
 		
-		HashMap<Integer,Double> rowSums = getRowSums(rows,cols);
-		HashMap<Integer,Double> colSums = getColSums(rows,cols);
+		Map<Integer,Double> rowSums = getRowSums(rows,cols);
+		Map<Integer,Double> colSums = getColSums(rows,cols);
 		
 		//normalized sum of all elements of sub matrix
 		double aIJ = 0;
@@ -183,7 +185,7 @@ public class RunChengChurch {
 				
 				double aiJ = rowSums.get(i)/colSize;
 				double aIj = colSums.get(j)/rowSize;				
-				double residue = Arr[i][j] - aiJ - aIj + aIJ;
+				double residue = arr[i][j] - aiJ - aIj + aIJ;
 				
 				msr += Math.pow(residue, 2);				
 			}			
@@ -193,40 +195,40 @@ public class RunChengChurch {
 		return msr;
 	}
 	
-	public HashMap<Integer,Double> getRowSums(ArrayList<Integer> rows, ArrayList<Integer> cols){
-		HashMap<Integer,Double> rowSums = new HashMap<Integer,Double>();
+	public Map<Integer,Double> getRowSums(List<Integer> rows, List<Integer> cols){
+		Map<Integer,Double> rowSums = new HashMap<Integer,Double>();
 		
 		for(Integer i : rows){
 			double rowSum = 0;
 			for(Integer j : cols){
-				rowSum += Arr[i][j];
+				rowSum += arr[i][j];
 			}
 			rowSums.put(i, rowSum);			
 		}
 		return rowSums;
 	}
 	
-	public HashMap<Integer,Double> getColSums(ArrayList<Integer> rows, ArrayList<Integer> cols){
-		HashMap<Integer,Double> colSums = new HashMap<Integer,Double>();
+	public Map<Integer,Double> getColSums(List<Integer> rows, List<Integer> cols){
+		Map<Integer,Double> colSums = new HashMap<Integer,Double>();
 		
 		for(Integer j : cols){
 			double colSum = 0;
 			for(Integer i : rows){
-				colSum += Arr[i][j];
+				colSum += arr[i][j];
 			}
 			colSums.put(j, colSum);			
 		}
 		return colSums;
 	}
 	
-	public HashMap<Integer,Double> calcRowMSR(ArrayList<Integer> rows, ArrayList<Integer> cols){
+	public Map<Integer,Double> calcRowMSR(List<Integer> rows, List<Integer> cols){
 		
 		int rowSize = rows.size();
 		int colSize = cols.size();
-		HashMap<Integer,Double> rowMSRs = new HashMap<Integer,Double>();
+		Map<Integer,Double> rowMSRs = new HashMap<Integer,Double>();
 		
-		HashMap<Integer,Double> rowSums = getRowSums(rows,cols);
-		HashMap<Integer,Double> colSums = getColSums(rows,cols);
+		Map<Integer,Double> rowSums = getRowSums(rows,cols);
+		Map<Integer,Double> colSums = getColSums(rows,cols);
 		
 		//normalized sum of all elements of sub matrix
 		double aIJ = 0;
@@ -242,7 +244,7 @@ public class RunChengChurch {
 				
 				double aiJ = rowSums.get(i)/colSize;
 				double aIj = colSums.get(j)/rowSize;				
-				double residue = Arr[i][j] - aiJ - aIj + aIJ;
+				double residue = arr[i][j] - aiJ - aIj + aIJ;
 				
 				rowMsr += Math.pow(residue, 2);				
 			}	
@@ -253,14 +255,14 @@ public class RunChengChurch {
 		return rowMSRs;
 	}
 	
-	public HashMap<Integer,Double> calcColMSR(ArrayList<Integer> rows, ArrayList<Integer> cols){
+	public Map<Integer,Double> calcColMSR(List<Integer> rows, List<Integer> cols){
 		
 		int rowSize = rows.size();
 		int colSize = cols.size();
-		HashMap<Integer,Double> colMSRs = new HashMap<Integer,Double>();
+		Map<Integer,Double> colMSRs = new HashMap<Integer,Double>();
 		
-		HashMap<Integer,Double> rowSums = getRowSums(rows,cols);
-		HashMap<Integer,Double> colSums = getColSums(rows,cols);
+		Map<Integer,Double> rowSums = getRowSums(rows,cols);
+		Map<Integer,Double> colSums = getColSums(rows,cols);
 		
 		//normalized sum of all elements of sub matrix
 		double aIJ = 0;
@@ -276,7 +278,7 @@ public class RunChengChurch {
 				
 				double aiJ = rowSums.get(i)/colSize;
 				double aIj = colSums.get(j)/rowSize;				
-				double residue = Arr[i][j] - aiJ - aIj + aIJ;
+				double residue = arr[i][j] - aiJ - aIj + aIJ;
 				
 				colMsr += Math.pow(residue, 2);				
 			}	
@@ -287,9 +289,9 @@ public class RunChengChurch {
 		return colMSRs;
 	}
 	
-	public HashMap<Integer,Double> calcOtherRowMSR(ArrayList<Integer> rows, ArrayList<Integer> cols, boolean inverted){
-		ArrayList<Integer> otherRows = new ArrayList<Integer>();
-		ArrayList<Integer> otherCols = new ArrayList<Integer>();
+	public Map<Integer,Double> calcOtherRowMSR(List<Integer> rows, List<Integer> cols, boolean inverted){
+		List<Integer> otherRows = new ArrayList<Integer>();
+		List<Integer> otherCols = new ArrayList<Integer>();
 		
 		int nRows = matrix.nRows();
 		int nCols = matrix.nColumns();
@@ -311,10 +313,10 @@ public class RunChengChurch {
 		int otherRowSize = otherRows.size();
 		int otherColSize = otherCols.size();
 		
-		HashMap<Integer,Double> rowMSRs = new HashMap<Integer,Double>();
+		Map<Integer,Double> rowMSRs = new HashMap<Integer,Double>();
 		
-		HashMap<Integer,Double> rowSums = getRowSums(rows,cols);
-		HashMap<Integer,Double> colSums = getColSums(rows,cols);
+		Map<Integer,Double> rowSums = getRowSums(rows,cols);
+		Map<Integer,Double> colSums = getColSums(rows,cols);
 		
 		//normalized sum of all elements of sub matrix
 		double aIJ = 0;
@@ -324,7 +326,7 @@ public class RunChengChurch {
 		
 		aIJ = aIJ/(rowSize*colSize);
 		
-		HashMap<Integer,Double> otherRowSums = getRowSums(otherRows,cols);
+		Map<Integer,Double> otherRowSums = getRowSums(otherRows,cols);
 		
 		for(Integer i: otherRows){
 			double rowMsr = 0.0;
@@ -335,10 +337,10 @@ public class RunChengChurch {
 				double residue = 0.0;
 				
 				if(!inverted){
-					residue = Arr[i][j] - aiJ - aIj + aIJ;
+					residue = arr[i][j] - aiJ - aIj + aIJ;
 				}
 				else{
-					residue = -Arr[i][j] + aiJ - aIj + aIJ;
+					residue = -arr[i][j] + aiJ - aIj + aIJ;
 				}
 				
 				rowMsr += Math.pow(residue, 2);				
@@ -350,10 +352,10 @@ public class RunChengChurch {
 		return rowMSRs;
 	}
 	
-	public HashMap<Integer,Double> calcOtherColMSR(ArrayList<Integer> rows, ArrayList<Integer> cols){
+	public Map<Integer,Double> calcOtherColMSR(List<Integer> rows, List<Integer> cols){
 		
-		ArrayList<Integer> otherRows = new ArrayList<Integer>();
-		ArrayList<Integer> otherCols = new ArrayList<Integer>();
+		List<Integer> otherRows = new ArrayList<Integer>();
+		List<Integer> otherCols = new ArrayList<Integer>();
 		
 		int nRows = matrix.nRows();
 		int nCols = matrix.nColumns();
@@ -375,10 +377,10 @@ public class RunChengChurch {
 		int otherRowSize = otherRows.size();
 		int otherColSize = otherCols.size();
 		
-		HashMap<Integer,Double> colMSRs = new HashMap<Integer,Double>();
+		Map<Integer,Double> colMSRs = new HashMap<Integer,Double>();
 		
-		HashMap<Integer,Double> rowSums = getRowSums(rows,cols);
-		HashMap<Integer,Double> colSums = getColSums(rows,cols);
+		Map<Integer,Double> rowSums = getRowSums(rows,cols);
+		Map<Integer,Double> colSums = getColSums(rows,cols);
 		
 		//normalized sum of all elements of sub matrix
 		double aIJ = 0;
@@ -388,7 +390,7 @@ public class RunChengChurch {
 		
 		aIJ = aIJ/(rowSize*colSize);
 		
-		HashMap<Integer,Double> otherColSums = getColSums(rows,otherCols);
+		Map<Integer,Double> otherColSums = getColSums(rows,otherCols);
 		
 		for(Integer j: otherCols){
 			double colMsr = 0.0;
@@ -396,7 +398,7 @@ public class RunChengChurch {
 				
 				double aiJ = rowSums.get(i)/colSize;
 				double aIj = otherColSums.get(j)/rowSize;				
-				double residue = Arr[i][j] - aiJ - aIj + aIJ;
+				double residue = arr[i][j] - aiJ - aIj + aIJ;
 				
 				colMsr += Math.pow(residue, 2);				
 			}	
@@ -408,16 +410,16 @@ public class RunChengChurch {
 		
 	}
 	
-	public boolean multipleNodeDeletion(ArrayList<Integer> rows, ArrayList<Integer> cols){
+	public boolean multipleNodeDeletion(List<Integer> rows, List<Integer> cols){
 		double msr = calcMSR(rows,cols);
 		boolean changed = false;
 		
 		while(msr > delta){
 			changed = false;
-			HashMap<Integer,Double> rowMSRs = calcRowMSR(rows,cols);			
+			Map<Integer,Double> rowMSRs = calcRowMSR(rows,cols);			
 			double cutoff = alpha*msr;
 			
-			ArrayList<Integer> remRows = new ArrayList<Integer>();
+			List<Integer> remRows = new ArrayList<Integer>();
 			
 			for(Integer i : rows){				
 				if(rowMSRs.get(i) > cutoff){
@@ -431,8 +433,8 @@ public class RunChengChurch {
 				rows.remove(rows.indexOf(i));
 			}
 			
-			ArrayList<Integer> remCols = new ArrayList<Integer>();
-			HashMap<Integer,Double> colMSRs = calcColMSR(rows,cols);
+			List<Integer> remCols = new ArrayList<Integer>();
+			Map<Integer,Double> colMSRs = calcColMSR(rows,cols);
 			for(Integer j : cols){				
 				if(colMSRs.get(j) > cutoff){
 					//cols.remove(cols.indexOf(j));
@@ -452,12 +454,12 @@ public class RunChengChurch {
 		return changed;
 	}
 	
-	public void singleNodeDeletion(ArrayList<Integer> rows, ArrayList<Integer> cols){
+	public void singleNodeDeletion(List<Integer> rows, List<Integer> cols){
 		double msr = calcMSR(rows,cols);
 		
 		while(msr > delta){
-			HashMap<Integer,Double> rowMSRs = calcRowMSR(rows,cols);
-			HashMap<Integer,Double> colMSRs = calcColMSR(rows,cols);
+			Map<Integer,Double> rowMSRs = calcRowMSR(rows,cols);
+			Map<Integer,Double> colMSRs = calcColMSR(rows,cols);
 			
 			int maxRow = getMax(rowMSRs);
 			int maxCol = getMax(colMSRs);
@@ -472,7 +474,7 @@ public class RunChengChurch {
 		}		
 	}
 	
-	public void nodeAddition(ArrayList<Integer> rows, ArrayList<Integer> cols){
+	public void nodeAddition(List<Integer> rows, List<Integer> cols){
 		
 		while (true){
 			int rowSize = rows.size();
@@ -480,7 +482,7 @@ public class RunChengChurch {
 			
 			double msr = calcMSR(rows,cols);
 			
-			HashMap<Integer,Double> otherColMSRs = calcOtherColMSR(rows,cols);
+			Map<Integer,Double> otherColMSRs = calcOtherColMSR(rows,cols);
 			for (Integer j : otherColMSRs.keySet()){
 				if(otherColMSRs.get(j) <= msr){
 					cols.add(j);
@@ -488,8 +490,8 @@ public class RunChengChurch {
 			}
 			
 			msr = calcMSR(rows,cols);
-			HashMap<Integer,Double> otherRowMSRs = calcOtherRowMSR(rows,cols,false);
-			HashMap<Integer,Double> otherRowMSRs_inverted = calcOtherRowMSR(rows,cols,true);
+			Map<Integer,Double> otherRowMSRs = calcOtherRowMSR(rows,cols,false);
+			Map<Integer,Double> otherRowMSRs_inverted = calcOtherRowMSR(rows,cols,true);
 			
 			for (Integer i : otherRowMSRs.keySet()){
 				if(otherRowMSRs.get(i) <= msr){
@@ -511,7 +513,7 @@ public class RunChengChurch {
 		
 	}
 	
-	public int getMax(HashMap<Integer,Double> map){
+	public int getMax(Map<Integer,Double> map){
 		Integer maxkey = null;
 		Map.Entry<Integer,Double> maxEntry = null;
 
@@ -526,19 +528,19 @@ public class RunChengChurch {
 		return maxkey;
 	}
 	
-	public HashMap<Integer, ArrayList<Integer>> getClusterRows(){
+	public Map<Integer, List<Integer>> getClusterRows(){
 		return clusterRows;
 	}
 	
-	public HashMap<Integer, ArrayList<Integer>> getClusterCols(){
+	public Map<Integer, List<Integer>> getClusterCols(){
 		return clusterCols;
 	}
 	
-	public HashMap<Integer, ArrayList<Long>> getClusterNodes(){
+	public Map<Integer, List<Long>> getClusterNodes(){
 		return clusterNodes;
 	}
 	
-	public HashMap<Integer, ArrayList<String>> getClusterAttrs(){
+	public Map<Integer, List<String>> getClusterAttrs(){
 		return clusterAttrs;
 	}
 }
