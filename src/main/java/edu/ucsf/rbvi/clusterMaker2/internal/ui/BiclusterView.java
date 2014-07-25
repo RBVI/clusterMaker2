@@ -71,6 +71,8 @@ public class BiclusterView extends TreeViewApp implements Observer,
 	protected CyTableManager tableManager = null;
 	protected CyTableFactory tableFactory = null;
 	protected String clusterAttribute = null;
+	ArrayList<String> rowList;
+	ArrayList<String> colList;
 
 	@Tunable(description="Network to view bicluster heatmap for", context="nogui")
 	public CyNetwork myNetwork = null;
@@ -171,7 +173,7 @@ public class BiclusterView extends TreeViewApp implements Observer,
 		HashMap<Integer, ArrayList<String>> clusterNodes = getBiclusterNodes();
 		HashMap<Integer, ArrayList<String>> clusterAttrs = getBiclusterAttributes();
 		
-		
+		/*
 		ArrayList<String> nodeArrayL = new ArrayList<String>();
 		for(Integer key:clusterNodes.keySet()){
 			ArrayList<String> bicluster = clusterNodes.get(key);
@@ -192,6 +194,15 @@ public class BiclusterView extends TreeViewApp implements Observer,
 		}
 		ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
 				attrArrayL, List.class, String.class);
+		*/
+		
+		//Using the overlapping and reordering for node and array order attributes
+		mergeBiclusters(clusterNodes,clusterAttrs);
+		ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.NODE_ORDER_ATTRIBUTE, 
+                rowList, List.class, String.class);
+		ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
+				colList, List.class, String.class);
+		
 		
 		// Get our data model
 		dataModel = new TreeViewModel(monitor, myNetwork, myView, manager);
@@ -246,8 +257,8 @@ public class BiclusterView extends TreeViewApp implements Observer,
 		}
 		*/
 		
-		ArrayList<String> rowList = new ArrayList<String>();
-		ArrayList<String> colList = new ArrayList<String>();
+		rowList = new ArrayList<String>();
+		colList = new ArrayList<String>();
 		
 		ArrayList<String> rowPrev = new ArrayList<String>();
 		ArrayList<String> colPrev = new ArrayList<String>();
@@ -270,27 +281,45 @@ public class BiclusterView extends TreeViewApp implements Observer,
 				
 				rowNew.addAll(clusterNodes.get(clust));
 				colNew.addAll(clusterAttrs.get(clust));
-				if(rowList.size()==0){
-					ArrayList<String> rowOverlap = new ArrayList(rowPrev);
-					rowOverlap.retainAll(rowNew);
-					rowPrev.removeAll(rowOverlap);
-					Collections.sort(rowPrev);
-					rowList.addAll(rowPrev);
-					Collections.sort(rowOverlap);
-					rowList.addAll(rowOverlap);
-					
-					ArrayList<String> colOverlap = new ArrayList(colPrev);
-					colOverlap.retainAll(colNew);
-					colPrev.removeAll(colOverlap);
-					Collections.sort(colPrev);
-					colList.addAll(colPrev);
-					Collections.sort(colOverlap);
-					colList.addAll(colOverlap);
-				}
 				
+				//Find the common rows
+				ArrayList<String> rowOverlap = new ArrayList(rowPrev);					
+				rowOverlap.retainAll(rowNew);
+				//Separate out other rows
+				rowPrev.removeAll(rowOverlap);
+				//Insert the other rows first 
+				Collections.sort(rowPrev);
+				rowList.addAll(rowPrev);
+				//Then insert the common rows
+				Collections.sort(rowOverlap);
+				rowList.addAll(rowOverlap);
+				
+				//Find the common columns
+				ArrayList<String> colOverlap = new ArrayList(colPrev);
+				colOverlap.retainAll(colNew);
+				//Separate out other columns
+				colPrev.removeAll(colOverlap);
+				//Insert the other columns first
+				Collections.sort(colPrev);
+				colList.addAll(colPrev);
+				//Then insert the common columns
+				Collections.sort(colOverlap);
+				colList.addAll(colOverlap);
+				
+				//The above puts the overlapping region in the bottom right corner as we build up
+				//The ones which got added above are locked
+				//The ones remaining from  2nd bicluster are not locked and will be used in next iteration
+				rowNew.removeAll(rowOverlap);
+				colNew.removeAll(colOverlap);
+				rowPrev = rowNew;
+				colPrev = colNew;				
 			}
 		}
-		
+		//Now insert the remaining rows and columns for the last bicluster
+		Collections.sort(rowPrev);
+		rowList.addAll(rowPrev);
+		Collections.sort(colPrev);
+		colList.addAll(colPrev);
 	}
 	
 	public HashMap<Integer, ArrayList<String>> getBiclusterNodes(){
