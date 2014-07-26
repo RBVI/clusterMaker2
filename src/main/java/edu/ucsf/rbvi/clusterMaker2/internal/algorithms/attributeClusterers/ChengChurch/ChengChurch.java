@@ -65,6 +65,7 @@ public class ChengChurch extends AbstractAttributeClusterer {
 		String edgeAttribute = context.attributeList.getEdgeAttribute();
 		
 		clusterAttributeName = "CnC_Bicluster";
+		network.getRow(network, CyNetwork.LOCAL_ATTRS).set(ClusterManager.CLUSTER_ATTRIBUTE, clusterAttributeName);
 		
 		if (nodeAttributeList == null && edgeAttribute == null) {
 			monitor.showMessage(TaskMonitor.Level.ERROR, "Must select either one edge column or two or more node columns");
