@@ -19,7 +19,7 @@ public class RunChengChurch {
 	protected String[] weightAttributes;
 	//protected DistanceMetric metric;
 	protected Matrix matrix;
-	protected double arr[][];
+	protected Double arr[][];
 	protected TaskMonitor monitor;
 	protected boolean ignoreMissing = true;
 	protected boolean selectedOnly = false;
@@ -68,13 +68,20 @@ public class RunChengChurch {
 		int nattrs = matrix.nColumns();
 		
 		System.out.println("nelements = "+nelements+", nattrs = "+nattrs);
-		arr = new double[nelements][nattrs];
+		arr = new Double[nelements][nattrs];
+		
+		Random generator = new Random();
+		double range = MatrixMax - MatrixMin;
+		
 		for(int i= 0 ;i < nelements; i++){
 			for(int j = 0; j < nattrs; j++){
 				arr[i][j] = matrix.getValue(i, j);
+				if(arr[i][j] == null){
+					arr[i][j] = generator.nextDouble()*range + MatrixMin;
+				}
 			}
 		}
-		
+						
 		int ifound = 1;
 		int currentC = -1;
 		int[] clusters = new int[nelements];
