@@ -86,6 +86,7 @@ public class BiclusterView extends TreeView {
 		
 		clusterAttribute =
 				myNetwork.getRow(myNetwork, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
+		//System.out.println("Cluster Attribute Name: "+clusterAttribute);
 	}
 
 	public BiclusterView(PropertyConfig propConfig) {
@@ -294,8 +295,10 @@ public class BiclusterView extends TreeView {
 		List<CyNode> nodeList = myNetwork.getNodeList();
 
 		for (CyNode node : nodeList){
+			//System.out.println("Node : "+ node);
 			CyRow nodeRow = BiClusterNodeTable.getRow(node.getSUID());
 			List<Integer> temp = nodeRow.get("Bicluster List", List.class);
+			if(temp==null)continue;
 
 			for(Integer biclust : temp){
 				if(clusterNodes.containsKey(biclust)){
@@ -321,7 +324,7 @@ public class BiclusterView extends TreeView {
 		
 		List<CyRow> tableRows = BiClusterAttrTable.getAllRows();
 		for(CyRow row: tableRows){
-			clusterAttrs.put(row.get("BiCluster Number", Integer.class), (ArrayList<String>) row.get("Bicluster Attribute List", List.class));			
+			clusterAttrs.put(row.get("BiCluster Number", Integer.class), row.get("Bicluster Attribute List", List.class));			
 		}
 		
 		return clusterAttrs;
