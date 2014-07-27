@@ -36,6 +36,8 @@ import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmeans.KMeansCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmedoid.KMedoidCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
@@ -49,23 +51,17 @@ import edu.ucsf.rbvi.clusterMaker2.internal.treeview.ViewFrame;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.model.TreeViewModel;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
-public class BiclusterView extends TreeViewApp implements Observer,
-								RowsSetListener,ClusterViz, ClusterAlgorithm {
+public class BiclusterView extends TreeView {
 
 	public static String SHORTNAME = "biclusterview";
 	public static String NAME =  "JTree BiclusterView (unclustered)";
 	
-	private URL codeBase = null;
 	protected ViewFrame viewFrame = null;
 	protected TreeSelectionI geneSelection = null;
 	protected TreeSelectionI arraySelection = null;
 	protected TreeViewModel dataModel = null;
 	protected CyNetworkView myView = null;
 	protected TaskMonitor monitor = null;
-	private	List<CyNode>selectedNodes;
-	private	List<CyNode>selectedArrays;
-	private boolean disableListeners = false;
-	private boolean ignoreSelection = false;
 	protected ClusterManager manager = null;
 	protected CyNetworkTableManager networkTableManager = null;
 	protected CyTableManager tableManager = null;
@@ -80,10 +76,7 @@ public class BiclusterView extends TreeViewApp implements Observer,
 	private static String appName = "clusterMaker BiclusterView";
 	
 	public BiclusterView(ClusterManager manager) {
-		super();
-		// setExitOnWindowsClosed(false);
-		selectedNodes = new ArrayList<CyNode>();
-		selectedArrays = new ArrayList<CyNode>();
+		super(manager);		
 		this.manager = manager;
 		networkTableManager = manager.getService(CyNetworkTableManager.class);
 		tableManager = manager.getTableManager();
@@ -97,9 +90,6 @@ public class BiclusterView extends TreeViewApp implements Observer,
 
 	public BiclusterView(PropertyConfig propConfig) {
 		super(propConfig);
-		selectedNodes = new ArrayList<CyNode>();
-		selectedArrays = new ArrayList<CyNode>();
-		// setExitOnWindowsClosed(false);
 	}
 	
 	public void setVisible(boolean visibility) {
@@ -110,8 +100,6 @@ public class BiclusterView extends TreeViewApp implements Observer,
 	public String getAppName() {
 		return appName;
 	}
-
-	public Object getContext() { return null; }
 
 	// ClusterViz methods
 	public String getShortName() { return SHORTNAME; }
@@ -132,7 +120,7 @@ public class BiclusterView extends TreeViewApp implements Observer,
 			monitor.showMessage(TaskMonitor.Level.ERROR, "No compatible cluster results available");
 		}
 	}
-
+	
 	public boolean isAvailable() {
 		return true;
 	}
@@ -307,7 +295,7 @@ public class BiclusterView extends TreeViewApp implements Observer,
 
 		for (CyNode node : nodeList){
 			CyRow nodeRow = BiClusterNodeTable.getRow(node.getSUID());
-			List<Integer> temp = (ArrayList<Integer>) nodeRow.get("Bicluster List", List.class);
+			List<Integer> temp = nodeRow.get("Bicluster List", List.class);
 
 			for(Integer biclust : temp){
 				if(clusterNodes.containsKey(biclust)){
@@ -337,190 +325,5 @@ public class BiclusterView extends TreeViewApp implements Observer,
 		}
 		
 		return clusterAttrs;
-	}
-	
-	public void handleEvent(RowsSetEvent e) {
-		if (!e.containsColumn(CyNetwork.SELECTED))
-			return;
-
-		if (ignoreSelection)
-			return;
-
-		CyTable table = e.getSource();
-		CyNetwork net = networkTableManager.getNetworkForTable(table);
-		Class type = networkTableManager.getTableType(table);
-
-		if (type.equals(CyNode.class)) {
-			if (dataModel.isSymmetrical()) return;
-
-			List<CyNode> selectedNodes = CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, true);
-			setNodeSelection(selectedNodes, true);
-		} else if (type.equals(CyEdge.class) && dataModel.isSymmetrical()) {
-			List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(net, CyNetwork.SELECTED, true);
-			setEdgeSelection(selectedEdges, true);
-		}
-
-	}
-
-	public void update(Observable o, Object arg) {
-		CyNetworkView currentView = manager.getNetworkView();
-		CyNetwork currentNetwork = manager.getNetwork();
-
-		// See if we're supposed to disable our listeners
-		if ((o == arraySelection) && (arg instanceof Boolean)) {
-			// System.out.println("Changing disable listeners to: "+arg.toString());
-			disableListeners = ((Boolean)arg).booleanValue();
-		}
-
-		if (disableListeners) return;
-
-		if (o == geneSelection) {
-			// System.out.println("gene selection");
-			selectedNodes.clear();
-			int[] selections = geneSelection.getSelectedIndexes();
-			HeaderInfo geneInfo = dataModel.getGeneHeaderInfo();
-			String [] names = geneInfo.getNames();
-			for (int i = 0; i < selections.length; i++) {
-				String nodeName = geneInfo.getHeader(selections[i])[0];
-				CyNode node = (CyNode)ModelUtils.getNetworkObjectWithName(currentNetwork, nodeName, CyNode.class);
-				// Now see if this network has this node
-				if (node != null && !currentNetwork.containsNode(node)) {
-					// No, try dropping any suffixes from the node name
-					String[] tokens = nodeName.split(" ");
-					node = (CyNode)ModelUtils.getNetworkObjectWithName(currentNetwork, tokens[0], CyNode.class);
-				}
-				if (node != null)
-					selectedNodes.add(node);
-			}
-			// System.out.println("Selecting "+selectedNodes.size()+" nodes");
-			if (!dataModel.isSymmetrical() || selectedArrays.size() == 0) {
-				List<CyNode> nodesToClear = CyTableUtil.getNodesInState(currentNetwork, CyNetwork.SELECTED, true);
-				ignoreSelection = true;
-				for (CyNode node: nodesToClear) {
-					myNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.FALSE);
-					if (currentNetwork.containsNode(node))
-						currentNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.FALSE);
-				}
-
-				for (CyNode node: selectedNodes) {
-					if (currentNetwork.containsNode(node))
-						currentNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.TRUE);
-					myNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.TRUE);
-				}
-				manager.getService(CyEventHelper.class).flushPayloadEvents();
-				ignoreSelection = false;
-
-				if (currentView != null)
-					currentView.updateView();
-			}
-			return;
-		} else if (o == arraySelection) {
-			// System.out.println("array selection");
-			// We only care about array selection for symmetrical models
-			if (!dataModel.isSymmetrical())
-				return;
-
-			selectedArrays.clear();
-			int[] selections = arraySelection.getSelectedIndexes();
-			if (selections.length == dataModel.nExpr())
-				return;
-			HeaderInfo arrayInfo = dataModel.getArrayHeaderInfo();
-			String [] names = arrayInfo.getNames();
-			for (int i = 0; i < selections.length; i++) {
-				String nodeName = arrayInfo.getHeader(selections[i])[0];
-				CyNode node = (CyNode)ModelUtils.getNetworkObjectWithName(currentNetwork, nodeName, CyNode.class);
-				if (node != null && !currentNetwork.containsNode(node)) {
-					// No, try dropping any suffixes from the node name
-					String[] tokens = nodeName.split(" ");
-					node = (CyNode)ModelUtils.getNetworkObjectWithName(currentNetwork, tokens[0], CyNode.class);
-				}
-				if (node != null)
-					selectedArrays.add(node);
-			}
-		}
-
-		Map<CyEdge,CyEdge>edgesToSelect = new HashMap<CyEdge,CyEdge>();
-		ignoreSelection = true;
-		List<CyEdge> edgesToClear = CyTableUtil.getEdgesInState(currentNetwork, CyNetwork.SELECTED, true);
-		for (CyEdge edge: edgesToClear) {
-			myNetwork.getRow(edge).set(CyNetwork.SELECTED, Boolean.FALSE);
-			if (currentNetwork.containsEdge(edge))
-				currentNetwork.getRow(edge).set(CyNetwork.SELECTED, Boolean.FALSE);
-		}
-
-		for (CyNode node1: selectedNodes) {
-			for (CyNode node2: selectedArrays) {
-				List<CyEdge> edges = currentNetwork.getConnectingEdgeList(node1, node2, CyEdge.Type.ANY);
-				if (edges == null) {
-					continue;
-				}
-				for (CyEdge edge: edges) {
-					myNetwork.getRow(edge).set(CyNetwork.SELECTED, Boolean.TRUE);
-					if (currentNetwork.containsEdge(edge))
-						currentNetwork.getRow(edge).set(CyNetwork.SELECTED, Boolean.TRUE);
-				}
-			}
-		}
-		manager.getService(CyEventHelper.class).flushPayloadEvents();
-		ignoreSelection = false;
-
-		if (currentView != null)
-			currentView.updateView();
-		selectedNodes.clear();
-		selectedArrays.clear();
-	}
-	
-	private void setEdgeSelection(List<CyEdge> edgeArray, boolean select) {
-		HeaderInfo geneInfo = dataModel.getGeneHeaderInfo();
-		HeaderInfo arrayInfo = dataModel.getArrayHeaderInfo();
-
-		// Avoid loops -- delete ourselves as observers
-		geneSelection.deleteObserver(this);
-		arraySelection.deleteObserver(this);
-
-		// Clear everything that's currently selected
-		geneSelection.setSelectedNode(null);
-		geneSelection.deselectAllIndexes();
-		arraySelection.setSelectedNode(null);
-		arraySelection.deselectAllIndexes();
-
-		// Do the actual selection
-		for (CyEdge cyEdge: edgeArray) {
-			if (!myNetwork.containsEdge(cyEdge))
-				continue;
-			CyNode source = (CyNode)cyEdge.getSource();
-			CyNode target = (CyNode)cyEdge.getTarget();
-			int geneIndex = geneInfo.getHeaderIndex(ModelUtils.getName(myNetwork, source));
-			int arrayIndex = arrayInfo.getHeaderIndex(ModelUtils.getName(myNetwork, target));
-			geneSelection.setIndex(geneIndex, select);
-			arraySelection.setIndex(arrayIndex, select);
-		}
-
-		// Notify all of the observers
-		geneSelection.notifyObservers();
-		arraySelection.notifyObservers();
-
-		// OK, now we can listen again
-		geneSelection.addObserver(this);
-		arraySelection.addObserver(this);
-	}
-
-	private void setNodeSelection(List<CyNode> nodeArray, boolean select) {
-		HeaderInfo geneInfo = dataModel.getGeneHeaderInfo();
-		geneSelection.deleteObserver(this);
-		geneSelection.setSelectedNode(null);
-		geneSelection.deselectAllIndexes();
-		for (CyNode cyNode: nodeArray) {
-			if (!myNetwork.containsNode(cyNode))
-				continue;
-			int geneIndex = geneInfo.getHeaderIndex(ModelUtils.getName(myNetwork, cyNode));
-			// System.out.println("setting "+cyNode.getIdentifier()+"("+geneIndex+") to "+select);
-			geneSelection.setIndex(geneIndex, select);
-		}
-		geneSelection.deleteObserver(this);
-		geneSelection.notifyObservers();
-		geneSelection.addObserver(this);
-	}
-
-
+	}	
 }

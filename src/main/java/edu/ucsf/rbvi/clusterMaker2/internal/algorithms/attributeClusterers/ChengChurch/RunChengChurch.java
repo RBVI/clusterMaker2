@@ -472,10 +472,10 @@ public class RunChengChurch {
 			int maxCol = getMax(colMSRs);
 			
 			if(rowMSRs.get(maxRow) > colMSRs.get(maxCol) ){
-				rows.remove(maxRow);
+				rows.remove(rows.indexOf(maxRow));
 			}
 			else{
-				cols.remove(maxCol);
+				cols.remove(cols.indexOf(maxCol));
 			}
 			msr = calcMSR(rows,cols);
 		}		
