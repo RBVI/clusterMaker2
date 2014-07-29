@@ -203,7 +203,9 @@ public class TreeViewModel extends TVModel {
 		// a som, kmeans, or hierarchical cluster
 
 		if (ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE)) {
+			System.out.println("ClusterNodeAttribute: "+ClusterManager.CLUSTER_NODE_ATTRIBUTE);
 			List<String>groupList = network.getRow(network).getList(ClusterManager.CLUSTER_NODE_ATTRIBUTE, String.class);
+			System.out.println("Size of grouplist: "+groupList.size());
 			setGtrPrefix(getClusterHeaders());
 			String [][] gtrHeaders = new String[groupList.size()][getClusterHeaders().length];
 

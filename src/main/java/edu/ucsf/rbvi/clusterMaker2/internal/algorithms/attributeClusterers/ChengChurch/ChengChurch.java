@@ -6,7 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.group.CyGroup;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
@@ -17,16 +19,18 @@ import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.FuzzyNodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractAttributeClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.BiclusterView;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 public class ChengChurch extends AbstractAttributeClusterer {
 
 	public static String SHORTNAME = "cheng&church";
 	public static String NAME = "Cheng & Church's  bi-cluster";
-	public static String GROUP_ATTRIBUTE = SHORTNAME;
+	public final static String GROUP_ATTRIBUTE = SHORTNAME+"Groups.SUID";
 	
 	CyTableManager tableManager = null;
 	private CyTableFactory tableFactory = null;
@@ -65,6 +69,7 @@ public class ChengChurch extends AbstractAttributeClusterer {
 		String edgeAttribute = context.attributeList.getEdgeAttribute();
 		
 		clusterAttributeName = "CnC_Bicluster";
+		
 		if(network.getRow(network, CyNetwork.LOCAL_ATTRS).getTable().getColumn(ClusterManager.CLUSTER_ATTRIBUTE)==null){
 			network.getRow(network, CyNetwork.LOCAL_ATTRS).getTable().createColumn(ClusterManager.CLUSTER_ATTRIBUTE, String.class, false);
 		}
@@ -145,6 +150,41 @@ public class ChengChurch extends AbstractAttributeClusterer {
 			insertTasksAfterCurrentTask(new BiclusterView(clusterManager));
 		}
 	}
+	
+	
+	protected void createBiclusterGroups(Map<Integer, List<Long>> clusterNodes){
+		
+		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
+		List<Long>groupList = new ArrayList<Long>(); // keep track of the groups we create
+		createGroups = context.createGroups;
+		for(Integer bicluster: clusterNodes.keySet()){
+			String groupName = clusterAttributeName+"_"+bicluster;
+			List<Long>suidList = clusterNodes.get(bicluster);
+			List<CyNode>nodeList = new ArrayList<CyNode>();
+			
+			for(Long suid: suidList)nodeList.add(network.getNode(suid));
+			
+			if (createGroups) {
+				CyGroup group = clusterManager.createGroup(network, groupName, nodeList, null, true);
+				if (group != null)
+					groupList.add(group.getGroupNode().getSUID());
+			}			
+		}
+						
+		// Adding a column per node by the clusterAttributeName, which will store a list of all the clusters to which the node belongs
+				
+		
+		ModelUtils.createAndSetLocal(network, network, GROUP_ATTRIBUTE, groupList, List.class, Long.class);
+		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, 
+		                             getShortName(), String.class, null);
+		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTRIBUTE, 
+		                             clusterAttributeName, String.class, null);
+		if (params != null)
+			ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, 
+		                               params, List.class, String.class);
+				
+	}
+
 	
 	public void createBiclusterTable(Map<Integer, List<Long>> clusterNodes ,Map<Integer, List<String>> clusterAttrs){
 		CyTable networkTable = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
