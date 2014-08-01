@@ -84,17 +84,15 @@ public class RunChengChurch {
 						
 		int ifound = 1;
 		int currentC = -1;
-		int[] clusters = new int[nelements];
+		
 		clusterRows = new HashMap<Integer,List<Integer>>();
 		clusterCols = new HashMap<Integer,List<Integer>>();
 		
 		clusterNodes = new HashMap<Integer,List<Long>>();
 		clusterAttrs = new HashMap<Integer,List<String>>();
-		
-		//Initialising all clusters to -1
-		for(int i = 0; i < nelements; i++) clusters[i] = -1;
-		
+				
 		setMatrixMinMax();
+		int totalRows = 0;
 		
 		//The Cheng and Church algorithm
 		for(int iter = 0; iter < nClusters; iter++){
@@ -129,11 +127,25 @@ public class RunChengChurch {
 			}
 			clusterAttrs.put(iter, attrs);
 			
+			totalRows += rows.size();
 			clusterRows.put(iter, rows);
 			clusterCols.put(iter, cols);
 			maskMatrix(rows,cols);			
 		}
 		
+		int[] clusters = new int[totalRows];
+		
+		Matrix biclusterMatrix = new Matrix(network,totalRows,nattrs);
+		int i = 0;
+		for(Integer biclust: clusterRows.keySet()){
+			for(Integer node: clusterRows.get(biclust)){
+				for(int j = 0; j< nattrs; j++){
+					biclusterMatrix.setValue(i, j,matrix.getValue(node, j));					
+				}
+				clusters[i] = biclust;
+				i++;
+			}			
+		}
 		return clusters;
 	}
 	
