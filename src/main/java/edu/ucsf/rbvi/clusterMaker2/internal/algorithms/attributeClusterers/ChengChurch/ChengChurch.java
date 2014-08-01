@@ -124,24 +124,22 @@ public class ChengChurch extends AbstractAttributeClusterer {
 		// Cluster the attributes, if requested
 		if (context.clusterAttributes && attributeArray.length > 1) {
 			monitor.setStatusMessage("Clustering attributes");
-			int[] clusters = algorithm.cluster(true);
-			if (!algorithm.getMatrix().isTransposed())
-				createGroups(network,algorithm.getMatrix(),algorithm.getNClusters(), clusters, "cheng&hurch");
-			
-			Integer[] rowOrder = algorithm.getMatrix().indexSort(clusters, clusters.length);
+			Integer[] rowOrder = algorithm.cluster(true);
+			//if (!algorithm.getMatrix().isTransposed())
+				//createGroups(network,algorithm.getMatrix(),algorithm.getNClusters(), clusters, "cheng&hurch");
+						
 			updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, getAttributeList(), 
 			                 algorithm.getMatrix());
 		}
 
 		// Cluster the nodes
 		monitor.setStatusMessage("Clustering nodes");
-		int[] clusters = algorithm.cluster(false);
+		Integer[] rowOrder = algorithm.cluster(false);
 		//System.out.println("Nclusters: "+algorithm.getNClusters());
 		//if (algorithm.getMatrix()==null)System.out.println("get matrix returns null : ");
-		if (!algorithm.getMatrix().isTransposed())
-			createGroups(network,algorithm.getMatrix(),algorithm.getNClusters(), clusters, "cheng&hurch");
+		//if (!algorithm.getMatrix().isTransposed())
+			//createGroups(network,algorithm.getMatrix(),algorithm.getNClusters(), clusters, "cheng&hurch");
 		
-		Integer[] rowOrder = algorithm.getMatrix().indexSort(clusters, clusters.length);
 		updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, getAttributeList(), 
 		                 algorithm.getMatrix());
 		

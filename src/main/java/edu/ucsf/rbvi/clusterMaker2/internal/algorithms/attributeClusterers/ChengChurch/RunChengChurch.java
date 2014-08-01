@@ -53,7 +53,7 @@ public class RunChengChurch {
 	public Matrix getMatrix() { return matrix; }
 	public int getNClusters() {return nClusters;}
 	
-	public int[] cluster(boolean transpose) {
+	public Integer[] cluster(boolean transpose) {
 		// Create the matrix
 		matrix = new Matrix(network, weightAttributes, transpose, ignoreMissing, selectedOnly);
 		monitor.showMessage(TaskMonitor.Level.INFO,"cluster matrix has "+matrix.nRows()+" rows");
@@ -146,7 +146,9 @@ public class RunChengChurch {
 				i++;
 			}			
 		}
-		return clusters;
+		Integer[] rowOrder;
+		rowOrder = biclusterMatrix.indexSort(clusters, clusters.length);
+		return rowOrder;
 	}
 	
 	public void setMatrixMinMax(){
