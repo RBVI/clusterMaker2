@@ -108,6 +108,8 @@ public class KMedoidCluster extends AbstractAttributeClusterer {
 			return;
 		}
 
+		createGroups = context.createGroups;
+
 		// To make debugging easier, sort the attribute list
 		Collections.sort(nodeAttributeList);
 
@@ -138,8 +140,8 @@ public class KMedoidCluster extends AbstractAttributeClusterer {
 		if (context.clusterAttributes && attributeArray.length > 1) {
 			monitor.setStatusMessage("Clustering attributes");
 			// System.out.println("Clustering attributes");
-			Integer[] rowOrder = algorithm.cluster(context.kcluster.kNumber, 
-			                                       context.iterations, true, SHORTNAME, context.kcluster);
+			Integer[] rowOrder = algorithm.cluster(clusterManager, context.kcluster.kNumber, 
+			                                       context.iterations, true, SHORTNAME, context.kcluster, false);
 			updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, algorithm.getAttributeList(), 
 			                 algorithm.getMatrix());
 		}
@@ -147,8 +149,9 @@ public class KMedoidCluster extends AbstractAttributeClusterer {
 		// Cluster the nodes
 		monitor.setStatusMessage("Clustering nodes");
 		// System.out.println("Clustering nodes");
-		Integer[] rowOrder = algorithm.cluster(context.kcluster.kNumber, 
-			                                     context.iterations, false, SHORTNAME, context.kcluster);
+		Integer[] rowOrder = algorithm.cluster(clusterManager, context.kcluster.kNumber, 
+			                                     context.iterations, false, SHORTNAME, context.kcluster, 
+																		       createGroups);
 		updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, algorithm.getAttributeList(), 
 		                 algorithm.getMatrix());
 

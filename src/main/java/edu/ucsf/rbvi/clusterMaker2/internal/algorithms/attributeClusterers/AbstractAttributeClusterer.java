@@ -195,7 +195,6 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 	    if (monitor != null)
 	      monitor.setStatusMessage("Creating groups");
 
-	    HashMap<String,List<CyNode>> groupMap = new HashMap<String,List<CyNode>>();
 	    attrList = new ArrayList<String>(matrix.nRows());
 	    // Create the attribute list
 	    for (int cluster = 0; cluster < nClusters; cluster++) {
@@ -208,7 +207,10 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 						                             new Integer(cluster), Integer.class, null);
 	        }
 	      }
-	      groupMap.put("Cluster_"+cluster, memberList);
+				if (createGroups) {
+					System.out.println("Creating group: Cluster_"+cluster+" with "+memberList.size()+" nodes");
+					CyGroup group = clusterManager.createGroup(network, "Cluster_"+cluster, memberList, null, true);
+				}
 	    }
 	  }
 	  

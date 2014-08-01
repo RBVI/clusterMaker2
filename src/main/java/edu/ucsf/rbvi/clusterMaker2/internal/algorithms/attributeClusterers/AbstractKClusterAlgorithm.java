@@ -43,6 +43,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.cytoscape.group.CyGroup;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.TaskMonitor;
@@ -103,8 +104,9 @@ public abstract class AbstractKClusterAlgorithm {
  	 * @param algorithm the algorithm type
  	 * @return a string with all of the results
  	 */
-	public Integer[] cluster(int nClusters, int nIterations, boolean transpose, 
-	                         String algorithm, KClusterAttributes context) {
+	public Integer[] cluster(ClusterManager clusterManager, 
+	                         int nClusters, int nIterations, boolean transpose, 
+	                         String algorithm, KClusterAttributes context, boolean createGroups) {
 		String keyword = "GENE";
 		if (transpose) keyword = "ARRY";
 
@@ -170,7 +172,7 @@ public abstract class AbstractKClusterAlgorithm {
 		// SilhouetteUtil.printSilhouette(sResult, clusters);
 
 		if (!matrix.isTransposed())
-			createGroups(nClusters, clusters, algorithm);
+			createGroups(clusterManager, nClusters, clusters, algorithm, createGroups);
 
 	/*
  		Ideally, we would sort our clusters based on size, but for some reason
@@ -210,15 +212,12 @@ public abstract class AbstractKClusterAlgorithm {
 	 * @param cluster the list of values and the assigned clusters
 	 */
 
-  protected void createGroups(int nClusters, int[] clusters, String algorithm) {
+  protected void createGroups(ClusterManager clusterManager, int nClusters, int[] clusters, 
+	                            String algorithm, boolean createGroups) {
     if (matrix.isTransposed()) {
       return;
     }
 
-    if (monitor != null)
-      monitor.setStatusMessage("Creating groups");
-
-    HashMap<String,List<CyNode>> groupMap = new HashMap<String,List<CyNode>>();
     attrList = new ArrayList<String>(matrix.nRows());
     // Create the attribute list
     for (int cluster = 0; cluster < nClusters; cluster++) {
@@ -231,7 +230,9 @@ public abstract class AbstractKClusterAlgorithm {
 					                             new Integer(cluster), Integer.class, null);
         }
       }
-      groupMap.put("Cluster_"+cluster, memberList);
+			if (createGroups) {
+				CyGroup group = clusterManager.createGroup(network, "Cluster_"+cluster, memberList, null, true);
+			}
     }
   }
 

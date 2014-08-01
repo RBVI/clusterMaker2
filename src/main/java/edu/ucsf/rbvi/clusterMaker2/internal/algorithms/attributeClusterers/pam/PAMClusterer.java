@@ -86,6 +86,8 @@ public class PAMClusterer extends AbstractAttributeClusterer {
 			return;
 		}
 
+		createGroups = context.createGroups;
+
 		Collections.sort(nodeAttributeList);
 		
 		// Get our attributes we're going to use for the cluster
@@ -117,8 +119,8 @@ public class PAMClusterer extends AbstractAttributeClusterer {
 		if (context.clusterAttributes && attributeArray.length > 1) {
 			monitor.setStatusMessage("Clustering attributes");
 			Integer[] rowOrder = 
-				algo.cluster(context.kcluster.kNumber,  
-							 nIterations,  true, getShortName(), context.kcluster);
+				algo.cluster(clusterManager, context.kcluster.kNumber,  
+							 nIterations,  true, getShortName(), context.kcluster, false);
 			updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algo.getAttributeList(),
 					         algo.getMatrix());
 		}
@@ -126,9 +128,9 @@ public class PAMClusterer extends AbstractAttributeClusterer {
 		// Cluster the nodes
 		monitor.setStatusMessage("Clustering nodes");
 
-		Integer[] rowOrder = algo.cluster(context.kcluster.kNumber, 
+		Integer[] rowOrder = algo.cluster(clusterManager, context.kcluster.kNumber, 
 				                          nIterations, false, getShortName(),
-				                          context.kcluster);
+				                          context.kcluster, createGroups);
 		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algo.getAttributeList(),
 		         algo.getMatrix());
 		

@@ -72,6 +72,8 @@ public class HopachPAMClusterer extends AbstractAttributeClusterer {
 			return;
 		}
 
+		createGroups = context.createGroups;
+
 		Collections.sort(nodeAttributeList);
 		
 		// Get our attributes we're going to use for the cluster
@@ -109,7 +111,8 @@ public class HopachPAMClusterer extends AbstractAttributeClusterer {
 		// Cluster the attributes
 		if (context.clusterAttributes && attributeArray.length > 1) {
 			monitor.setStatusMessage("Clustering attributes");
-			Integer[] rowOrder = algo.cluster(0,  nIterations,  true, getShortName(), context.kcontext);
+			Integer[] rowOrder = algo.cluster(clusterManager, 0,  nIterations,  true, getShortName(), 
+			                                  context.kcontext, false);
 			updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algo.getAttributeList(),
 					algo.getMatrix());
 
@@ -117,7 +120,8 @@ public class HopachPAMClusterer extends AbstractAttributeClusterer {
 		
 		// Cluster the nodes
 		monitor.setStatusMessage("Clustering nodes");
-		Integer[] rowOrder = algo.cluster(0, nIterations, false, getShortName(), context.kcontext);
+		Integer[] rowOrder = algo.cluster(clusterManager, 0, nIterations, false, getShortName(), 
+		                                  context.kcontext, createGroups);
 		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algo.getAttributeList(),
 				algo.getMatrix());
 

@@ -72,6 +72,8 @@ public class FFT extends AbstractAttributeClusterer {
 			return;
 		}
 
+		createGroups = context.createGroups;
+
 		// To make debugging easier, sort the attribute list
 		Collections.sort(nodeAttributeList);
 
@@ -100,16 +102,16 @@ public class FFT extends AbstractAttributeClusterer {
 		// Cluster the attributes, if requested
 		if (context.clusterAttributes && attributeArray.length > 1) {
 			monitor.setStatusMessage("Clustering attributes");
-			Integer[] rowOrder = algorithm.cluster(context.kcluster.kNumber, 
-			                                       1, true, "fft", context.kcluster);
+			Integer[] rowOrder = algorithm.cluster(clusterManager, context.kcluster.kNumber, 
+			                                       1, true, "fft", context.kcluster, false);
 			updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, algorithm.getAttributeList(), 
 			                 algorithm.getMatrix());
 		}
 
 		// Cluster the nodes
 		monitor.setStatusMessage("Clustering nodes");
-		Integer[] rowOrder = algorithm.cluster(context.kcluster.kNumber, 
-			                                     1, false, "fft", context.kcluster);
+		Integer[] rowOrder = algorithm.cluster(clusterManager, context.kcluster.kNumber, 
+			                                     1, false, "fft", context.kcluster, createGroups);
 		updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, algorithm.getAttributeList(), 
 		                 algorithm.getMatrix());
 

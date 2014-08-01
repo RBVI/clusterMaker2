@@ -109,6 +109,8 @@ public class KMeansCluster extends AbstractAttributeClusterer {
 			return;
 		}
 
+		createGroups = context.createGroups;
+
 		// To make debugging easier, sort the attribute list
 		Collections.sort(nodeAttributeList);
 
@@ -139,16 +141,16 @@ public class KMeansCluster extends AbstractAttributeClusterer {
 		if (context.clusterAttributes && attributeArray.length > 1) {
 			monitor.setStatusMessage("Clustering attributes");
 			//System.out.println("Clustering attributes: k="+context.kcluster.kNumber);
-			Integer[] rowOrder = algorithm.cluster(context.kcluster.kNumber, 
-			                                       context.iterations, true, "kmeans", context.kcluster);
+			Integer[] rowOrder = algorithm.cluster(clusterManager, context.kcluster.kNumber, 
+			                                       context.iterations, true, "kmeans", context.kcluster, false);
 			updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, algorithm.getAttributeList(), 
 			                 algorithm.getMatrix());
 		}
 
 		// Cluster the nodes
 		monitor.setStatusMessage("Clustering nodes");
-		Integer[] rowOrder = algorithm.cluster(context.kcluster.kNumber, 
-			                                     context.iterations, false, "kmeans", context.kcluster);
+		Integer[] rowOrder = algorithm.cluster(clusterManager, context.kcluster.kNumber, 
+			                                     context.iterations, false, "kmeans", context.kcluster, createGroups);
 		updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, algorithm.getAttributeList(), 
 		                 algorithm.getMatrix());
 

@@ -95,6 +95,8 @@ public class ChengChurch extends AbstractAttributeClusterer {
 			return;
 		}
 
+		createGroups = context.createGroups;
+
 		// To make debugging easier, sort the attribute list
 		Collections.sort(nodeAttributeList);
 
