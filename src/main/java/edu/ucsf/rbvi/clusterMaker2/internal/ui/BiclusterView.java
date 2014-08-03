@@ -142,7 +142,7 @@ public class BiclusterView extends TreeView {
 		
 		ArrayList<String> nodeArrayL = new ArrayList<String>();
 		for(Integer key:clusterNodes.keySet()){
-			ArrayList<String> bicluster = (ArrayList<String>) clusterNodes.get(key);
+			List<String> bicluster =  clusterNodes.get(key);
 			for(String node:bicluster){
 				nodeArrayL.add(node);
 			}			
@@ -153,7 +153,7 @@ public class BiclusterView extends TreeView {
 		
 		ArrayList<String> attrArrayL = new ArrayList<String>();
 		for(Integer key:clusterAttrs.keySet()){
-			ArrayList<String> bicluster = (ArrayList<String>) clusterAttrs.get(key);
+			List<String> bicluster =  clusterAttrs.get(key);
 			for(String attr:bicluster){
 				attrArrayL.add(attr);
 			}			
