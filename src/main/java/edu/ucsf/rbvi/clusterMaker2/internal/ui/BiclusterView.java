@@ -139,10 +139,10 @@ public class BiclusterView extends TreeView {
 		Map<Integer, List<String>> clusterNodes = getBiclusterNodes();
 		Map<Integer, List<String>> clusterAttrs = getBiclusterAttributes();
 		
-		/*
+		
 		ArrayList<String> nodeArrayL = new ArrayList<String>();
 		for(Integer key:clusterNodes.keySet()){
-			ArrayList<String> bicluster = clusterNodes.get(key);
+			ArrayList<String> bicluster = (ArrayList<String>) clusterNodes.get(key);
 			for(String node:bicluster){
 				nodeArrayL.add(node);
 			}			
@@ -153,17 +153,17 @@ public class BiclusterView extends TreeView {
 		
 		ArrayList<String> attrArrayL = new ArrayList<String>();
 		for(Integer key:clusterAttrs.keySet()){
-			ArrayList<String> bicluster = clusterAttrs.get(key);
+			ArrayList<String> bicluster = (ArrayList<String>) clusterAttrs.get(key);
 			for(String attr:bicluster){
 				attrArrayL.add(attr);
 			}			
 		}
 		ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
 				attrArrayL, List.class, String.class);
-		*/
+		
 
 		//Using the overlapping and reordering for node and array order attributes
-		mergeBiclusters(clusterNodes,clusterAttrs);
+		//mergeBiclusters(clusterNodes,clusterAttrs);
 		ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.NODE_ORDER_ATTRIBUTE, 
                 rowList, List.class, String.class);
 		ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
