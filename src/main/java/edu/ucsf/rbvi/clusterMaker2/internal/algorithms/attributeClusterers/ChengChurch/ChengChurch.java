@@ -121,17 +121,6 @@ public class ChengChurch extends AbstractAttributeClusterer {
 						
 		String resultsString = "ChengChurch results:";
 
-		// Cluster the attributes, if requested
-		if (context.clusterAttributes && attributeArray.length > 1) {
-			monitor.setStatusMessage("Clustering attributes");
-			Integer[] rowOrder = algorithm.cluster(true);
-			//if (!algorithm.getMatrix().isTransposed())
-				//createGroups(network,algorithm.getMatrix(),algorithm.getNClusters(), clusters, "cheng&hurch");
-						
-			updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, getAttributeList(), 
-			                 algorithm.getMatrix());
-		}
-
 		// Cluster the nodes
 		monitor.setStatusMessage("Clustering nodes");
 		Integer[] rowOrder = algorithm.cluster(false);
@@ -139,7 +128,7 @@ public class ChengChurch extends AbstractAttributeClusterer {
 		//if (algorithm.getMatrix()==null)System.out.println("get matrix returns null : ");
 		//if (!algorithm.getMatrix().isTransposed())
 			//createGroups(network,algorithm.getMatrix(),algorithm.getNClusters(), clusters, "cheng&hurch");
-		
+		createBiclusterGroups(algorithm.getClusterNodes());
 		updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, getAttributeList(), 
 		                 algorithm.getMatrix());
 		
@@ -157,12 +146,17 @@ public class ChengChurch extends AbstractAttributeClusterer {
 		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
 		List<Long>groupList = new ArrayList<Long>(); // keep track of the groups we create
 		createGroups = context.createGroups;
+		attrList = new ArrayList<String>();
 		for(Integer bicluster: clusterNodes.keySet()){
 			String groupName = clusterAttributeName+"_"+bicluster;
 			List<Long>suidList = clusterNodes.get(bicluster);
 			List<CyNode>nodeList = new ArrayList<CyNode>();
 			
-			for(Long suid: suidList)nodeList.add(network.getNode(suid));
+			for(Long suid: suidList){
+				CyNode node = network.getNode(suid);				
+				attrList.add(network.getRow(node).get(CyNetwork.NAME, String.class));
+				nodeList.add(node);
+			}
 			
 			if (createGroups) {
 				CyGroup group = clusterManager.createGroup(network, groupName, nodeList, null, true);
