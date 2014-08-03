@@ -163,12 +163,13 @@ public class BiclusterView extends TreeView {
 		
 
 		//Using the overlapping and reordering for node and array order attributes
-		//mergeBiclusters(clusterNodes,clusterAttrs);
+		/*
+		mergeBiclusters(clusterNodes,clusterAttrs);
 		ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.NODE_ORDER_ATTRIBUTE, 
                 rowList, List.class, String.class);
 		ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
 				colList, List.class, String.class);
-
+		 */
 
 		// Get our data model
 		dataModel = new TreeViewModel(monitor, myNetwork, myView, manager);

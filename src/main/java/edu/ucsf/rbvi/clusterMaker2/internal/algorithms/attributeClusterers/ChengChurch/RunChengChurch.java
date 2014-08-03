@@ -21,6 +21,7 @@ public class RunChengChurch {
 	protected Matrix matrix;
 	protected Matrix biclusterMatrix;
 	protected Double arr[][];
+	protected int[] clusters;
 	protected TaskMonitor monitor;
 	protected boolean ignoreMissing = true;
 	protected boolean selectedOnly = false;
@@ -54,6 +55,7 @@ public class RunChengChurch {
 	public Matrix getMatrix() { return matrix; }
 	public Matrix getBiclusterMatrix() { return biclusterMatrix; }
 	public int getNClusters() {return nClusters;}
+	public int[] getClustersArray() {return clusters;}
 	
 	public Integer[] cluster(boolean transpose) {
 		// Create the matrix
@@ -135,13 +137,15 @@ public class RunChengChurch {
 			maskMatrix(rows,cols);			
 		}
 		
-		int[] clusters = new int[totalRows];
-		
+		clusters = new int[totalRows];
+		CyNode rowNodes[] = new CyNode[totalRows];
 		biclusterMatrix = new Matrix(network,totalRows,nattrs);
 		int i = 0;
+		
 		for(Integer biclust: clusterRows.keySet()){
 			for(Integer node: clusterRows.get(biclust)){				
 				biclusterMatrix.setRowLabel(i, matrix.getRowLabel(node));
+				rowNodes[i] = matrix.getRowNode(node);
 				
 				for(int j = 0; j< nattrs; j++){
 					biclusterMatrix.setValue(i, j,matrix.getValue(node, j));					
@@ -150,9 +154,12 @@ public class RunChengChurch {
 				i++;
 			}			
 		}
+		
 		for(int j = 0; j<nattrs;j++){
-			biclusterMatrix.setColLabel(j, matrix.getColLabel(j));
+			biclusterMatrix.setColLabel(j, matrix.getColLabel(j));			
 		}
+		
+		biclusterMatrix.setRowNodes(rowNodes);
 		Integer[] rowOrder;
 		rowOrder = biclusterMatrix.indexSort(clusters, clusters.length);
 		return rowOrder;

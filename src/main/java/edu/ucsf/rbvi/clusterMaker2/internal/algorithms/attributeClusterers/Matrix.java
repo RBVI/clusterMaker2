@@ -134,12 +134,20 @@ public class Matrix extends BaseMatrix {
 		this.network = network;
 	}
 	
+	
+	public void setRowNodes(CyNode newRowNodes[]){
+		this.rowNodes = newRowNodes;
+	}
+	
+	public void setColumnNodes(CyNode newColumnNodes[]){
+		this.columnNodes = newColumnNodes;
+	}
 	public CyNode getRowNode(int row) {
 		if (this.rowNodes != null)
 			return rowNodes[row];
 		return null;
 	}
-
+	
 	public CyNode getColNode(int col) {
 		if (this.columnNodes != null)
 			return columnNodes[col];

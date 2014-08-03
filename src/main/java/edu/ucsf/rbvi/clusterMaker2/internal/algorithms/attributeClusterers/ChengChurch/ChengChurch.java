@@ -129,7 +129,8 @@ public class ChengChurch extends AbstractAttributeClusterer {
 		//if (!algorithm.getMatrix().isTransposed())
 			//createGroups(network,algorithm.getMatrix(),algorithm.getNClusters(), clusters, "cheng&hurch");
 		
-		createBiclusterGroups(algorithm.getClusterNodes());
+		//createBiclusterGroups(algorithm.getClusterNodes());
+		createGroups(network,algorithm.getBiclusterMatrix(),1, algorithm.getClustersArray(), "cheng&hurch");
 		updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, getAttributeList(), 
 		                 algorithm.getBiclusterMatrix());
 		
