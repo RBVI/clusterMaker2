@@ -19,6 +19,7 @@ public class RunChengChurch {
 	protected String[] weightAttributes;
 	//protected DistanceMetric metric;
 	protected Matrix matrix;
+	protected Matrix biclusterMatrix;
 	protected Double arr[][];
 	protected TaskMonitor monitor;
 	protected boolean ignoreMissing = true;
@@ -51,6 +52,7 @@ public class RunChengChurch {
 	}
 
 	public Matrix getMatrix() { return matrix; }
+	public Matrix getBiclusterMatrix() { return biclusterMatrix; }
 	public int getNClusters() {return nClusters;}
 	
 	public Integer[] cluster(boolean transpose) {
@@ -135,16 +137,21 @@ public class RunChengChurch {
 		
 		int[] clusters = new int[totalRows];
 		
-		Matrix biclusterMatrix = new Matrix(network,totalRows,nattrs);
+		biclusterMatrix = new Matrix(network,totalRows,nattrs);
 		int i = 0;
 		for(Integer biclust: clusterRows.keySet()){
-			for(Integer node: clusterRows.get(biclust)){
+			for(Integer node: clusterRows.get(biclust)){				
+				biclusterMatrix.setRowLabel(i, matrix.getRowLabel(node));
+				
 				for(int j = 0; j< nattrs; j++){
 					biclusterMatrix.setValue(i, j,matrix.getValue(node, j));					
 				}
 				clusters[i] = biclust;
 				i++;
 			}			
+		}
+		for(int j = 0; j<nattrs;j++){
+			biclusterMatrix.setColLabel(j, matrix.getColLabel(j));
 		}
 		Integer[] rowOrder;
 		rowOrder = biclusterMatrix.indexSort(clusters, clusters.length);

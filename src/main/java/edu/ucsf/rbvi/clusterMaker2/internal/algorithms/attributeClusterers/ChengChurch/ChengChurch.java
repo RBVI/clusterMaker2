@@ -128,9 +128,10 @@ public class ChengChurch extends AbstractAttributeClusterer {
 		//if (algorithm.getMatrix()==null)System.out.println("get matrix returns null : ");
 		//if (!algorithm.getMatrix().isTransposed())
 			//createGroups(network,algorithm.getMatrix(),algorithm.getNClusters(), clusters, "cheng&hurch");
+		
 		createBiclusterGroups(algorithm.getClusterNodes());
 		updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, getAttributeList(), 
-		                 algorithm.getMatrix());
+		                 algorithm.getBiclusterMatrix());
 		
 		createBiclusterTable(algorithm.getClusterNodes(),algorithm.getClusterAttrs());
 		
@@ -147,6 +148,7 @@ public class ChengChurch extends AbstractAttributeClusterer {
 		List<Long>groupList = new ArrayList<Long>(); // keep track of the groups we create
 		createGroups = context.createGroups;
 		attrList = new ArrayList<String>();
+		
 		for(Integer bicluster: clusterNodes.keySet()){
 			String groupName = clusterAttributeName+"_"+bicluster;
 			List<Long>suidList = clusterNodes.get(bicluster);
@@ -154,7 +156,7 @@ public class ChengChurch extends AbstractAttributeClusterer {
 			
 			for(Long suid: suidList){
 				CyNode node = network.getNode(suid);				
-				attrList.add(network.getRow(node).get(CyNetwork.NAME, String.class));
+				attrList.add(network.getRow(node).get(CyNetwork.NAME, String.class)+"\t"+bicluster);
 				nodeList.add(node);
 			}
 			
