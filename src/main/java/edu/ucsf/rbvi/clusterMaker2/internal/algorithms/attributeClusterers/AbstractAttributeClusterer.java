@@ -122,6 +122,7 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 			ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE, 
 		                               attrList, List.class, String.class);
 		} else {
+			//System.out.println("attrList's size: " + attrList.size());
 			ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE, 
 			                             attrList, List.class, String.class);
 			if (matrix.isSymmetrical()) {

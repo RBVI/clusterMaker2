@@ -21,6 +21,7 @@ import org.cytoscape.work.Tunable;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.FuzzyNodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractAttributeClusterer;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.BiclusterView;
@@ -130,7 +131,9 @@ public class ChengChurch extends AbstractAttributeClusterer {
 			//createGroups(network,algorithm.getMatrix(),algorithm.getNClusters(), clusters, "cheng&hurch");
 		
 		//createBiclusterGroups(algorithm.getClusterNodes());
-		createGroups(network,algorithm.getBiclusterMatrix(),1, algorithm.getClustersArray(), "cheng&hurch");
+		Matrix biclusterMatrix = algorithm.getBiclusterMatrix();
+		int clusters[] = new int[biclusterMatrix.nRows()];
+		createGroups(network,biclusterMatrix,1, clusters, "cheng&hurch");
 		updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, getAttributeList(), 
 		                 algorithm.getBiclusterMatrix());
 		
