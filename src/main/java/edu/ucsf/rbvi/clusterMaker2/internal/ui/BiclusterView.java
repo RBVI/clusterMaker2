@@ -43,11 +43,13 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.HeaderInfo;
+import edu.ucsf.rbvi.clusterMaker2.internal.treeview.KnnViewFrame;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.PropertyConfig;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.TreeSelectionI;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.TreeViewApp;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.TreeViewFrame;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.ViewFrame;
+import edu.ucsf.rbvi.clusterMaker2.internal.treeview.model.KnnViewModel;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.model.TreeViewModel;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
@@ -172,7 +174,7 @@ public class BiclusterView extends TreeView {
 		 */
 
 		// Get our data model
-		dataModel = new TreeViewModel(monitor, myNetwork, myView, manager);
+		dataModel = new KnnViewModel(monitor, myNetwork, myView, manager);
 
 		// Set up the global config
 		setConfigDefaults(new PropertyConfig(cyProperty, globalConfigName(),"ProgramConfig"));
@@ -182,7 +184,7 @@ public class BiclusterView extends TreeView {
 		dataModel.setDocumentConfig(documentConfig);
 
 		// Create our view frame
-		TreeViewFrame frame = new TreeViewFrame(this, appName);
+		KnnViewFrame frame = new KnnViewFrame(this, appName);
 
 		// Set the data model
 		frame.setDataModel(dataModel);
