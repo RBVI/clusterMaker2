@@ -7,19 +7,24 @@ import java.util.List;
  * 
  * @author Abhiraj
  *	Node for Bicluster Enumeration Tree
+ *
+ *@param <T>
  */
 public class BETNode<T> {
-	private T data;
+	private List<T> genes;
+	private List<T> conditions;
 	private List<BETNode<T>> children;
-	private BETNode<T> parent;
+	private BETNode parent;
 	
-	public BETNode(T data) {
-		this.data = data;
+	public BETNode(List<T> genes,List<T> conditions) {
+		this.genes = genes;
+		this.conditions = conditions;
 		this.children = new ArrayList<BETNode<T>>();
 	}
 
 	public BETNode(BETNode<T> node) {
-		this.data = (T) node.getData();
+		this.genes = node.getGenes();
+		this.conditions = node.getConditions();
 		children = new ArrayList<BETNode<T>>();
 	}
 
@@ -39,12 +44,17 @@ public class BETNode<T> {
 		this.children.clear();
 	}
 	
-	public T getData() {
-		return this.data;
+	public List<T> getGenes() {
+		return this.genes;
+	}
+	
+	public List<T> getConditions() {
+		return this.conditions;
 	}
 
-	public void setData(T data) {
-		this.data = data;
+	public void setData(List<T> genes,List<T> conditions) {
+		this.genes = genes;
+		this.conditions = conditions;
 	}
 
 	public BETNode<T> getParent() {
@@ -58,4 +68,20 @@ public class BETNode<T> {
 	public List<BETNode<T>> getChildren() {
 		return this.children;
 	}
+	
+	public boolean isLeaf(){
+		return (this.children.size()==0);
+	}
+	
+	public BETNode<T> getUncle(int i){
+		if (this.parent==null || this.parent.parent==null) return null;
+		else{
+			List<BETNode<T>> prevLevel = this.parent.getChildren();
+			int parentIndex = prevLevel.indexOf(this.parent);
+			return prevLevel.get(parentIndex + i + 1);
+		}
+	
+	}
 }
+
+
