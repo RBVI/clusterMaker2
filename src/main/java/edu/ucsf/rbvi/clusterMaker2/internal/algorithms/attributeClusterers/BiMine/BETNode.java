@@ -16,6 +16,9 @@ public class BETNode<T> {
 	private List<BETNode<T>> children;
 	private BETNode parent;
 	
+	public BETNode() {		
+		this.children = new ArrayList<BETNode<T>>();
+	}
 	public BETNode(List<T> genes,List<T> conditions) {
 		this.genes = genes;
 		this.conditions = conditions;

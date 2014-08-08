@@ -1,5 +1,7 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BiMine;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +16,7 @@ public class RunBiMine {
 	protected CyNetwork network;
 	protected String[] weightAttributes;
 	//protected DistanceMetric metric;
+	protected BET<Integer> bet;
 	protected Matrix matrix;
 	protected Double arr[][];
 	protected int[] clusters;
@@ -50,10 +53,38 @@ public class RunBiMine {
 		
 		arr = preProcess();
 		
+		bet = Init_BET();
+		
 		Integer[] rowOrder = null;
 		return rowOrder;
 	}
 	
+	private BET<Integer> Init_BET() {
+		BETNode<Integer> root = new BETNode<Integer>();
+		
+		int nelements = matrix.nRows();
+		int nattrs = matrix.nColumns();
+		
+		for(int i = 0; i < nelements; i++){			
+			ArrayList<Integer> condList = new ArrayList<Integer>();
+			ArrayList<Integer> geneList = new ArrayList<Integer>();
+			geneList.add(i);
+			double avg_i = getRowAvg(i);
+			
+			for(int j = 0 ; j < nattrs; j++){
+				Double value = matrix.getValue(i, j);
+				if(value!=null && avg_i != 0.0){				
+					if( (Math.abs(value-avg_i)/avg_i) > delta )condList.add(j);										
+				}
+			}
+			BETNode<Integer> child = new BETNode<Integer>(geneList,condList);
+			root.addChild(child);
+		}
+		
+		BET<Integer> newBet = new BET<Integer>(root);
+		return newBet;
+	}
+
 	public Double[][] preProcess(){
 		int nelements = matrix.nRows();
 		int nattrs = matrix.nColumns();
