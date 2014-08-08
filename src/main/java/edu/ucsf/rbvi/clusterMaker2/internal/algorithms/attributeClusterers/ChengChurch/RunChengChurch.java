@@ -71,7 +71,7 @@ public class RunChengChurch {
 		int nelements = matrix.nRows();
 		int nattrs = matrix.nColumns();
 		
-		System.out.println("nelements = "+nelements+", nattrs = "+nattrs);
+		//System.out.println("nelements = "+nelements+", nattrs = "+nattrs);
 		arr = new Double[nelements][nattrs];
 		
 		Random generator = new Random();
