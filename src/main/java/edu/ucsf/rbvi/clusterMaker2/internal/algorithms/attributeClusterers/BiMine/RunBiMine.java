@@ -84,6 +84,63 @@ public class RunBiMine {
 		BET<Integer> newBet = new BET<Integer>(root);
 		return newBet;
 	}
+	
+	private void BET_tree(){
+		BETNode<Integer> node = bet.getRoot();
+		List<BETNode<Integer>> level = node.getChildren();
+		List<BETNode<Integer>> leaves = new ArrayList<BETNode<Integer>>();
+		while(level.size() > 0){
+			int levelSize = level.size();	
+			List<BETNode<Integer>> nextLevel = new ArrayList<BETNode<Integer>>();
+			for(int i = 0; i < levelSize; i++){				
+				BETNode<Integer> node_i = level.get(i);
+				
+				for(int j = i+1; j < levelSize; j++){
+					BETNode<Integer> uncle_j = level.get(j);
+					List<Integer> childGenes = union(node_i.getGenes(),uncle_j.getGenes());
+					List<Integer> childConditions = intersection(node_i.getConditions(),uncle_j.getConditions());
+					
+					BETNode<Integer> child_j = new BETNode<Integer>(childGenes,childConditions);
+					
+					if(getASR(child_j) >= delta){
+						node_i.addChild(child_j);					
+					}
+					else{
+					}				
+				}
+				if(node_i.getChildren().size() > 0){
+					nextLevel.addAll(node_i.getChildren());
+				}
+				else{
+					leaves.add(node_i);
+				}
+			}
+			level = nextLevel;			
+		}
+		getBiClusters(leaves);
+	}
+	
+	private void getBiClusters(List<BETNode<Integer>> leaves) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private double getASR(BETNode<Integer> node) {
+		return 0;
+	}
+
+	public List<Integer> union(List<Integer> a, List<Integer> b){
+		List<Integer> unionList = new ArrayList<Integer>(a);
+		unionList.removeAll(b);
+		unionList.addAll(b);
+		return unionList;
+	}
+	
+	public List<Integer> intersection(List<Integer> a, List<Integer> b){
+		List<Integer> intersectionList = new ArrayList<Integer>(a);
+		intersectionList.retainAll(b);		
+		return intersectionList;
+	}
 
 	public Double[][] preProcess(){
 		int nelements = matrix.nRows();
