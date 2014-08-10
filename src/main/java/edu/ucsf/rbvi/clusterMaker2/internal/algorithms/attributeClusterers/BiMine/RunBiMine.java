@@ -2,10 +2,12 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BiMi
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.work.TaskMonitor;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
@@ -18,13 +20,21 @@ public class RunBiMine {
 	//protected DistanceMetric metric;
 	protected BET<Integer> bet;
 	protected Matrix matrix;
+	protected Matrix biclusterMatrix;
 	protected Double arr[][];
 	protected int[] clusters;
 	protected TaskMonitor monitor;
 	protected boolean ignoreMissing = true;
 	protected boolean selectedOnly = false;
 	BiMineContext context;	
-	double delta;	
+	double delta;
+	
+	protected Map<Integer,List<Long>> clusterNodes;
+	protected Map<Integer,List<String>> clusterAttrs;
+	
+	public Matrix getMatrix() { return matrix; }
+	public Matrix getBiclusterMatrix() { return biclusterMatrix; }
+	public int[] getClustersArray() {return clusters;}
 	
 	public RunBiMine(CyNetwork network, String weightAttributes[],
             TaskMonitor monitor, BiMineContext context) {
@@ -54,8 +64,50 @@ public class RunBiMine {
 		arr = preProcess();
 		
 		bet = Init_BET();
+		List<BETNode<Integer>> biclusters = BET_tree();
 		
-		Integer[] rowOrder = null;
+		int totalRows = 0;
+		for(BETNode bicluster: biclusters)totalRows+= bicluster.getGenes().size();
+		
+		clusters = new int[totalRows];
+		CyNode rowNodes[] = new CyNode[totalRows];
+		biclusterMatrix = new Matrix(network,totalRows,nattrs);
+		int i = 0;
+		
+		for(int k = 0; k < biclusters.size(); k++){
+			List<Integer> geneList = biclusters.get(k).getGenes();
+			List<Integer> conditionList = biclusters.get(k).getConditions();
+			
+			List<Long> nodes = new ArrayList<Long>();
+			for(Integer node:geneList){				
+				biclusterMatrix.setRowLabel(i, matrix.getRowLabel(node));
+				rowNodes[i] = matrix.getRowNode(node);
+				
+				for(int j = 0; j< nattrs; j++){
+					biclusterMatrix.setValue(i, j,matrix.getValue(node, j));					
+				}
+				clusters[i] = k;				
+				i++;
+				
+				nodes.add(matrix.getRowNode(node).getSUID());
+			}
+			clusterNodes.put(k, nodes);
+			
+			List<String> attrs = new ArrayList<String>();
+			for(Integer cond:conditionList){
+				attrs.add(matrix.getColLabel(cond));
+			}
+			clusterAttrs.put(k, attrs);
+		}
+		
+		for(int j = 0; j<nattrs;j++){
+			biclusterMatrix.setColLabel(j, matrix.getColLabel(j));			
+		}
+		
+		biclusterMatrix.setRowNodes(rowNodes);
+		
+		Integer[] rowOrder;
+		rowOrder = biclusterMatrix.indexSort(clusters, clusters.length);
 		return rowOrder;
 	}
 	
@@ -85,7 +137,7 @@ public class RunBiMine {
 		return newBet;
 	}
 	
-	private void BET_tree(){
+	private List<BETNode<Integer>> BET_tree(){
 		BETNode<Integer> node = bet.getRoot();
 		List<BETNode<Integer>> level = node.getChildren();
 		List<BETNode<Integer>> leaves = new ArrayList<BETNode<Integer>>();
@@ -99,10 +151,13 @@ public class RunBiMine {
 					BETNode<Integer> uncle_j = level.get(j);
 					List<Integer> childGenes = union(node_i.getGenes(),uncle_j.getGenes());
 					List<Integer> childConditions = intersection(node_i.getConditions(),uncle_j.getConditions());
-					
+					Collections.sort(childGenes);
+					Collections.sort(childConditions);
 					BETNode<Integer> child_j = new BETNode<Integer>(childGenes,childConditions);
 					
 					if(getASR(child_j) >= delta){
+						Collections.sort(child_j.getGenes());
+						Collections.sort(child_j.getConditions());
 						node_i.addChild(child_j);					
 					}
 					else{
@@ -117,12 +172,26 @@ public class RunBiMine {
 			}
 			level = nextLevel;			
 		}
-		getBiClusters(leaves);
+		return getBiClusters(leaves);
 	}
 	
-	private void getBiClusters(List<BETNode<Integer>> leaves) {
-		// TODO Auto-generated method stub
-		
+	private List<BETNode<Integer>> getBiClusters(List<BETNode<Integer>> leaves) {
+		Collections.reverse(leaves);
+		List<BETNode<Integer>> biclusters = new ArrayList<BETNode<Integer>>();
+		biclusters.add(leaves.get(0));
+		for(int i = 1; i < leaves.size(); i++){
+			BETNode<Integer> leaf = leaves.get(i);
+			boolean isSubset = false;
+			for(BETNode bicluster: biclusters){
+				if(bicluster.getGenes().containsAll(leaf.getGenes()) && 
+						bicluster.getConditions().containsAll(leaf.getConditions())){
+					isSubset = true;
+					break;
+				}
+			}
+			if(!isSubset)biclusters.add(leaf);
+		}
+		return biclusters;
 	}
 
 	private double getASR(BETNode<Integer> node) {
@@ -177,6 +246,14 @@ public class RunBiMine {
 		
 		if(count==0)return avg;
 		else return avg/count;
+	}
+	
+	public Map<Integer, List<Long>> getClusterNodes(){
+		return clusterNodes;
+	}
+	
+	public Map<Integer, List<String>> getClusterAttrs(){
+		return clusterAttrs;
 	}
 }
 
