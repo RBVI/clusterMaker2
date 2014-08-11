@@ -10,6 +10,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.TaskMonitor;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.ChengChurch.ChengChurchContext;
 
@@ -20,8 +21,12 @@ public class RunBiMine {
 	//protected DistanceMetric metric;
 	protected BET<Integer> bet;
 	protected Matrix matrix;
+	protected Matrix matrix_preproc;
+	protected Matrix matrix_preproc_t;
 	protected Matrix biclusterMatrix;
 	protected Double arr[][];
+	protected Double geneRho[][];
+	protected Double conditionRho[][];
 	protected int[] clusters;
 	protected TaskMonitor monitor;
 	protected boolean ignoreMissing = true;
@@ -61,9 +66,12 @@ public class RunBiMine {
 		int nelements = matrix.nRows();
 		int nattrs = matrix.nColumns();
 		
-		arr = preProcess();
-		
+		matrix_preproc = new Matrix(network,nelements,nattrs);
+		matrix_preproc_t = new Matrix(network,nattrs,nelements);
+		//arr = preProcess();
 		bet = Init_BET();
+		calculateRhos();
+		
 		List<BETNode<Integer>> biclusters = BET_tree();
 		
 		int totalRows = 0;
@@ -110,7 +118,7 @@ public class RunBiMine {
 		rowOrder = biclusterMatrix.indexSort(clusters, clusters.length);
 		return rowOrder;
 	}
-	
+		
 	private BET<Integer> Init_BET() {
 		BETNode<Integer> root = new BETNode<Integer>();
 		
@@ -126,7 +134,15 @@ public class RunBiMine {
 			for(int j = 0 ; j < nattrs; j++){
 				Double value = matrix.getValue(i, j);
 				if(value!=null && avg_i != 0.0){				
-					if( (Math.abs(value-avg_i)/avg_i) > delta )condList.add(j);										
+					if( (Math.abs(value-avg_i)/avg_i) > delta ){
+						condList.add(j);			
+						matrix_preproc.setValue(i, j, value);
+						matrix_preproc_t.setValue(j, i, value);
+					}
+					else{
+						matrix_preproc.setValue(i, j, null);
+						matrix_preproc_t.setValue(j, i, null);
+					}
 				}
 			}
 			BETNode<Integer> child = new BETNode<Integer>(geneList,condList);
@@ -195,9 +211,49 @@ public class RunBiMine {
 	}
 
 	private double getASR(BETNode<Integer> node) {
-		return 0;
+		List<Integer> genes = node.getGenes();
+		List<Integer> conditions = node.getConditions();
+		double asr = 0.0;
+		double asr_g = 0.0;
+		double asr_c = 0.0;
+		
+		for(int i = 0; i < genes.size(); i++){			
+			for(int j = i+1; j < genes.size(); j++){
+				asr_g += geneRho[genes.get(i)][genes.get(j)];
+			}
+		}
+		asr_g /= genes.size()*(genes.size()-1);
+		
+		for(int i = 0; i < genes.size(); i++){			
+			for(int j = i+1; j < genes.size(); j++){
+				asr_c += geneRho[conditions.get(i)][conditions.get(j)];
+			}
+		}
+		asr_c /= conditions.size()*(conditions.size()-1);
+		
+		asr = 2*Math.max(asr_g, asr_c);
+		return asr;
 	}
-
+	
+	private void calculateRhos() {
+		int nelements = matrix.nRows();
+		int nattrs = matrix.nColumns();
+		DistanceMetric spearman = DistanceMetric.SPEARMANS_RANK;
+		geneRho = new Double[nelements][nelements];
+		conditionRho = new Double[nattrs][nattrs];
+		
+		for(int i=0; i < nelements; i++){
+			for(int j = i+1;j < nelements;j++){
+				geneRho[i][j] = spearman.getMetric(matrix_preproc, matrix_preproc, matrix_preproc.getWeights(), i, j);
+			}			
+		}
+		
+		for(int i=0; i< nattrs; i++){
+			for(int j = i+1; j < nattrs;j++){
+				conditionRho[i][j] = spearman.getMetric(matrix_preproc_t, matrix_preproc_t, matrix_preproc_t.getWeights(), i, j);
+			}			
+		}
+	}
 	public List<Integer> union(List<Integer> a, List<Integer> b){
 		List<Integer> unionList = new ArrayList<Integer>(a);
 		unionList.removeAll(b);
