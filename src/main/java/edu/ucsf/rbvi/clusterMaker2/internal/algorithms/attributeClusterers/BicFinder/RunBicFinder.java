@@ -18,6 +18,7 @@ public class RunBicFinder {
 	protected Matrix matrix;
 	protected Matrix biclusterMatrix;
 	protected Double arr[][];
+	protected int[][] discrete_matrix;
 	protected Double geneRho[][];
 	protected Double conditionRho[][];
 	protected int[] clusters;
@@ -28,6 +29,8 @@ public class RunBicFinder {
 	double alpha;
 	double delta;
 	
+	int nelements;
+	int nattrs;
 	protected Map<Integer,List<Long>> clusterNodes;
 	protected Map<Integer,List<String>> clusterAttrs;
 	
@@ -57,12 +60,30 @@ public class RunBicFinder {
 		if (monitor != null) 
 			monitor.setStatusMessage("Clustering...");
 		
-		int nelements = matrix.nRows();
-		int nattrs = matrix.nColumns();
+		nelements = matrix.nRows();
+		nattrs = matrix.nColumns();
 				
-				
+		discrete_matrix = getDiscreteMatrix();		
 		Integer[] rowOrder;
 		rowOrder = biclusterMatrix.indexSort(clusters, clusters.length);
 		return rowOrder;
+	}
+	
+	private int[][] getDiscreteMatrix() {
+		int M[][] = new int[nelements][nattrs-1];
+		for(int i = 0 ;i < nelements; i++){
+			for(int j = 0; j < nattrs-1; j++){
+				Double current = matrix.getValue(i, j);
+				if (current==null) current = 0.0;
+				Double next = matrix.getValue(i, j+1);
+				if (next==null) next = 0.0;
+				
+				if (current > next)M[i][j] = -1;
+				else if(current < next)M[i][j] = 1;
+				else M[i][j] = 0; 
+			}			
+		}
+		
+		return M;
 	}
 }
