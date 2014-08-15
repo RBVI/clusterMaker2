@@ -13,10 +13,13 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Attri
 public class BicFinderContext {
 
 	CyNetwork network;
-		
-	@Tunable(description="Threshold for Preprocessing", gravity=1)
-	public BoundedDouble delta = new BoundedDouble(0.0, 1.0, Double.MAX_VALUE, true, true);
+
+	@Tunable(description="Threshold for Gene/Condition addition to Biclusters", gravity=1)
+	public BoundedDouble alpha = new BoundedDouble(0.0, 1.0, Double.MAX_VALUE, true, true);
 	
+	@Tunable(description="Threshold for Bicluster Evaluation", gravity=2)
+	public BoundedDouble delta = new BoundedDouble(0.0, 1.0, Double.MAX_VALUE, true, true);
+		
 	@ContainsTunables
 	public AttributeList attributeList = null;
 
