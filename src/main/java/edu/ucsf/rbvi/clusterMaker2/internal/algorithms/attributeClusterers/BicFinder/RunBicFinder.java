@@ -1,6 +1,7 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BicFinder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,12 +16,17 @@ public class RunBicFinder {
 
 	protected CyNetwork network;
 	protected String[] weightAttributes;
+	
 	protected Matrix matrix;
 	protected Matrix biclusterMatrix;
 	protected Double arr[][];
+	protected Double csl[][];
 	protected int[][] discrete_matrix;
+	protected List<Map<Integer,Double>> dag;
+	
 	protected Double geneRho[][];
 	protected Double conditionRho[][];
+	
 	protected int[] clusters;
 	protected TaskMonitor monitor;
 	protected boolean ignoreMissing = true;
@@ -64,11 +70,25 @@ public class RunBicFinder {
 		nattrs = matrix.nColumns();
 				
 		discrete_matrix = getDiscreteMatrix();		
+		dag = generateDag();
+		
 		Integer[] rowOrder;
 		rowOrder = biclusterMatrix.indexSort(clusters, clusters.length);
 		return rowOrder;
 	}
 	
+	private List<Map<Integer, Double>> generateDag() {
+		List<Map<Integer,Double>> graph = new ArrayList<Map<Integer,Double>>();
+		
+		for(int i = 0; i < nelements; i++){
+			Map<Integer,Double> edges = new HashMap<Integer,Double>();
+			for(int j = i+1; j < nelements ; j++){
+				edges.put(j, csl[i][j]);
+			}
+			graph.add(edges);
+		}
+		return graph;
+	}
 	private int[][] getDiscreteMatrix() {
 		int M[][] = new int[nelements][nattrs-1];
 		for(int i = 0 ;i < nelements; i++){
@@ -82,8 +102,7 @@ public class RunBicFinder {
 				else if(current < next)M[i][j] = 1;
 				else M[i][j] = 0; 
 			}			
-		}
-		
+		}		
 		return M;
 	}
 }
