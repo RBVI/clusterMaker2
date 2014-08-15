@@ -313,14 +313,3 @@ public class RunBiMine {
 	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
