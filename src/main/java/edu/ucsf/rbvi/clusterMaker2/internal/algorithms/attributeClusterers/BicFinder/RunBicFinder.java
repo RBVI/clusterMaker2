@@ -1,6 +1,7 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BicFinder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,9 +21,9 @@ public class RunBicFinder {
 	protected Matrix matrix;
 	protected Matrix biclusterMatrix;
 	protected Double arr[][];
-	protected Double csl[][];
 	protected int[][] discrete_matrix;
-	protected List<Map<Integer,Double>> dag;
+	protected List<Map<Integer,Integer>> dag;
+	protected List<Map<Integer,List<Boolean>>> csl;
 	
 	protected Double geneRho[][];
 	protected Double conditionRho[][];
@@ -68,8 +69,9 @@ public class RunBicFinder {
 		
 		nelements = matrix.nRows();
 		nattrs = matrix.nColumns();
-				
-		discrete_matrix = getDiscreteMatrix();		
+		
+		discrete_matrix = getDiscreteMatrix();
+		generateCSL();
 		dag = generateDag();
 		
 		Integer[] rowOrder;
@@ -77,13 +79,32 @@ public class RunBicFinder {
 		return rowOrder;
 	}
 	
-	private List<Map<Integer, Double>> generateDag() {
-		List<Map<Integer,Double>> graph = new ArrayList<Map<Integer,Double>>();
+	private void generateCSL() {
+		csl = new ArrayList<Map<Integer,List<Boolean>>>(nelements);
+		for(int i = 0; i < nelements; i++){
+			Map<Integer,List<Boolean>> simlistMap = new HashMap<Integer,List<Boolean>>();
+			
+			for(int j = i+1; j < nelements ; j++){
+				
+				List<Boolean> simlist = new ArrayList<Boolean>(nattrs-1);
+				for(int k = 0; k < nattrs-1; k++){
+					if(discrete_matrix[i][k] == discrete_matrix[j][k])simlist.add(true);
+					else simlist.add(false);						
+				}
+				
+				simlistMap.put(j, simlist);
+			}
+			csl.add(simlistMap);
+		}		
+	}
+	
+	private List<Map<Integer, Integer>> generateDag() {
+		List<Map<Integer,Integer>> graph = new ArrayList<Map<Integer,Integer>>();
 		
 		for(int i = 0; i < nelements; i++){
-			Map<Integer,Double> edges = new HashMap<Integer,Double>();
+			Map<Integer,Integer> edges = new HashMap<Integer,Integer>();
 			for(int j = i+1; j < nelements ; j++){
-				edges.put(j, csl[i][j]);
+				edges.put(j, Collections.frequency(csl.get(i).get(j), true));
 			}
 			graph.add(edges);
 		}
