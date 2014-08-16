@@ -22,8 +22,11 @@ public class RunBicFinder {
 	protected Matrix biclusterMatrix;
 	protected Double arr[][];
 	protected int[][] discrete_matrix;
+	
 	protected List<Map<Integer,Integer>> dag;
 	protected List<Map<Integer,List<Boolean>>> csl;
+	protected List<Map<Integer,Map<Integer,Double>>> csi;
+	protected int[] maxCSL;
 	
 	protected Double geneRho[][];
 	protected Double conditionRho[][];
@@ -72,6 +75,7 @@ public class RunBicFinder {
 		
 		discrete_matrix = getDiscreteMatrix();
 		generateCSL();
+		generateCSI();
 		dag = generateDag();
 		
 		Integer[] rowOrder;
@@ -79,19 +83,49 @@ public class RunBicFinder {
 		return rowOrder;
 	}
 	
+	private void generateCSI() {
+		csi = new ArrayList<Map<Integer,Map<Integer,Double>>>(nelements); 
+		
+		for(int i = 0; i < nelements-2; i++){
+			Map<Integer,Map<Integer,Double>> jmap = new HashMap<Integer,Map<Integer,Double>>();
+			
+			for(int j = i+1; j < nelements-1; j++){
+				Map<Integer,Double> kmap = new HashMap<Integer,Double>();
+				
+				for(int k = j+1; k < nelements; k++){
+					double sum = 0;
+					for(int l = 0; l < nattrs-1;l++){
+						if(discrete_matrix[i][l] == discrete_matrix[j][l] && discrete_matrix[i][l] == discrete_matrix[k][l]){
+							sum += 1.0;
+						}
+					}
+					sum /= maxCSL[i];
+					kmap.put(k, sum);
+				}
+				jmap.put(j, kmap);
+			}			
+			csi.add(i,jmap);
+		}
+	}
+	
 	private void generateCSL() {
 		csl = new ArrayList<Map<Integer,List<Boolean>>>(nelements);
+		maxCSL = new int[nelements];
 		for(int i = 0; i < nelements; i++){
 			Map<Integer,List<Boolean>> simlistMap = new HashMap<Integer,List<Boolean>>();
-			
+			maxCSL[i] = -1;
 			for(int j = i+1; j < nelements ; j++){
 				
 				List<Boolean> simlist = new ArrayList<Boolean>(nattrs-1);
+				int trueCount = 0;
 				for(int k = 0; k < nattrs-1; k++){
-					if(discrete_matrix[i][k] == discrete_matrix[j][k])simlist.add(true);
+					if(discrete_matrix[i][k] == discrete_matrix[j][k]){
+						simlist.add(true);
+						trueCount++;
+					}
 					else simlist.add(false);						
 				}
-				
+				if (trueCount > maxCSL[i])maxCSL[i] = trueCount;
 				simlistMap.put(j, simlist);
 			}
 			csl.add(simlistMap);
