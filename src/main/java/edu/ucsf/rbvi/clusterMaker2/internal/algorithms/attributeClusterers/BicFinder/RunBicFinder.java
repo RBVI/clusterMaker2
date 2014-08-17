@@ -130,16 +130,26 @@ public class RunBicFinder {
 		return rowOrder;
 	}
 	
+	private double getACSI(int gene_i, List<Integer> genes,
+			List<Integer> conditions) {
+		if (genes.size() <= 2)return 1.0;
+		double acsi = 0.0;
+		int i = genes.indexOf(gene_i);
+		for(int j = i+1; j < genes.size(); j++){
+			for(int k = j+1; k < genes.size(); k++){
+				acsi += csi.get(gene_i).get(genes.get(j)).get(genes.get(k)); 
+			}
+		}
+		acsi *= 2;
+		acsi /= ((genes.size()-1)*(genes.size()-2));
+		return acsi;
+	}
 	
 	private double getASR(List<Integer> genes, List<Integer> conditions) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
-	private double getACSI(int i, List<Integer> genes_c,
-			List<Integer> conditions_c) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+	
 	private void generateCSI() {
 		csi = new ArrayList<Map<Integer,Map<Integer,Double>>>(nelements); 
 		
@@ -233,6 +243,7 @@ public class RunBicFinder {
 		List<Integer> unionList = new ArrayList<Integer>(a);
 		unionList.removeAll(b);
 		unionList.addAll(b);
+		Collections.sort(unionList);
 		return unionList;
 	}
 	
