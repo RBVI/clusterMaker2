@@ -133,7 +133,31 @@ public class RunBicFinder {
 			}
 		}
 		
+		int totalRows = 0;
+		for(List<Integer> biclust: clusterRows.values())totalRows+= biclust.size();
 		
+		clusters = new int[totalRows];
+		CyNode rowNodes[] = new CyNode[totalRows];
+		biclusterMatrix = new Matrix(network,totalRows,nattrs);
+		
+		int i = 0;
+		for(Integer biclust: clusterRows.keySet()){
+			for(Integer node: clusterRows.get(biclust)){				
+				biclusterMatrix.setRowLabel(i, matrix.getRowLabel(node));
+				rowNodes[i] = matrix.getRowNode(node);
+				
+				for(int j = 0; j< nattrs; j++){
+					biclusterMatrix.setValue(i, j,matrix.getValue(node, j));					
+				}
+				clusters[i] = biclust;
+				i++;
+			}			
+		}
+		for(int j = 0; j<nattrs;j++){
+			biclusterMatrix.setColLabel(j, matrix.getColLabel(j));			
+		}
+		
+		biclusterMatrix.setRowNodes(rowNodes);
 		Integer[] rowOrder;
 		rowOrder = biclusterMatrix.indexSort(clusters, clusters.length);
 		return rowOrder;
