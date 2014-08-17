@@ -15,6 +15,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.TaskMonitor;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BiMine.BETNode;
 
@@ -27,6 +28,7 @@ public class RunBicFinder {
 	protected Matrix biclusterMatrix;
 	protected Double arr[][];
 	protected int[][] discrete_matrix;
+	protected Matrix matrix_t;
 	
 	protected List<Map<Integer,Integer>> dag;
 	protected List<Map<Integer,List<Boolean>>> csl;
@@ -79,6 +81,13 @@ public class RunBicFinder {
 		
 		nelements = matrix.nRows();
 		nattrs = matrix.nColumns();
+		
+		//Generate the transpose matrix for rho calculation 
+		matrix_t = new Matrix(network,nattrs,nelements);
+		for(int i = 0; i < nelements; i++){
+			for(int j = 0; j < nattrs; j++)matrix_t.setValue(j, i, matrix.getValue(i, j));
+		}
+		calculateRhos();
 		
 		discrete_matrix = getDiscreteMatrix();
 		generateCSL();
@@ -146,8 +155,46 @@ public class RunBicFinder {
 	}
 	
 	private double getASR(List<Integer> genes, List<Integer> conditions) {
-		// TODO Auto-generated method stub
-		return 0;
+		double asr = 0.0;
+		double asr_g = 0.0;
+		double asr_c = 0.0;
+		
+		for(int i = 0; i < genes.size(); i++){			
+			for(int j = i+1; j < genes.size(); j++){
+				asr_g += geneRho[genes.get(i)][genes.get(j)];
+			}
+		}
+		asr_g /= genes.size()*(genes.size()-1);
+		
+		for(int i = 0; i < genes.size(); i++){			
+			for(int j = i+1; j < genes.size(); j++){
+				asr_c += conditionRho[conditions.get(i)][conditions.get(j)];
+			}
+		}
+		asr_c /= conditions.size()*(conditions.size()-1);
+		
+		asr = 2*Math.max(asr_g, asr_c);
+		return asr;
+	}
+	
+	private void calculateRhos() {
+		int nelements = matrix.nRows();
+		int nattrs = matrix.nColumns();
+		DistanceMetric spearman = DistanceMetric.SPEARMANS_RANK;
+		geneRho = new Double[nelements][nelements];
+		conditionRho = new Double[nattrs][nattrs];
+		
+		for(int i=0; i < nelements; i++){
+			for(int j = i+1;j < nelements;j++){
+				geneRho[i][j] = spearman.getMetric(matrix, matrix, matrix.getWeights(), i, j);
+			}			
+		}
+		
+		for(int i=0; i< nattrs; i++){
+			for(int j = i+1; j < nattrs;j++){
+				conditionRho[i][j] = spearman.getMetric(matrix_t, matrix_t, matrix_t.getWeights(), i, j);
+			}			
+		}
 	}
 	
 	private void generateCSI() {
