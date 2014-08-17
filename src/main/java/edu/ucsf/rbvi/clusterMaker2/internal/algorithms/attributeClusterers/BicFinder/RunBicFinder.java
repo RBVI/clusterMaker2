@@ -1,10 +1,15 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BicFinder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -41,6 +46,8 @@ public class RunBicFinder {
 	
 	int nelements;
 	int nattrs;
+	protected Map<Integer,List<Integer>> clusterRows;
+	protected Map<Integer,List<Integer>> clusterCols;
 	protected Map<Integer,List<Long>> clusterNodes;
 	protected Map<Integer,List<String>> clusterAttrs;
 	
@@ -78,11 +85,61 @@ public class RunBicFinder {
 		generateCSI();
 		dag = generateDag();
 		
+		clusterRows = new HashMap<Integer,List<Integer>>();
+		clusterCols = new HashMap<Integer,List<Integer>>();
+		
+		//Iteratively create Biclusters
+		for(int i = 0; i < nelements; i++){
+			List<Integer> genes = new ArrayList<Integer>();
+			List<Integer> conditions = new ArrayList<Integer>();
+			
+			//Sort the edges leaving ith node according to the number of trues
+			List<Map.Entry<Integer,Integer>> edges = new LinkedList<Map.Entry<Integer,Integer>>(dag.get(i).entrySet());
+			Collections.sort(edges, new Comparator<Map.Entry<Integer,Integer>>() {
+				public int compare(Map.Entry<Integer,Integer> o1, Map.Entry<Integer,Integer> o2) {
+					return o2.getValue().compareTo(o1.getValue());
+				}
+			});
+			
+			for (Map.Entry<Integer,Integer> entry: edges){
+				int k = entry.getKey();
+				List<Integer> genes_c = new ArrayList<Integer>();
+				List<Integer> conditions_c = new ArrayList<Integer>();
+				
+				genes_c = union(genes,Arrays.asList(i,k));
+				conditions_c = union(conditions,getCommonConditions(i,k));
+				if(getACSI(i,genes_c,conditions_c) >= alpha){
+					//Assign bicluster i to current genes and conditions
+					genes = genes_c;
+					conditions = conditions_c;					
+				}
+			}
+			
+			//Add the new bicluster to the complete list 
+			if(getASR(genes,conditions) >= delta){
+				if(!(clusterRows.containsValue(genes) && clusterCols.containsValue(conditions))){
+					clusterRows.put(clusterRows.size()+1, genes);
+					clusterCols.put(clusterCols.size()+1, conditions);
+				}
+			}
+		}
+		
+		
 		Integer[] rowOrder;
 		rowOrder = biclusterMatrix.indexSort(clusters, clusters.length);
 		return rowOrder;
 	}
 	
+	
+	private double getASR(List<Integer> genes, List<Integer> conditions) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	private double getACSI(int i, List<Integer> genes_c,
+			List<Integer> conditions_c) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 	private void generateCSI() {
 		csi = new ArrayList<Map<Integer,Map<Integer,Double>>>(nelements); 
 		
@@ -159,5 +216,29 @@ public class RunBicFinder {
 			}			
 		}		
 		return M;
+	}
+	
+	private List<Integer> getCommonConditions(int i, int k) {
+		Set<Integer> newConds = new HashSet<Integer>();
+		for(int l = 0; l < nattrs-1; l++){
+			if(discrete_matrix[i][l] == discrete_matrix[k][l]){
+				newConds.add(l);
+				newConds.add(l+1);
+			}
+		}
+		return new ArrayList(newConds);
+	}
+	
+	public List<Integer> union(List<Integer> a, List<Integer> b){
+		List<Integer> unionList = new ArrayList<Integer>(a);
+		unionList.removeAll(b);
+		unionList.addAll(b);
+		return unionList;
+	}
+	
+	public List<Integer> intersection(List<Integer> a, List<Integer> b){
+		List<Integer> intersectionList = new ArrayList<Integer>(a);
+		intersectionList.retainAll(b);		
+		return intersectionList;
 	}
 }
