@@ -226,7 +226,7 @@ public class RunBiMine {
 		
 		for(int i = 0; i < genes.size(); i++){			
 			for(int j = i+1; j < genes.size(); j++){
-				asr_c += geneRho[conditions.get(i)][conditions.get(j)];
+				asr_c += conditionRho[conditions.get(i)][conditions.get(j)];
 			}
 		}
 		asr_c /= conditions.size()*(conditions.size()-1);
