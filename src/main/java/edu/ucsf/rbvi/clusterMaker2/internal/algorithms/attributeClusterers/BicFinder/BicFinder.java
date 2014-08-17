@@ -116,7 +116,7 @@ public class BicFinder extends AbstractAttributeClusterer{
 		monitor.setStatusMessage("Initializing");
 
 		resetAttributes(network, GROUP_ATTRIBUTE);
-		/*
+		
 		// Create a new clusterer
 		RunBicFinder algorithm = new RunBicFinder(network, attributeArray, monitor, context);
 						
@@ -138,7 +138,7 @@ public class BicFinder extends AbstractAttributeClusterer{
 		if (context.showUI) {
 			insertTasksAfterCurrentTask(new BiclusterView(clusterManager));
 		}
-		*/
+		
 	}
 	
 	protected void createBiclusterGroups(Map<Integer, List<Long>> clusterNodes){

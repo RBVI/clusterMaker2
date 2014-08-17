@@ -323,4 +323,12 @@ public class RunBicFinder {
 		intersectionList.retainAll(b);		
 		return intersectionList;
 	}
+	
+	public Map<Integer, List<Long>> getClusterNodes(){
+		return clusterNodes;
+	}
+	
+	public Map<Integer, List<String>> getClusterAttrs(){
+		return clusterAttrs;
+	}
 }
