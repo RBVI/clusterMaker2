@@ -3,6 +3,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BiMi
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -76,8 +77,9 @@ public class RunBiMine {
 		System.out.println("Matrix after preprocessing:");
 		for(int i = 0;i<nelements;i++){
 			for (int j = 0; j < nattrs; j++){
-				System.out.println(matrix_preproc.getValue(i, j) +"\t");
-			}			
+				System.out.print(matrix_preproc.getValue(i, j) +"\t");
+			}		
+			System.out.println("");
 		}
 		calculateRhos();
 		
@@ -90,6 +92,9 @@ public class RunBiMine {
 		CyNode rowNodes[] = new CyNode[totalRows];
 		biclusterMatrix = new Matrix(network,totalRows,nattrs);
 		int i = 0;
+		
+		clusterNodes = new HashMap<Integer,List<Long>>();
+		clusterAttrs = new HashMap<Integer,List<String>>();
 		
 		for(int k = 0; k < biclusters.size(); k++){
 			List<Integer> geneList = biclusters.get(k).getGenes();
@@ -149,8 +154,8 @@ public class RunBiMine {
 						matrix_preproc_t.setValue(j, i, value);
 					}
 					else{
-						matrix_preproc.setValue(i, j, null);
-						matrix_preproc_t.setValue(j, i, null);
+						matrix_preproc.setValue(i, j, -999.0);
+						matrix_preproc_t.setValue(j, i, -999.0);
 					}
 				}
 			}
@@ -166,7 +171,9 @@ public class RunBiMine {
 		BETNode<Integer> node = bet.getRoot();
 		List<BETNode<Integer>> level = node.getChildren();
 		List<BETNode<Integer>> leaves = new ArrayList<BETNode<Integer>>();
+		int levelnum = 1;
 		while(level.size() > 0){
+			System.out.println("Level : "+levelnum);
 			int levelSize = level.size();	
 			List<BETNode<Integer>> nextLevel = new ArrayList<BETNode<Integer>>();
 			for(int i = 0; i < levelSize; i++){				
@@ -180,9 +187,16 @@ public class RunBiMine {
 					Collections.sort(childConditions);
 					BETNode<Integer> child_j = new BETNode<Integer>(childGenes,childConditions);
 					
-					if(getASR(child_j) >= delta){
-						Collections.sort(child_j.getGenes());
-						Collections.sort(child_j.getConditions());
+					System.out.println("i: "+i+", j: "+j+", ASR: "+getASR(child_j));					
+					System.out.println("Genes:");
+					for(Integer gene: childGenes)System.out.print(gene+", ");
+					System.out.println("\nConditions:");
+					for(Integer cond: childConditions)System.out.print(cond+", ");					
+					System.out.println("");
+					
+					if(getASR(child_j) >= alpha){
+						//Collections.sort(child_j.getGenes());
+						//Collections.sort(child_j.getConditions());
 						node_i.addChild(child_j);					
 					}
 					else{
@@ -195,7 +209,8 @@ public class RunBiMine {
 					leaves.add(node_i);
 				}
 			}
-			level = nextLevel;			
+			level = nextLevel;
+			levelnum++;
 		}
 		return getBiClusters(leaves);
 	}
@@ -233,8 +248,8 @@ public class RunBiMine {
 		}
 		asr_g /= genes.size()*(genes.size()-1);
 		
-		for(int i = 0; i < genes.size(); i++){			
-			for(int j = i+1; j < genes.size(); j++){
+		for(int i = 0; i < conditions.size(); i++){			
+			for(int j = i+1; j < conditions.size(); j++){
 				asr_c += conditionRho[conditions.get(i)][conditions.get(j)];
 			}
 		}
