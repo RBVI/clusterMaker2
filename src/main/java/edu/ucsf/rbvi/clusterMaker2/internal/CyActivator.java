@@ -2,21 +2,6 @@ package edu.ucsf.rbvi.clusterMaker2.internal;
 
 
 // Java imports
-import java.util.Properties;
-
-// Cytoscape imports
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.group.CyGroupFactory;
-import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.task.NetworkTaskFactory;
-import org.cytoscape.work.TaskFactory;
-import org.osgi.framework.BundleContext;
-
 import static org.cytoscape.work.ServiceProperties.COMMAND;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
 import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
@@ -26,26 +11,39 @@ import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
 import static org.cytoscape.work.ServiceProperties.TITLE;
 
+import java.util.Properties;
 
-// clusterMaker imports
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterVizFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ClusterManagerImpl;
+// Cytoscape imports
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.group.CyGroupFactory;
+import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.work.TaskFactory;
+import org.osgi.framework.BundleContext;
 
-// Algorithms
-import edu.ucsf.rbvi.clusterMaker2.internal.commands.CommandTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BiMine.BiMineTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BicFinder.BicFinderTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.ChengChurch.ChengChurchTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DBSCAN.DBSCANTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.autosome.AutoSOMETaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.featureVector.FeatureVectorTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.fft.FFTTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hierarchical.HierarchicalTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hopach.HopachPAMTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmeans.KMeansTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmedoid.KMedoidTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.pam.PAMTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.featureVector.FeatureVectorTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.fft.FFTTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.FilterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.BestNeighbor.BestNeighborFilterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.CuttingEdge.CuttingEdgeFilterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.Density.DensityFilterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.HairCut.HairCutFilterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.NetworkClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AP.APClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.ConnectedComponents.ConnectedComponentsTaskFactory;
@@ -56,20 +54,20 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCL
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCODE.MCODEClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.SCPS.SCPSClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.TransClustClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.FilterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.BestNeighbor.BestNeighborFilterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.CuttingEdge.CuttingEdgeFilterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.Density.DensityFilterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.HairCut.HairCutFilterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterVizFactory;
+// Algorithms
+import edu.ucsf.rbvi.clusterMaker2.internal.commands.CommandTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.CreateResultsPanelTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.DestroyResultsPanelTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.HeatMapViewTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.KnnViewTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.LinkSelectionTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkViewFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.TreeViewTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.KnnViewTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.HeatMapViewTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.LinkSelectionTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.UnlinkSelectionTaskFactory;
 // import edu.ucsf.rbvi.clusterMaker2.internal.ui.UITaskFactory;
+// clusterMaker imports
 
 public class CyActivator extends AbstractCyActivator {
 
@@ -122,6 +120,10 @@ public class CyActivator extends AbstractCyActivator {
                 ClusterTaskFactory.class, new Properties());
 		registerService(bc, new DBSCANTaskFactory(clusterManager), 
                ClusterTaskFactory.class, new Properties());
+		registerService(bc, new BicFinderTaskFactory(clusterManager), 
+                ClusterTaskFactory.class, new Properties());
+		registerService(bc, new BiMineTaskFactory(clusterManager), 
+                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new ChengChurchTaskFactory(clusterManager), 
                 ClusterTaskFactory.class, new Properties());
 

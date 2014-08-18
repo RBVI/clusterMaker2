@@ -33,6 +33,7 @@ public class RunBiMine {
 	protected boolean selectedOnly = false;
 	BiMineContext context;	
 	double delta;
+	double alpha;
 	
 	protected Map<Integer,List<Long>> clusterNodes;
 	protected Map<Integer,List<String>> clusterAttrs;
@@ -50,6 +51,8 @@ public class RunBiMine {
 		this.monitor = monitor;
 		this.context = context;
 		this.delta = context.delta.getValue();
+		this.alpha = context.alpha;
+
 	}
 	
 	public Integer[] cluster(boolean transpose) {
@@ -66,10 +69,16 @@ public class RunBiMine {
 		int nelements = matrix.nRows();
 		int nattrs = matrix.nColumns();
 		
-		matrix_preproc = new Matrix(network,nelements,nattrs);
+		matrix_preproc = new Matrix(network,nelements,nattrs);		
 		matrix_preproc_t = new Matrix(network,nattrs,nelements);
 		//arr = preProcess();
 		bet = Init_BET();
+		System.out.println("Matrix after preprocessing:");
+		for(int i = 0;i<nelements;i++){
+			for (int j = 0; j < nattrs; j++){
+				System.out.println(matrix_preproc.getValue(i, j) +"\t");
+			}			
+		}
 		calculateRhos();
 		
 		List<BETNode<Integer>> biclusters = BET_tree();
@@ -244,6 +253,7 @@ public class RunBiMine {
 		
 		for(int i=0; i < nelements; i++){
 			for(int j = i+1;j < nelements;j++){
+				System.out.println("i:"+i+",j:"+j);
 				geneRho[i][j] = spearman.getMetric(matrix_preproc, matrix_preproc, matrix_preproc.getWeights(), i, j);
 			}			
 		}

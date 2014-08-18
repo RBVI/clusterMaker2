@@ -17,6 +17,9 @@ public class BiMineContext {
 	@Tunable(description="Threshold for Preprocessing", gravity=1)
 	public BoundedDouble delta = new BoundedDouble(0.0, 1.0, Double.MAX_VALUE, true, true);
 	
+	@Tunable(description="Threshold for ASR", gravity=1)
+	public Double alpha = 1.0;
+	
 	@ContainsTunables
 	public AttributeList attributeList = null;
 
