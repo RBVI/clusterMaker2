@@ -82,13 +82,13 @@ public class RunBicFinder {
 		nelements = matrix.nRows();
 		nattrs = matrix.nColumns();
 		
+		/*
 		//Generate the transpose matrix for rho calculation 
 		matrix_t = new Matrix(network,nattrs,nelements);
 		for(int i = 0; i < nelements; i++){
 			for(int j = 0; j < nattrs; j++)matrix_t.setValue(j, i, matrix.getValue(i, j));
 		}
-		calculateRhos();
-		
+		*/	
 		discrete_matrix = getDiscreteMatrix();
 		generateCSL();
 		generateCSI();
@@ -141,7 +141,11 @@ public class RunBicFinder {
 		biclusterMatrix = new Matrix(network,totalRows,nattrs);
 		
 		int i = 0;
+		clusterNodes = new HashMap<Integer,List<Long>>();
+		clusterAttrs = new HashMap<Integer,List<String>>();
+		
 		for(Integer biclust: clusterRows.keySet()){
+			List<Long> nodes = new ArrayList<Long>();
 			for(Integer node: clusterRows.get(biclust)){				
 				biclusterMatrix.setRowLabel(i, matrix.getRowLabel(node));
 				rowNodes[i] = matrix.getRowNode(node);
@@ -151,7 +155,15 @@ public class RunBicFinder {
 				}
 				clusters[i] = biclust;
 				i++;
+				nodes.add(matrix.getRowNode(node).getSUID());
 			}			
+			clusterNodes.put(biclust, nodes);
+			
+			List<String> attrs = new ArrayList<String>();
+			for(Integer cond:clusterCols.get(biclust)){
+				attrs.add(matrix.getColLabel(cond));
+			}
+			clusterAttrs.put(biclust, attrs);
 		}
 		for(int j = 0; j<nattrs;j++){
 			biclusterMatrix.setColLabel(j, matrix.getColLabel(j));			
@@ -179,17 +191,27 @@ public class RunBicFinder {
 	}
 	
 	private double getASR(List<Integer> genes, List<Integer> conditions) {
+		
+		Matrix data = new Matrix(network,genes.size(),conditions.size());
+		//Matrix data_t = new Matrix(network,conditions.size(),genes.size());
+		for(int i = 0; i < genes.size();i++){
+			for(int j = 0; j < conditions.size();j++){
+				data.setValue(i, j, matrix.getValue(genes.get(i), conditions.get(j)));
+				//data_t.setValue(j, i, matrix.getValue(genes.get(i), conditions.get(j)));
+			}
+		}
+		
 		double asr = 0.0;
 		double asr_g = 0.0;
 		double asr_c = 0.0;
 		
 		for(int i = 0; i < genes.size(); i++){			
 			for(int j = i+1; j < genes.size(); j++){
-				asr_g += geneRho[genes.get(i)][genes.get(j)];
+				asr_g += getSpearmansRho(data,i,j);
 			}
 		}
 		asr_g /= genes.size()*(genes.size()-1);
-		
+		/*
 		for(int i = 0; i < genes.size(); i++){			
 			for(int j = i+1; j < genes.size(); j++){
 				asr_c += conditionRho[conditions.get(i)][conditions.get(j)];
@@ -198,27 +220,25 @@ public class RunBicFinder {
 		asr_c /= conditions.size()*(conditions.size()-1);
 		
 		asr = 2*Math.max(asr_g, asr_c);
+		*/
+		asr = 2*asr_g;
 		return asr;
 	}
 	
-	private void calculateRhos() {
-		int nelements = matrix.nRows();
-		int nattrs = matrix.nColumns();
-		DistanceMetric spearman = DistanceMetric.SPEARMANS_RANK;
-		geneRho = new Double[nelements][nelements];
-		conditionRho = new Double[nattrs][nattrs];
+	private Double getSpearmansRho(Matrix data, int i, int j) {
+		Double rho = 0.0;
+		double[] rank1 = data.getRank(i);
+		double[] rank2 = data.getRank(j);
 		
-		for(int i=0; i < nelements; i++){
-			for(int j = i+1;j < nelements;j++){
-				geneRho[i][j] = spearman.getMetric(matrix, matrix, matrix.getWeights(), i, j);
-			}			
+		int n = rank1.length;
+		
+		double sum_d2 = 0.0;
+		for (int k = 0; i < n; i++) {
+			sum_d2 += Math.pow((rank1[k])-(rank2[k]),2);
 		}
 		
-		for(int i=0; i< nattrs; i++){
-			for(int j = i+1; j < nattrs;j++){
-				conditionRho[i][j] = spearman.getMetric(matrix_t, matrix_t, matrix_t.getWeights(), i, j);
-			}			
-		}
+		rho = 1- (6*sum_d2/(n*(n*n-1)));
+		return rho;
 	}
 	
 	private void generateCSI() {
