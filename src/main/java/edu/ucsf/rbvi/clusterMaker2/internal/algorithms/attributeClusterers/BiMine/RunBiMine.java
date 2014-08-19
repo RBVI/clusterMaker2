@@ -23,7 +23,7 @@ public class RunBiMine {
 	protected BET<Integer> bet;
 	protected Matrix matrix;
 	protected Matrix matrix_preproc;
-	protected Matrix matrix_preproc_t;
+	//protected Matrix matrix_preproc_t;
 	protected Matrix biclusterMatrix;
 	protected Double arr[][];
 	protected Double geneRho[][];
@@ -71,9 +71,10 @@ public class RunBiMine {
 		int nattrs = matrix.nColumns();
 		
 		matrix_preproc = new Matrix(network,nelements,nattrs);		
-		matrix_preproc_t = new Matrix(network,nattrs,nelements);
+		//matrix_preproc_t = new Matrix(network,nattrs,nelements);
 		//arr = preProcess();
 		bet = Init_BET();
+		/*
 		System.out.println("Matrix after preprocessing:");
 		for(int i = 0;i<nelements;i++){
 			for (int j = 0; j < nattrs; j++){
@@ -81,6 +82,7 @@ public class RunBiMine {
 			}		
 			System.out.println("");
 		}
+		*/
 		//calculateRhos();
 		
 		List<BETNode<Integer>> biclusters = BET_tree();
@@ -151,11 +153,11 @@ public class RunBiMine {
 					if( (Math.abs(value-avg_i)/avg_i) > delta ){
 						condList.add(j);			
 						matrix_preproc.setValue(i, j, value);
-						matrix_preproc_t.setValue(j, i, value);
+						//matrix_preproc_t.setValue(j, i, value);
 					}
 					else{
 						matrix_preproc.setValue(i, j, null);
-						matrix_preproc_t.setValue(j, i, null);
+						//matrix_preproc_t.setValue(j, i, null);
 					}
 				}
 			}
@@ -173,15 +175,17 @@ public class RunBiMine {
 		List<BETNode<Integer>> leaves = new ArrayList<BETNode<Integer>>();
 		int levelnum = 1;
 		while(level.size() > 0){
-			if(levelnum>2)break;
-			System.out.println("Level : "+levelnum);
+			//if(levelnum>2)break;
+			//System.out.println("Level : "+levelnum);
 			int levelSize = level.size();	
 			List<BETNode<Integer>> nextLevel = new ArrayList<BETNode<Integer>>();
 			for(int i = 0; i < levelSize; i++){				
 				BETNode<Integer> node_i = level.get(i);
+				List<BETNode<Integer>> uncles = node_i.getParent().getChildren();
 				
-				for(int j = i+1; j < levelSize; j++){
-					BETNode<Integer> uncle_j = level.get(j);
+				for(int j = uncles.indexOf(node_i)+1; j < uncles.size(); j++){
+					//BETNode<Integer> uncle_j = level.get(j);
+					BETNode<Integer> uncle_j = uncles.get(j);
 					List<Integer> childGenes = union(node_i.getGenes(),uncle_j.getGenes());
 					List<Integer> childConditions = intersection(node_i.getConditions(),uncle_j.getConditions());
 					Collections.sort(childGenes);
@@ -189,16 +193,15 @@ public class RunBiMine {
 					BETNode<Integer> child_j = new BETNode<Integer>(childGenes,childConditions);
 					
 					double asr = getASR(child_j);
+					/*
 					System.out.println("i: "+i+", j: "+j+", ASR: "+asr);					
 					System.out.println("Genes:");
 					for(Integer gene: childGenes)System.out.print(gene+", ");
 					System.out.println("\nConditions:");
 					for(Integer cond: childConditions)System.out.print(cond+", ");					
 					System.out.println("");
-					
-					if(asr >= alpha){
-						//Collections.sort(child_j.getGenes());
-						//Collections.sort(child_j.getConditions());
+					*/
+					if(asr >= alpha){						
 						node_i.addChild(child_j);					
 					}
 					else{
@@ -213,7 +216,7 @@ public class RunBiMine {
 			}
 			level = nextLevel;
 			levelnum++;
-			System.out.println("NumLeaves: "+leaves.size());
+			//System.out.println("NumLeaves: "+leaves.size());
 		}
 		return getBiClusters(leaves);
 	}
@@ -234,6 +237,18 @@ public class RunBiMine {
 			}
 			if(!isSubset)biclusters.add(leaf);
 		}
+		/*
+		for(BETNode<Integer> biclust:biclusters){
+			List<Integer> genes = biclust.getGenes();
+			List<Integer> conditions = biclust.getConditions();
+			System.out.println("Biclusters:");
+			System.out.print("\nGenes:\t");
+			for(Integer gene:genes)System.out.print((gene+1)+"\t");
+			System.out.print("\nConditions:\t");
+			for(Integer cond:conditions)System.out.print((cond+1)+"\t");
+			System.out.println("");
+		}
+		*/
 		return biclusters;
 	}
 
@@ -242,11 +257,11 @@ public class RunBiMine {
 		List<Integer> conditions = node.getConditions();
 		
 		Matrix data = new Matrix(network,genes.size(),conditions.size());
-		Matrix data_t = new Matrix(network,conditions.size(),genes.size());
+		//Matrix data_t = new Matrix(network,conditions.size(),genes.size());
 		for(int i = 0; i < genes.size();i++){
 			for(int j = 0; j < conditions.size();j++){
 				data.setValue(i, j, matrix.getValue(genes.get(i), conditions.get(j)));
-				data_t.setValue(j, i, matrix.getValue(genes.get(i), conditions.get(j)));
+				//data_t.setValue(j, i, matrix.getValue(genes.get(i), conditions.get(j)));
 			}
 		}
 		
@@ -274,7 +289,7 @@ public class RunBiMine {
 		asr = 2*asr_g;
 		return asr;
 	}
-	
+	/*
 	private void calculateRhos() {
 		int nelements = matrix.nRows();
 		int nattrs = matrix.nColumns();
@@ -297,13 +312,14 @@ public class RunBiMine {
 			}			
 		}
 	}
+	*/
 	private Double getSpearmansRho(Matrix data, int i, int j) {
 		Double rho = 0.0;
 		double[] rank1 = data.getRank(i);
 		double[] rank2 = data.getRank(j);
 		
 		int n = rank1.length;
-		
+		/*
 		System.out.print("\nData1:\t");
 		for(int k = 0;k<n;k++)System.out.print(data.getValue(i, k)+"\t");
 		System.out.print("\nRank1:\t");
@@ -313,6 +329,7 @@ public class RunBiMine {
 		System.out.print("\nRank2:\t");
 		for(int k = 0;k<n;k++)System.out.print(rank2[k]+"\t");
 		System.out.println("");
+		*/
 		
 		/*
 		int n1 = rank1.length;
