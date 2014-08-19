@@ -173,7 +173,7 @@ public class RunBiMine {
 		List<BETNode<Integer>> leaves = new ArrayList<BETNode<Integer>>();
 		int levelnum = 1;
 		while(level.size() > 0){
-			if(levelnum>1)break;
+			if(levelnum>2)break;
 			System.out.println("Level : "+levelnum);
 			int levelSize = level.size();	
 			List<BETNode<Integer>> nextLevel = new ArrayList<BETNode<Integer>>();
@@ -213,6 +213,7 @@ public class RunBiMine {
 			}
 			level = nextLevel;
 			levelnum++;
+			System.out.println("NumLeaves: "+leaves.size());
 		}
 		return getBiClusters(leaves);
 	}
@@ -260,7 +261,7 @@ public class RunBiMine {
 			}
 		}
 		asr_g /= genes.size()*(genes.size()-1);
-		
+		/*
 		for(int i = 0; i < conditions.size(); i++){			
 			for(int j = i+1; j < conditions.size(); j++){
 				//asr_c += conditionRho[conditions.get(i)][conditions.get(j)];
@@ -268,8 +269,9 @@ public class RunBiMine {
 			}
 		}
 		asr_c /= conditions.size()*(conditions.size()-1);
-		
-		asr = 2*Math.max(asr_g, asr_c);
+		*/
+		//asr = 2*Math.max(asr_g, asr_c);
+		asr = 2*asr_g;
 		return asr;
 	}
 	
