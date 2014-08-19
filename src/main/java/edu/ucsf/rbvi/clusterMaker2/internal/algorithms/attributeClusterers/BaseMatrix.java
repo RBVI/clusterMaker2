@@ -205,7 +205,7 @@ public class BaseMatrix {
 			if (hasValue(row,column))
 				tData[nVals++] = matrix[row][column].doubleValue();
 		}
-		System.out.println("Inside getRank; nVals: "+nVals);
+		//System.out.println("Inside getRank; nVals: "+nVals);
 		if (nVals == 0)
 			return null;
 
