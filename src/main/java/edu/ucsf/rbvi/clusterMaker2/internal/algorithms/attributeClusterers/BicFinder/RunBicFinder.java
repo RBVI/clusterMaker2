@@ -90,6 +90,15 @@ public class RunBicFinder {
 		}
 		*/	
 		discrete_matrix = getDiscreteMatrix();
+		
+		System.out.println("Discrete Matrix:");		
+		for(int i = 0;i<nelements;i++){
+			for (int j = 0; j < nattrs-1; j++){
+				System.out.print(discrete_matrix[i][j] +"\t");
+			}		
+			System.out.println("");
+		}
+		
 		generateCSL();
 		generateCSI();
 		dag = generateDag();
@@ -99,8 +108,10 @@ public class RunBicFinder {
 		
 		//Iteratively create Biclusters
 		for(int i = 0; i < nelements; i++){
+			
 			List<Integer> genes = new ArrayList<Integer>();
 			List<Integer> conditions = new ArrayList<Integer>();
+			for(int c = 0; c < nattrs; c++)conditions.add(c);
 			
 			//Sort the edges leaving ith node according to the number of trues
 			List<Map.Entry<Integer,Integer>> edges = new LinkedList<Map.Entry<Integer,Integer>>(dag.get(i).entrySet());
@@ -112,21 +123,31 @@ public class RunBicFinder {
 			
 			for (Map.Entry<Integer,Integer> entry: edges){
 				int k = entry.getKey();
+				System.out.println("i-->k: "+i+"-->"+k+"\n");
 				List<Integer> genes_c = new ArrayList<Integer>();
 				List<Integer> conditions_c = new ArrayList<Integer>();
 				
 				genes_c = union(genes,Arrays.asList(i,k));
-				conditions_c = union(conditions,getCommonConditions(i,k));
-				if(getACSI(i,genes_c,conditions_c) >= alpha){
+				conditions_c = intersection(conditions,getCommonConditions(i,k));
+				
+				System.out.println("Current Genes:");
+				for(Integer gene: genes_c)System.out.print(gene+",");
+				System.out.println("\nCurrent Conditions:");
+				for(Integer condition: conditions_c)System.out.print(condition+",");
+				System.out.println("");
+				double acsi = getACSI(i,genes_c,conditions_c);
+				System.out.println("ACSI:"+acsi);
+				
+				if(acsi >= alpha){
 					//Assign bicluster i to current genes and conditions
 					genes = genes_c;
 					conditions = conditions_c;					
 				}
 			}
 			
-			//Add the new bicluster to the complete list 
-			if(getASR(genes,conditions) >= delta){
-				if(!(clusterRows.containsValue(genes) && clusterCols.containsValue(conditions))){
+			//Add the new bicluster to the complete list 			
+			if(!isSubset(genes,conditions)){
+				if(getASR(genes,conditions) >= delta){
 					clusterRows.put(clusterRows.size()+1, genes);
 					clusterCols.put(clusterCols.size()+1, conditions);
 				}
@@ -175,6 +196,17 @@ public class RunBicFinder {
 		return rowOrder;
 	}
 	
+	private boolean isSubset(List<Integer> genes, List<Integer> conditions) {
+		boolean subset = false;
+		for(Integer biclust: clusterRows.keySet()){
+			if(clusterRows.get(biclust).containsAll(genes) && 
+					clusterCols.get(biclust).containsAll(conditions)){
+				subset = true;
+				break;
+			}
+		}
+		return subset;
+	}
 	private double getACSI(int gene_i, List<Integer> genes,
 			List<Integer> conditions) {
 		if (genes.size() <= 2)return 1.0;
