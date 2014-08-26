@@ -188,19 +188,24 @@ public class RunBiMine {
 					BETNode<Integer> uncle_j = uncles.get(j);
 					List<Integer> childGenes = union(node_i.getGenes(),uncle_j.getGenes());
 					List<Integer> childConditions = intersection(node_i.getConditions(),uncle_j.getConditions());
+					
+					if(childConditions.size()==0)continue;
 					Collections.sort(childGenes);
 					Collections.sort(childConditions);
 					BETNode<Integer> child_j = new BETNode<Integer>(childGenes,childConditions);
 					
-					double asr = getASR(child_j);
-					/*
-					System.out.println("i: "+i+", j: "+j+", ASR: "+asr);					
+					
 					System.out.println("Genes:");
 					for(Integer gene: childGenes)System.out.print(gene+", ");
 					System.out.println("\nConditions:");
-					for(Integer cond: childConditions)System.out.print(cond+", ");					
+					for(Integer cond: childConditions)System.out.print(cond+", ");
 					System.out.println("");
-					*/
+					double asr = getASR(child_j);
+					
+					System.out.println("i: "+i+", j: "+j+", ASR: "+asr);					
+										
+					System.out.println("");
+					
 					if(asr >= alpha){						
 						node_i.addChild(child_j);					
 					}
@@ -255,7 +260,7 @@ public class RunBiMine {
 	private double getASR(BETNode<Integer> node) {
 		List<Integer> genes = node.getGenes();
 		List<Integer> conditions = node.getConditions();
-		
+				
 		Matrix data = new Matrix(network,genes.size(),conditions.size());
 		//Matrix data_t = new Matrix(network,conditions.size(),genes.size());
 		for(int i = 0; i < genes.size();i++){

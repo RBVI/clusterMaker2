@@ -100,8 +100,11 @@ public class RunBicFinder {
 		}
 		
 		generateCSL();
+		System.out.println("After CSL");
 		generateCSI();
+		System.out.println("After CSI");
 		dag = generateDag();
+		System.out.println("After DAG");
 		
 		clusterRows = new HashMap<Integer,List<Integer>>();
 		clusterCols = new HashMap<Integer,List<Integer>>();
@@ -120,7 +123,7 @@ public class RunBicFinder {
 					return o2.getValue().compareTo(o1.getValue());
 				}
 			});
-			
+			System.out.println("***Sorting Finished***");
 			for (Map.Entry<Integer,Integer> entry: edges){
 				int k = entry.getKey();
 				System.out.println("i-->k: "+i+"-->"+k+"\n");
@@ -130,6 +133,7 @@ public class RunBicFinder {
 				genes_c = union(genes,Arrays.asList(i,k));
 				conditions_c = intersection(conditions,getCommonConditions(i,k));
 				
+				if(conditions_c.size()==0)continue;
 				System.out.println("Current Genes:");
 				for(Integer gene: genes_c)System.out.print(gene+",");
 				System.out.println("\nCurrent Conditions:");
