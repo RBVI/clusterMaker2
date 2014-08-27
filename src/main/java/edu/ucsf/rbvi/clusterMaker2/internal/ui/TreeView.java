@@ -179,7 +179,7 @@ public class TreeView extends TreeViewApp implements Observer,
 			return false;
 
 		if (!network.getRow(network).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class)
-										.equals(HierarchicalCluster.GROUP_ATTRIBUTE)) {
+										.equals(HierarchicalCluster.SHORTNAME)) {
 			return false;
 		}
 
@@ -229,11 +229,14 @@ public class TreeView extends TreeViewApp implements Observer,
 		if (ignoreSelection)
 			return;
 
+		// System.out.println("Got selection event");
+
 		CyTable table = e.getSource();
 		CyNetwork net = networkTableManager.getNetworkForTable(table);
 		Class type = networkTableManager.getTableType(table);
 
 		if (type.equals(CyNode.class)) {
+			// System.out.println("Node selection");
 			if (dataModel.isSymmetrical()) return;
 
 			List<CyNode> selectedNodes = CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, true);
@@ -398,6 +401,7 @@ public class TreeView extends TreeViewApp implements Observer,
 	}
 
 	private void setNodeSelection(List<CyNode> nodeArray, boolean select) {
+		// System.out.println("Selecting "+nodeArray.size()+" nodes in network "+myNetwork);
 		HeaderInfo geneInfo = dataModel.getGeneHeaderInfo();
 		geneSelection.deleteObserver(this);
 		geneSelection.setSelectedNode(null);
@@ -407,7 +411,7 @@ public class TreeView extends TreeViewApp implements Observer,
 				continue;
 
 			int geneIndex = geneInfo.getHeaderIndex(ModelUtils.getName(myNetwork, cyNode));
-			// System.out.println("setting "+cyNode.getIdentifier()+"("+geneIndex+") to "+select);
+			// System.out.println("setting "+cyNode+"("+geneIndex+") to "+select);
 			geneSelection.setIndex(geneIndex, select);
 		}
 		geneSelection.deleteObserver(this);

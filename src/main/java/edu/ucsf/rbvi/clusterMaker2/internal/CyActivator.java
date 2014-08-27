@@ -58,6 +58,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterVizFactory;
 // Algorithms
 import edu.ucsf.rbvi.clusterMaker2.internal.commands.CommandTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.BiclusterViewTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.CreateResultsPanelTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.DestroyResultsPanelTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.HeatMapViewTaskFactory;
@@ -160,6 +161,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new HeatMapViewTaskFactory(clusterManager), ClusterVizFactory.class, 
 		                new Properties());
 		registerService(bc, new KnnViewTaskFactory(clusterManager), ClusterVizFactory.class, 
+		                new Properties());
+		registerService(bc, new BiclusterViewTaskFactory(clusterManager), ClusterVizFactory.class, 
 		                new Properties());
 		registerService(bc, new TreeViewTaskFactory(clusterManager), ClusterVizFactory.class, 
 		                new Properties());

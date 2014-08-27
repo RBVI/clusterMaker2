@@ -66,7 +66,6 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Abstr
 public class FeatureVectorCluster extends AbstractAttributeClusterer {
 	public static String SHORTNAME = "featurevector";
 	public static String NAME = "Create Correlation Network from Node Attributes";
-	public static String GROUP_ATTRIBUTE = "__featureVectorGroups";
 
 	final static String interaction = "distance";
 

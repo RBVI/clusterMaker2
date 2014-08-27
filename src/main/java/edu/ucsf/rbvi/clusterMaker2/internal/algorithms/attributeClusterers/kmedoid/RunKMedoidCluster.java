@@ -87,7 +87,7 @@ public class RunKMedoidCluster extends AbstractKClusterAlgorithm {
 
 		int[] centers;
 		if (context.kcluster.initializeNearCenter) {
-			centers = chooseCentralElementsAsCenters(matrix.nRows(), nClusters, distances);
+			centers = chooseCentralElementsAsCenters(matrix.nRows(), nClusters, distances, null);
 		} else {
 			centers = chooseRandomElementsAsCenters(matrix.nRows(), nClusters);
 		}

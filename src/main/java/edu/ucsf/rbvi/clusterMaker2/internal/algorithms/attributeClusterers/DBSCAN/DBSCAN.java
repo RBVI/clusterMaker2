@@ -22,7 +22,6 @@ public class DBSCAN extends AbstractAttributeClusterer {
 
 	public static String SHORTNAME = "dbscan";
 	public static String NAME = "DBSCAN cluster";
-	public static String GROUP_ATTRIBUTE = SHORTNAME;
 	
 	@Tunable(description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
@@ -93,7 +92,7 @@ public class DBSCAN extends AbstractAttributeClusterer {
 
 		monitor.setStatusMessage("Initializing");
 
-		resetAttributes(network, GROUP_ATTRIBUTE);
+		resetAttributes(network, SHORTNAME);
 		
 		distanceMetric = context.getDistanceMetric();
 		// Create a new clusterer
@@ -110,7 +109,7 @@ public class DBSCAN extends AbstractAttributeClusterer {
 			
 			Integer[] rowOrder = algorithm.getMatrix().indexSort(clusters, clusters.length);
 			//Integer[] rowOrder = algorithm.cluster(context.kcluster.kNumber,1, true, "dbscan", context.kcluster);
-			updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, getAttributeList(), 
+			updateAttributes(network, SHORTNAME, rowOrder, attributeArray, getAttributeList(), 
 			                 algorithm.getMatrix());
 		}
 
@@ -126,7 +125,7 @@ public class DBSCAN extends AbstractAttributeClusterer {
 		
 		Integer[] rowOrder = algorithm.getMatrix().indexSort(clusters, clusters.length);
 		//Integer[] rowOrder = algorithm.cluster(context.kcluster.kNumber,1, false, "dbscan", context.kcluster);
-		updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, getAttributeList(), 
+		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, getAttributeList(), 
 		                 algorithm.getMatrix());
 
 		// System.out.println(resultsString);

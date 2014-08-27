@@ -115,7 +115,7 @@ public class BiMine extends AbstractAttributeClusterer{
 
 		monitor.setStatusMessage("Initializing");
 
-		resetAttributes(network, GROUP_ATTRIBUTE);
+		resetAttributes(network, SHORTNAME);
 		
 		// Create a new clusterer
 		RunBiMine algorithm = new RunBiMine(network, attributeArray, monitor, context);
@@ -129,7 +129,7 @@ public class BiMine extends AbstractAttributeClusterer{
 		Matrix biclusterMatrix = algorithm.getBiclusterMatrix();
 		int clusters[] = new int[biclusterMatrix.nRows()];
 		createGroups(network,biclusterMatrix,1, clusters, "bimine");
-		updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, getAttributeList(), 
+		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, getAttributeList(), 
 		                 algorithm.getBiclusterMatrix());
 		
 		createBiclusterTable(algorithm.getClusterNodes(),algorithm.getClusterAttrs());

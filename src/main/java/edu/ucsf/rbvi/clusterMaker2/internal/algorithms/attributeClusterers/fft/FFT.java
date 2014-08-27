@@ -21,7 +21,6 @@ public class FFT extends AbstractAttributeClusterer {
 
 	public static String SHORTNAME = "fft";
 	public static String NAME = "Farthest First Traversal k-center cluster";
-	public static String GROUP_ATTRIBUTE = SHORTNAME;
 	
 	@Tunable(description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
@@ -90,7 +89,7 @@ public class FFT extends AbstractAttributeClusterer {
 
 		monitor.setStatusMessage("Initializing");
 
-		resetAttributes(network, GROUP_ATTRIBUTE);
+		resetAttributes(network, SHORTNAME);
 
 		// Create a new clusterer
 		RunFFT algorithm = new RunFFT(network, attributeArray, distanceMetric, monitor, context);
@@ -104,7 +103,7 @@ public class FFT extends AbstractAttributeClusterer {
 			monitor.setStatusMessage("Clustering attributes");
 			Integer[] rowOrder = algorithm.cluster(clusterManager, context.kcluster.kNumber, 
 			                                       1, true, "fft", context.kcluster, false);
-			updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, algorithm.getAttributeList(), 
+			updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
 			                 algorithm.getMatrix());
 		}
 
@@ -112,7 +111,7 @@ public class FFT extends AbstractAttributeClusterer {
 		monitor.setStatusMessage("Clustering nodes");
 		Integer[] rowOrder = algorithm.cluster(clusterManager, context.kcluster.kNumber, 
 			                                     1, false, "fft", context.kcluster, createGroups);
-		updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, algorithm.getAttributeList(), 
+		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
 		                 algorithm.getMatrix());
 
 		// System.out.println(resultsString);

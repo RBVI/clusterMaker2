@@ -294,7 +294,7 @@ public abstract class AbstractKClusterAlgorithm {
 		return centers;
 	}
 
-	protected int[] chooseCentralElementsAsCenters(int nElements, int nClusters, double[][] distances) {
+	protected int[] chooseCentralElementsAsCenters(int nElements, int nClusters, double[][] distances, int[] tclusterid) {
 		int[] centers = new int[nClusters];
 		
 		// calculate normalized distances
@@ -331,6 +331,19 @@ public abstract class AbstractKClusterAlgorithm {
 		for (int i = 0; i < nClusters; i++) {
 			centers[i] = pairs[i].value;
 			// System.out.println("nClusters = "+nClusters+", i = " + i + ", center = " + centers[i]);
+		}
+
+		// Now, if we've been provided a tclusterid array, assign each element to it's closest center
+		if (tclusterid != null) {
+			for (int j = 0; j < nElements; j++) {
+				double distance = Double.MAX_VALUE;
+				for (int cluster = 0; cluster < nClusters; cluster++) {
+					if (normalized[j][centers[cluster]] < distance) {
+						distance = normalized[j][centers[cluster]];
+						tclusterid[j] = cluster;
+					}
+				}
+			}
 		}
 		
 		return centers;

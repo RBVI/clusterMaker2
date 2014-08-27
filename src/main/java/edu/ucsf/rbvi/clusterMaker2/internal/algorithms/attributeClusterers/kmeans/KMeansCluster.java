@@ -58,7 +58,6 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Abstr
 public class KMeansCluster extends AbstractAttributeClusterer {
 	public static String SHORTNAME = "kmeans";
 	public static String NAME = "K-Means cluster";
-	public static String GROUP_ATTRIBUTE = SHORTNAME;
 
 	@Tunable(description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
@@ -128,7 +127,7 @@ public class KMeansCluster extends AbstractAttributeClusterer {
 		monitor.setStatusMessage("Initializing");
 		// System.out.println("Initializing");
 
-		resetAttributes(network, GROUP_ATTRIBUTE);
+		resetAttributes(network, SHORTNAME);
 
 		// Create a new clusterer
 		RunKCluster algorithm = new RunKCluster(network, attributeArray, distanceMetric, monitor, context);
@@ -143,7 +142,7 @@ public class KMeansCluster extends AbstractAttributeClusterer {
 			//System.out.println("Clustering attributes: k="+context.kcluster.kNumber);
 			Integer[] rowOrder = algorithm.cluster(clusterManager, context.kcluster.kNumber, 
 			                                       context.iterations, true, "kmeans", context.kcluster, false);
-			updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, algorithm.getAttributeList(), 
+			updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
 			                 algorithm.getMatrix());
 		}
 
@@ -151,7 +150,7 @@ public class KMeansCluster extends AbstractAttributeClusterer {
 		monitor.setStatusMessage("Clustering nodes");
 		Integer[] rowOrder = algorithm.cluster(clusterManager, context.kcluster.kNumber, 
 			                                     context.iterations, false, "kmeans", context.kcluster, createGroups);
-		updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, algorithm.getAttributeList(), 
+		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
 		                 algorithm.getMatrix());
 
 		// System.out.println(resultsString);

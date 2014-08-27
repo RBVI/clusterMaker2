@@ -56,16 +56,9 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 public class BiclusterView extends TreeView {
 
 	public static String SHORTNAME = "biclusterview";
-	public static String NAME =  "JTree BiclusterView (unclustered)";
+	public static String NAME =  "JTree BiclusterView";
 	
-	protected ViewFrame viewFrame = null;
-	protected TreeSelectionI geneSelection = null;
-	protected TreeSelectionI arraySelection = null;
-	protected TreeViewModel dataModel = null;
-	protected CyNetworkView myView = null;
 	protected TaskMonitor monitor = null;
-	protected ClusterManager manager = null;
-	protected CyNetworkTableManager networkTableManager = null;
 	protected CyTableManager tableManager = null;
 	protected CyTableFactory tableFactory = null;
 	protected String clusterAttribute = null;
@@ -73,18 +66,19 @@ public class BiclusterView extends TreeView {
 	List<String> colList;
 
 	@Tunable(description="Network to view bicluster heatmap for", context="nogui")
-	public CyNetwork myNetwork = null;
+	public CyNetwork network = null;
 
 	private static String appName = "clusterMaker BiclusterView";
 	
 	public BiclusterView(ClusterManager manager) {
 		super(manager);		
-		this.manager = manager;
-		networkTableManager = manager.getService(CyNetworkTableManager.class);
 		tableManager = manager.getTableManager();
 		tableFactory = manager.getTableFactory();
 				
-		if (myNetwork == null) myNetwork = manager.getNetwork();
+		if (network == null) 
+			myNetwork = manager.getNetwork();
+		else
+			myNetwork = network;
 		
 		clusterAttribute =
 				myNetwork.getRow(myNetwork, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
@@ -114,6 +108,7 @@ public class BiclusterView extends TreeView {
 	
 	public void run(TaskMonitor monitor) {
 		monitor.setTitle("Creating heat map");
+		myNetwork = manager.getNetwork();
 		myView = manager.getNetworkView();
 		this.monitor = monitor;
 		// Sanity check
@@ -332,4 +327,27 @@ public class BiclusterView extends TreeView {
 		
 		return clusterAttrs;
 	}	
+
+
+	public static boolean isReady(CyNetwork network) {
+		if (network == null) return false;
+		System.out.println("network is not null");
+		if (ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE)) {
+			String type = network.getRow(network).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class);
+			System.out.println("CLUSTER_TYPE_ATTRIBUTE = "+type);
+			if (!type.equals("BicFinder") &&
+			    !type.equals("BiMine") &&
+			    !type.equals("cheng&church"))
+				return false;
+		}
+
+		System.out.println("Looking for = "+ClusterManager.CLUSTER_NODE_ATTRIBUTE+" or "+ClusterManager.CLUSTER_ATTR_ATTRIBUTE);
+		if (ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE) ||
+		    ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE)) {
+			System.out.println("Found 'em");
+			return true;
+		}
+
+		return false;
+	}
 }

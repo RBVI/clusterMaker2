@@ -60,7 +60,6 @@ import edu.ucsf.rbvi.clusterMaker2.internal.ui.TreeView;
 public class HierarchicalCluster extends AbstractAttributeClusterer {
 	public static String SHORTNAME = "hierarchical";
 	public static String NAME = "Hierarchical cluster";
-	public static String GROUP_ATTRIBUTE = SHORTNAME;
 	/**
 	 * Linkage types
 	 */
@@ -136,7 +135,7 @@ public class HierarchicalCluster extends AbstractAttributeClusterer {
 		monitor.showMessage(TaskMonitor.Level.INFO, "Initializing");
 		System.out.println("Initializing");
 
-		resetAttributes(network, GROUP_ATTRIBUTE);
+		resetAttributes(network, SHORTNAME);
 
 		// Create a new clusterer
 		RunHierarchical algorithm = new RunHierarchical(network, attributeArray, distanceMetric, clusterMethod, monitor, context);
@@ -146,7 +145,7 @@ public class HierarchicalCluster extends AbstractAttributeClusterer {
 			monitor.setStatusMessage("Clustering attributes");
 
 			Integer[] rowOrder = algorithm.cluster(true);
-			updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, algorithm.getAttributeList(), 
+			updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
 			                 algorithm.getMatrix());
 		}
 
@@ -154,7 +153,7 @@ public class HierarchicalCluster extends AbstractAttributeClusterer {
 
 		// Cluster the nodes
 		Integer[] rowOrder = algorithm.cluster(false);
-		updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, algorithm.getAttributeList(), 
+		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
 		                 algorithm.getMatrix());
 
 		// TODO: Deal with params!

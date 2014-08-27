@@ -58,7 +58,6 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Abstr
 public class KMedoidCluster extends AbstractAttributeClusterer {
 	public static String SHORTNAME = "kmedoid";
 	public static String NAME = "K-Medoid cluster";
-	public static String GROUP_ATTRIBUTE = SHORTNAME;
 
 	@Tunable(description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
@@ -127,7 +126,7 @@ public class KMedoidCluster extends AbstractAttributeClusterer {
 		monitor.setStatusMessage("Initializing");
 		// System.out.println("Initializing");
 
-		resetAttributes(network, GROUP_ATTRIBUTE);
+		resetAttributes(network, SHORTNAME);
 
 		// Create a new clusterer
 		RunKMedoidCluster algorithm = new RunKMedoidCluster(network, attributeArray, distanceMetric, monitor, context);
@@ -142,7 +141,7 @@ public class KMedoidCluster extends AbstractAttributeClusterer {
 			// System.out.println("Clustering attributes");
 			Integer[] rowOrder = algorithm.cluster(clusterManager, context.kcluster.kNumber, 
 			                                       context.iterations, true, SHORTNAME, context.kcluster, false);
-			updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, algorithm.getAttributeList(), 
+			updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
 			                 algorithm.getMatrix());
 		}
 
@@ -152,7 +151,7 @@ public class KMedoidCluster extends AbstractAttributeClusterer {
 		Integer[] rowOrder = algorithm.cluster(clusterManager, context.kcluster.kNumber, 
 			                                     context.iterations, false, SHORTNAME, context.kcluster, 
 																		       createGroups);
-		updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, algorithm.getAttributeList(), 
+		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
 		                 algorithm.getMatrix());
 
 		// System.out.println(resultsString);

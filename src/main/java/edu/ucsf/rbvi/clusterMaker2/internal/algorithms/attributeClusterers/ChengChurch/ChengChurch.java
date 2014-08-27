@@ -31,7 +31,7 @@ public class ChengChurch extends AbstractAttributeClusterer {
 
 	public static String SHORTNAME = "cheng&church";
 	public static String NAME = "Cheng & Church's  bi-cluster";
-	public final static String GROUP_ATTRIBUTE = SHORTNAME+"Groups.SUID";
+	public static String GROUP_ATTRIBUTE = SHORTNAME+"Group.SUID";
 	
 	CyTableManager tableManager = null;
 	private CyTableFactory tableFactory = null;
@@ -114,7 +114,7 @@ public class ChengChurch extends AbstractAttributeClusterer {
 
 		monitor.setStatusMessage("Initializing");
 
-		resetAttributes(network, GROUP_ATTRIBUTE);
+		resetAttributes(network, SHORTNAME);
 		
 		
 		// Create a new clusterer
@@ -134,7 +134,7 @@ public class ChengChurch extends AbstractAttributeClusterer {
 		Matrix biclusterMatrix = algorithm.getBiclusterMatrix();
 		int clusters[] = new int[biclusterMatrix.nRows()];
 		createGroups(network,biclusterMatrix,1, clusters, "cheng&hurch");
-		updateAttributes(network, GROUP_ATTRIBUTE, rowOrder, attributeArray, getAttributeList(), 
+		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, getAttributeList(), 
 		                 algorithm.getBiclusterMatrix());
 		
 		createBiclusterTable(algorithm.getClusterNodes(),algorithm.getClusterAttrs());

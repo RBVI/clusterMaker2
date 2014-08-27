@@ -123,7 +123,7 @@ public class RunKCluster extends AbstractKClusterAlgorithm {
 					randomAssign(nClusters, nelements, tclusterid);
 					// if (nIterations != 0) debugAssign(nClusters, nelements, tclusterid);
 				} else {
-					tclusterid = chooseCentralElementsAsCenters(nelements, nClusters, matrix.getDistanceMatrix(metric));
+					int centers[] = chooseCentralElementsAsCenters(nelements, nClusters, matrix.getDistanceMatrix(metric), tclusterid);
 				}
 			}
 

@@ -100,7 +100,7 @@ public class KnnView extends TreeView {
 	public static String SHORTNAME = "knnview";
 	public static String NAME =  "JTree KnnView";
 
-	private static String appName = "ClusterManager KnnView";
+	private static String appName = "clusterMaker KnnView";
 
 	public KnnView(ClusterManager manager) {
 		super(manager);
@@ -133,10 +133,11 @@ public class KnnView extends TreeView {
 		if (network == null) return false;
 		if (ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE)) {
 			String type = network.getRow(network).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class);
-			if (!type.equals(KMeansCluster.GROUP_ATTRIBUTE) &&
-			    !type.equals(KMedoidCluster.GROUP_ATTRIBUTE) &&
+			if (!type.equals(KMeansCluster.SHORTNAME) &&
+			    !type.equals(KMedoidCluster.SHORTNAME) &&
 			    !type.equals("autosome_heatmap") &&
 			    !type.equals("pam") &&
+			    !type.equals("dbscan") &&
 			    !type.equals("hopach"))
 				return false;
 		}
