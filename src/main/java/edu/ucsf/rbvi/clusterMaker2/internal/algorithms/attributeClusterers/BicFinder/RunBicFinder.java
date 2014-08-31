@@ -101,8 +101,10 @@ public class RunBicFinder {
 		
 		generateCSL();
 		System.out.println("After CSL");
+		/*
 		generateCSI();
 		System.out.println("After CSI");
+		*/
 		dag = generateDag();
 		System.out.println("After DAG");
 		
@@ -218,7 +220,8 @@ public class RunBicFinder {
 		int i = genes.indexOf(gene_i);
 		for(int j = i+1; j < genes.size(); j++){
 			for(int k = j+1; k < genes.size(); k++){
-				acsi += csi.get(gene_i).get(genes.get(j)).get(genes.get(k)); 
+				//acsi += csi.get(gene_i).get(genes.get(j)).get(genes.get(k));
+				acsi += getCSI(gene_i,genes.get(j),genes.get(k));
 			}
 		}
 		acsi *= 2;
@@ -266,6 +269,16 @@ public class RunBicFinder {
 		double[] rank1 = data.getRank(i);
 		double[] rank2 = data.getRank(j);
 		
+		
+		if(rank1==null){
+			System.out.println("rank1 is null");
+			return 0.0;
+		}
+		if(rank2==null){
+			System.out.println("rank2 is null");
+			return 0.0;
+		}
+		
 		int n = rank1.length;
 		
 		double sum_d2 = 0.0;
@@ -276,7 +289,17 @@ public class RunBicFinder {
 		rho = 1- (6*sum_d2/(n*(n*n-1)));
 		return rho;
 	}
-	
+	private double getCSI(int i, int j, int k){
+		double csi = 0.0;
+		for(int l = 0; l < nattrs-1;l++){
+			if(discrete_matrix[i][l] == discrete_matrix[j][l] && discrete_matrix[i][l] == discrete_matrix[k][l]){
+				csi += 1.0;
+			}
+		}
+		csi /= maxCSL[i];
+		
+		return csi;
+	}
 	private void generateCSI() {
 		csi = new ArrayList<Map<Integer,Map<Integer,Double>>>(nelements); 
 		
