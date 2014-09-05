@@ -128,7 +128,10 @@ public class BicFinder extends AbstractAttributeClusterer{
 		
 		Matrix biclusterMatrix = algorithm.getBiclusterMatrix();
 		int clusters[] = new int[biclusterMatrix.nRows()];
-		createGroups(network,biclusterMatrix,1, clusters, "s");
+		
+		createBiclusterGroups(algorithm.getClusterNodes());
+		//createGroups(network,biclusterMatrix,1, clusters, "bicfinder");
+		
 		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, getAttributeList(), 
 		                 algorithm.getBiclusterMatrix());
 		
