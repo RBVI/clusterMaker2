@@ -55,7 +55,7 @@ public class ClusterManagerImpl implements ClusterManager {
 	double attributeClusterIndex = 1.0;
 	double filterIndex = 100.0;
 	double vizClusterIndex = 1.0;
-	ResultsPanel resultsPanel;
+	Map<CyNetwork, ResultsPanel> resultsPanelMap;
 
 	public ClusterManagerImpl(CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar,
  	                          CyGroupFactory groupFactory, CyGroupManager groupMgr, 
@@ -66,6 +66,7 @@ public class ClusterManagerImpl implements ClusterManager {
 		this.groupMgr = groupMgr;
 		this.algMap = new HashMap<String, ClusterTaskFactory>();
 		this.vizMap = new HashMap<String, ClusterVizFactory>();
+		this.resultsPanelMap = new HashMap<CyNetwork, ResultsPanel>();
 		this.tableFactory = tableFactory;
 		this.tableManager = tableManager;
 		this.linkedNetworks = new HashMap<CyRootNetwork, NetworkSelectionLinker>();
@@ -217,12 +218,14 @@ public class ClusterManagerImpl implements ClusterManager {
 		groupMgr.destroyGroup(group);
 	}
 
-	public ResultsPanel getResultsPanel(){
-		return resultsPanel;
+	public ResultsPanel getResultsPanel(CyNetwork network){
+		if (resultsPanelMap.containsKey(network))
+			return resultsPanelMap.get(network);
+		return null;
 		
 	}
-	public void setResultsPanel(ResultsPanel resultsPanel){
-		this.resultsPanel = resultsPanel;
+	public void setResultsPanel(CyNetwork network, ResultsPanel resultsPanel){
+		resultsPanelMap.put(network, resultsPanel);
 	}
 	
 	public <T> T getService(Class<? extends T> clazz) {

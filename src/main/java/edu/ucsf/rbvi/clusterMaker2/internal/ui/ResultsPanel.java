@@ -175,7 +175,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	
 	
 	public String getTitle() {
-		return clusterType+" Cluster Results";
+		return clusterType+"("+network+")";
 	}
 	
 		

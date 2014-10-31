@@ -47,8 +47,8 @@ public interface ClusterManager {
 	public void removeGroup(CyNetwork network, Long suid);
 	
 	//getter and setter methods for ResultsPanel
-	public ResultsPanel getResultsPanel();
-	public void setResultsPanel(ResultsPanel resultsPanel);
+	public ResultsPanel getResultsPanel(CyNetwork network);
+	public void setResultsPanel(CyNetwork network, ResultsPanel resultsPanel);
 
 	public <T> T getService(Class <? extends T> clazz);
 	public <T> T getService(Class<? extends T> clazz, String filter);
