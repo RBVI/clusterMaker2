@@ -158,6 +158,7 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 	public void setNetwork(CyNetwork network) {
 		this.network = network;
 		attribute = ModelUtils.updateEdgeAttributeList(network, attribute);
+		this.matrix = null;
 	}
 
 	public BoundedDouble updateBounds() {

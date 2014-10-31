@@ -118,6 +118,9 @@ public class FCMCluster extends AbstractFuzzyNetworkClusterer {
 		
 		if (network == null)
 			network = clusterManager.getNetwork();
+
+		// Make sure to update the context
+		context.setNetwork(network);
 		
 		Long networkID = network.getSUID();
 

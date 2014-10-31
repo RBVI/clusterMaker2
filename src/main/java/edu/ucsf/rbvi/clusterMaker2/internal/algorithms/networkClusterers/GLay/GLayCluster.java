@@ -96,6 +96,12 @@ public class GLayCluster extends AbstractNetworkClusterer  {
 		createGroups = context.advancedAttributes.createGroups;
 		clusterAttributeName = context.getClusterAttribute();
 
+		if (network == null)
+			network = clusterManager.getNetwork();
+
+		// Make sure to update the context
+		context.setNetwork(network);
+
     GSimpleGraphData simpleGraph = new GSimpleGraphData(network, context.selectedOnly, context.undirectedEdges);
 		fa = new FastGreedyAlgorithm();
 		//fa.partition(simpleGraph);

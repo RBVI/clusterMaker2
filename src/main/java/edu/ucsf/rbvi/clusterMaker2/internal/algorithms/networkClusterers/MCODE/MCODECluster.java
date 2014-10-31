@@ -136,6 +136,10 @@ public class MCODECluster extends AbstractNetworkClusterer  {
 		monitor.setTitle("Performing "+getName());
 		updateSettings();
 
+		if (network == null)
+			network = clusterManager.getNetwork();
+		context.setNetwork(network);
+
 		NodeCluster.init();
 		if(currentParamsCopy.getScope().equals(MCODEParameterSet.SELECTION)) {
 			List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);

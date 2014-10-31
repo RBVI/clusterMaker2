@@ -95,6 +95,9 @@ public class SCPSCluster extends AbstractNetworkClusterer  {
 		this.monitor = monitor;
 		if (network == null)
 			network = clusterManager.getNetwork();
+
+		// Make sure to update the context
+		context.setNetwork(network);
 		
 		DistanceMatrix matrix = context.edgeAttributeHandler.getMatrix();
 		if (matrix == null) {

@@ -120,6 +120,9 @@ public class Fuzzifier extends AbstractFuzzyNetworkClusterer{
 			network = clusterManager.getNetwork();
 		super.network = network;
 
+		// Make sure to update the context
+		context.setNetwork(network);
+
 		Long networkID = network.getSUID();
 
 		CyTable nodeAttributes = network.getDefaultNodeTable();
