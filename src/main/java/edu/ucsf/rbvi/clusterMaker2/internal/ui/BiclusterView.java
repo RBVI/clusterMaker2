@@ -331,20 +331,20 @@ public class BiclusterView extends TreeView {
 
 	public static boolean isReady(CyNetwork network) {
 		if (network == null) return false;
-		System.out.println("network is not null");
+		// System.out.println("network is not null");
 		if (ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE)) {
 			String type = network.getRow(network).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class);
-			System.out.println("CLUSTER_TYPE_ATTRIBUTE = "+type);
+			// System.out.println("CLUSTER_TYPE_ATTRIBUTE = "+type);
 			if (!type.equals("BicFinder") &&
 			    !type.equals("BiMine") &&
 			    !type.equals("cheng&church"))
 				return false;
 		}
 
-		System.out.println("Looking for = "+ClusterManager.CLUSTER_NODE_ATTRIBUTE+" or "+ClusterManager.CLUSTER_ATTR_ATTRIBUTE);
+		// System.out.println("Looking for = "+ClusterManager.CLUSTER_NODE_ATTRIBUTE+" or "+ClusterManager.CLUSTER_ATTR_ATTRIBUTE);
 		if (ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE) ||
 		    ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE)) {
-			System.out.println("Found 'em");
+			// System.out.println("Found 'em");
 			return true;
 		}
 
