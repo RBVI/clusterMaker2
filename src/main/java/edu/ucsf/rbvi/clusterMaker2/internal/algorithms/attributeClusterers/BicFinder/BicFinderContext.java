@@ -15,10 +15,10 @@ public class BicFinderContext {
 	CyNetwork network;
 
 	@Tunable(description="Threshold for Gene/Condition addition to Biclusters", gravity=1)
-	public BoundedDouble alpha = new BoundedDouble(0.0, 1.0, Double.MAX_VALUE, true, true);
+	public BoundedDouble alpha = new BoundedDouble(0.0, 0.5, 1.0, true, true);
 	
 	@Tunable(description="Threshold for Bicluster Evaluation", gravity=2)
-	public BoundedDouble delta = new BoundedDouble(0.0, 1.0, Double.MAX_VALUE, true, true);
+	public BoundedDouble delta = new BoundedDouble(-1.0, 0.0, 1.0, true, true);
 		
 	@ContainsTunables
 	public AttributeList attributeList = null;

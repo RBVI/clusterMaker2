@@ -125,8 +125,8 @@ public class CyActivator extends AbstractCyActivator {
 		 * Hold off on these until we get improve the performance sufficiently
 		 * to allow them to be useful
 		 */
-		// registerService(bc, new BicFinderTaskFactory(clusterManager), 
-    //             ClusterTaskFactory.class, new Properties());
+		registerService(bc, new BicFinderTaskFactory(clusterManager), 
+               ClusterTaskFactory.class, new Properties());
 		// registerService(bc, new BiMineTaskFactory(clusterManager), 
     //             ClusterTaskFactory.class, new Properties());
 		registerService(bc, new ChengChurchTaskFactory(clusterManager), 
