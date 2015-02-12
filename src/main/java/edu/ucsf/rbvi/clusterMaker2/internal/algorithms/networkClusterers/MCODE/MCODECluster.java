@@ -148,7 +148,7 @@ public class MCODECluster extends AbstractNetworkClusterer  {
 
 		MCODECurrentParameters.getInstance().setParams(currentParamsCopy, "MCODE Result", ModelUtils.getNetworkName(network));
 
-		runMCODE = new RunMCODE(RESCORE, "MCODE", network, monitor);
+		runMCODE = new RunMCODE(RESCORE, 1, network, monitor);
 		List<NodeCluster> clusters = runMCODE.run(monitor);
 		if (canceled) {
 			monitor.showMessage(TaskMonitor.Level.INFO,"Canceled by user");
@@ -159,10 +159,11 @@ public class MCODECluster extends AbstractNetworkClusterer  {
 		if (clusters == null || clusters.size() == 0) {
 			monitor.showMessage(TaskMonitor.Level.WARN,"Didn't find any clusters!");
 			return;
-	}
+		}
 
 		// Now, sort our list of clusters by score
 		clusters = NodeCluster.rankListByScore(clusters);
+		List<Double>scoreList = NodeCluster.getScoreList(clusters);
 		clusterAttributeName = context.getClusterAttribute();
 		createGroups = context.advancedAttributes.createGroups;
 
@@ -175,7 +176,7 @@ public class MCODECluster extends AbstractNetworkClusterer  {
 
 		List<List<CyNode>> nodeClusters = createGroups(network, clusters, GROUP_ATTRIBUTE);
 
-		results = new AbstractClusterResults(network, nodeClusters);
+		results = new AbstractClusterResults(network, nodeClusters, scoreList, null);
 		monitor.setStatusMessage("Done.  MCODE results:\n"+results);
 
 		if (context.vizProperties.showUI) {

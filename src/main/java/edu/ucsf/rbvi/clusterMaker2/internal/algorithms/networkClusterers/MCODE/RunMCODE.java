@@ -54,19 +54,19 @@ public class RunMCODE {
 	private MCODEAlgorithm alg = null;
 	private boolean completedSuccessfully = false;
 	private int analyze;
-	private String resultSet;
+	private int resultId;
 
 	/**
 	 * Scores and finds clusters in a given network
 	 *
 	 * @param network The network to cluster
 	 * @param analyze Tells the task if we need to rescore and/or refind
-	 * @param resultSet Identifier of the current result set
+	 * @param resultId Identifier of the current result set
 	 * @param alg reference to the algorithm for this network
 	 */
-	public RunMCODE(int analyze, String resultSet, CyNetwork network, TaskMonitor monitor) {
+	public RunMCODE(int analyze, int resultId, CyNetwork network, TaskMonitor monitor) {
 		this.analyze = analyze;
-		this.resultSet = resultSet;
+		this.resultId = resultId;
 		this.network = network;
 		this.alg = new MCODEAlgorithm(ModelUtils.getNetworkName(network), monitor);
 	}
@@ -81,7 +81,7 @@ public class RunMCODE {
 		if (analyze == MCODECluster.RESCORE) {
 			monitor.setProgress(0);
 			monitor.setStatusMessage("Scoring Network (Step 1 of 3)");
-			alg.scoreGraph(network, resultSet);
+			alg.scoreGraph(network, resultId);
 			if (interrupted) {
 				return null;
 			}
@@ -91,7 +91,7 @@ public class RunMCODE {
 		monitor.setProgress(0);
 		monitor.setStatusMessage("Finding Clusters (Step 2 of 3)");
 
-		List<NodeCluster> clusters = alg.findClusters(network, resultSet);
+		List<NodeCluster> clusters = alg.findClusters(network, resultId);
 
 		if (interrupted) {
 			return null;

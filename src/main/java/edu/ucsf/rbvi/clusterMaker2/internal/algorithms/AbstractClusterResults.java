@@ -45,19 +45,26 @@ public class AbstractClusterResults implements ClusterResults {
 	private int minSize;
 	private double clusterCoefficient;
 	private List<Double> modularityList;
+	private List<Double> scoreList;
 	private double modularity;
 	private String extraText = null;
 
-	public AbstractClusterResults(CyNetwork network, List<List<CyNode>> cl, String extraInformation) { 
+	public AbstractClusterResults(CyNetwork network, List<List<CyNode>> cl, 
+	                              List<Double> algorithmScores, String extraInformation) { 
 		this.network = network;
 		clusters = cl; 
 		extraText = extraInformation;
 		modularityList = new ArrayList<Double>();
 		calculate();
+		scoreList = algorithmScores;
+	}
+
+	public AbstractClusterResults(CyNetwork network, List<List<CyNode>> cl, String extraInformation) { 
+		this(network, cl, null, extraInformation);
 	}
 
 	public AbstractClusterResults(CyNetwork network, List<List<CyNode>> cl) { 
-		this(network,cl,null);
+		this(network, cl, null, null);
 	}
 
 	public String toString() {
@@ -93,8 +100,17 @@ public class AbstractClusterResults implements ClusterResults {
 	public List<List<CyNode>> getClusters() {
 		return clusters;
 	}
+
 	public List<Double> getModularityList(){
 		return modularityList;
+	}
+
+	/**
+	 * Return the algorithm-provided score list (if any).  If no scores
+	 * were provided by the algorithm, this will return null.
+	 */
+	public List<Double> getScoreList(){
+		return scoreList;
 	}
 
 	public Object getResults(Class requestedType) {

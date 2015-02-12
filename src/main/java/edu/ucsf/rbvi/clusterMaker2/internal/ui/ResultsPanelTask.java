@@ -6,7 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.CytoPanelState;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
@@ -92,6 +96,12 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 			}
 		}
 
+		// See if this algorithm provided it's own scores
+		List<Double> scores = null;
+		if (network.getDefaultNetworkTable().getColumn(clusterAttribute+"_Scores") != null) {
+			scores = network.getRow(network, CyNetwork.LOCAL_ATTRS).getList(clusterAttribute+"_Scores", Double.class);
+		}
+
 		for(int clustNum : clusterMap.keySet()){
 			NodeCluster cluster = new NodeCluster(clusterMap.get(clustNum));
 			clusterList.add(clusterMap.get(clustNum));
@@ -102,8 +112,10 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 		}
 
 		//calculating the scores for each cluster
-		clusterResults =  new AbstractClusterResults(network,clusterList);
+		clusterResults =  new AbstractClusterResults(network,clusterList, scores, null);
 		List<Double> modularityList = clusterResults.getModularityList();
+		if (scores != null)
+			modularityList = scores;
 		for(int i = 0; i < clusters.size() ;i++){
 			clusters.get(i).setClusterScore(modularityList.get(i));
 		}
@@ -113,6 +125,8 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 
 
 	public void run(TaskMonitor monitor) {
+		CySwingApplication swingApplication = manager.getService(CySwingApplication.class);
+		CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.EAST);
 		if (createFlag){
 			monitor.setTitle("Creating a new results panel with cluster results");
 			clusters = getClusters();
@@ -123,6 +137,8 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 			//System.out.println("After registering RP as cytoPanel");
 			manager.setResultsPanel(network, resultsPanel);
 			//System.out.println("After saving RP in manager");
+			if (cytoPanel.getState() == CytoPanelState.HIDE)
+				cytoPanel.setState(CytoPanelState.DOCK);
 
 		}
 		else{
@@ -131,6 +147,9 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 			resultsPanel = manager.getResultsPanel(network);
 			registrar.unregisterService(resultsPanel, CytoPanelComponent.class);
 			manager.setResultsPanel(network, null);
+			// If there aren't any results, hide the panel
+			if (cytoPanel.getCytoPanelComponentCount() == 0)
+				cytoPanel.setState(CytoPanelState.HIDE);
 		}
 
 	}

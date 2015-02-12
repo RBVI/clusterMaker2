@@ -69,8 +69,20 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 	protected List<List<CyNode>> createGroups(CyNetwork network, List<NodeCluster> clusters, String group_attr) {
 		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
 		List<Long>groupList = new ArrayList<Long>(); // keep track of the groups we create
+
+		List<Double>clusterScores = new ArrayList<Double>(clusters.size());
+		boolean haveScores = false;
+
+		// Remove the old column, if it's there.  Some of the algorithms don't put
+		// all nodes into clusters, so we might wind up with old data lingering
+		ModelUtils.deleteColumnLocal(network, CyNode.class, clusterAttributeName);
+
 		for (NodeCluster cluster: clusters) {
 			int clusterNumber = cluster.getClusterNumber();
+			if (cluster.hasScore()) {
+				clusterScores.add(clusterNumber-1, cluster.getClusterScore());
+				haveScores = true;
+			}
 			String groupName = clusterAttributeName+"_"+clusterNumber;
 			List<CyNode>nodeList = new ArrayList<CyNode>();
 
@@ -92,6 +104,9 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 			clusterList.add(nodeList);
 		}
 		
+		if (haveScores)
+			ModelUtils.createAndSetLocal(network, network, clusterAttributeName+"_Scores", clusterScores, List.class, Double.class);
+
 		ModelUtils.createAndSetLocal(network, network, group_attr, groupList, List.class, Long.class);
 
 		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, getShortName(), 

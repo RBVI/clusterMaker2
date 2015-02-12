@@ -53,30 +53,41 @@ import java.util.Map;
  */
 public class MCODEClusterObj {
 	private List<CyNode> alCluster = null;
-	private CyNetwork gpCluster = null;
+	private CyNetwork graph = null;
 	private CyNode seedNode;
 	private Map<CyNode, Boolean> nodeSeenHashMap; //stores the nodes that have already been included in higher ranking clusters
 	private double clusterScore;
-	private String clusterName; //Pretty much unsed so far, but could store name by user's input
+	private String name; //Pretty much unsed so far, but could store name by user's input
 	private int rank;
-	private String resultTitle;
+	private int resultId;
+
+	public MCODEClusterObj(final int resultId,
+	                       final CyNode seedNode,
+												 final CyNetwork graph,
+												 final double score,
+												 final List<CyNode> alCluster,
+												 final Map<CyNode, Boolean> nodeSeenHashMap) {
+		this.resultId = resultId;
+		this.seedNode = seedNode;
+		this.graph = graph;
+		this.clusterScore = score;
+		this.alCluster = alCluster;
+		this.nodeSeenHashMap = nodeSeenHashMap;
+
+	}
 
 	public MCODEClusterObj() {}
 
-	public String getResultTitle() {
-		return resultTitle;
+	public int getResultId() {
+		return resultId;
 	}
 
-	public void setResultTitle(String resultTitle) {
-		this.resultTitle = resultTitle;
+	public String getName() {
+		return name;
 	}
 
-	public String getClusterName() {
-		return clusterName;
-	}
-
-	public void setClusterName(String clusterName) {
-		this.clusterName = clusterName;
+	public void setName(String clusterName) {
+		this.name = clusterName;
 	}
 
 	public double getClusterScore() {
@@ -88,11 +99,11 @@ public class MCODEClusterObj {
 	}
 
 	public CyNetwork getGPCluster() {
-		return gpCluster;
+		return graph;
 	}
 
 	public void setGPCluster(CyNetwork gpCluster) {
-		this.gpCluster = gpCluster;
+		this.graph = gpCluster;
 	}
 
 	public List<CyNode> getALCluster() {
@@ -125,12 +136,12 @@ public class MCODEClusterObj {
 
 	public void setRank(int rank) {
 		this.rank = rank;
-		this.clusterName = "Cluster " + (rank + 1);
+		this.name = "Cluster " + (rank + 1);
 	}
 
 	public NodeCluster getNodeCluster() {
 		NodeCluster result = new NodeCluster();
-		List nodes = gpCluster.getNodeList();
+		List nodes = graph.getNodeList();
 		result.addAll(nodes);
 		result.setClusterScore(clusterScore);
 		return result;

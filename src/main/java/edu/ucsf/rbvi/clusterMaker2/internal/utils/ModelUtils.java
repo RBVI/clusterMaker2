@@ -74,6 +74,19 @@ public class ModelUtils {
 		return true;
 	}
 
+	public static void deleteColumn(CyNetwork network, Class<? extends CyIdentifiable> type, 
+	                                String column, String namespace) {
+		CyTable table = network.getTable(type, namespace);
+		if (table.getColumn(column) != null) {
+			table.deleteColumn(column);
+		}
+	}
+
+	public static void deleteColumnLocal(CyNetwork network, Class<? extends CyIdentifiable> type, 
+	                                String column) {
+		deleteColumn(network, type, column, CyNetwork.LOCAL_ATTRS);
+	}
+
 	public static void deleteAttributeLocal(CyNetwork network, CyIdentifiable value, String column) {
 		deleteAttribute(network, value, column, CyNetwork.LOCAL_ATTRS);
 	}

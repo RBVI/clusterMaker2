@@ -74,6 +74,17 @@ public class NodeCluster extends ArrayList<CyNode> {
 		return str+")";
 	}
 
+	public static List<Double> getScoreList(List<NodeCluster> list) {
+		if (!hasScore())
+			return null;
+
+		List<Double> scoreList = new ArrayList<Double>(list.size());
+		for (NodeCluster cluster: list) {
+			scoreList.add(cluster.getClusterNumber()-1, cluster.getClusterScore());
+		}
+		return scoreList;
+	}
+
 	public static List<NodeCluster> sortMap(Map<Integer, NodeCluster> map) {
 		NodeCluster[] clusterArray = map.values().toArray(new NodeCluster[1]);
 		Arrays.sort(clusterArray, new LengthComparator());
