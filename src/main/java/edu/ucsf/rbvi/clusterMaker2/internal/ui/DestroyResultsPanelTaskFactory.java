@@ -15,7 +15,7 @@ public class DestroyResultsPanelTaskFactory implements ClusterVizFactory {
 
 	ClusterManager clusterManager;
 	boolean checkAvailable;
-	public static String CLUSTERNAME = "Destroy Results Panel from Clusters";
+	public static String CLUSTERNAME = "Destroy All Cluster Results Panels";
 	public static String CLUSTERSHORTNAME = "destroyResultsPanel";
 	
 	public DestroyResultsPanelTaskFactory(ClusterManager clusterManager, boolean checkAvailable) {
@@ -65,7 +65,7 @@ public class DestroyResultsPanelTaskFactory implements ClusterVizFactory {
 
 	public boolean isReady() {
 		
-		if (clusterManager.getResultsPanel(clusterManager.getNetwork()) != null)
+		if (clusterManager.getResultsPanels(clusterManager.getNetwork()) != null)
 		    return true;
 		return false;
 		/*

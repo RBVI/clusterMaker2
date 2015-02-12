@@ -101,6 +101,8 @@ public class ConnectedComponentsCluster extends AbstractNetworkClusterer  {
 		// Make sure to update the context
 		context.setNetwork(network);
 
+		NodeCluster.init();
+
 		DistanceMatrix matrix = context.edgeAttributeHandler.getMatrix();
 		if (matrix == null) {
 			monitor.showMessage(TaskMonitor.Level.ERROR,"Can't get distance matrix: no attribute value?");

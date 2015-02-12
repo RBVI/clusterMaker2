@@ -128,6 +128,8 @@ public class TransClustCluster extends AbstractNetworkClusterer{
 
 		// Make sure to update the context
 		context.setNetwork(network);
+
+		NodeCluster.init();
 		
 		DistanceMatrix matrix = context.edgeAttributeHandler.getMatrix();
 		if (matrix == null) {

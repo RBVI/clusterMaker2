@@ -29,6 +29,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.text.NumberFormat;
 import java.util.Collections;
@@ -36,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -60,8 +62,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -164,7 +169,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		clusterType = network.getRow(network).get("__clusterType", String.class);
 		//System.out.println("RP: after setting variables and fields");
 		
-		this.clusterBrowserPanel = new ClusterBrowserPanel();
+		this.clusterBrowserPanel = new ClusterBrowserPanel(this);
 		//System.out.println("RP: after creating new cluster browser panel");
 		add(clusterBrowserPanel, BorderLayout.CENTER);
 		//System.out.println("RP: after adding clusterBrowserPanel");
@@ -211,13 +216,16 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 
 		private final ResultsPanel.ClusterBrowserTableModel browserModel;
 		private final JTable table;
+		private final ResultsPanel resultsPanel;
 
-		public ClusterBrowserPanel() {
+		public ClusterBrowserPanel(ResultsPanel component) {
 			
 			super();
+			resultsPanel = component;
+
 			//System.out.println("CBP: inside constructor, after super()");
 			setLayout(new BorderLayout());
-			setBorder(BorderFactory.createTitledBorder("Cluster Browser"));
+			// setBorder(BorderFactory.createTitledBorder("Cluster Browser"));
 
 			// Create the summary panel
 			String title = clusterType+" cluster summary for "+ModelUtils.getNetworkName(network);
@@ -256,6 +264,23 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 
 			add(tableScrollPane, BorderLayout.CENTER);
 			//System.out.println("CBP: after adding JScrollPane");
+
+			JButton dispose = new JButton("Remove Results");
+			dispose.addActionListener(new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					CySwingApplication swingApplication = clusterManager.getService(CySwingApplication.class);
+					CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.EAST);
+					clusterManager.unregisterService(resultsPanel, CytoPanelComponent.class);
+					clusterManager.removeResultsPanel(network, resultsPanel);
+					if (cytoPanel.getCytoPanelComponentCount() == 0)
+						cytoPanel.setState(CytoPanelState.HIDE);
+				}
+			});
+
+			JPanel buttonPanel = new JPanel();
+			buttonPanel.add(dispose);
+			add(buttonPanel, BorderLayout.SOUTH);
 		}
 
 		public int getSelectedRow() {

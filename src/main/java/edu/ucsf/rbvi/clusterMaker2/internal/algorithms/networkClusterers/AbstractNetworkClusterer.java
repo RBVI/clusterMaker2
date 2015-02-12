@@ -71,7 +71,11 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 		List<Long>groupList = new ArrayList<Long>(); // keep track of the groups we create
 
 		List<Double>clusterScores = new ArrayList<Double>(clusters.size());
-		boolean haveScores = false;
+		// Initialize
+		for (NodeCluster cluster: clusters) {
+			clusterScores.add(null);
+		}
+		boolean haveScores = NodeCluster.getScoreList(clusters) != null;
 
 		// Remove the old column, if it's there.  Some of the algorithms don't put
 		// all nodes into clusters, so we might wind up with old data lingering
@@ -80,7 +84,7 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 		for (NodeCluster cluster: clusters) {
 			int clusterNumber = cluster.getClusterNumber();
 			if (cluster.hasScore()) {
-				clusterScores.add(clusterNumber-1, cluster.getClusterScore());
+				clusterScores.set(clusterNumber-1, cluster.getClusterScore());
 				haveScores = true;
 			}
 			String groupName = clusterAttributeName+"_"+clusterNumber;

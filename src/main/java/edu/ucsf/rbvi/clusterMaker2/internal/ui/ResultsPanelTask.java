@@ -135,7 +135,7 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 			// System.out.println("Before registering RP as cytoPanel");
 			registrar.registerService(resultsPanel, CytoPanelComponent.class, new Properties());
 			//System.out.println("After registering RP as cytoPanel");
-			manager.setResultsPanel(network, resultsPanel);
+			manager.addResultsPanel(network, resultsPanel);
 			//System.out.println("After saving RP in manager");
 			if (cytoPanel.getState() == CytoPanelState.HIDE)
 				cytoPanel.setState(CytoPanelState.DOCK);
@@ -143,10 +143,12 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 		}
 		else{
 			//need to retrieve the saved resultsPanel to unregister it
-			monitor.setTitle("Deleting the results panel");
-			resultsPanel = manager.getResultsPanel(network);
-			registrar.unregisterService(resultsPanel, CytoPanelComponent.class);
-			manager.setResultsPanel(network, null);
+			monitor.setTitle("Deleting all results panels");
+			List<ResultsPanel>resultsPanels = new ArrayList<ResultsPanel>(manager.getResultsPanels(network));
+			for (ResultsPanel panel: resultsPanels) {
+				registrar.unregisterService(panel, CytoPanelComponent.class);
+				manager.removeResultsPanel(network, panel);
+			}
 			// If there aren't any results, hide the panel
 			if (cytoPanel.getCytoPanelComponentCount() == 0)
 				cytoPanel.setState(CytoPanelState.HIDE);

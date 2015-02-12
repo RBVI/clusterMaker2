@@ -80,6 +80,10 @@ public class NodeCluster extends ArrayList<CyNode> {
 
 		List<Double> scoreList = new ArrayList<Double>(list.size());
 		for (NodeCluster cluster: list) {
+			scoreList.add(null);
+		}
+
+		for (NodeCluster cluster: list) {
 			scoreList.add(cluster.getClusterNumber()-1, cluster.getClusterScore());
 		}
 		return scoreList;
