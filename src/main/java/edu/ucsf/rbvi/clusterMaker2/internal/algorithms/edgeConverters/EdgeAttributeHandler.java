@@ -54,7 +54,7 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 	
 	private ListSingleSelection<String> attribute ;
 	
-	@Tunable(description = "Array Sources", groups={"Source for array data"}, gravity=10.0)
+	@Tunable(description = "Array Sources", groups={"Source for array data"}, params="displayState=expanded", gravity=10.0)
 	public ListSingleSelection<String> getattribute(){
 		attribute = ModelUtils.updateEdgeAttributeList(network, attribute);
 		return attribute;

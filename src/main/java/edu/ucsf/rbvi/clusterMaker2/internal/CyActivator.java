@@ -54,6 +54,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCL
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCODE.MCODEClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.SCPS.SCPSClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.TransClustClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.PCAMenuTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.PCATaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterVizFactory;
 // Algorithms
@@ -146,7 +148,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new MCODEClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new SCPSClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new TransClustClusterTaskFactory(clusterManager), 
-		                ClusterTaskFactory.class, new Properties());
+		                ClusterTaskFactory.class, new Properties());                
 
 		// Filters
 		registerService(bc, new FilterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
@@ -174,6 +176,10 @@ public class CyActivator extends AbstractCyActivator {
                 new Properties());
 		registerService(bc, new DestroyResultsPanelTaskFactory(clusterManager,true), ClusterVizFactory.class, 
                 new Properties());
+                
+                // Principal Component Analysis
+                registerService(bc, new PCAMenuTaskFactory(), ClusterTaskFactory.class, new Properties());
+                registerService(bc, new PCATaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 
 		// Link Network Selections
 		LinkSelectionTaskFactory linkTaskFactory = new LinkSelectionTaskFactory(clusterManager);
