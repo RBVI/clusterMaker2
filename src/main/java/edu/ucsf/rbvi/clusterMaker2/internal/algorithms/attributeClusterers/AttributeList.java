@@ -81,7 +81,7 @@ public class AttributeList {
 	public List<String> getNodeAttributeList() {
 		if (nodeAttributeList == null) return null;
 		List<String> attrs = nodeAttributeList.getSelectedValues();
-		if (attrs == null || attrs.size() == 0) return null;
+		if (attrs == null || attrs.isEmpty()) return null;
 		if ((attrs.size() == 1) &&
 		    (attrs.get(0).equals("--None--"))) return null;
 		return attrs;

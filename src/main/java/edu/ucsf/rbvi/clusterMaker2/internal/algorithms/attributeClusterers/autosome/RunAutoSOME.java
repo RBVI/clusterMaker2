@@ -130,7 +130,7 @@ public class RunAutoSOME {
 
 		// logger.info("Calculating clusters");
 
-		if (dataAttributes == null || dataAttributes.size() == 0) {
+		if (dataAttributes == null || dataAttributes.isEmpty() ) {
 			monitor.showMessage(TaskMonitor.Level.ERROR, "Error: no attribute list selected");
 			return null;
 		}
