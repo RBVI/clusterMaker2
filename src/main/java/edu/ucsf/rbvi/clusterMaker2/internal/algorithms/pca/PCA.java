@@ -5,12 +5,6 @@
  */
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BaseMatrix;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hierarchical.HierarchicalCluster.NAME;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hierarchical.HierarchicalCluster.SHORTNAME;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import java.util.List;
 import org.cytoscape.model.CyNetwork;
@@ -69,29 +63,11 @@ public class PCA extends AbstractTask{
                     attrArray[att++] = "node."+attribute;
             }
             
-            double[][] distanceMatrix;
+            RunPCA runPCA = new RunPCA(network, context, monitor, attrArray);
             if(context.inputValue.getSelectedValue().equals("Distance Matric")){
-                Matrix matrix = new Matrix(network, attrArray, false, context.ignoreMissing, context.selectedOnly);
-                matrix.setUniformWeights();
-                distanceMatrix = matrix.getDistanceMatrix(context.distanceMetric.getSelectedValue());
-                
+                runPCA.runOnDistanceMatric();
             }else if(context.inputValue.getSelectedValue().equals("Edge Value")){
-                DistanceMatrix disMatrix = context.edgeAttributeHandler.getMatrix();
-                distanceMatrix = disMatrix.getDistanceMatrix().toArray();
-            }else{
-                return;
+                runPCA.runOnEdgeValues();
             }
-            
-            int nRow = distanceMatrix.length;
-            int nColumn = distanceMatrix[0].length;
-                       
-            for(int i=0;i<nRow;i++){
-                for(int j=0;j<nColumn;j++){
-                    System.out.print(distanceMatrix[i][j] + "\t");
-                }
-                System.out.println("\n");
-            }
-            
-            System.out.println("" + nRow + " " + nColumn);
         }
 }

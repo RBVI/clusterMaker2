@@ -98,12 +98,12 @@ public class BaseMatrix {
 	
 	public double doubleValue(int row, int column) {
 		if (matrix[row][column] != null)
-			return matrix[row][column].doubleValue();
+			return matrix[row][column];
 		return Double.NaN;
 	}
 	
 	public void setValue(int row, int column, double value) {
-		matrix[row][column] = new Double(value);
+		matrix[row][column] = value;
 	}
 
 	public void setValue(int row, int column, Double value) {
@@ -203,7 +203,7 @@ public class BaseMatrix {
 		int nVals = 0;
 		for (int column = 0; column < nColumns; column++) {
 			if (hasValue(row,column))
-				tData[nVals++] = matrix[row][column].doubleValue();
+				tData[nVals++] = matrix[row][column];
 		}
 		//System.out.println("Inside getRank; nVals: "+nVals);
 		if (nVals == 0)
@@ -214,18 +214,18 @@ public class BaseMatrix {
 
 		// Build a rank table
 		double[] rank = new double[nVals];
-		for (int i = 0; i < nVals; i++) rank[index[i].intValue()] = i;
+		for (int i = 0; i < nVals; i++) rank[index[i]] = i;
 
 		// Fix for equal ranks
 		int i = 0;
 		while (i < nVals) {
 			int m = 0;
-			double value = tData[index[i].intValue()];
+			double value = tData[index[i]];
 			int j = i+1;
-			while (j < nVals && tData[index[j].intValue()] == value) j++;
+			while (j < nVals && tData[index[j]] == value) j++;
 			m = j - i; // Number of equal ranks found
-			value = rank[index[i].intValue()] + (m-1)/2.0;
-			for (j = i; j < i+m; j++) rank[index[j].intValue()] = value;
+			value = rank[index[i]] + (m-1)/2.0;
+			for (j = i; j < i+m; j++) rank[index[j]] = value;
 			i += m;
 		}
 		return rank;
@@ -264,7 +264,7 @@ public class BaseMatrix {
 
 	public Integer[] indexSort(double[] tData, int nVals) {
 		Integer[] index = new Integer[nVals];
-		for (int i = 0; i < nVals; i++) index[i] = new Integer(i);
+		for (int i = 0; i < nVals; i++) index[i] = i;
 		IndexComparator iCompare = new IndexComparator(tData);
 		Arrays.sort(index, iCompare);
 		return index;
@@ -272,7 +272,7 @@ public class BaseMatrix {
 	
 	public Integer[] indexSort(int[] tData, int nVals) {
 		Integer[] index = new Integer[nVals];
-		for (int i = 0; i < nVals; i++) index[i] = new Integer(i);
+		for (int i = 0; i < nVals; i++) index[i] = i;
 		IndexComparator iCompare = new IndexComparator(tData);
 		Arrays.sort(index, iCompare);
 		return index;
@@ -286,14 +286,14 @@ public class BaseMatrix {
 		for (int row = 0; row < this.nRows; row++) {
 			for (int col = 0; col < this.nColumns; col++ ) {
 				if (matrix[row][col] == null)
-					matrix[row][col] = new Double(0.0);
+					matrix[row][col] = 0.0;
 			}
 		}
 	}
 	
 	public void adjustDiagonals() {
 		for (int col = 0; col < nColumns; col++ ) {
-			matrix[col][col] = new Double(maxAttribute);
+			matrix[col][col] = maxAttribute;
 		}
 	}
 	
@@ -307,12 +307,12 @@ public class BaseMatrix {
 
 		public int compare(Integer o1, Integer o2) {
 			if (data != null) {
-				if (data[o1.intValue()] < data[o2.intValue()]) return -1;
-				if (data[o1.intValue()] > data[o2.intValue()]) return 1;
+				if (data[o1] < data[o2]) return -1;
+				if (data[o1] > data[o2]) return 1;
 				return 0;
 			} else if (intData != null) {
-				if (intData[o1.intValue()] < intData[o2.intValue()]) return -1;
-				if (intData[o1.intValue()] > intData[o2.intValue()]) return 1;
+				if (intData[o1] < intData[o2]) return -1;
+				if (intData[o1] > intData[o2]) return 1;
 				return 0;
 			}
 			return 0;
