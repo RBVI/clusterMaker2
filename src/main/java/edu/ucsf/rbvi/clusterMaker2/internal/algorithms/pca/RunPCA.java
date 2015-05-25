@@ -34,10 +34,35 @@ public class RunPCA {
                 Matrix matrix = new Matrix(network, weightAttributes, false, context.ignoreMissing, context.selectedOnly);
                 matrix.setUniformWeights();
                 distanceMatrix = matrix.getDistanceMatrix(context.distanceMetric.getSelectedValue());
+                ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
+                mat.writeMatrix("output.txt");
+                mat = mat.centralizeRows();
+                ComputationMatrix C = mat.covariance();
+                double[] values = C.eigenValues();
+                double value = Double.MIN_VALUE;
+                int pos = -1;
+                for(int i=0; i<values.length; i++){
+                    if(values[i] > value){
+                        value = values[i];
+                        pos = i;
+                    }
+                }
+                //System.out.println("pos: " + pos);
+                double[][] vectors = mat.eigenVectors();
+                double[] w = new double[vectors.length];
+                for(int i=0;i<vectors.length;i++){
+                    w[i] = vectors[i][pos];
+                    //System.out.print("\t" + vector[i]);
+                }
+                ComputationMatrix t = C.multiplyMatrix(ComputationMatrix.multiplyArray(w, w));
+                t.printMatrix();
+                
     }
     
     public void runOnEdgeValues(){        
                 DistanceMatrix disMatrix = context.edgeAttributeHandler.getMatrix();
                 distanceMatrix = disMatrix.getDistanceMatrix().toArray();
+                ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
+                mat.writeMatrix("output.txt");
     }
 }
