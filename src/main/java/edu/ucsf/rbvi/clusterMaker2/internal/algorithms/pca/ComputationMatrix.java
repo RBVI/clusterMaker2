@@ -203,4 +203,20 @@ public class ComputationMatrix {
         
         return new ComputationMatrix(result);
     }
+    
+    public static void printArray(double[] array){
+        for(int i=0;i<array.length;i++)
+            System.out.println(array[i]);
+    }
+    
+    public static void printDoubleArray(double[][] array){
+        int row = array.length;
+        int col = array[0].length;
+        for(int i=0;i<row;i++){
+            System.out.println("");
+            for(int j=0;j<col;j++){
+                System.out.print("\t" + array[i][j]);
+            }
+        }
+    }
 }

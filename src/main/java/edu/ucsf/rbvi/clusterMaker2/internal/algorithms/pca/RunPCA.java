@@ -30,33 +30,40 @@ public class RunPCA {
         this.weightAttributes = weightAttributes;
     }
     
-    public void runOnDistanceMatric(){        
+    public void runOnNodeToNodeDistanceMatric(){        
                 Matrix matrix = new Matrix(network, weightAttributes, false, context.ignoreMissing, context.selectedOnly);
                 matrix.setUniformWeights();
                 distanceMatrix = matrix.getDistanceMatrix(context.distanceMetric.getSelectedValue());
                 ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
                 mat.writeMatrix("output.txt");
                 mat = mat.centralizeRows();
-                ComputationMatrix C = mat.covariance();
-                double[] values = C.eigenValues();
-                double value = Double.MIN_VALUE;
-                int pos = -1;
-                for(int i=0; i<values.length; i++){
-                    if(values[i] > value){
-                        value = values[i];
-                        pos = i;
-                    }
-                }
-                //System.out.println("pos: " + pos);
-                double[][] vectors = mat.eigenVectors();
-                double[] w = new double[vectors.length];
-                for(int i=0;i<vectors.length;i++){
-                    w[i] = vectors[i][pos];
-                    //System.out.print("\t" + vector[i]);
-                }
-                ComputationMatrix t = C.multiplyMatrix(ComputationMatrix.multiplyArray(w, w));
-                t.printMatrix();
                 
+                ComputationMatrix C = mat.covariance();
+                
+                double[] values = C.eigenValues();
+                
+                double max = Double.MAX_VALUE;
+                
+                ComputationMatrix[] components = new ComputationMatrix[values.length];
+                for(int j=0;j<values.length;j++){
+                    double value = values[0];
+                    int pos = 0;
+                    for(int i=0; i<values.length; i++){
+                        if(values[i] >= value && values[i] < max){
+                            value = values[i];
+                            pos = i;
+                        }
+                    }
+                    double[][] vectors = mat.eigenVectors();
+                    double[] w = new double[vectors.length];
+                    for(int i=0;i<vectors.length;i++){
+                        w[i] = vectors[i][pos];
+                    }
+                    components[j] = C.multiplyMatrix(ComputationMatrix.multiplyArray(w, w));
+                    max = value;
+                    System.out.println("\n\t" + value);
+                    components[j].printMatrix();
+                }        
     }
     
     public void runOnEdgeValues(){        
