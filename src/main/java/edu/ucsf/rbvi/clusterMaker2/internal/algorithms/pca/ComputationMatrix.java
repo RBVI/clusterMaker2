@@ -140,6 +140,23 @@ public class ComputationMatrix {
         return resultCompMat;
     }
     
+    public ComputationMatrix centralizeColumns(){
+        ComputationMatrix resultCompMat = new ComputationMatrix(nRow, nColumn);
+        double mean = 0;
+        for(int i=0;i<nColumn;i++){
+            for(int j=0;j<nRow; j++){
+                mean += this.getCell(j, i);
+            }
+            mean /= nRow;
+            for(int j=0;j<nRow;j++){
+                resultCompMat.setCell(j, i, getCell(j, i) - mean);
+            }
+            mean = 0;
+        }
+        
+        return resultCompMat;
+    }
+    
     public ComputationMatrix covariance(){
         DenseDoubleMatrix2D matrix2D = new DenseDoubleMatrix2D(matrix);
         return new ComputationMatrix(DoubleStatistic.covariance(matrix2D).toArray());
@@ -202,6 +219,21 @@ public class ComputationMatrix {
         }
         
         return new ComputationMatrix(result);
+    }
+    
+    public static ComputationMatrix multiplyMatrixWithArray(ComputationMatrix matrix, double[] array){
+        if(matrix.nRow != matrix.nColumn || matrix.nRow != array.length)
+            return null;
+        ComputationMatrix result = new ComputationMatrix(matrix.nRow, 1);
+        double sum;
+        for(int i=0;i<matrix.nRow;i++){
+            sum = 0;
+            for(int j=0; j<matrix.nColumn; j++){
+                sum += matrix.getCell(i, j) * array[j];
+            }
+            result.setCell(i, 0, sum);
+        }
+        return result;
     }
     
     public static void printArray(double[] array){

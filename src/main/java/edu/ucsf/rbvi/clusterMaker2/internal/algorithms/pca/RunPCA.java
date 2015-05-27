@@ -30,17 +30,20 @@ public class RunPCA {
         this.weightAttributes = weightAttributes;
     }
     
-    public void runOnNodeToNodeDistanceMatric(){        
+    // this method assumes that eigen values returned by DenseDoubleEigenvalueDecomposition class
+    // are not sorted in their order from maximum to minimum
+    public ComputationMatrix[] runOnNodeToNodeDistanceMatricSorted(){        
                 Matrix matrix = new Matrix(network, weightAttributes, false, context.ignoreMissing, context.selectedOnly);
                 matrix.setUniformWeights();
                 distanceMatrix = matrix.getDistanceMatrix(context.distanceMetric.getSelectedValue());
                 ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
                 mat.writeMatrix("output.txt");
-                mat = mat.centralizeRows();
+                mat = mat.centralizeColumns();
                 
                 ComputationMatrix C = mat.covariance();
                 
                 double[] values = C.eigenValues();
+                double[][] vectors = C.eigenVectors();
                 
                 double max = Double.MAX_VALUE;
                 
@@ -54,18 +57,46 @@ public class RunPCA {
                             pos = i;
                         }
                     }
-                    double[][] vectors = mat.eigenVectors();
                     double[] w = new double[vectors.length];
                     for(int i=0;i<vectors.length;i++){
                         w[i] = vectors[i][pos];
                     }
-                    components[j] = C.multiplyMatrix(ComputationMatrix.multiplyArray(w, w));
+                    components[j] = mat.multiplyMatrix(ComputationMatrix.multiplyArray(w, w));
                     max = value;
-                    System.out.println("\n\t" + value);
                     components[j].printMatrix();
-                }        
+                }
+
+                return components;
     }
     
+    // this method assumes that eigen values returned by DenseDoubleEigenvalueDecomposition class
+    // are sorted in decreasing order
+    public ComputationMatrix[] runOnNodeToNodeDistanceMatric(){        
+                Matrix matrix = new Matrix(network, weightAttributes, false, context.ignoreMissing, context.selectedOnly);
+                matrix.setUniformWeights();
+                distanceMatrix = matrix.getDistanceMatrix(context.distanceMetric.getSelectedValue());
+                ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
+                mat.writeMatrix("output.txt");
+                mat = mat.centralizeColumns();
+
+                ComputationMatrix C = mat.covariance();
+
+                double[] values = C.eigenValues();
+                double[][] vectors = C.eigenVectors();
+
+                ComputationMatrix[] components = new ComputationMatrix[values.length];
+                for(int j=0;j<values.length;j++){
+                    double[] w = new double[vectors.length];
+                    for(int i=0;i<vectors.length;i++){
+                        w[i] = vectors[i][j];
+                    }
+                    components[j] = mat.multiplyMatrix(ComputationMatrix.multiplyArray(w, w));
+                    components[j].printMatrix();
+                }
+
+                return components;
+    }
+
     public void runOnEdgeValues(){        
                 DistanceMatrix disMatrix = context.edgeAttributeHandler.getMatrix();
                 distanceMatrix = disMatrix.getDistanceMatrix().toArray();
