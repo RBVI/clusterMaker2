@@ -70,7 +70,7 @@ public class RunPCA {
     }
     
     // this method assumes that eigen values returned by DenseDoubleEigenvalueDecomposition class
-    // are sorted in decreasing order
+    // are sorted in increasing order
     public ComputationMatrix[] runOnNodeToNodeDistanceMatric(){        
                 Matrix matrix = new Matrix(network, weightAttributes, false, context.ignoreMissing, context.selectedOnly);
                 matrix.setUniformWeights();
@@ -83,16 +83,28 @@ public class RunPCA {
 
                 double[] values = C.eigenValues();
                 double[][] vectors = C.eigenVectors();
+                
+//                System.out.println("eigen values: ");
+//                ComputationMatrix.printArray(values);
+//                System.out.println("diagonal mat: ");
+//                ComputationMatrix.printDoubleArray(C.diagonalMatrix());
+//                System.out.println("");
 
                 ComputationMatrix[] components = new ComputationMatrix[values.length];
-                for(int j=0;j<values.length;j++){
+                int k=0;
+                double sum=0;
+                for(int j=values.length-1;j>=0;j--){
+                    sum += values[j];
                     double[] w = new double[vectors.length];
                     for(int i=0;i<vectors.length;i++){
                         w[i] = vectors[i][j];
                     }
-                    components[j] = mat.multiplyMatrix(ComputationMatrix.multiplyArray(w, w));
-                    components[j].printMatrix();
+                    components[k] = mat.multiplyMatrix(ComputationMatrix.multiplyArray(w, w));
+                    //components[k].printMatrix();
+                    k++;
                 }
+                
+                ScatterPlotPCA.createAndShowGui(components[0].toArray(), components[1].toArray());
 
                 return components;
     }

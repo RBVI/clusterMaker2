@@ -36,6 +36,10 @@ public class ComputationMatrix {
         matrix = new double[row][column];
     }
     
+    public double[][] toArray(){
+        return matrix;
+    }
+    
     public int nRow(){
         return nRow;
     }
@@ -160,6 +164,11 @@ public class ComputationMatrix {
     public ComputationMatrix covariance(){
         DenseDoubleMatrix2D matrix2D = new DenseDoubleMatrix2D(matrix);
         return new ComputationMatrix(DoubleStatistic.covariance(matrix2D).toArray());
+    }
+    
+    public double[][] diagonalMatrix(){
+        DenseDoubleEigenvalueDecomposition result = new DenseDoubleEigenvalueDecomposition(new DenseDoubleMatrix2D(matrix));
+        return result.getD().toArray();
     }
     
     public double[] eigenValues(){
