@@ -21,6 +21,7 @@ public class BaseMatrix {
 	
 	protected boolean transpose;
 	protected boolean symmetrical;
+	protected boolean assymetricEdge;
 	
 	/**
  	 * Make this array public so it can be reused
@@ -281,6 +282,8 @@ public class BaseMatrix {
 	public boolean isTransposed() { return this.transpose; }
 
 	public boolean isSymmetrical() { return this.symmetrical; }
+
+	public boolean isAssymetricalEdge() { return this.assymetricEdge; }
 
 	public void setMissingToZero() {
 		for (int row = 0; row < this.nRows; row++) {

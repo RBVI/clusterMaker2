@@ -285,23 +285,7 @@ public class TreeView extends TreeViewApp implements Observer,
 			}
 			// System.out.println("Selecting "+selectedNodes.size()+" nodes");
 			if (!dataModel.isSymmetrical() || selectedArrays.size() == 0) {
-				List<CyNode> nodesToClear = CyTableUtil.getNodesInState(currentNetwork, CyNetwork.SELECTED, true);
-				ignoreSelection = true;
-				for (CyNode node: nodesToClear) {
-					if (myNetwork.containsNode(node))
-						myNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.FALSE);
-					if (currentNetwork.containsNode(node))
-						currentNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.FALSE);
-				}
-
-				for (CyNode node: selectedNodes) {
-					if (myNetwork.containsNode(node))
-						myNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.TRUE);
-					if (currentNetwork.containsNode(node))
-						currentNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.TRUE);
-				}
-				manager.getService(CyEventHelper.class).flushPayloadEvents();
-				ignoreSelection = false;
+				selectNodes(currentNetwork, selectedNodes);
 
 				if (currentView != null)
 					currentView.updateView();
@@ -309,7 +293,7 @@ public class TreeView extends TreeViewApp implements Observer,
 			return;
 		} else if (o == arraySelection) {
 			// We only care about array selection for symmetrical models
-			if (!dataModel.isSymmetrical())
+			if (!dataModel.isSymmetrical() && !dataModel.isAssymetricEdge())
 				return;
 
 			selectedArrays.clear();
@@ -329,6 +313,7 @@ public class TreeView extends TreeViewApp implements Observer,
 				if (node != null)
 					selectedArrays.add(node);
 			}
+			selectNodes(currentNetwork, selectedArrays);
 		}
 
 		HashMap<CyEdge,CyEdge>edgesToSelect = new HashMap<CyEdge,CyEdge>();
@@ -362,6 +347,26 @@ public class TreeView extends TreeViewApp implements Observer,
 			currentView.updateView();
 		selectedNodes.clear();
 		selectedArrays.clear();
+	}
+
+	private void selectNodes(CyNetwork currentNetwork, List<CyNode> selectedNodes) {
+		List<CyNode> nodesToClear = CyTableUtil.getNodesInState(currentNetwork, CyNetwork.SELECTED, true);
+		ignoreSelection = true;
+		for (CyNode node: nodesToClear) {
+			if (myNetwork.containsNode(node))
+				myNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.FALSE);
+			if (currentNetwork.containsNode(node))
+				currentNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.FALSE);
+		}
+
+		for (CyNode node: selectedNodes) {
+			if (myNetwork.containsNode(node))
+				myNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.TRUE);
+			if (currentNetwork.containsNode(node))
+				currentNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.TRUE);
+		}
+		manager.getService(CyEventHelper.class).flushPayloadEvents();
+		ignoreSelection = false;
 	}
 
 	private void setEdgeSelection(List<CyEdge> edgeArray, boolean select) {

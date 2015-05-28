@@ -88,7 +88,8 @@ public class RunHierarchical {
 			monitor.setStatusMessage("Creating distance matrix");
 
 		// Create the matrix
-		matrix = new Matrix(network, weightAttributes, transpose, context.ignoreMissing, context.selectedOnly);
+		matrix = new Matrix(network, weightAttributes, transpose, context.ignoreMissing, context.selectedOnly, 
+			                  context.isAssymetric());
 
 		// Create a weight vector of all ones (we don't use individual weighting, yet)
 		matrix.setUniformWeights();

@@ -125,11 +125,12 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 			//System.out.println("attrList's size: " + attrList.size());
 			ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE, 
 			                             attrList, List.class, String.class);
-			if (matrix.isSymmetrical()) {
-				ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE, 
-			                               attrList, List.class, String.class);
+			if (matrix.isSymmetrical() || matrix.isAssymetricalEdge()) {
 				ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_EDGE_ATTRIBUTE, 
 			                               weightAttributes[0], String.class, null);
+			} else if (matrix.isSymmetrical()) {
+				ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE, 
+			                               attrList, List.class, String.class);
 			}
 		}
 
@@ -150,7 +151,6 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 				columnList.add(columnArray[col]);
 			}
 		}
-		// System.out.println("Order: "+orderList);
 
 		if (matrix.isTransposed()) {
 			// We did an Array cluster -- output the calculated array order
@@ -209,7 +209,7 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 	        }
 	      }
 				if (createGroups) {
-					System.out.println("Creating group: Cluster_"+cluster+" with "+memberList.size()+" nodes");
+					// System.out.println("Creating group: Cluster_"+cluster+" with "+memberList.size()+" nodes");
 					CyGroup group = clusterManager.createGroup(network, "Cluster_"+cluster, memberList, null, true);
 				}
 	    }

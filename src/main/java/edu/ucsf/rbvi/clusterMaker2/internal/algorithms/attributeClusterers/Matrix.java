@@ -3,6 +3,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -49,13 +50,42 @@ public class Matrix extends BaseMatrix {
 	 * @param weightAttribute the edge attribute we use to get the weight (size of effect)
 	 * @param transpose true if we are transposing this matrix 
 	 *                  (clustering columns instead of rows)
+	 * @param ignoreMissing ignore any missing data when you cluster
+	 * @param selectedOnly only include selected nodes or edges
 	 */
-	
-	public Matrix(CyNetwork network, String[] weightAttributes, boolean transpose, boolean ignoreMissing, boolean selectedOnly) {
+	public Matrix(CyNetwork network, String[] weightAttributes, boolean transpose, 
+	              boolean ignoreMissing, boolean selectedOnly) {
+		this(network, weightAttributes, transpose, ignoreMissing, selectedOnly, false);
+	}
+
+	/**
+	 * Create a data matrix from the current nodes in the network.  There are two ways
+	 * we construct the matrix, depending on the type.  If we are looking at expression
+	 * profiles, for example, each node will represent a gene, and the expression results
+	 * for each condition will be encoded in the indicated node attributes.  For our purposes,
+	 * we don't pay any attention to edges when creating the matrix (there are obviously
+	 * reasons why we might want to derive edges from the resulting data, but this can be
+	 * done after the clustering is complete.
+	 *
+	 * On the other hand, if we are looking at genetic interactions, the resulting matrix will
+	 * be symmetrical around the diagonal and the weightAttribute will be an edge attribute
+	 * on the edges between the nodes.
+	 *
+	 * @param weightAttribute the edge attribute we use to get the weight (size of effect)
+	 * @param transpose true if we are transposing this matrix 
+	 *                  (clustering columns instead of rows)
+	 * @param ignoreMissing ignore any missing data when you cluster
+	 * @param selectedOnly only include selected nodes or edges
+	 * @param assymetric for edge clusters, if they are assymetric (e.g. bipartide networks)
+	 */
+
+	public Matrix(CyNetwork network, String[] weightAttributes, boolean transpose, 
+	              boolean ignoreMissing, boolean selectedOnly, boolean assymetric) {
 		this.transpose = transpose;
 		this.ignoreMissing = ignoreMissing;
 		this.selectedOnly = selectedOnly;
 		this.network = network;
+		assymetricEdge = assymetric;
 
 		// Create our local copy of the weightAtributes array
 		String[] attributeArray = new String[weightAttributes.length];
@@ -69,8 +99,15 @@ public class Matrix extends BaseMatrix {
 			buildGeneArrayMatrix(network, attributeArray, transpose, ignoreMissing, selectedOnly);
 			symmetrical = false;
 		} else if (weightAttributes.length == 1 && weightAttributes[0].startsWith("edge.")) {
-			buildSymmetricalMatrix(network, weightAttributes[0].substring(5), ignoreMissing, selectedOnly);
-			symmetrical = true;
+			if (!assymetricEdge) {
+				buildSymmetricalMatrix(network, weightAttributes[0].substring(5), 
+				                       ignoreMissing, selectedOnly);
+				symmetrical = true;
+			} else {
+				buildAssymmetricalMatrix(network, weightAttributes[0].substring(5), 
+				                         transpose, ignoreMissing, selectedOnly);
+				symmetrical = false;
+			}
 		} else {
 			// Throw an exception?
 			return;
@@ -154,11 +191,69 @@ public class Matrix extends BaseMatrix {
 		return null;
 	}
 	
+		@SuppressWarnings({"unchecked","deprecation"})
+		private void buildAssymmetricalMatrix(CyNetwork network, String weight, boolean transpose,
+		                                      boolean ignoreMissing, boolean selectedOnly) {
+			CyTable edgeAttributes = network.getDefaultEdgeTable();
+			List<CyEdge>edgeList = network.getEdgeList();
+			Map<CyNode, Integer> sourceNodes = new HashMap<CyNode, Integer>();
+			Map<CyNode, Integer> targetNodes = new HashMap<CyNode, Integer>();
+			int sourceIndex = 0;
+			int targetIndex = 0;
+			for (CyEdge edge: edgeList) {
+				if (selectedOnly && !network.getRow(edge).get(CyNetwork.SELECTED, Boolean.class))
+					continue;
+
+				Double val = ModelUtils.getNumericValue(network, edge, weight);
+				if (ignoreMissing && val == null)
+					continue;
+
+				if (!sourceNodes.containsKey(edge.getSource()))
+					sourceNodes.put(edge.getSource(), sourceIndex++);
+				if (!targetNodes.containsKey(edge.getTarget()))
+					targetNodes.put(edge.getTarget(), targetIndex++);
+			}
+
+			Map<CyNode, Integer> rowNodes = sourceNodes;
+			Map<CyNode, Integer> columnNodes = targetNodes;
+			if (transpose) {
+				rowNodes = targetNodes;
+				columnNodes = sourceNodes;
+			}
+			this.nRows = rowNodes.size();
+			this.nColumns = columnNodes.size();
+			this.matrix = new Double[nRows][nColumns];
+			this.rowLabels = new String[nRows];
+			this.columnLabels = new String[nColumns];
+			this.rowNodes = new CyNode[nRows];
+			this.columnNodes = new CyNode[nColumns];
+
+			// For each edge, get the attribute and update the matrix and mask values
+			for (CyEdge edge: edgeList) {
+				CyNode source = edge.getSource();
+				CyNode target = edge.getTarget();
+				if (transpose) {
+					target = edge.getSource();
+					source = edge.getTarget();
+				}
+
+				if (!rowNodes.containsKey(source) ||
+						!columnNodes.containsKey(target))
+					continue;
+
+				Double val = ModelUtils.getNumericValue(network, edge, weight);
+				this.rowLabels[rowNodes.get(source)] = getNodeName(source, network);
+				this.columnLabels[columnNodes.get(target)] = getNodeName(target, network);
+
+				maxAttribute = Math.max(maxAttribute, val);
+				matrix[rowNodes.get(source)][columnNodes.get(target)] = val;
+			}
+
+		}
 	// XXX Isn't this the same as clusterMaker.algorithms.DistanceMatrix?
 		@SuppressWarnings({"unchecked","deprecation"})
 		private void buildSymmetricalMatrix(CyNetwork network, String weight, 
 		                                    boolean ignoreMissing, boolean selectedOnly) {
-
 			CyTable edgeAttributes = network.getDefaultEdgeTable();
 			// Get the list of edges
 			List<CyNode>nodeList = network.getNodeList();
@@ -191,7 +286,7 @@ public class Matrix extends BaseMatrix {
 				// Get the list of adjacent edges
 				List<CyEdge> edgeList = network.getAdjacentEdgeList(node, CyEdge.Type.ANY);
 				for (CyEdge edge: edgeList) {
-					if (selectedOnly && !edgeAttributes.getRow(edge.getSUID()).get("SELECTED", Boolean.class) /*!network.Selected(edge)*/)
+					if (selectedOnly && !network.getRow(edge).get(CyNetwork.SELECTED, Boolean.class) /*!network.Selected(edge)*/)
 					 	continue;
 					hasSelectedEdge = true;
 					

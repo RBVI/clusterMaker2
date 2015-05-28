@@ -65,6 +65,7 @@ public class TreeViewModel extends TVModel {
 	// Keep track of gene to node references
 	boolean isSymmetrical = false;
 	boolean zeroMissing = false;
+	boolean assymetric = false;
 	Double diagonalValue = null;
 	List<String> clusterParams = null;
 
@@ -96,15 +97,15 @@ public class TreeViewModel extends TVModel {
 				String[] pair = param.split("=");
 				if (pair[0].equals("zeroMissing"))
 					zeroMissing = Boolean.valueOf(pair[1]);
-				else if (pair[0].equals("diagonals")) {
+				else if (pair[0].equals("diagonals"))
 					diagonalValue = Double.valueOf(pair[1]);
-				}
+				else if (pair[0].equals("assymetric"))
+					assymetric = Boolean.valueOf(pair[1]);
 			}
 		}
 		
 		// Gene annotations are just the list of node names
 		List<String>geneList = network.getRow(network).getList(ClusterManager.NODE_ORDER_ATTRIBUTE, String.class);
-		// System.out.println("geneList: "+geneList);
 		String [][] gHeaders = new String[geneList.size()][4];
 		int headerNumber = 0;
 		for (String nodeName: geneList) {
@@ -133,13 +134,15 @@ public class TreeViewModel extends TVModel {
 		// The CDT is the Gene x Array matrix
 		double[] exprData = new double[nGene * nExpr];
 
+		String edgeAttribute = network.getRow(network).get(ClusterManager.CLUSTER_EDGE_ATTRIBUTE, String.class);
+		if (edgeAttribute != null)
+			edgeAttribute = edgeAttribute.substring(5);
+
+		// System.out.println("Edge attribute is: "+edgeAttribute);
+
 		// Check for a symmetrical matrix
 		if (geneList.get(0).equals(arrayList.get(0))) {
-
-			// Matrix is symmetrical.  Get the edge attribute
-			String attribute = network.getRow(network).get(ClusterManager.CLUSTER_EDGE_ATTRIBUTE, String.class);
-			attribute = attribute.substring(5);
-			// System.out.println("Edge attribute is "+attribute);
+			// Matrix is symmetrical.
 
 			// Initialize the data
 			for (int row = 0; row < nGene; row++) {
@@ -154,7 +157,7 @@ public class TreeViewModel extends TVModel {
 				}
 			}
 
-			Class attributeType = network.getDefaultEdgeTable().getColumn(attribute).getType();
+			Class attributeType = network.getDefaultEdgeTable().getColumn(edgeAttribute).getType();
 			for (CyEdge edge: network.getEdgeList()) {
 				CyNode source = edge.getSource();
 				CyNode target = edge.getTarget();
@@ -162,7 +165,7 @@ public class TreeViewModel extends TVModel {
 				    !geneList.contains(ModelUtils.getName(network, target)))
 					continue;
 
-				Double val = ModelUtils.getNumericValue(network, edge, attribute);
+				Double val = ModelUtils.getNumericValue(network, edge, edgeAttribute);
 
 				int gene = geneList.indexOf(ModelUtils.getName(network, source));
 				int expr = geneList.indexOf(ModelUtils.getName(network, target));
@@ -174,6 +177,37 @@ public class TreeViewModel extends TVModel {
 				}
 			}
 			isSymmetrical = true;
+		} else if (edgeAttribute != null && (assymetric||clusterParams==null)) {
+			assymetric = true;
+			// Matrix is assymmetrical, but we're using edges for our data.
+			// Initialize the data
+			for (int row = 0; row < nGene; row++) {
+				for (int col = 0; col < nExpr; col++) {
+					int cell = row * nExpr + col;
+					if (zeroMissing)
+						exprData[cell] = 0.0f;
+					else
+						exprData[cell] = DataModel.NODATA;
+				}
+			}
+			for (CyEdge edge: network.getEdgeList()) {
+				CyNode source = edge.getSource();
+				CyNode target = edge.getTarget();
+				if (!geneList.contains(ModelUtils.getName(network, source)) || 
+				    !arrayList.contains(ModelUtils.getName(network, target)))
+					continue;
+
+				Double val = ModelUtils.getNumericValue(network, edge, edgeAttribute);
+
+				int gene = geneList.indexOf(ModelUtils.getName(network, source));
+				int expr = arrayList.indexOf(ModelUtils.getName(network, target));
+
+				if (val == null) {
+					exprData[gene*nExpr + expr] = DataModel.NODATA;
+				} else {
+					exprData[gene*nExpr + expr] = val.doubleValue();
+				}
+			}
 		} else {
 			// Get the data
 			int gene = 0;
@@ -244,6 +278,10 @@ public class TreeViewModel extends TVModel {
 
 	public boolean isSymmetrical() {
 		return isSymmetrical;
+	}
+
+	public boolean isAssymetricEdge() {
+		return assymetric;
 	}
 
 	public ClusterManager getClusterManager() {
