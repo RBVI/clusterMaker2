@@ -15,7 +15,6 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import javax.swing.*;
 
 /**
@@ -32,10 +31,9 @@ public class ScatterPlotPCA extends JPanel {
    private static final Color GRAPH_COLOR = Color.green;
    private static final Color GRAPH_POINT_COLOR = new Color(150, 50, 50, 180);
    private static final Stroke GRAPH_STROKE = new BasicStroke(3f);
-   private static final int GRAPH_POINT_WIDTH = 12;
-   private static final int Y_HATCH_CNT = 10;
-   private double[][] scoresX;
-   private double[][] scoresY;
+   private static final int GRAPH_POINT_WIDTH = 6;
+   private final double[][] scoresX;
+   private final double[][] scoresY;
    
    public ScatterPlotPCA(double[][] scoresX, double[][] scoresY){
        this.scoresX = scoresX;
@@ -62,15 +60,6 @@ public class ScatterPlotPCA extends JPanel {
       
       double xScale = ((double) getWidth() - 2 * BORDER_GAP) / (MAX_SCORE - MIN_SCORE);
       double yScale = ((double) getHeight() - 2 * BORDER_GAP) / (MAX_SCORE - MIN_SCORE);
-
-      List<Point> graphPoints = new ArrayList<Point>();
-      for(int i=0; i<scoresX.length;i++){
-          for(int j=0;j<scoresX[0].length;j++){
-              int x1 = (int) (scoresX[i][j] * xScale + BORDER_GAP);
-              int y1 = (int) ((scoresY[i][j]) * yScale + BORDER_GAP);
-              graphPoints.add(new Point(x1, y1));
-          }
-      }
 
       // create x and y axes
       g2.drawLine(BORDER_GAP, getHeight()/2, getWidth() - BORDER_GAP, getHeight()/2);
@@ -102,27 +91,34 @@ public class ScatterPlotPCA extends JPanel {
          if(!number.equals("0"))
             g2.drawString(number, x1 - GRAPH_POINT_WIDTH/2, y1 + GRAPH_POINT_WIDTH);
       }
+      
+      int newX = getWidth()/2;
+      int newY = getHeight()/2;
+      
+      List<Point> graphPoints = new ArrayList<Point>();
+      for(int i=0; i<scoresX.length;i++){
+          for(int j=0;j<scoresX[0].length;j++){
+              System.out.println("original " + scoresX[i][j] + " " + scoresY[i][j]);
+              int x1 = (int) (scoresX[i][j] * xScale + newX);
+              int y1 = (int) ((int) -1 * (scoresY[i][j] * yScale - newY));
+              System.out.println("final " + x1 + " " + y1);
+              graphPoints.add(new Point(x1, y1));
+          }
+      }
 
       Stroke oldStroke = g2.getStroke();
       g2.setColor(GRAPH_COLOR);
       g2.setStroke(GRAPH_STROKE);
-//      for (int i = 0; i < graphPoints.size() - 1; i++) {
-//         int x1 = graphPoints.get(i).x;
-//         int y1 = graphPoints.get(i).y;
-//         int x2 = graphPoints.get(i + 1).x;
-//         int y2 = graphPoints.get(i + 1).y;
-//         g2.drawLine(x1, y1, x2, y2);         
-//      }
 
       g2.setStroke(oldStroke);      
       g2.setColor(GRAPH_POINT_COLOR);
-      for (int i = 0; i < graphPoints.size(); i++) {
-         int x = graphPoints.get(i).x - GRAPH_POINT_WIDTH / 2;
-         int y = graphPoints.get(i).y - GRAPH_POINT_WIDTH / 2;;
-         int ovalW = GRAPH_POINT_WIDTH;
-         int ovalH = GRAPH_POINT_WIDTH;
-         g2.fillOval(x, y, ovalW, ovalH);
-      }
+       for (Point graphPoint : graphPoints) {
+           int x = graphPoint.x - GRAPH_POINT_WIDTH / 2;
+           int y = graphPoint.y - GRAPH_POINT_WIDTH / 2;
+           int ovalW = GRAPH_POINT_WIDTH;
+           int ovalH = GRAPH_POINT_WIDTH;
+           g2.fillOval(x, y, ovalW, ovalH);
+       }
    }
    
    @Override
@@ -134,7 +130,7 @@ public class ScatterPlotPCA extends JPanel {
       
       ScatterPlotPCA mainPanel = new ScatterPlotPCA(scoresX, scoresY);
 
-      JFrame frame = new JFrame("DrawGraph");
+      JFrame frame = new JFrame("Scatter Plot");
       frame.getContentPane().add(mainPanel);
       frame.pack();
       frame.setLocationByPlatform(true);
