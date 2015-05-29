@@ -181,6 +181,32 @@ public class ComputationMatrix {
         return result.getV().toArray();
     }
     
+    public static double getMax(double[][] mat){
+        int row = mat.length;
+        int col = mat[0].length;
+        double max = Double.NEGATIVE_INFINITY;
+        for(int i=0;i<row;i++){
+            for(int j=0;j<col;j++){
+                if(max < mat[i][j])
+                    max = mat[i][j];
+            }
+       }
+        return Math.ceil(max);
+    }
+
+    public static double getMin(double[][] mat){
+        int row = mat.length;
+        int col = mat[0].length;
+        double min = Double.POSITIVE_INFINITY;
+        for(int i=0;i<row;i++){
+            for(int j=0;j<col;j++){
+                if(min > mat[i][j])
+                    min = mat[i][j];
+            }
+        }
+        return Math.floor(min);
+    }
+   
     public void printMatrix(){
         int row = matrix.length;
         int column = matrix[0].length;

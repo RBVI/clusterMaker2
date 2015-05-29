@@ -8,11 +8,17 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
@@ -23,24 +29,38 @@ import javax.swing.*;
  */
 @SuppressWarnings("serial")
 public class ScatterPlotPCA extends JPanel {
-   private static int MAX_SCORE = 2;
-   private static int MIN_SCORE = -2;
-   private static final int PREF_W = 600;
-   private static final int PREF_H = 600;
-   private static final int BORDER_GAP = 30;
-   private static final Color GRAPH_COLOR = Color.green;
-   private static final Color GRAPH_POINT_COLOR = new Color(150, 50, 50, 180);
-   private static final Stroke GRAPH_STROKE = new BasicStroke(3f);
-   private static final int GRAPH_POINT_WIDTH = 6;
-   private final double[][] scoresX;
-   private final double[][] scoresY;
+    private static int MAX_SCORE = 1;
+    private static int MIN_SCORE = -1;
+    private static final int PREF_W = 500;
+    private static final int PREF_H = 500;
+    private static final int BORDER_GAP = 30;
+    private static final Color GRAPH_COLOR = Color.green;
+    private static final Color GRAPH_POINT_COLOR = new Color(150, 50, 50, 180);
+    private static final Stroke GRAPH_STROKE = new BasicStroke(3f);
+    private static final int GRAPH_POINT_WIDTH = 6;
+    private static final int GRAPH_HATCH_WIDTH = 10;
+    private final double[][] scoresX;
+    private final double[][] scoresY;
+    private final String lableX;
+    private final String lableY;
+    private static ComputationMatrix[] allComponents;
+    private static String[] PCs;
+    
+    private static final JPanel container = new JPanel();
+    private static final JLabel labelXAxis = new JLabel("X - Axis: ");
+    private static final JLabel labelYAxis = new JLabel("Y - Axis: ");
+    private static JComboBox<String> xAxis;
+    private static JComboBox<String> yAxis;
+    private static final JButton plotButton = new JButton("Plot");
    
-   public ScatterPlotPCA(double[][] scoresX, double[][] scoresY){
+   public ScatterPlotPCA(double[][] scoresX, double[][] scoresY, String lableX, String lableY){
        this.scoresX = scoresX;
        this.scoresY = scoresY;
+       this.lableX = lableX;
+       this.lableY = lableY;
        
-       double max = getMax(scoresX);
-       double min = getMin(scoresX);
+       double max = ComputationMatrix.getMax(scoresX);
+       double min = ComputationMatrix.getMin(scoresX);
        if(max > MAX_SCORE || min < MIN_SCORE){
            if(max > Math.abs(min)){
                MAX_SCORE = (int) max;
@@ -68,29 +88,33 @@ public class ScatterPlotPCA extends JPanel {
       // create hatch marks for y axis. 
       for (int i = 0; i <= MAX_SCORE - MIN_SCORE; i++) {
          int x0 = getWidth()/2;
-         int x1 = GRAPH_POINT_WIDTH + getWidth()/2;
+         int x1 = GRAPH_HATCH_WIDTH + getWidth()/2;
          int y0 = (int) (BORDER_GAP + i * yScale);
          int y1 = y0;
          g2.drawLine(x0, y0, x1, y1);
          
          String number = "" + ( MAX_SCORE - i);
-         int xl = -1 * GRAPH_POINT_WIDTH + getWidth()/2;
-         int yl = (int) (BORDER_GAP + i * yScale);
-         g2.drawString(number, xl, yl);
+         g2.drawString(number, x1 - 2*GRAPH_HATCH_WIDTH, y1 + GRAPH_HATCH_WIDTH/2);
       }
+      g2.setFont(new Font("default", Font.BOLD, g2.getFont().getSize()));
+      g2.drawString(lableY, getWidth()/2 - (lableY.length()/2)*5, getHeight() - BORDER_GAP/2);
+      g2.setFont(new Font("default", Font.PLAIN, g2.getFont().getSize()));
 
       // and for x axis
       for (int i = 0; i <= MAX_SCORE - MIN_SCORE; i++) {
          int x0 = (int) (BORDER_GAP + i * xScale);
          int x1 = x0;
          int y0 = getHeight()/2;
-         int y1 = y0 + GRAPH_POINT_WIDTH;
+         int y1 = y0 + GRAPH_HATCH_WIDTH;
          g2.drawLine(x0, y0, x1, y1);
          
          String number = "" + -1 * ( MAX_SCORE - i);
          if(!number.equals("0"))
-            g2.drawString(number, x1 - GRAPH_POINT_WIDTH/2, y1 + GRAPH_POINT_WIDTH);
+            g2.drawString(number, x1, y1 - 2*GRAPH_HATCH_WIDTH);
       }
+      g2.setFont(new Font("default", Font.BOLD, g2.getFont().getSize()));
+      g2.drawString(lableX, getWidth() - BORDER_GAP - (lableX.length()/2)*5, getHeight()/2 + BORDER_GAP);
+      g2.setFont(new Font("default", Font.PLAIN, g2.getFont().getSize()));
       
       int newX = getWidth()/2;
       int newY = getHeight()/2;
@@ -126,43 +150,77 @@ public class ScatterPlotPCA extends JPanel {
       return new Dimension(PREF_W, PREF_H);
    }
    
-   public static void createAndShowGui(double[][] scoresX, double[][] scoresY) {
+   public static JPanel createControlJPanel(ComputationMatrix[] components){
+        allComponents = components;
+        JPanel control = new JPanel(new GridBagLayout());
+        
+        PCs = new String[components.length];
+        for(int i=0;i<PCs.length;i++)
+            PCs[i] = "PC " + (i+1);
+        
+        xAxis = new JComboBox(PCs);
+        yAxis = new JComboBox(PCs);
+        yAxis.setSelectedIndex(1);
+        
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.anchor = GridBagConstraints.WEST;
+        constraints.insets = new Insets(10, 10, 10, 10);
+        
+        // add components to the panel
+        constraints.gridx = 0;
+        constraints.gridy = 0;     
+        control.add(labelXAxis, constraints);
+ 
+        constraints.gridx = 1;
+        control.add(xAxis, constraints);
+         
+        constraints.gridx = 0;
+        constraints.gridy = 1;     
+        control.add(labelYAxis, constraints);
+         
+        constraints.gridx = 1;
+        control.add(yAxis, constraints);
+         
+        constraints.gridx = 0;
+        constraints.gridy = 2;
+        constraints.gridwidth = 2;
+        constraints.anchor = GridBagConstraints.CENTER;
+        control.add(plotButton, constraints);
+        
+        plotButton.addActionListener(new ActionListener() {
+ 
+            public void actionPerformed(ActionEvent e)
+            {
+                //Execute when button is pressed
+                container.remove(0);
+                ScatterPlotPCA scatterPlot = new ScatterPlotPCA(allComponents[xAxis.getSelectedIndex()].toArray(), 
+                        allComponents[yAxis.getSelectedIndex()].toArray(), PCs[xAxis.getSelectedIndex()], PCs[yAxis.getSelectedIndex()]);
+                container.add(scatterPlot, 0);
+                container.updateUI();
+            }
+
+        }); 
+         
+        // set border for the panel
+        control.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(), ""));
+        
+        return control;
+   }
+   
+   public static void createAndShowGui(ComputationMatrix[] components) {
       
-      ScatterPlotPCA mainPanel = new ScatterPlotPCA(scoresX, scoresY);
+        ScatterPlotPCA scatterPlot = new ScatterPlotPCA(components[0].toArray(), components[1].toArray(), "PC 1", "PC 2");
 
-      JFrame frame = new JFrame("Scatter Plot");
-      frame.getContentPane().add(mainPanel);
-      frame.pack();
-      frame.setLocationByPlatform(true);
-      frame.setVisible(true);
-   }
-
-   
-   protected double getMax(double[][] mat){
-       int row = mat.length;
-       int col = mat[0].length;
-       double max = Double.NEGATIVE_INFINITY;
-       for(int i=0;i<row;i++){
-           for(int j=0;j<col;j++){
-               if(max < mat[i][j])
-                   max = mat[i][j];
-           }
-       }
-       
-       return Math.ceil(max);
-   }
-   
-   protected double getMin(double[][] mat){
-       int row = mat.length;
-       int col = mat[0].length;
-       double min = Double.POSITIVE_INFINITY;
-       for(int i=0;i<row;i++){
-           for(int j=0;j<col;j++){
-               if(min > mat[i][j])
-                   min = mat[i][j];
-           }
-       }
-       
-       return Math.floor(min);
+        JFrame frame = new JFrame("Scatter Plot");
+        
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        container.add(scatterPlot);
+        container.add(createControlJPanel(components));
+        
+        frame.getContentPane().add(container);
+        frame.pack();
+        frame.setLocationByPlatform(true);
+        frame.setVisible(true);
    }
 }

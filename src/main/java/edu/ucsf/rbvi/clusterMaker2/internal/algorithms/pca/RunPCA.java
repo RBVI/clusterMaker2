@@ -104,7 +104,7 @@ public class RunPCA {
                     k++;
                 }
                 
-                ScatterPlotPCA.createAndShowGui(components[0].toArray(), components[1].toArray());
+                ScatterPlotPCA.createAndShowGui(components);
 
                 return components;
     }
