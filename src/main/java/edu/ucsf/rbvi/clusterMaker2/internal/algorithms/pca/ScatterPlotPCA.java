@@ -122,10 +122,8 @@ public class ScatterPlotPCA extends JPanel {
       List<Point> graphPoints = new ArrayList<Point>();
       for(int i=0; i<scoresX.length;i++){
           for(int j=0;j<scoresX[0].length;j++){
-              System.out.println("original " + scoresX[i][j] + " " + scoresY[i][j]);
               int x1 = (int) (scoresX[i][j] * xScale + newX);
               int y1 = (int) ((int) -1 * (scoresY[i][j] * yScale - newY));
-              System.out.println("final " + x1 + " " + y1);
               graphPoints.add(new Point(x1, y1));
           }
       }
@@ -209,12 +207,19 @@ public class ScatterPlotPCA extends JPanel {
    }
    
    public static void createAndShowGui(ComputationMatrix[] components) {
+       
+       if(components == null){
+           return;
+       }else if(components.length < 2){
+           return;
+       }
       
         ScatterPlotPCA scatterPlot = new ScatterPlotPCA(components[0].toArray(), components[1].toArray(), "PC 1", "PC 2");
 
         JFrame frame = new JFrame("Scatter Plot");
         
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        container.removeAll();
         container.add(scatterPlot);
         container.add(createControlJPanel(components));
         

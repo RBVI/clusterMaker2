@@ -108,6 +108,13 @@ public class RunPCA {
 
                 return components;
     }
+    
+    public void runOnNodeToAttrDistanceMatric(){
+        Matrix matrix = new Matrix(network, weightAttributes, false, context.ignoreMissing, context.selectedOnly);
+        matrix.printMatrix();
+        double[][] mat = matrix.toArray();
+        ComputationMatrix.printDoubleArray(mat);
+    }
 
     public void runOnEdgeValues(){        
                 DistanceMatrix disMatrix = context.edgeAttributeHandler.getMatrix();

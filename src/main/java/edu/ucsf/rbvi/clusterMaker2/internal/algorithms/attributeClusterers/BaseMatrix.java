@@ -317,6 +317,20 @@ public class BaseMatrix {
 			}
 			return 0;
 		}
-	}	
+	}
+        
+        public double[][] toArray(){
+            int row = matrix.length;
+            if(row <= 0)
+                return null;
+            int col = matrix[0].length;
+            double[][] mat = new double[row][col];
+            for(int i=0; i<row; i++){
+                for(int j=0; j<col; j++){
+                    mat[i][j] = (double) matrix[i][j];
+                }
+            }
+            return mat;
+        }
 
 }

@@ -69,7 +69,7 @@ public class PCA extends AbstractTask{
                 runPCA.runOnNodeToNodeDistanceMatric();
             }else if(context.inputValue.getSelectedValue().equals("Distance Matric") && 
                     context.pcaType.getSelectedValue().equals("PCA of nodes and attributes") ){
-            
+                    runPCA.runOnNodeToAttrDistanceMatric();
             }else if(context.inputValue.getSelectedValue().equals("Edge Value")){
                 runPCA.runOnEdgeValues();
             }
