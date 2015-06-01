@@ -257,7 +257,7 @@ public class ComputationMatrix {
     }
     
     public static ComputationMatrix multiplyMatrixWithArray(ComputationMatrix matrix, double[] array){
-        if(matrix.nRow != matrix.nColumn || matrix.nRow != array.length)
+        if(matrix.nColumn != array.length)
             return null;
         ComputationMatrix result = new ComputationMatrix(matrix.nRow, 1);
         double sum;
