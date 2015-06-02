@@ -9,6 +9,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskMonitor;
+import org.netlib.util.doubleW;
 
 /**
  *
@@ -40,35 +41,11 @@ public class RunPCA {
                 matrix.setUniformWeights();
                 distanceMatrix = matrix.getDistanceMatrix(context.distanceMetric.getSelectedValue());
                 ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
-                mat.writeMatrix("output.txt");
-                mat = mat.centralizeColumns();
                 
-                ComputationMatrix C = mat.covariance();
+                ComputationMatrix[] components = this.computePCsSorted(mat, PCA_NODE_NODE);
                 
-                double[] values = C.eigenValues();
-                double[][] vectors = C.eigenVectors();
+                ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));
                 
-                double max = Double.MAX_VALUE;
-                
-                ComputationMatrix[] components = new ComputationMatrix[values.length];
-                for(int j=0;j<values.length;j++){
-                    double value = values[0];
-                    int pos = 0;
-                    for(int i=0; i<values.length; i++){
-                        if(values[i] >= value && values[i] < max){
-                            value = values[i];
-                            pos = i;
-                        }
-                    }
-                    double[] w = new double[vectors.length];
-                    for(int i=0;i<vectors.length;i++){
-                        w[i] = vectors[i][pos];
-                    }
-                    components[j] = mat.multiplyMatrix(ComputationMatrix.multiplyArray(w, w));
-                    max = value;
-                    components[j].printMatrix();
-                }
-
                 return components;
     }
     
@@ -82,27 +59,82 @@ public class RunPCA {
                 
                 ComputationMatrix[] components = this.computePCs(mat, PCA_NODE_NODE);
                 
-                ScatterPlotPCA.createAndShowGui(components);
+                ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));
 
                 return components;
     }
     
     // this method assumes that eigen values returned by DenseDoubleEigenvalueDecomposition class
     // are not sorted in their order from maximum to minimum
-    public void runOnNodeToAttrDistanceMatricSorted(){        
+    public void runOnNodeToAttributeMatricSorted(){        
                 Matrix matrix = new Matrix(network, weightAttributes, false, context.ignoreMissing, context.selectedOnly);
                 double[][] matrixArray = matrix.toArray();
                 ComputationMatrix mat = new ComputationMatrix(matrixArray);
+                
+                ComputationMatrix[] components = this.computePCsSorted(mat, PCA_NODE_ATTRIBUTE);
+                
+                ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));
+                
+    }
+    
+    // this method assumes that eigen values returned by DenseDoubleEigenvalueDecomposition class
+    // are sorted in increasing order
+    public void runOnNodeToAttributeMatric(){
+                Matrix matrix = new Matrix(network, weightAttributes, false, context.ignoreMissing, context.selectedOnly);
+                double[][] matrixArray = matrix.toArray();
+                
+                ComputationMatrix mat = new ComputationMatrix(matrixArray);
+                
+                ComputationMatrix[] components = this.computePCs(mat, PCA_NODE_ATTRIBUTE);
+                
+                ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));
+                
+    }
+
+    public void runOnEdgeValues(){
+                DistanceMatrix disMatrix = context.edgeAttributeHandler.getMatrix();
+                distanceMatrix = disMatrix.getDistanceMatrix().toArray();
+                ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
                 mat.writeMatrix("output.txt");
-                mat = mat.centralizeColumns();
-                
+    }
+
+    public ComputationMatrix[] computePCs(ComputationMatrix matrix, int type){
+                matrix.writeMatrix("output.txt");
+                ComputationMatrix mat = matrix.centralizeColumns();
+
                 ComputationMatrix C = mat.covariance();
-                
+
                 double[] values = C.eigenValues();
                 double[][] vectors = C.eigenVectors();
                 
-                double max = Double.MAX_VALUE;
+                ComputationMatrix[] components = new ComputationMatrix[values.length];
+                double sum=0;
+                for(int j=values.length-1, k=0;j>=0;j--,k++){
+                    sum += values[j];
+                    double[] w = new double[vectors.length];
+                    for(int i=0;i<vectors.length;i++){
+                        w[i] = vectors[i][j];
+                    }
+                    if(type == PCA_NODE_NODE)
+                        components[k] = mat.multiplyMatrix(ComputationMatrix.multiplyArray(w, w));
+                    else if(type == PCA_NODE_ATTRIBUTE)
+                        components[k] = ComputationMatrix.multiplyMatrixWithArray(mat, w);
+                }
                 
+                return components;
+    }
+    
+    public ComputationMatrix[] computePCsSorted(ComputationMatrix matrix, int type){
+                matrix.writeMatrix("output.txt");
+                ComputationMatrix mat = matrix.centralizeColumns();
+
+                ComputationMatrix C = mat.covariance();
+
+                double[] values = C.eigenValues();
+                double[][] vectors = C.eigenVectors();
+
+                double max = Double.MAX_VALUE;
+
                 ComputationMatrix[] components = new ComputationMatrix[values.length];
                 for(int j=0;j<values.length;j++){
                     double value = values[0];
@@ -117,60 +149,31 @@ public class RunPCA {
                     for(int i=0;i<vectors.length;i++){
                         w[i] = vectors[i][pos];
                     }
-                    components[j] = ComputationMatrix.multiplyMatrixWithArray(mat, w);
+                    if(type == PCA_NODE_NODE)
+                        components[j] = mat.multiplyMatrix(ComputationMatrix.multiplyArray(w, w));
+                    else if(type == PCA_NODE_ATTRIBUTE)
+                        components[j] = ComputationMatrix.multiplyMatrixWithArray(mat, w);
                     max = value;
                 }
-                
-                ScatterPlotPCA.createAndShowGui(components);
-                
-    }
-    
-    // this method assumes that eigen values returned by DenseDoubleEigenvalueDecomposition class
-    // are sorted in increasing order
-    public void runOnNodeToAttrDistanceMatric(){
-                Matrix matrix = new Matrix(network, weightAttributes, false, context.ignoreMissing, context.selectedOnly);
-                double[][] matrixArray = matrix.toArray();
-                
-                ComputationMatrix mat = new ComputationMatrix(matrixArray);
-                
-                ComputationMatrix[] components = this.computePCs(mat, PCA_NODE_ATTRIBUTE);
-                
-                ScatterPlotPCA.createAndShowGui(components);
-                
-    }
 
-    public void runOnEdgeValues(){        
-                DistanceMatrix disMatrix = context.edgeAttributeHandler.getMatrix();
-                distanceMatrix = disMatrix.getDistanceMatrix().toArray();
-                ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
-                mat.writeMatrix("output.txt");
+                return components;
     }
     
-    public ComputationMatrix[] computePCs(ComputationMatrix mat, int type){
-                mat.writeMatrix("output.txt");
-                mat = mat.centralizeColumns();
+    public double[] computeVariance(ComputationMatrix matrix){
+                ComputationMatrix mat = matrix.centralizeColumns();
 
                 ComputationMatrix C = mat.covariance();
 
                 double[] values = C.eigenValues();
-                double[][] vectors = C.eigenVectors();
+                double[] variances = new double[values.length];
                 
-                ComputationMatrix[] components = new ComputationMatrix[values.length];
-                int k=0;
-                double sum=0;
-                for(int j=values.length-1;j>=0;j--){
-                    sum += values[j];
-                    double[] w = new double[vectors.length];
-                    for(int i=0;i<vectors.length;i++){
-                        w[i] = vectors[i][j];
-                    }
-                    if(type == PCA_NODE_NODE)
-                        components[k] = mat.multiplyMatrix(ComputationMatrix.multiplyArray(w, w));
-                    else if(type == PCA_NODE_ATTRIBUTE)
-                        components[k] = ComputationMatrix.multiplyMatrixWithArray(mat, w);
-                    k++;
+                double sum = 0;
+                for(int i=0;i<values.length;i++)
+                    sum += values[i];
+                
+                for(int i=0,j=values.length-1; j>=0; j--,i++){
+                    variances[i] = (double) Math.round((values[j]*100/sum) * 100) / 100;
                 }
-                
-                return components;
+                return variances;
     }
 }

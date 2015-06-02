@@ -44,13 +44,18 @@ public class ScatterPlotPCA extends JPanel {
     private final String lableX;
     private final String lableY;
     private static ComputationMatrix[] allComponents;
+    private static double[] variances;
     private static String[] PCs;
     
     private static final JPanel container = new JPanel();
+    private static final JPanel panelXAxis = new JPanel();
+    private static final JPanel panelYAxis = new JPanel();
     private static final JLabel labelXAxis = new JLabel("X - Axis: ");
     private static final JLabel labelYAxis = new JLabel("Y - Axis: ");
-    private static JComboBox<String> xAxis;
-    private static JComboBox<String> yAxis;
+    private static JLabel labelXVariance;
+    private static JLabel labelYVariance;
+    private static JComboBox<String> comboXAxis;
+    private static JComboBox<String> comboYAxis;
     private static final JButton plotButton = new JButton("Plot");
    
    public ScatterPlotPCA(double[][] scoresX, double[][] scoresY, String lableX, String lableY){
@@ -156,9 +161,23 @@ public class ScatterPlotPCA extends JPanel {
         for(int i=0;i<PCs.length;i++)
             PCs[i] = "PC " + (i+1);
         
-        xAxis = new JComboBox(PCs);
-        yAxis = new JComboBox(PCs);
-        yAxis.setSelectedIndex(1);
+        comboXAxis = new JComboBox(PCs);
+        comboYAxis = new JComboBox(PCs);
+        comboYAxis.setSelectedIndex(1);
+        labelXVariance = new JLabel(String.valueOf(variances[0]) + "% variance");
+        labelYVariance = new JLabel(String.valueOf(variances[1]) + "% variance");
+                
+        panelXAxis.setLayout(new BoxLayout(panelXAxis, BoxLayout.X_AXIS));
+        panelXAxis.removeAll();
+        panelXAxis.add(comboXAxis);
+        panelXAxis.add(Box.createRigidArea(new Dimension(5,0)));
+        panelXAxis.add(labelXVariance);    
+        
+        panelYAxis.setLayout(new BoxLayout(panelYAxis, BoxLayout.X_AXIS));
+        panelYAxis.removeAll();
+        panelYAxis.add(comboYAxis);
+        panelYAxis.add(Box.createRigidArea(new Dimension(5,0)));
+        panelYAxis.add(labelYVariance);
         
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.anchor = GridBagConstraints.WEST;
@@ -170,14 +189,14 @@ public class ScatterPlotPCA extends JPanel {
         control.add(labelXAxis, constraints);
  
         constraints.gridx = 1;
-        control.add(xAxis, constraints);
+        control.add(panelXAxis, constraints);
          
         constraints.gridx = 0;
         constraints.gridy = 1;     
         control.add(labelYAxis, constraints);
          
         constraints.gridx = 1;
-        control.add(yAxis, constraints);
+        control.add(panelYAxis, constraints);
          
         constraints.gridx = 0;
         constraints.gridy = 2;
@@ -185,14 +204,26 @@ public class ScatterPlotPCA extends JPanel {
         constraints.anchor = GridBagConstraints.CENTER;
         control.add(plotButton, constraints);
         
+        comboXAxis.addActionListener (new ActionListener () {
+            public void actionPerformed(ActionEvent e) {
+                labelXVariance.setText(variances[comboXAxis.getSelectedIndex()] + "% variance");
+            }
+        });
+        
+        comboYAxis.addActionListener (new ActionListener () {
+            public void actionPerformed(ActionEvent e) {
+                labelYVariance.setText(variances[comboYAxis.getSelectedIndex()] + "% variance");
+            }
+        });
+        
         plotButton.addActionListener(new ActionListener() {
  
             public void actionPerformed(ActionEvent e)
             {
                 //Execute when button is pressed
                 container.remove(0);
-                ScatterPlotPCA scatterPlot = new ScatterPlotPCA(allComponents[xAxis.getSelectedIndex()].toArray(), 
-                        allComponents[yAxis.getSelectedIndex()].toArray(), PCs[xAxis.getSelectedIndex()], PCs[yAxis.getSelectedIndex()]);
+                ScatterPlotPCA scatterPlot = new ScatterPlotPCA(allComponents[comboXAxis.getSelectedIndex()].toArray(), 
+                        allComponents[comboYAxis.getSelectedIndex()].toArray(), PCs[comboXAxis.getSelectedIndex()], PCs[comboYAxis.getSelectedIndex()]);
                 container.add(scatterPlot, 0);
                 container.updateUI();
             }
@@ -206,13 +237,14 @@ public class ScatterPlotPCA extends JPanel {
         return control;
    }
    
-   public static void createAndShowGui(ComputationMatrix[] components) {
+   public static void createAndShowGui(ComputationMatrix[] components, double[] varianceArray) {
        
        if(components == null){
            return;
        }else if(components.length < 2){
            return;
        }
+        variances = varianceArray;
       
         ScatterPlotPCA scatterPlot = new ScatterPlotPCA(components[0].toArray(), components[1].toArray(), "PC 1", "PC 2");
 
