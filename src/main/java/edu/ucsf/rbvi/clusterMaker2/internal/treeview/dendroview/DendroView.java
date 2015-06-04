@@ -546,6 +546,8 @@ public class DendroView extends JPanel
 					
 				}	
 			} catch (DendroException e) {
+				throw new RuntimeException("Had problem setting up the array tree: "+e.getMessage());
+				/*
 				//				LogPanel.println("Had problem setting up the array tree : " + e.getMessage());
 				//				e.printStackTrace();
 				Box mismatch = new Box(BoxLayout.Y_AXIS); mismatch.add(new JLabel(e.getMessage()));
@@ -555,6 +557,7 @@ public class DendroView extends JPanel
 				atrview.setEnabled(false);
 				atrzview.setEnabled(false);
 				try{invertedTreeDrawer.setData(null, null);} catch (DendroException ex) {}
+				*/
 			}
 		} else {
 			atrview.setEnabled(false);
@@ -581,14 +584,17 @@ public class DendroView extends JPanel
 
 				gtrview.setEnabled(true);
 			} catch (DendroException e) {
+				throw new RuntimeException("Had problem setting up the gene tree: "+e.getMessage());
 //				LogPanel.println("Had problem setting up the gene tree : " + e.getMessage());
 //				e.printStackTrace();
+				/*
 				Box mismatch = new Box(BoxLayout.Y_AXIS); mismatch.add(new JLabel(e.getMessage()));
 				mismatch.add(new JLabel("Perhaps there is a mismatch between your GTR and CDT files?"));
 				mismatch.add(new JLabel("Ditching Gene Tree, since it's lame."));
 				JOptionPane.showMessageDialog(viewFrame, mismatch, "Tree Construction Error", JOptionPane.ERROR_MESSAGE);
 				gtrview.setEnabled(false);
 				try{leftTreeDrawer.setData(null, null);} catch (DendroException ex) {}
+				*/
 			}
 		} else {
 			gtrview.setEnabled(false);

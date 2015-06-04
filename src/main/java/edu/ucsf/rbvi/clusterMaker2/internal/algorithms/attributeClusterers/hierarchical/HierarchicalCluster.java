@@ -115,7 +115,8 @@ public class HierarchicalCluster extends AbstractAttributeClusterer {
 			return;
 		}
 
-		if (context.selectedOnly && CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true).size() < 3) {
+		if (context.selectedOnly && nodeAttributeList != null && nodeAttributeList.size() > 1 
+				&& CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true).size() < 3) {
 			monitor.showMessage(TaskMonitor.Level.ERROR,"Must have at least three nodes to cluster");
 			return;
 		}
@@ -141,7 +142,7 @@ public class HierarchicalCluster extends AbstractAttributeClusterer {
 		RunHierarchical algorithm = new RunHierarchical(network, attributeArray, distanceMetric, clusterMethod, monitor, context);
 
 		// Cluster the attributes, if requested
-		if (context.clusterAttributes && attributeArray.length > 1) {
+		if (context.clusterAttributes && (attributeArray.length > 1 || context.isAssymetric())) {
 			monitor.setStatusMessage("Clustering attributes");
 
 			Integer[] rowOrder = algorithm.cluster(true);

@@ -53,6 +53,9 @@ public class AttributeList {
 	         tooltip="You may only chose 1 edge column for an attribute cluster" , gravity=51)
 	public ListSingleSelection<String> edgeAttributeList = null;
 
+	@Tunable(description="Edges are assymetric (not common)", groups="Array sources", gravity=52)
+	public boolean assymetric = false;
+
 	public AttributeList(CyNetwork network) {
 		this(network, false);
 	}

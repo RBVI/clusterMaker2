@@ -136,6 +136,7 @@ abstract class TreeDrawer extends Observable implements Observer {
 			setDefaults();
 			return;
 		}
+
 		if (this.nodeInfo != null) this.nodeInfo.deleteObserver(this);
 		this.nodeInfo = nodeInfo;
 		nodeInfo.addObserver(this);
@@ -162,6 +163,7 @@ abstract class TreeDrawer extends Observable implements Observer {
 				int val; // stores index (y location)
 				val = rowInfo.getHeaderIndex(leftId);
 				if (val == -1) {
+					Thread.dumpStack();
 					throw new DendroException("Identifier " + leftId + " from tree file not found in CDT.");
 				}
 				leftn = new TreeDrawerNode(leftId, 1.0, val);
@@ -173,6 +175,7 @@ abstract class TreeDrawer extends Observable implements Observer {
 				int val; // stores index (y location)
 				val = rowInfo.getHeaderIndex(rightId);
 				if (val == -1) {
+					Thread.dumpStack();
 					throw new DendroException("Identifier " + rightId + " from tree file not found in CDT!");
 				}
 				rightn = new TreeDrawerNode(rightId, 1.0, val);

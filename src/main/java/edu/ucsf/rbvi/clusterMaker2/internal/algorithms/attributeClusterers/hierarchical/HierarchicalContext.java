@@ -76,10 +76,10 @@ public class HierarchicalContext {
 	@Tunable(description="Adjust loops (not common)", groups={"Advanced Parameters"}, gravity=64)
 	public boolean adjustDiagonals = false;
 
-	@Tunable(description="Create groups from clusters", groups={"Visualization Options"}, gravity=65)
+	@Tunable(description="Create groups from clusters", groups={"Visualization Options"}, gravity=66)
 	public boolean createGroups = false;
 
-	@Tunable(description="Show TreeView when complete", groups={"Visualization Options"}, gravity=66)
+	@Tunable(description="Show TreeView when complete", groups={"Visualization Options"}, gravity=67)
 	public boolean showUI = false;
 
 	public HierarchicalContext() {
@@ -100,6 +100,7 @@ public class HierarchicalContext {
 		params.add("zeroMissing="+zeroMissing);
 		params.add("createGroups="+createGroups);
 		params.add("adjustDiagonals="+adjustDiagonals);
+		params.add("assymetric="+attributeList.assymetric);
 		if (adjustDiagonals)
 			params.add("diagonals="+matrix.getValue(0,0));
 		return params;
@@ -124,5 +125,9 @@ public class HierarchicalContext {
 
 	public ClusterMethod getLinkage() {
 		return linkage.getSelectedValue();
+	}
+
+	public boolean isAssymetric() {
+		return attributeList.assymetric;
 	}
 }
