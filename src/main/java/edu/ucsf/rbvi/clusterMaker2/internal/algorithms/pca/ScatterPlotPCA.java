@@ -5,7 +5,6 @@
  */
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -16,9 +15,14 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.RenderingHints;
-import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
@@ -29,7 +33,8 @@ import org.jdesktop.swingx.JXCollapsiblePane;
  * @author root
  */
 @SuppressWarnings("serial")
-public class ScatterPlotPCA extends JPanel {
+public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotionListener{
+    private float scale = 1;
     private static int MAX_SCORE = 1;
     private static int MIN_SCORE = -1;
     private static final int PREF_W = 500;
@@ -65,6 +70,9 @@ public class ScatterPlotPCA extends JPanel {
     private static JComboBox<String> comboColors;
     private static final JButton buttonPlot = new JButton("Plot");
     private static final JButton buttonOptions = new JButton("Advance Options");
+    
+    private static int startingX, startingY, currentX, currentY;
+    private static boolean dragging = false;
    
    public ScatterPlotPCA(double[][] scoresX, double[][] scoresY, String lableX, String lableY){
        this.scoresX = scoresX;
@@ -83,13 +91,76 @@ public class ScatterPlotPCA extends JPanel {
                MIN_SCORE = (int) ((int) -1 * Math.abs(min));
            }
        }
+       
+       addMouseWheelListener(new MouseAdapter() {
+
+                @Override
+                public void mouseWheelMoved(MouseWheelEvent e) {
+                    double delta = 0.05f * e.getPreciseWheelRotation();
+                    scale += delta;
+                    System.out.println("Mouse rolled : " + scale);
+                    revalidate();
+                    repaint();
+                }
+
+            });
+       
+        addMouseListener(this);
+
+        addMouseMotionListener(this);
+
    }
+   
+    @Override
+    public void mouseClicked(MouseEvent event) {
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent event) {
+    }
+
+    @Override
+    public void mouseExited(MouseEvent event) {
+    }
+
+    @Override
+    public void mousePressed(MouseEvent event) {
+        Point point = event.getPoint();
+        System.out.println("mousePressed at " + point);
+        startingX = point.x;
+        startingY = point.y;
+        dragging = true;
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent event) {
+        dragging = false;
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent event) {
+        Point p = event.getPoint();
+        currentX = p.x;
+        currentY = p.y;
+        System.out.println("dragging...");
+        if (dragging) {
+            System.out.println("dragging painting...");
+            repaint();
+        }
+    }    
+    
+    public void mouseMoved(MouseEvent me){
+        System.out.println("Moving...");
+    }
    
    @Override
    protected void paintComponent(Graphics g) {
       super.paintComponent(g);
       Graphics2D g2 = (Graphics2D)g;
       g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+      AffineTransform at = new AffineTransform();
+      at.scale(scale, scale);
+      g2.setTransform(at);
       
       double xScale = ((double) getWidth() - 2 * BORDER_GAP) / (MAX_SCORE - MIN_SCORE);
       double yScale = ((double) getHeight() - 2 * BORDER_GAP) / (MAX_SCORE - MIN_SCORE);
@@ -128,7 +199,7 @@ public class ScatterPlotPCA extends JPanel {
       g2.setFont(new Font("default", Font.BOLD, g2.getFont().getSize()));
       g2.drawString(lableX, getWidth() - BORDER_GAP - (lableX.length()/2)*5, getHeight()/2 + BORDER_GAP);
       g2.setFont(new Font("default", Font.PLAIN, g2.getFont().getSize()));
-      
+
       int newX = getWidth()/2;
       int newY = getHeight()/2;
       
@@ -149,11 +220,19 @@ public class ScatterPlotPCA extends JPanel {
            int ovalH = graph_point_width;
            g2.fillOval(x, y, ovalW, ovalH);
        }
+       
+       if(dragging){
+           System.out.println("dragging painting translating...");
+           g2.translate(currentX, currentY);
+       }
    }
    
    @Override
    public Dimension getPreferredSize() {
-      return new Dimension(PREF_W, PREF_H);
+        Dimension size = new Dimension(PREF_W, PREF_H);
+        //size.width = Math.round(size.width * scale);
+        //size.height = Math.round(size.height * scale);
+        return size;
    }
    
    public static JXCollapsiblePane createAdvanceOptionPane(){
