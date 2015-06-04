@@ -98,7 +98,6 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
                 public void mouseWheelMoved(MouseWheelEvent e) {
                     double delta = 0.05f * e.getPreciseWheelRotation();
                     scale += delta;
-                    System.out.println("Mouse rolled : " + scale);
                     revalidate();
                     repaint();
                 }
@@ -108,7 +107,6 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
         addMouseListener(this);
 
         addMouseMotionListener(this);
-
    }
    
     @Override
@@ -126,7 +124,6 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
     @Override
     public void mousePressed(MouseEvent event) {
         Point point = event.getPoint();
-        System.out.println("mousePressed at " + point);
         startingX = point.x;
         startingY = point.y;
         dragging = true;
@@ -142,15 +139,14 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
         Point p = event.getPoint();
         currentX = p.x;
         currentY = p.y;
-        System.out.println("dragging...");
         if (dragging) {
-            System.out.println("dragging painting...");
             repaint();
         }
+        
+        
     }    
     
     public void mouseMoved(MouseEvent me){
-        System.out.println("Moving...");
     }
    
    @Override
@@ -159,6 +155,9 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
       Graphics2D g2 = (Graphics2D)g;
       g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
       AffineTransform at = new AffineTransform();
+      if(dragging){
+            at.setToTranslation(-1 * ( startingX - currentX ), -1 * (startingY - currentY));
+      }
       at.scale(scale, scale);
       g2.setTransform(at);
       
@@ -219,11 +218,6 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
            int ovalW = graph_point_width;
            int ovalH = graph_point_width;
            g2.fillOval(x, y, ovalW, ovalH);
-       }
-       
-       if(dragging){
-           System.out.println("dragging painting translating...");
-           g2.translate(currentX, currentY);
        }
    }
    
