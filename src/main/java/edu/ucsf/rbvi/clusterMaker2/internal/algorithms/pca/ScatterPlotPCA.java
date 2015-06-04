@@ -141,8 +141,7 @@ public class ScatterPlotPCA extends JPanel {
           }
       }
       g2.setColor(colors[comboColors.getSelectedIndex()]);
-      String pointSize = textFieldPointSize.getText();
-      int graph_point_width = 6;
+      int graph_point_width = Integer.parseInt(textFieldPointSize.getText());
        for (Point graphPoint : graphPoints) {
            int x = graphPoint.x - graph_point_width / 2;
            int y = graphPoint.y - graph_point_width / 2;
@@ -161,6 +160,7 @@ public class ScatterPlotPCA extends JPanel {
         JPanel control = new JPanel();
               
         comboColors = new JComboBox(colorNames);
+        comboColors.setSelectedIndex(1);
        
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.anchor = GridBagConstraints.WEST;
@@ -185,8 +185,9 @@ public class ScatterPlotPCA extends JPanel {
         control.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), "Advanced Options"));
         
+        collapsiblePaneOptions.removeAll();
         collapsiblePaneOptions.add("Center", control);
-        collapsiblePaneOptions.setCollapsed(true);
+        collapsiblePaneOptions.setCollapsed(!collapsiblePaneOptions.isCollapsed());
         
        return collapsiblePaneOptions;
    }
@@ -202,6 +203,7 @@ public class ScatterPlotPCA extends JPanel {
         comboXAxis = new JComboBox(PCs);
         comboYAxis = new JComboBox(PCs);
         comboYAxis.setSelectedIndex(1);
+        textFieldPointSize.setText("6");
         labelXVariance = new JLabel(String.valueOf(variances[0]) + "% variance");
         labelYVariance = new JLabel(String.valueOf(variances[1]) + "% variance");
                 
@@ -217,7 +219,9 @@ public class ScatterPlotPCA extends JPanel {
         panelYAxis.add(Box.createRigidArea(new Dimension(5,0)));
         panelYAxis.add(labelYVariance);
         
-        buttonOptions.addActionListener(collapsiblePaneOptions.getActionMap().get("toggle"));
+        if(buttonOptions.getActionListeners().length == 0){
+            buttonOptions.addActionListener(collapsiblePaneOptions.getActionMap().get("toggle"));   
+        }
         panelButtons.setLayout(new BoxLayout(panelButtons, BoxLayout.X_AXIS));
         panelButtons.add(buttonOptions);
         panelButtons.add(buttonPlot);
@@ -269,6 +273,12 @@ public class ScatterPlotPCA extends JPanel {
  
             public void actionPerformed(ActionEvent e)
             {
+                try{
+                    Integer.parseInt(textFieldPointSize.getText());
+                }catch (NumberFormatException er) {
+                      JOptionPane.showMessageDialog(null,textFieldPointSize.getText() + " is not a number","Error: Size of point",JOptionPane.ERROR_MESSAGE);
+                      return;
+                }                
                 //Execute when button is pressed
                 container.remove(0);
                 ScatterPlotPCA scatterPlot = new ScatterPlotPCA(allComponents[comboXAxis.getSelectedIndex()].toArray(), 
