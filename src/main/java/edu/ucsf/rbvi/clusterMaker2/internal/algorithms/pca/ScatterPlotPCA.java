@@ -71,7 +71,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
     private static final JButton buttonPlot = new JButton("Plot");
     private static final JButton buttonOptions = new JButton("Advance Options");
     
-    private static int startingX, startingY, currentX, currentY;
+    private static int startingX, startingY, currentX, currentY, previousDX=0, previosDY=0;
     private static boolean dragging = false;
    
    public ScatterPlotPCA(double[][] scoresX, double[][] scoresY, String lableX, String lableY){
@@ -98,6 +98,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
                 public void mouseWheelMoved(MouseWheelEvent e) {
                     double delta = 0.05f * e.getPreciseWheelRotation();
                     scale += delta;
+                    previousDX = previosDY = 0;
                     revalidate();
                     repaint();
                 }
@@ -132,6 +133,8 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
     @Override
     public void mouseReleased(MouseEvent event) {
         dragging = false;
+        previousDX += currentX - startingX;
+        previosDY += currentY - startingY;
     }
 
     @Override
@@ -156,7 +159,9 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
       g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
       AffineTransform at = new AffineTransform();
       if(dragging){
-            at.setToTranslation(-1 * ( startingX - currentX ), -1 * (startingY - currentY));
+            int currentDX = currentX - startingX;
+            int currentDY =  currentY - startingY;
+            at.setToTranslation(previousDX + currentDX, previosDY + currentDY);
       }
       at.scale(scale, scale);
       g2.setTransform(at);
@@ -384,6 +389,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
         
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         container.removeAll();
+        previousDX = previosDY = 0;
         container.add(scatterPlot);
         container.add(createControlJPanel(components));
         
