@@ -41,8 +41,10 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
     private static final int PREF_H = 500;
     private static final int BORDER_GAP = 30;
     private static final int GRAPH_HATCH_WIDTH = 10;
+    private int graph_point_width = 6;
     private final double[][] scoresX;
     private final double[][] scoresY;
+    private List<Point> graphPoints;
     private final String lableX;
     private final String lableY;
     private static ComputationMatrix[] allComponents;
@@ -112,6 +114,19 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
    
     @Override
     public void mouseClicked(MouseEvent event) {
+        int x = event.getPoint().x;
+        int y = event.getPoint().y;
+        System.out.println("getPoint: " + event.getPoint().x + " " + event.getPoint().y);
+        System.out.println("getXYOnScreen: " + event.getXOnScreen() + " " + event.getYOnScreen());
+        if(!graphPoints.isEmpty()){
+            for(int i=0;i<graphPoints.size();i++){
+                Point p = graphPoints.get(i);
+                if(Math.abs(p.x - x) <= graph_point_width && Math.abs(p.y - y) <= graph_point_width){
+                    System.out.println("i and j: " + Math.floor(i/scoresX.length) + " " + i%scoresX.length);
+                    break;
+                }
+            }
+        }
     }
 
     @Override
@@ -207,7 +222,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
       int newX = getWidth()/2;
       int newY = getHeight()/2;
       
-      List<Point> graphPoints = new ArrayList<Point>();
+      graphPoints = new ArrayList<Point>();
       for(int i=0; i<scoresX.length;i++){
           for(int j=0;j<scoresX[0].length;j++){
               int x1 = (int) (scoresX[i][j] * xScale + newX);
@@ -216,7 +231,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
           }
       }
       g2.setColor(colors[comboColors.getSelectedIndex()]);
-      int graph_point_width = Integer.parseInt(textFieldPointSize.getText());
+      graph_point_width = Integer.parseInt(textFieldPointSize.getText());
        for (Point graphPoint : graphPoints) {
            int x = graphPoint.x - graph_point_width / 2;
            int y = graphPoint.y - graph_point_width / 2;

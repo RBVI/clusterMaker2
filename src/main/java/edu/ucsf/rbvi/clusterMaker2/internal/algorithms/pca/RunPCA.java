@@ -44,7 +44,8 @@ public class RunPCA {
                 
                 ComputationMatrix[] components = this.computePCsSorted(mat, PCA_NODE_NODE);
                 
-                ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));
+                if(context.pcaPlot)
+                    ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));
                 
                 return components;
     }
@@ -59,7 +60,8 @@ public class RunPCA {
                 
                 ComputationMatrix[] components = this.computePCs(mat, PCA_NODE_NODE);
                 
-                ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));
+                if(context.pcaPlot)
+                    ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));
 
                 return components;
     }
@@ -73,7 +75,8 @@ public class RunPCA {
                 
                 ComputationMatrix[] components = this.computePCsSorted(mat, PCA_NODE_ATTRIBUTE);
                 
-                ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));
+                if(context.pcaPlot)
+                    ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));
                 
     }
     
@@ -87,7 +90,8 @@ public class RunPCA {
                 
                 ComputationMatrix[] components = this.computePCs(mat, PCA_NODE_ATTRIBUTE);
                 
-                ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));
+                if(context.pcaPlot)
+                    ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));
                 
     }
 
