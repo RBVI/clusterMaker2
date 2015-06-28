@@ -626,7 +626,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	/**
 	 * A text area renderer that creates a line wrapped, non-editable text area
 	 */
-	private static class JTextAreaRenderer extends JTextArea implements TableCellRenderer {
+	public static class JTextAreaRenderer extends JTextArea implements TableCellRenderer {
 		
 		int minHeight;
 

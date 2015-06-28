@@ -53,8 +53,7 @@ public class PCAContext {
         
         @Tunable(description = "Create PCA scatter plot with node selection option", groups={"Result Options"}, gravity=84.0)
 	public boolean pcaPlot = false;
-        
-        
+                
         public PCAContext(){
             
         }

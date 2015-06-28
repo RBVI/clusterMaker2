@@ -90,6 +90,9 @@ public class RunPCA {
                 
                 ComputationMatrix[] components = this.computePCs(mat, PCA_NODE_ATTRIBUTE);
                 
+                if(context.pcaResultPanel)
+                    ResultPanelPCA.createAndShowGui(components, network, null);
+                
                 if(context.pcaPlot)
                     ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));
                 
@@ -123,8 +126,10 @@ public class RunPCA {
                         components[k] = mat.multiplyMatrix(ComputationMatrix.multiplyArray(w, w));
                     else if(type == PCA_NODE_ATTRIBUTE)
                         components[k] = ComputationMatrix.multiplyMatrixWithArray(mat, w);
+                    
+                    System.out.println("PC: " + k);
+                    components[k].printMatrix();
                 }
-                
                 return components;
     }
     
