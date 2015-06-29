@@ -8,8 +8,8 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
-import org.netlib.util.doubleW;
 
 /**
  *
@@ -17,6 +17,7 @@ import org.netlib.util.doubleW;
  */
 public class RunPCA {
     protected CyNetwork network;
+    protected CyNetworkView networkView;
     protected PCAContext context;
     protected TaskMonitor monitor;
     protected String[] weightAttributes;
@@ -27,8 +28,9 @@ public class RunPCA {
     private static final int PCA_NODE_NODE = 1;
     private static final int PCA_NODE_ATTRIBUTE = 2;
     
-    public RunPCA(CyNetwork network, PCAContext context, TaskMonitor monitor, String[] weightAttributes){
+    public RunPCA(CyNetwork network, CyNetworkView networkView, PCAContext context, TaskMonitor monitor, String[] weightAttributes){
         this.network = network;
+        this.networkView = networkView;
         this.context = context;
         this.monitor = monitor;
         this.weightAttributes = weightAttributes;
@@ -91,7 +93,7 @@ public class RunPCA {
                 ComputationMatrix[] components = this.computePCs(mat, PCA_NODE_ATTRIBUTE);
                 
                 if(context.pcaResultPanel)
-                    ResultPanelPCA.createAndShowGui(components, network, null);
+                    ResultPanelPCA.createAndShowGui(components, network, networkView);
                 
                 if(context.pcaPlot)
                     ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));

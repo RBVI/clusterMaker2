@@ -8,6 +8,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import java.util.List;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
@@ -22,7 +23,8 @@ public class PCA extends AbstractTask{
         ClusterManager clusterManager;
         public static String SHORTNAME = "pca";
 	public static String NAME = "Principal Component Analysis";
-        private List<String>attrList;
+        private List<String>attrList;       
+        private CyNetworkView networkView;
         
         @Tunable(description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
@@ -32,6 +34,7 @@ public class PCA extends AbstractTask{
         
         public PCA(PCAContext context, ClusterManager clusterManager){
             this.context = context;
+            this.networkView = clusterManager.getNetworkView();
             if (network == null)
                     network = clusterManager.getNetwork();
             context.setNetwork(network);
@@ -63,7 +66,7 @@ public class PCA extends AbstractTask{
                     attrArray[att++] = "node."+attribute;
             }
             
-            RunPCA runPCA = new RunPCA(network, context, monitor, attrArray);
+            RunPCA runPCA = new RunPCA(network, networkView, context, monitor, attrArray);
             if(context.inputValue.getSelectedValue().equals("Distance Matric") && 
                     context.pcaType.getSelectedValue().equals("PCA of input weight between nodes")){
                     runPCA.runOnNodeToNodeDistanceMatric();

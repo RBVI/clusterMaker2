@@ -10,9 +10,14 @@ import edu.ucsf.rbvi.clusterMaker2.internal.ui.ResultsPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -31,6 +36,7 @@ import javax.swing.table.AbstractTableModel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 /**
  *
@@ -94,8 +100,6 @@ public class ResultPanelPCA extends JPanel{
 			table.setDefaultRenderer(StringBuffer.class, new ResultsPanel.JTextAreaRenderer(defaultRowHeight));
 			table.setIntercellSpacing(new Dimension(0, 4)); // gives a little vertical room between clusters
 			table.setFocusable(false); // removes an outline that appears when the user clicks on the images
-
-			//System.out.println("CBP: after setting table params");
 
 			// Ask to be notified of selection changes.
 			ListSelectionModel rowSM = table.getSelectionModel();
@@ -174,7 +178,7 @@ public class ResultPanelPCA extends JPanel{
 				String details = "values";
 				data[i][1] = new StringBuffer(details);
                                 
-				final Image image = createPCImage();
+				final Image image = createPCImage(components[i], graphPicSize, graphPicSize);
                                 
 				data[i][0] = image != null ? new ImageIcon(image) : new ImageIcon();
 			}
@@ -209,8 +213,54 @@ public class ResultPanelPCA extends JPanel{
 		}
 	}
     
-        public Image createPCImage(){
-            final Image image = null;
+        public Image createPCImage(ComputationMatrix pc, final int height, final int width){
+            final Image image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            final Graphics2D g = (Graphics2D) image.getGraphics();
+            
+            double threshold = 0.02;
+            double cx = networkView.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION);
+            double cy = networkView.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION);
+            List<Point> nodes = new ArrayList<Point>();
+            for(int i=0;i<pc.nRow();i++){
+                for(int j=0;j<pc.nColumn();j++){
+                    if(pc.getCell(i, j) > threshold){
+                        Double x = networkView.getNodeView(network.getNodeList().get(i)).getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
+                        Double y = networkView.getNodeView(network.getNodeList().get(i)).getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
+                        System.out.println("x: " + x + " y: " + y);
+                        double newx = x-cx;
+                        double newy = y-cy;
+                        nodes.add(new Point((int)newx, (int)newy));
+                    }
+                }
+            }
+            
+            int maxX = Integer.MIN_VALUE;
+            int maxY = Integer.MIN_VALUE;
+            int minX = Integer.MAX_VALUE;
+            int minY = Integer.MAX_VALUE;
+            for(Point p:nodes){
+                if(maxX < p.x)
+                    maxX = p.x;
+                if(maxY < p.y)
+                    maxY = p.y;
+                if(minX > p.x)
+                    minX = p.x;
+                if(minY > p.y)
+                    minY = p.y;
+            }
+            
+            double xScale = image.getWidth(this) / (maxX - minX);
+            double yScale = image.getHeight(this) / (maxY - minY);
+            
+            int newX = image.getWidth(this)/2;
+            int newY = image.getHeight(this)/2;
+            g.setColor(Color.BLACK);
+            for(Point p:nodes){
+                int x1 = (int) (p.x*xScale + newX);
+                int y1 = (int) (-1*(p.y*yScale - newY));
+                g.fillOval(x1, y1, 1, 1);
+            }
+            
             return image;
         }
     
@@ -219,7 +269,6 @@ public class ResultPanelPCA extends JPanel{
                 final CyNetworkView networkView){
             
             ResultPanelPCA resultPanelPCA = new ResultPanelPCA(components, network, networkView);
-            
             JFrame frame = new JFrame("Result Panel");
             
             frame.getContentPane().add(resultPanelPCA);
