@@ -53,6 +53,10 @@ public class ResultPanelPCA extends JPanel{
         private static final int defaultRowHeight = graphPicSize + 8;
         
         private ResultPanelPCA.PCBrowserPanel pcBrowserPanel;
+        private List<Integer> nodeCount = new ArrayList<Integer>();
+        private static double[] varianceArray;
+        
+        private static JFrame frame;
 
         public ResultPanelPCA(final ComputationMatrix[] components, 
                 final CyNetwork network, 
@@ -116,7 +120,7 @@ public class ResultPanelPCA extends JPanel{
 			dispose.addActionListener(new AbstractAction() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-                                    System.out.println("Close clicked");
+                                    ResultPanelPCA.closeGui();
 				}
 			});
 
@@ -175,12 +179,14 @@ public class ResultPanelPCA extends JPanel{
 			data = new Object[components.length][columnNames.length];
 
 			for (int i = 0; i < components.length; i++) {
-				String details = "values";
-				data[i][1] = new StringBuffer(details);
                                 
 				final Image image = createPCImage(components[i], graphPicSize, graphPicSize);
                                 
 				data[i][0] = image != null ? new ImageIcon(image) : new ImageIcon();
+                                
+				String details = "Nodes: " + nodeCount.get(i) + "\n";
+                                details += "Variance: " + varianceArray[i] + "\n";
+				data[i][1] = new StringBuffer(details);
 			}
 		}
 
@@ -226,7 +232,7 @@ public class ResultPanelPCA extends JPanel{
                     if(pc.getCell(i, j) > threshold){
                         Double x = networkView.getNodeView(network.getNodeList().get(i)).getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
                         Double y = networkView.getNodeView(network.getNodeList().get(i)).getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
-                        System.out.println("x: " + x + " y: " + y);
+                        //System.out.println("x: " + x + " y: " + y);
                         double newx = x-cx;
                         double newy = y-cy;
                         nodes.add(new Point((int)newx, (int)newy));
@@ -249,31 +255,38 @@ public class ResultPanelPCA extends JPanel{
                     minY = p.y;
             }
             
-            double xScale = image.getWidth(this) / (maxX - minX);
-            double yScale = image.getHeight(this) / (maxY - minY);
+            double xScale = (double) image.getWidth(this) / (maxX - minX);
+            double yScale = (double) image.getHeight(this) / (maxY - minY);
             
             int newX = image.getWidth(this)/2;
             int newY = image.getHeight(this)/2;
+            int count = 0;
             g.setColor(Color.BLACK);
             for(Point p:nodes){
                 int x1 = (int) (p.x*xScale + newX);
                 int y1 = (int) (-1*(p.y*yScale - newY));
-                g.fillOval(x1, y1, 1, 1);
+                g.fillOval(x1, y1, 2, 2);
+                count++;
             }
-            
+            nodeCount.add(count);
             return image;
         }
     
         public static void createAndShowGui(final ComputationMatrix[] components, 
                 final CyNetwork network, 
-                final CyNetworkView networkView){
-            
+                final CyNetworkView networkView, final double[] varianceArray){
+            ResultPanelPCA.varianceArray = varianceArray;
             ResultPanelPCA resultPanelPCA = new ResultPanelPCA(components, network, networkView);
-            JFrame frame = new JFrame("Result Panel");
+            frame = new JFrame("Result Panel");
             
             frame.getContentPane().add(resultPanelPCA);
             frame.pack();
             frame.setLocationByPlatform(true);
             frame.setVisible(true);
+        }
+        
+        public static void closeGui(){
+            if(frame != null)
+                frame.dispose();
         }
 }
