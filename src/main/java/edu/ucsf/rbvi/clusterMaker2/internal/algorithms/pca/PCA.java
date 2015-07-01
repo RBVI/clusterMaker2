@@ -7,7 +7,9 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import java.util.List;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
@@ -20,7 +22,8 @@ import org.cytoscape.work.Tunable;
  * @author root
  */
 public class PCA extends AbstractTask{
-        ClusterManager clusterManager;
+        CyServiceRegistrar bc;
+        private CyApplicationManager appManager;
         public static String SHORTNAME = "pca";
 	public static String NAME = "Principal Component Analysis";
         private List<String>attrList;       
@@ -32,11 +35,12 @@ public class PCA extends AbstractTask{
         @ContainsTunables
         public PCAContext context = null;
         
-        public PCA(PCAContext context, ClusterManager clusterManager){
+        public PCA(PCAContext context, CyServiceRegistrar bc){
             this.context = context;
-            this.networkView = clusterManager.getNetworkView();
+            this.appManager = bc.getService(CyApplicationManager.class);
+            this.networkView = appManager.getCurrentNetworkView();
             if (network == null)
-                    network = clusterManager.getNetwork();
+                    network = appManager.getCurrentNetwork();
             context.setNetwork(network);
         }
         

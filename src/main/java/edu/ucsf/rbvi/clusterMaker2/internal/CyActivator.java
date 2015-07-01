@@ -179,7 +179,7 @@ public class CyActivator extends AbstractCyActivator {
                 
                 // Principal Component Analysis
                 registerService(bc, new PCAMenuTaskFactory(), ClusterTaskFactory.class, new Properties());
-                registerService(bc, new PCATaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+                registerService(bc, new PCATaskFactory(serviceRegistrar), ClusterTaskFactory.class, new Properties());
 
 		// Link Network Selections
 		LinkSelectionTaskFactory linkTaskFactory = new LinkSelectionTaskFactory(clusterManager);

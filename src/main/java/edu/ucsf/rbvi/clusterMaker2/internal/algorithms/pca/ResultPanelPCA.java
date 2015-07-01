@@ -36,6 +36,7 @@ import javax.swing.table.AbstractTableModel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 /**
@@ -44,6 +45,7 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
  */
 public class ResultPanelPCA extends JPanel{
     
+        private final List<CyNode> nodeList;
         private final CyNetwork network;
         private CyNetworkView networkView;
         private final ComputationMatrix[] components;
@@ -55,17 +57,20 @@ public class ResultPanelPCA extends JPanel{
         private ResultPanelPCA.PCBrowserPanel pcBrowserPanel;
         private List<Integer> nodeCount = new ArrayList<Integer>();
         private static double[] varianceArray;
+        private List<List<CyNode>> nodeListArray;
         
         private static JFrame frame;
 
-        public ResultPanelPCA(final ComputationMatrix[] components, 
+        public ResultPanelPCA(final ComputationMatrix[] components,
+                final List<CyNode> nodeList,
                 final CyNetwork network, 
                 final CyNetworkView networkView){
 
+                this.nodeList = nodeList;
                 this.network = network;
                 this.networkView = networkView;
                 this.components = components;
-                
+                nodeListArray = new ArrayList<List<CyNode>>();
                 this.pcBrowserPanel = new PCBrowserPanel();
                 add(pcBrowserPanel, BorderLayout.CENTER);
 		this.setSize(this.getMinimumSize());
@@ -147,21 +152,19 @@ public class ResultPanelPCA extends JPanel{
 		}
 
 		public void valueChanged(ListSelectionEvent e) {
-			ListSelectionModel lsm = (ListSelectionModel) e.getSource();
-			// Get the rows
-			int[] rowIndices = table.getSelectedRows();
-			Map<CyNode, CyNode> selectedMap = new HashMap<CyNode, CyNode>();
-			// Get the clusters
-			for (int i = 0; i < rowIndices.length; i++) {
-                            System.out.println("PC is selected");
-			}
-			// Select the nodes
-			for (CyNode node: network.getNodeList()) {
-				if (selectedMap.containsKey(node))
-					network.getRow(node).set(CyNetwork.SELECTED, true);
-				else
-					network.getRow(node).set(CyNetwork.SELECTED, false);
-			}
+			
+                        for(CyNode node: nodeListArray.get(e.getFirstIndex())){
+                            View<CyNode> nodeView = networkView.getNodeView(node);
+                            if(nodeView.isValueLocked(BasicVisualLexicon.NODE_SELECTED)){
+                                nodeView.clearValueLock(BasicVisualLexicon.NODE_SELECTED);
+                            }
+                            nodeView.setVisualProperty(BasicVisualLexicon.NODE_SELECTED, true);
+                            if(nodeView.isValueLocked(BasicVisualLexicon.NODE_SIZE)){
+                                nodeView.clearValueLock(BasicVisualLexicon.NODE_SIZE);
+                            }
+                            nodeView.setVisualProperty(BasicVisualLexicon.NODE_SIZE, nodeView.getVisualProperty(BasicVisualLexicon.NODE_SIZE) + 10);
+                            System.out.println(node.getSUID() + " setting selected");
+                        }
 
 			// I wish we didn't need to do this, but if we don't, the selection
 			// doesn't update
@@ -227,6 +230,7 @@ public class ResultPanelPCA extends JPanel{
             double cx = networkView.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION);
             double cy = networkView.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION);
             List<Point> nodes = new ArrayList<Point>();
+            List<CyNode> nodesList = new ArrayList<CyNode>();
             for(int i=0;i<pc.nRow();i++){
                 for(int j=0;j<pc.nColumn();j++){
                     if(pc.getCell(i, j) > threshold){
@@ -236,10 +240,11 @@ public class ResultPanelPCA extends JPanel{
                         double newx = x-cx;
                         double newy = y-cy;
                         nodes.add(new Point((int)newx, (int)newy));
+                        nodesList.add(this.nodeList.get(i));
                     }
                 }
             }
-            
+            nodeListArray.add(nodesList);
             int maxX = Integer.MIN_VALUE;
             int maxY = Integer.MIN_VALUE;
             int minX = Integer.MAX_VALUE;
@@ -272,13 +277,13 @@ public class ResultPanelPCA extends JPanel{
             return image;
         }
     
-        public static void createAndShowGui(final ComputationMatrix[] components, 
+        public static void createAndShowGui(final ComputationMatrix[] components,
+                final List<CyNode> nodeList,
                 final CyNetwork network, 
                 final CyNetworkView networkView,
-                final List<CyNode> nodeList,
                 final double[] varianceArray){
             ResultPanelPCA.varianceArray = varianceArray;
-            ResultPanelPCA resultPanelPCA = new ResultPanelPCA(components, network, networkView);
+            ResultPanelPCA resultPanelPCA = new ResultPanelPCA(components, nodeList,network, networkView);
             frame = new JFrame("Result Panel");
             
             frame.getContentPane().add(resultPanelPCA);

@@ -93,7 +93,7 @@ public class RunPCA {
                 ComputationMatrix[] components = this.computePCs(mat, PCA_NODE_ATTRIBUTE);
                 
                 if(context.pcaResultPanel)
-                    ResultPanelPCA.createAndShowGui(components, network, networkView, matrix.getNodes(), computeVariance(mat));
+                    ResultPanelPCA.createAndShowGui(components, matrix.getNodes(), network, networkView, computeVariance(mat));
                 
                 if(context.pcaPlot)
                     ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));

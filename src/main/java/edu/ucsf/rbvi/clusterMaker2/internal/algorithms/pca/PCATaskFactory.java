@@ -12,6 +12,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import java.util.Collections;
 import java.util.List;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskIterator;
 
 /**
@@ -19,12 +20,12 @@ import org.cytoscape.work.TaskIterator;
  * @author root
  */
 public class PCATaskFactory extends AbstractClusterTaskFactory{
-        ClusterManager clusterManager;
+        CyServiceRegistrar bc;
         PCAContext context = null;
     
-        public PCATaskFactory(ClusterManager clusterManager){
+        public PCATaskFactory(CyServiceRegistrar bc){
             context = new PCAContext();
-            this.clusterManager = clusterManager;
+            this.bc = bc;
         }
     
         public String getShortName() {return PCA.SHORTNAME;};
@@ -44,7 +45,7 @@ public class PCATaskFactory extends AbstractClusterTaskFactory{
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new PCA(context, clusterManager));
+		return new TaskIterator(new PCA(context, bc));
 	}
     
 }
