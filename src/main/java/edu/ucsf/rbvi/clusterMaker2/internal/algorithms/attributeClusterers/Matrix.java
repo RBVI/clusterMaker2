@@ -501,6 +501,14 @@ public class Matrix extends BaseMatrix {
 			}
 			return null;
 		}
+                
+                public List<CyNode> getNodes(){
+                    List<CyNode>nodeList = network.getNodeList();
+
+                    if (selectedOnly) nodeList = new ArrayList<CyNode>(CyTableUtil.getNodesInState(network,"selected",true));
+
+                    return nodeList;
+                }
 	
 	
 }

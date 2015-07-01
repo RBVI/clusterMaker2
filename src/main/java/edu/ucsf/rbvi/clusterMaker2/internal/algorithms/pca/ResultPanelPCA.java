@@ -274,7 +274,9 @@ public class ResultPanelPCA extends JPanel{
     
         public static void createAndShowGui(final ComputationMatrix[] components, 
                 final CyNetwork network, 
-                final CyNetworkView networkView, final double[] varianceArray){
+                final CyNetworkView networkView,
+                final List<CyNode> nodeList,
+                final double[] varianceArray){
             ResultPanelPCA.varianceArray = varianceArray;
             ResultPanelPCA resultPanelPCA = new ResultPanelPCA(components, network, networkView);
             frame = new JFrame("Result Panel");
