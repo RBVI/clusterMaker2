@@ -181,6 +181,21 @@ public class ComputationMatrix {
         return result.getV().toArray();
     }
     
+    public double[] computeVariance(){
+
+                double[] values = centralizeColumns().covariance().eigenValues();
+                double[] variances = new double[values.length];
+                
+                double sum = 0;
+                for(int i=0;i<values.length;i++)
+                    sum += values[i];
+                
+                for(int i=0,j=values.length-1; j>=0; j--,i++){
+                    variances[i] = (double) Math.round((values[j]*100/sum) * 100) / 100;
+                }
+                return variances;
+    }
+    
     public static double getMax(double[][] mat){
         int row = mat.length;
         int col = mat[0].length;
@@ -205,41 +220,6 @@ public class ComputationMatrix {
             }
         }
         return Math.floor(min);
-    }
-   
-    public void printMatrix(){
-        int row = matrix.length;
-        int column = matrix[0].length;
-        for(int i=0;i<row;i++){
-            System.out.println("");
-            for(int j=0;j<column;j++){
-                System.out.print("\t" + matrix[i][j]);
-            }
-        }
-    }
-    
-    public void writeMatrix(String fileName){
-        try{
-            File file = new File("/home/vijay13/Downloads/" + fileName);
-            if(!file.exists()) {
-                file.createNewFile();
-            }
-            PrintWriter writer = new PrintWriter("/home/vijay13/Downloads/" + fileName, "UTF-8");
-
-            int row = matrix.length;
-            int column = matrix[0].length;
-            for(int i=0;i<row;i++){
-                writer.write("\n");
-                for(int j=0;j<column;j++){
-                    BigDecimal bd = new BigDecimal(matrix[i][j]);
-                    bd = bd.round(new MathContext(3));
-                    writer.write("\t" + bd.doubleValue());
-                }
-            }
-            writer.close();
-        }catch(IOException e){
-            e.printStackTrace(System.out);
-        }
     }
     
     public static ComputationMatrix multiplyArray(double[] first, double[] second){
@@ -270,12 +250,50 @@ public class ComputationMatrix {
         }
         return result;
     }
+   
+    public void printMatrix(){
+        int row = matrix.length;
+        int column = matrix[0].length;
+        for(int i=0;i<row;i++){
+            System.out.println("");
+            for(int j=0;j<column;j++){
+                System.out.print("\t" + matrix[i][j]);
+            }
+        }
+    }
     
+    //this method is meant for debugging only
+    public void writeMatrix(String fileName){
+        try{
+            File file = new File("/home/vijay13/Downloads/" + fileName);
+            if(!file.exists()) {
+                file.createNewFile();
+            }
+            PrintWriter writer = new PrintWriter("/home/vijay13/Downloads/" + fileName, "UTF-8");
+
+            int row = matrix.length;
+            int column = matrix[0].length;
+            for(int i=0;i<row;i++){
+                writer.write("\n");
+                for(int j=0;j<column;j++){
+                    BigDecimal bd = new BigDecimal(matrix[i][j]);
+                    bd = bd.round(new MathContext(3));
+                    writer.write("\t" + bd.doubleValue());
+                }
+            }
+            writer.close();
+        }catch(IOException e){
+            e.printStackTrace(System.out);
+        }
+    }
+    
+    // this method is meant for debugging perpose only
     public static void printArray(double[] array){
         for(int i=0;i<array.length;i++)
             System.out.println(array[i]);
     }
     
+    // this method is meant for debugging perpose only
     public static void printDoubleArray(double[][] array){
         int row = array.length;
         int col = array[0].length;

@@ -70,15 +70,17 @@ public class PCA extends AbstractTask{
                     attrArray[att++] = "node."+attribute;
             }
             
-            RunPCA runPCA = new RunPCA(network, networkView, context, monitor, attrArray);
+            
             if(context.inputValue.getSelectedValue().equals("Distance Matric") && 
                     context.pcaType.getSelectedValue().equals("PCA of input weight between nodes")){
-                    runPCA.runOnNodeToNodeDistanceMatric();
+                RunPCANetwork runPCA = new RunPCANetwork(network, networkView, context, monitor, attrArray);
+                runPCA.computePCA();
             }else if(context.inputValue.getSelectedValue().equals("Distance Matric") && 
                     context.pcaType.getSelectedValue().equals("PCA of nodes and attributes") ){
-                    runPCA.runOnNodeToAttributeMatric();
+                RunPCANodeAttributes runPCA = new RunPCANodeAttributes(network, networkView, context, monitor, attrArray);
+                runPCA.computePCA();
             }else if(context.inputValue.getSelectedValue().equals("Edge Value")){
-                runPCA.runOnEdgeValues();
+                
             }
         }
 }
