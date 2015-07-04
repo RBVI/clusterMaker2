@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.pcaAttributes;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.pcaDistanceMetric;
 
 import java.util.List;
 import org.cytoscape.application.CyApplicationManager;
@@ -20,21 +20,20 @@ import org.cytoscape.work.Tunable;
  *
  * @author root
  */
-public class PCANodeAttibutes extends AbstractTask {
-    
+public class PCADistanceMetric extends AbstractTask{
         CyServiceRegistrar bc;
         private final CyApplicationManager appManager;
         public static String SHORTNAME = "pca";
-	public static String NAME = "PCA of Node Attributes";
+	public static String NAME = "PCA of Distance Metric";
         private final CyNetworkView networkView;
         
         @Tunable(description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
         
         @ContainsTunables
-        public PCANodeAttributesContext context = null;
+        public PCADistanceMetricContext context = null;
         
-        public PCANodeAttibutes(PCANodeAttributesContext context, CyServiceRegistrar bc){
+        public PCADistanceMetric(PCADistanceMetricContext context, CyServiceRegistrar bc){
             this.context = context;
             this.appManager = bc.getService(CyApplicationManager.class);
             this.networkView = appManager.getCurrentNetworkView();
@@ -69,7 +68,7 @@ public class PCANodeAttibutes extends AbstractTask {
                     attrArray[att++] = "node."+attribute;
             }
             
-            RunPCANodeAttributes runPCA = new RunPCANodeAttributes(network, networkView, context, monitor, attrArray);
+            RunPCADistanceMetric runPCA = new RunPCADistanceMetric(network, networkView, context, monitor, attrArray);
             runPCA.computePCA();
         }
 }

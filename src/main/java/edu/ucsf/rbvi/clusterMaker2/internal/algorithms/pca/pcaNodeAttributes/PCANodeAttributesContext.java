@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.pcaAttributes;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.pcaNodeAttributes;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 import java.util.List;

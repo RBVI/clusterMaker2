@@ -1,41 +1,17 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters;
 
 
-import java.awt.Button;
-import java.awt.Dialog.ModalityType;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
-import javax.swing.text.html.HTMLDocument.Iterator;
-
-
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.work.AbstractTunableHandler;
-import org.cytoscape.work.BasicTunableHandlerFactory;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.AbstractTunableInterceptor;
 import org.cytoscape.work.swing.RequestsUIHelper;
 import org.cytoscape.work.swing.TunableUIHelper;
 import org.cytoscape.work.util.BoundedDouble;
 import org.cytoscape.work.util.ListSingleSelection;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeWeightConverter;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.DistanceConverter1;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.DistanceConverter2;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.LogConverter;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.NegLogConverter;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.NoneConverter;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.SCPSConverter;
-
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.ThresholdHeuristic;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.HistogramDialog;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.HistoChangeListener;
@@ -54,7 +30,7 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 	
 	private ListSingleSelection<String> attribute ;
 	
-	@Tunable(description = "Array Sources", groups={"Source for array data"}, params="displayState=expanded", gravity=10.0)
+	@Tunable(description = "Array Sources", groups={"Source for array data"}, gravity=10.0)
 	public ListSingleSelection<String> getattribute(){
 		attribute = ModelUtils.updateEdgeAttributeList(network, attribute);
 		return attribute;

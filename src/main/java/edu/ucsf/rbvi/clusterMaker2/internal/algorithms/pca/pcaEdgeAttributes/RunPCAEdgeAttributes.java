@@ -3,11 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.pcaNetwork;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.pcaEdgeAttributes;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ComputationMatrix;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.PCAContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ResultPanelPCA;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.RunPCA;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ScatterPlotPCA;
@@ -19,28 +18,24 @@ import org.cytoscape.work.TaskMonitor;
  *
  * @author root
  */
-public class RunPCANetwork implements RunPCA{
+public class RunPCAEdgeAttributes implements RunPCA{
     private final CyNetwork network;
     private final CyNetworkView networkView;
-    private final PCAContext context;
+    private final PCAEdgeAttributesContext context;
     private final TaskMonitor monitor;
-    private final String[] weightAttributes;
-    private boolean ignoreMissing;
-    private boolean selectedOnly;
     private double[][] distanceMatrix;
     
-    public RunPCANetwork(CyNetwork network, CyNetworkView networkView, PCAContext context, TaskMonitor monitor, String[] weightAttributes){
+    public RunPCAEdgeAttributes(CyNetwork network, CyNetworkView networkView, PCAEdgeAttributesContext context, TaskMonitor monitor){
         this.network = network;
         this.networkView = networkView;
         this.context = context;
         this.monitor = monitor;
-        this.weightAttributes = weightAttributes;
     }
     
     public void computePCA(){
-        Matrix matrix = new Matrix(network, weightAttributes, false, context.ignoreMissing, context.selectedOnly);
+        Matrix matrix = new Matrix(network, null, false, context.ignoreMissing, context.selectedOnly);
         matrix.setUniformWeights();
-        distanceMatrix = matrix.getDistanceMatrix(context.distanceMetric.getSelectedValue());
+        distanceMatrix = matrix.getMatrix2DArray();
         ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
 
         ComputationMatrix[] components = this.computePCs(mat);
@@ -49,7 +44,7 @@ public class RunPCANetwork implements RunPCA{
             ResultPanelPCA.createAndShowGui(components, matrix.getNodes(), network, networkView, mat.computeVariance());
         
         if(context.pcaPlot)
-            ScatterPlotPCA.createAndShowGui(components, mat.computeVariance());                
+            ScatterPlotPCA.createAndShowGui(components, mat.computeVariance());
     }
     
     public ComputationMatrix[] computePCs(ComputationMatrix matrix){
@@ -109,5 +104,6 @@ public class RunPCANetwork implements RunPCA{
         }
 
         return components;
-    }    
+    }
+    
 }

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.pcaDistanceMetric;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
@@ -17,17 +17,17 @@ import org.cytoscape.work.TaskIterator;
  *
  * @author root
  */
-public class PCATaskFactory extends AbstractClusterTaskFactory{
+public class PCADistanceMetricTaskFactory extends AbstractClusterTaskFactory{
         CyServiceRegistrar bc;
-        PCAContext context = null;
+        PCADistanceMetricContext context = null;
     
-        public PCATaskFactory(CyServiceRegistrar bc){
-            context = new PCAContext();
+        public PCADistanceMetricTaskFactory(CyServiceRegistrar bc){
+            context = new PCADistanceMetricContext();
             this.bc = bc;
         }
     
-        public String getShortName() {return PCA.SHORTNAME;};
-	public String getName() {return PCA.NAME;};
+        public String getShortName() {return PCADistanceMetric.SHORTNAME;};
+	public String getName() {return PCADistanceMetric.NAME;};
 
 	public ClusterViz getVisualizer() {
 		// return new NewNetworkView(true);
@@ -43,7 +43,6 @@ public class PCATaskFactory extends AbstractClusterTaskFactory{
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new PCA(context, bc));
+		return new TaskIterator(new PCADistanceMetric(context, bc));
 	}
-    
 }
