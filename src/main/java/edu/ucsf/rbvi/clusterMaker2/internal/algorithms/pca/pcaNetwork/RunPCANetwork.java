@@ -3,9 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.pcaNetwork;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ComputationMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.PCAContext;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ResultPanelPCA;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.RunPCA;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ScatterPlotPCA;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
@@ -14,7 +19,7 @@ import org.cytoscape.work.TaskMonitor;
  *
  * @author root
  */
-public class RunPCANodeAttributes {    
+public class RunPCANetwork implements RunPCA{
     private final CyNetwork network;
     private final CyNetworkView networkView;
     private final PCAContext context;
@@ -24,7 +29,7 @@ public class RunPCANodeAttributes {
     private boolean selectedOnly;
     private double[][] distanceMatrix;
     
-    public RunPCANodeAttributes(CyNetwork network, CyNetworkView networkView, PCAContext context, TaskMonitor monitor, String[] weightAttributes){
+    public RunPCANetwork(CyNetwork network, CyNetworkView networkView, PCAContext context, TaskMonitor monitor, String[] weightAttributes){
         this.network = network;
         this.networkView = networkView;
         this.context = context;
@@ -34,19 +39,21 @@ public class RunPCANodeAttributes {
     
     public void computePCA(){
         Matrix matrix = new Matrix(network, weightAttributes, false, context.ignoreMissing, context.selectedOnly);
-        double[][] matrixArray = matrix.toArray();
-        ComputationMatrix mat = new ComputationMatrix(matrixArray);
+        matrix.setUniformWeights();
+        distanceMatrix = matrix.getDistanceMatrix(context.distanceMetric.getSelectedValue());
+        ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
 
-        ComputationMatrix[] components = this.computePCsSorted(mat);
-
+        ComputationMatrix[] components = this.computePCs(mat);
+        
         if(context.pcaResultPanel)
             ResultPanelPCA.createAndShowGui(components, matrix.getNodes(), network, networkView, mat.computeVariance());
         
         if(context.pcaPlot)
-            ScatterPlotPCA.createAndShowGui(components, mat.computeVariance());
+            ScatterPlotPCA.createAndShowGui(components, mat.computeVariance());                
     }
-
+    
     public ComputationMatrix[] computePCs(ComputationMatrix matrix){
+
         ComputationMatrix mat = matrix.centralizeColumns();
 
         ComputationMatrix C = mat.covariance();
@@ -63,7 +70,7 @@ public class RunPCANodeAttributes {
                 w[i] = vectors[i][j];
             }
 
-            components[k] = ComputationMatrix.multiplyMatrixWithArray(mat, w);
+            components[k] = mat.multiplyMatrix(ComputationMatrix.multiplyArray(w, w));
 
             System.out.println("PC: " + k);
             components[k].printMatrix();
@@ -72,7 +79,7 @@ public class RunPCANodeAttributes {
     }
     
     public ComputationMatrix[] computePCsSorted(ComputationMatrix matrix){
-
+        
         ComputationMatrix mat = matrix.centralizeColumns();
 
         ComputationMatrix C = mat.covariance();
@@ -97,10 +104,10 @@ public class RunPCANodeAttributes {
                 w[i] = vectors[i][pos];
             }
 
-            components[j] = ComputationMatrix.multiplyMatrixWithArray(mat, w);
+            components[j] = mat.multiplyMatrix(ComputationMatrix.multiplyArray(w, w));
             max = value;
         }
 
         return components;
-    }
+    }    
 }

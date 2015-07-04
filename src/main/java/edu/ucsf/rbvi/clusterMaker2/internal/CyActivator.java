@@ -27,8 +27,6 @@ import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BiMine.BiMineTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BicFinder.BicFinderTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.ChengChurch.ChengChurchTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DBSCAN.DBSCANTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.autosome.AutoSOMETaskFactory;
@@ -56,6 +54,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.SCPS.SC
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.TransClustClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.PCAMenuTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.PCATaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.pcaAttributes.PCANodeAttributesTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterVizFactory;
 // Algorithms
@@ -180,6 +179,7 @@ public class CyActivator extends AbstractCyActivator {
                 // Principal Component Analysis
                 registerService(bc, new PCAMenuTaskFactory(), ClusterTaskFactory.class, new Properties());
                 registerService(bc, new PCATaskFactory(serviceRegistrar), ClusterTaskFactory.class, new Properties());
+                registerService(bc, new PCANodeAttributesTaskFactory(serviceRegistrar), ClusterTaskFactory.class, new Properties());
 
 		// Link Network Selections
 		LinkSelectionTaskFactory linkTaskFactory = new LinkSelectionTaskFactory(clusterManager);

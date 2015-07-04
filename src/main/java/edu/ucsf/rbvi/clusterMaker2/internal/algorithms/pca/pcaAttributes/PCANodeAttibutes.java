@@ -3,11 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.pcaAttributes;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.pcaAttributes.RunPCANodeAttributes;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.pcaNetwork.RunPCANetwork;
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import java.util.List;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
@@ -23,21 +20,21 @@ import org.cytoscape.work.Tunable;
  *
  * @author root
  */
-public class PCA extends AbstractTask{
+public class PCANodeAttibutes extends AbstractTask {
+    
         CyServiceRegistrar bc;
-        private CyApplicationManager appManager;
+        private final CyApplicationManager appManager;
         public static String SHORTNAME = "pca";
-	public static String NAME = "Principal Component Analysis";
-        private List<String>attrList;       
-        private CyNetworkView networkView;
+	public static String NAME = "PCA of Node Attributes";
+        private final CyNetworkView networkView;
         
         @Tunable(description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
         
         @ContainsTunables
-        public PCAContext context = null;
+        public PCANodeAttributesContext context = null;
         
-        public PCA(PCAContext context, CyServiceRegistrar bc){
+        public PCANodeAttibutes(PCANodeAttributesContext context, CyServiceRegistrar bc){
             this.context = context;
             this.appManager = bc.getService(CyApplicationManager.class);
             this.networkView = appManager.getCurrentNetworkView();
@@ -72,13 +69,7 @@ public class PCA extends AbstractTask{
                     attrArray[att++] = "node."+attribute;
             }
             
-            
-            if(context.inputValue.getSelectedValue().equals("Distance Matric") && 
-                    context.pcaType.getSelectedValue().equals("PCA of input weight between nodes")){
-                RunPCANetwork runPCA = new RunPCANetwork(network, networkView, context, monitor, attrArray);
-                runPCA.computePCA();
-            }else if(context.inputValue.getSelectedValue().equals("Edge Value")){
-                
-            }
+            RunPCANodeAttributes runPCA = new RunPCANodeAttributes(network, networkView, context, monitor, attrArray);
+            runPCA.computePCA();
         }
 }
