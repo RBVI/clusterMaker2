@@ -5,7 +5,7 @@
  */
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.pcaEdgeAttributes;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ComputationMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ResultPanelPCA;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.RunPCA;
@@ -33,9 +33,8 @@ public class RunPCAEdgeAttributes implements RunPCA{
     }
     
     public void computePCA(){
-        Matrix matrix = new Matrix(network, null, false, context.ignoreMissing, context.selectedOnly);
-        matrix.setUniformWeights();
-        distanceMatrix = matrix.getMatrix2DArray();
+        DistanceMatrix matrix = context.edgeAttributeHandler.getMatrix();
+        distanceMatrix = matrix.getDistanceMatrix().toArray();
         ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
 
         ComputationMatrix[] components = this.computePCs(mat);
