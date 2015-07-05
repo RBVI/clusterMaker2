@@ -7,13 +7,10 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.pcaDistanceMetric;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BaseMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 import java.util.List;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.swing.TunableUIHelper;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
@@ -35,7 +32,7 @@ public class PCADistanceMetricContext {
 	public boolean ignoreMissing = true;
         
         
-        @Tunable(description="Node attributes for PCA", groups="Source for Distance Matric", params="displayState=expanded",
+        @Tunable(description="Node attributes for PCA", groups="Source for Distance Matric",
 	         tooltip="You must choose at least 2 node columns for an attribute PCA", gravity=9.0 )
 	public ListMultipleSelection<String> nodeAttributeList = null;
         

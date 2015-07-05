@@ -16,9 +16,7 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -47,17 +45,17 @@ public class ResultPanelPCA extends JPanel{
     
         private final List<CyNode> nodeList;
         private final CyNetwork network;
-        private CyNetworkView networkView;
+        private final CyNetworkView networkView;
         private final ComputationMatrix[] components;
 
         // table size parameters
         private static final int graphPicSize = 80;
         private static final int defaultRowHeight = graphPicSize + 8;
         
-        private ResultPanelPCA.PCBrowserPanel pcBrowserPanel;
-        private List<Integer> nodeCount = new ArrayList<Integer>();
+        private final ResultPanelPCA.PCBrowserPanel pcBrowserPanel;
+        private final List<Integer> nodeCount = new ArrayList<Integer>();
         private static double[] varianceArray;
-        private List<List<CyNode>> nodeListArray;
+        private final List<List<CyNode>> nodeListArray;
         
         private static JFrame frame;
 

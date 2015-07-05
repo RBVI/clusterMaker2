@@ -24,7 +24,7 @@ public class PCADistanceMetric extends AbstractTask{
         CyServiceRegistrar bc;
         private final CyApplicationManager appManager;
         public static String SHORTNAME = "pca";
-	public static String NAME = "PCA of Distance Metric";
+	public static String NAME = "PCA of Network (Based on Distance Metric)";
         private final CyNetworkView networkView;
         
         @Tunable(description="Network to cluster", context="nogui")
