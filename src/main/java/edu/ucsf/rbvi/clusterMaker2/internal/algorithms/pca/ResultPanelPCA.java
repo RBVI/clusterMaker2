@@ -96,7 +96,7 @@ public class ResultPanelPCA extends JPanel{
 
 			JLabel summary = new JLabel("<html>"+"here is the summery"+"</html>");
 			summary.setBorder(border);
-			add(summary, BorderLayout.NORTH);
+			//add(summary, BorderLayout.NORTH);
 
 			// main data table
 			browserModel = new ResultPanelPCA.PCBrowserTableModel();
@@ -113,11 +113,9 @@ public class ResultPanelPCA extends JPanel{
 			rowSM.addListSelectionListener(this);
 
 			JScrollPane tableScrollPane = new JScrollPane(table);
-			//System.out.println("CBP: after creating JScrollPane");
 			tableScrollPane.getViewport().setBackground(Color.WHITE);
 
 			add(tableScrollPane, BorderLayout.CENTER);
-			//System.out.println("CBP: after adding JScrollPane");
 
 			JButton dispose = new JButton("Close");
 			dispose.addActionListener(new AbstractAction() {
@@ -163,10 +161,8 @@ public class ResultPanelPCA extends JPanel{
                             nodeView.setVisualProperty(BasicVisualLexicon.NODE_SIZE, nodeView.getVisualProperty(BasicVisualLexicon.NODE_SIZE) + 10);
                             System.out.println(node.getSUID() + " setting selected");
                         }
-
-			// I wish we didn't need to do this, but if we don't, the selection
-			// doesn't update
-			networkView.updateView();
+	
+		networkView.updateView();
 		}
 	}
     
