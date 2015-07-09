@@ -56,6 +56,7 @@ public class ResultPanelPCA extends JPanel{
         private final List<Integer> nodeCount = new ArrayList<Integer>();
         private static double[] varianceArray;
         private final List<List<CyNode>> nodeListArray;
+        private int lastSelectedPC = -1;
         
         private static JFrame frame;
 
@@ -148,21 +149,16 @@ public class ResultPanelPCA extends JPanel{
 		}
 
 		public void valueChanged(ListSelectionEvent e) {
-			
-                        for(CyNode node: nodeListArray.get(e.getFirstIndex())){
-                            View<CyNode> nodeView = networkView.getNodeView(node);
-                            if(nodeView.isValueLocked(BasicVisualLexicon.NODE_SELECTED)){
-                                nodeView.clearValueLock(BasicVisualLexicon.NODE_SELECTED);
+                        if(lastSelectedPC != -1){
+                            for(CyNode node: nodeListArray.get(lastSelectedPC)){
+                                network.getRow(node).set(CyNetwork.SELECTED, false);
                             }
-                            nodeView.setVisualProperty(BasicVisualLexicon.NODE_SELECTED, true);
-                            if(nodeView.isValueLocked(BasicVisualLexicon.NODE_SIZE)){
-                                nodeView.clearValueLock(BasicVisualLexicon.NODE_SIZE);
-                            }
-                            nodeView.setVisualProperty(BasicVisualLexicon.NODE_SIZE, nodeView.getVisualProperty(BasicVisualLexicon.NODE_SIZE) + 10);
-                            System.out.println(node.getSUID() + " setting selected");
                         }
-	
-		networkView.updateView();
+                        for(CyNode node: nodeListArray.get(e.getFirstIndex())){
+                            network.getRow(node).set(CyNetwork.SELECTED, true);
+                        }
+                        lastSelectedPC = e.getFirstIndex();
+                        networkView.updateView();
 		}
 	}
     
