@@ -8,6 +8,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.pcaNodeAttributes;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ComputationMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ResultPanelPCA;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.RunPCA;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ScatterPlotPCA;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
@@ -40,7 +41,7 @@ public class RunPCANodeAttributes {
         ComputationMatrix[] components = this.computePCsSorted(mat);
 
         if(context.pcaResultPanel)
-            ResultPanelPCA.createAndShowGui(components, matrix.getNodes(), network, networkView, mat.computeVariance());
+            ResultPanelPCA.createAndShowGui(components, matrix.getNodes(), network, networkView, RunPCA.PCA_NODE_ATTRIBUTES,mat.computeVariance());
         
         if(context.pcaPlot)
             ScatterPlotPCA.createAndShowGui(components, mat.computeVariance());
@@ -64,9 +65,6 @@ public class RunPCANodeAttributes {
             }
 
             components[k] = ComputationMatrix.multiplyMatrixWithArray(mat, w);
-
-            System.out.println("PC: " + k);
-            components[k].printMatrix();
         }
         return components;
     }

@@ -63,7 +63,8 @@ public class ResultPanelPCA extends JPanel{
         public ResultPanelPCA(final ComputationMatrix[] components,
                 final List<CyNode> nodeList,
                 final CyNetwork network, 
-                final CyNetworkView networkView){
+                final CyNetworkView networkView,
+                final int pcaType){
 
                 this.nodeList = nodeList;
                 this.network = network;
@@ -271,9 +272,10 @@ public class ResultPanelPCA extends JPanel{
                 final List<CyNode> nodeList,
                 final CyNetwork network, 
                 final CyNetworkView networkView,
+                final int pcaType,
                 final double[] varianceArray){
             ResultPanelPCA.varianceArray = varianceArray;
-            ResultPanelPCA resultPanelPCA = new ResultPanelPCA(components, nodeList,network, networkView);
+            ResultPanelPCA resultPanelPCA = new ResultPanelPCA(components, nodeList,network, networkView, pcaType);
             frame = new JFrame("Result Panel");
             
             frame.getContentPane().add(resultPanelPCA);

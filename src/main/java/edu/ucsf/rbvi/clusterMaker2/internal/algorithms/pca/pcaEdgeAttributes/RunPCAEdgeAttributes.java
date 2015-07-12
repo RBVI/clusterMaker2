@@ -39,8 +39,10 @@ public class RunPCAEdgeAttributes implements RunPCA{
 
         ComputationMatrix[] components = this.computePCs(mat);
         
+        System.out.println("columns: " + mat.nColumn() + " rows: " + mat.nRow() );
+        System.out.println("number of components: " + components.length);
         if(context.pcaResultPanel)
-            ResultPanelPCA.createAndShowGui(components, matrix.getNodes(), network, networkView, mat.computeVariance());
+            ResultPanelPCA.createAndShowGui(components, matrix.getNodes(), network, networkView, RunPCA.PCA_EDGE_ATTRIBUTES ,mat.computeVariance());
         
         if(context.pcaPlot)
             ScatterPlotPCA.createAndShowGui(components, mat.computeVariance());
@@ -65,9 +67,6 @@ public class RunPCAEdgeAttributes implements RunPCA{
             }
 
             components[k] = mat.multiplyMatrix(ComputationMatrix.multiplyArray(w, w));
-
-            System.out.println("PC: " + k);
-            components[k].printMatrix();
         }
         return components;
     }

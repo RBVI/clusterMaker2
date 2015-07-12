@@ -43,7 +43,7 @@ public class RunPCADistanceMetric implements RunPCA{
         ComputationMatrix[] components = this.computePCs(mat);
         
         if(context.pcaResultPanel)
-            ResultPanelPCA.createAndShowGui(components, matrix.getNodes(), network, networkView, mat.computeVariance());
+            ResultPanelPCA.createAndShowGui(components, matrix.getNodes(), network, networkView, RunPCA.PCA_DISTANCE_METRIC,mat.computeVariance());
         
         if(context.pcaPlot)
             ScatterPlotPCA.createAndShowGui(components, mat.computeVariance());                
@@ -68,9 +68,6 @@ public class RunPCADistanceMetric implements RunPCA{
             }
 
             components[k] = mat.multiplyMatrix(ComputationMatrix.multiplyArray(w, w));
-
-            System.out.println("PC: " + k);
-            components[k].printMatrix();
         }
         return components;
     }
