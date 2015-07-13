@@ -41,7 +41,7 @@ public class RunPCANodeAttributes {
         ComputationMatrix[] components = this.computePCsSorted(mat);
 
         if(context.pcaResultPanel)
-            ResultPanelPCA.createAndShowGui(components, matrix.getNodes(), network, networkView, RunPCA.PCA_NODE_ATTRIBUTES,mat.computeVariance());
+            ResultPanelPCA.createAndShowGui(components, matrix.getNodes(), null,network, networkView, RunPCA.PCA_NODE_ATTRIBUTES,mat.computeVariance());
         
         if(context.pcaPlot)
             ScatterPlotPCA.createAndShowGui(components, mat.computeVariance());

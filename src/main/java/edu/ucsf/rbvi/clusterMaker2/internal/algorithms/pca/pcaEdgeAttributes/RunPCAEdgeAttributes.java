@@ -10,6 +10,10 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ComputationMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ResultPanelPCA;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.RunPCA;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ScatterPlotPCA;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
+import java.util.ArrayList;
+import java.util.List;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
@@ -38,11 +42,9 @@ public class RunPCAEdgeAttributes implements RunPCA{
         ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
 
         ComputationMatrix[] components = this.computePCs(mat);
-        
-        System.out.println("columns: " + mat.nColumn() + " rows: " + mat.nRow() );
-        System.out.println("number of components: " + components.length);
+                
         if(context.pcaResultPanel)
-            ResultPanelPCA.createAndShowGui(components, matrix.getNodes(), network, networkView, RunPCA.PCA_EDGE_ATTRIBUTES ,mat.computeVariance());
+            ResultPanelPCA.createAndShowGui(components, matrix.getNodes(), this.getEdges(), network, networkView, RunPCA.PCA_EDGE_ATTRIBUTES ,mat.computeVariance());
         
         if(context.pcaPlot)
             ScatterPlotPCA.createAndShowGui(components, mat.computeVariance());
@@ -102,6 +104,23 @@ public class RunPCAEdgeAttributes implements RunPCA{
         }
 
         return components;
+    }
+    
+    private List<CyEdge> getEdges(){
+        List<CyEdge>edgeList = network.getEdgeList();
+        List<CyEdge>resultEdgeList = new ArrayList<CyEdge>();
+        for (CyEdge edge: edgeList) {
+				if (context.selectedOnly && !network.getRow(edge).get(CyNetwork.SELECTED, Boolean.class))
+					continue;
+
+//				Double val = ModelUtils.getNumericValue(network, edge, context.edgeAttributeHandler.getattribute().getSelectedValue());
+//				if (context.ignoreMissing && val == null)
+//					continue;
+//                                                              
+                                resultEdgeList.add(edge);
+			}
+        
+        return resultEdgeList;
     }
     
 }

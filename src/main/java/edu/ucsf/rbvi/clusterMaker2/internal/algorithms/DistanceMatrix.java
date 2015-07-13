@@ -1,29 +1,21 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 // Cytoscape imports
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.TunableHandler;
-import org.cytoscape.work.TaskMonitor;
 
 import cern.colt.function.tdouble.IntIntDoubleFunction;
 import cern.colt.matrix.tdouble.DoubleFactory2D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeWeightConverter;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
@@ -401,7 +393,7 @@ public class DistanceMatrix {
 	    }
 	  }
 
-		List<CyEdge> getConnectingEdges(CyNetwork network, List<CyNode> nodes) {
+        	List<CyEdge> getConnectingEdges(CyNetwork network, List<CyNode> nodes) {
 			List<CyEdge> edgeList = new ArrayList<CyEdge>();
 			for (int rowIndex = 0; rowIndex < nodes.size(); rowIndex++) {
 				for (int colIndex = rowIndex; colIndex < nodes.size(); colIndex++) {
