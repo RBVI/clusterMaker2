@@ -162,13 +162,31 @@ public class ResultPanelPCA extends JPanel{
 		}
 
 		public void valueChanged(ListSelectionEvent e) {
-                        if(lastSelectedPC != -1){
-                            for(CyNode node: nodeListArray.get(lastSelectedPC)){
-                                network.getRow(node).set(CyNetwork.SELECTED, false);
+                        if(pcaType == RunPCA.PCA_NODE_ATTRIBUTES){
+                            if(lastSelectedPC != -1){
+                                for(CyNode node: nodeListArray.get(lastSelectedPC)){
+                                    network.getRow(node).set(CyNetwork.SELECTED, false);
+                                }
                             }
-                        }
-                        for(CyNode node: nodeListArray.get(e.getFirstIndex())){
-                            network.getRow(node).set(CyNetwork.SELECTED, true);
+                            for(CyNode node: nodeListArray.get(e.getFirstIndex())){
+                                network.getRow(node).set(CyNetwork.SELECTED, true);
+                            }
+                        }else if(pcaType == RunPCA.PCA_EDGE_ATTRIBUTES){
+                            if(lastSelectedPC != -1){
+                                for(CyEdge edge: edgeList){
+                                    network.getRow(edge).set(CyNetwork.SELECTED, false);
+                                }
+                            }
+                            System.out.println("Changing edge selection: " + edgeList.size());
+                            for(CyEdge edge: edgeList){
+                                if(mapSourceTarget.containsKey(edge.getSource())){
+                                    System.out.println("Key found");
+                                    if(mapSourceTarget.get(edge.getSource()) == edge.getTarget()){
+                                        System.out.println("Target found");
+                                        network.getRow(edge).set(CyNetwork.SELECTED, true);
+                                    }
+                                }
+                            }
                         }
                         lastSelectedPC = e.getFirstIndex();
                         networkView.updateView();
@@ -339,7 +357,7 @@ public class ResultPanelPCA extends JPanel{
             int newY = image.getHeight(this)/2;
             int count = 0;
             g.setColor(Color.BLACK);
-            g.setStroke(new BasicStroke(2));
+            g.setStroke(new BasicStroke(1));
             for(int i=0;i<sourcePoints.size();i++){
                 Point source = sourcePoints.get(i);
                 Point target = targetPoints.get(i);
