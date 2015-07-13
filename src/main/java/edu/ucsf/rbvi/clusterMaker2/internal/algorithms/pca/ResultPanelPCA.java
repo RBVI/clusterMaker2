@@ -62,7 +62,7 @@ public class ResultPanelPCA extends JPanel{
         private final List<Integer> edgeCount = new ArrayList<Integer>();
         private static double[] varianceArray;
         private final List<List<CyNode>> nodeListArray;
-        private final Map<CyNode,CyNode> mapSourceTarget;
+        private final List<Map<CyNode,CyNode>> edgeMapArray;
         private int lastSelectedPC = -1;
         private int pcaType = -1;
         
@@ -82,7 +82,7 @@ public class ResultPanelPCA extends JPanel{
                 this.components = components;
                 this.pcaType = pcaType;
                 nodeListArray = new ArrayList<List<CyNode>>();
-                mapSourceTarget = new HashMap<CyNode, CyNode>();
+                edgeMapArray = new ArrayList<Map<CyNode,CyNode>>();
                 this.pcBrowserPanel = new PCBrowserPanel();
                 add(pcBrowserPanel, BorderLayout.CENTER);
 		this.setSize(this.getMinimumSize());
@@ -178,10 +178,11 @@ public class ResultPanelPCA extends JPanel{
                                 }
                             }
                             System.out.println("Changing edge selection: " + edgeList.size());
+                            Map<CyNode, CyNode> edgeMap = edgeMapArray.get(e.getFirstIndex());
                             for(CyEdge edge: edgeList){
-                                if(mapSourceTarget.containsKey(edge.getSource())){
+                                if(edgeMap.containsKey(edge.getSource())){
                                     System.out.println("Key found");
-                                    if(mapSourceTarget.get(edge.getSource()) == edge.getTarget()){
+                                    if(edgeMap.get(edge.getSource()) == edge.getTarget()){
                                         System.out.println("Target found");
                                         network.getRow(edge).set(CyNetwork.SELECTED, true);
                                     }
@@ -203,21 +204,18 @@ public class ResultPanelPCA extends JPanel{
 			data = new Object[components.length][columnNames.length];
 
 			for (int i = 0; i < components.length; i++) {
-                                
 				final Image image;
                                 String details = "";
-                                if(pcaType == RunPCA.PCA_NODE_ATTRIBUTES || pcaType == RunPCA.PCA_DISTANCE_METRIC){
-                                    image = createPCImage(components[i], graphPicSize, graphPicSize);
+                                if(pcaType == RunPCA.PCA_NODE_ATTRIBUTES){
+                                    image = createPCNodeImage(components[i], graphPicSize, graphPicSize);
                                     details += "Nodes: " + nodeCount.get(i) + "\n";
                                 }
                                 else{
-                                    //if(pcaType == RunPCA.PCA_EDGE_ATTRIBUTES){
                                     image = createPCEdgeImage(components[i], graphPicSize, graphPicSize);
                                     details += "Edges: " + edgeCount.get(i) + "\n";
                                 }
-				data[i][0] = image != null ? new ImageIcon(image) : new ImageIcon();
-                                
                                 details += "Variance: " + varianceArray[i] + "\n";
+				data[i][0] = image != null ? new ImageIcon(image) : new ImageIcon();
 				data[i][1] = new StringBuffer(details);
 			}
 		}
@@ -251,34 +249,35 @@ public class ResultPanelPCA extends JPanel{
 		}
 	}
     
-        public Image createPCImage(ComputationMatrix pc, final int height, final int width){
+        public Image createPCNodeImage(ComputationMatrix pc, final int height, final int width){
             final Image image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             final Graphics2D g = (Graphics2D) image.getGraphics();
             
             double threshold = 0.02;
             double cx = networkView.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION);
             double cy = networkView.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION);
-            List<Point> nodes = new ArrayList<Point>();
-            List<CyNode> nodesList = new ArrayList<CyNode>();
+            List<Point> points = new ArrayList<Point>();
+            List<CyNode> relatedNodes = new ArrayList<CyNode>();
             for(int i=0;i<pc.nRow();i++){
                 for(int j=0;j<pc.nColumn();j++){
                     if(pc.getCell(i, j) > threshold){
                         Double x = networkView.getNodeView(network.getNodeList().get(i)).getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
                         Double y = networkView.getNodeView(network.getNodeList().get(i)).getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
-                        //System.out.println("x: " + x + " y: " + y);
+
                         double newx = x-cx;
                         double newy = y-cy;
-                        nodes.add(new Point((int)newx, (int)newy));
-                        nodesList.add(this.nodeList.get(i));
+                        points.add(new Point((int)newx, (int)newy));
+
+                        relatedNodes.add(this.nodeList.get(i));
                     }
                 }
             }
-            nodeListArray.add(nodesList);
+            nodeListArray.add(relatedNodes);
             int maxX = Integer.MIN_VALUE;
             int maxY = Integer.MIN_VALUE;
             int minX = Integer.MAX_VALUE;
             int minY = Integer.MAX_VALUE;
-            for(Point p:nodes){
+            for(Point p:points){
                 if(maxX < p.x)
                     maxX = p.x;
                 if(maxY < p.y)
@@ -296,7 +295,7 @@ public class ResultPanelPCA extends JPanel{
             int newY = image.getHeight(this)/2;
             int count = 0;
             g.setColor(Color.BLACK);
-            for(Point p:nodes){
+            for(Point p:points){
                 int x1 = (int) (p.x*xScale + newX);
                 int y1 = (int) (-1*(p.y*yScale - newY));
                 g.fillOval(x1, y1, 2, 2);
@@ -315,6 +314,7 @@ public class ResultPanelPCA extends JPanel{
             double cy = networkView.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION);
             List<Point> sourcePoints = new ArrayList<Point>();
             List<Point> targetPoints = new ArrayList<Point>();
+            HashMap<CyNode, CyNode> edgeMap = new HashMap<CyNode, CyNode>();
             for(int i=0;i<pc.nRow();i++){
                 for(int j=0;j<pc.nColumn();j++){
                     if(pc.getCell(i, j) > threshold){
@@ -330,11 +330,11 @@ public class ResultPanelPCA extends JPanel{
                         sourcePoints.add(new Point((int)newxi, (int)newyi));
                         targetPoints.add(new Point((int)newxj, (int)newyj));
                         
-                        mapSourceTarget.put(nodeList.get(i), nodeList.get(j));
+                        edgeMap.put(nodeList.get(i), nodeList.get(j));
                     }
                 }
             }
-            
+            edgeMapArray.add(edgeMap);
             int maxX = Integer.MIN_VALUE;
             int maxY = Integer.MIN_VALUE;
             int minX = Integer.MAX_VALUE;
