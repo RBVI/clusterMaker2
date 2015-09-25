@@ -60,12 +60,11 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.pdf.PdfContentByte;
-import com.lowagie.text.pdf.PdfWriter;
-import com.lowagie.text.pdf.DefaultFontMapper;
+import com.itextpdf.awt.DefaultFontMapper;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfWriter;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.ConfigNode;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.DataModel;
@@ -899,7 +898,7 @@ public class GraphicsExportPanel extends JPanel implements SettingsPanel {
 	}
 
 	private void pdfSave(String format) {
-		com.lowagie.text.Rectangle pageSize = PageSize.LETTER;
+		com.itextpdf.text.Rectangle pageSize = PageSize.LETTER;
 		Document document = new Document(pageSize);
 		try {
 			OutputStream output = new BufferedOutputStream(new FileOutputStream(getFile()));
@@ -926,7 +925,7 @@ public class GraphicsExportPanel extends JPanel implements SettingsPanel {
 	}
 
 	private void epsSave(String format) {
-		com.lowagie.text.Rectangle pageSize = PageSize.LETTER;
+		com.itextpdf.text.Rectangle pageSize = PageSize.LETTER;
 		Properties p = new Properties();
 		p.setProperty(PSGraphics2D.PAGE_SIZE,"Letter");
 		p.setProperty("org.freehep.graphicsio.AbstractVectorGraphicsIO.TEXT_AS_SHAPES",
@@ -955,7 +954,7 @@ public class GraphicsExportPanel extends JPanel implements SettingsPanel {
 	}
 
 	private void svgSave (String format) {
-		com.lowagie.text.Rectangle pageSize = PageSize.LETTER;
+		com.itextpdf.text.Rectangle pageSize = PageSize.LETTER;
 		Properties p = new Properties();
 		p.setProperty(PSGraphics2D.PAGE_SIZE,"Letter");
 		p.setProperty("org.freehep.graphicsio.AbstractVectorGraphicsIO.TEXT_AS_SHAPES",
