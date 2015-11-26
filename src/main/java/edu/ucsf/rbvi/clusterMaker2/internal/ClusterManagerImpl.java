@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.api.*;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
@@ -21,7 +22,6 @@ import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
@@ -30,13 +30,8 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskFactory;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterVizFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.NetworkSelectionLinker;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.ResultsPanel;
 
@@ -48,6 +43,7 @@ public class ClusterManagerImpl implements ClusterManager {
 	CyGroupManager groupMgr;
 	Map<String, ClusterTaskFactory> algMap;
 	Map<String, ClusterVizFactory> vizMap;
+	Map<String, RankingFactory> rankMap;
 	CyTableFactory tableFactory;
 	CyTableManager tableManager;
 	Map<CyRootNetwork, NetworkSelectionLinker> linkedNetworks;
@@ -56,6 +52,7 @@ public class ClusterManagerImpl implements ClusterManager {
 	double filterIndex = 100.0;
         double pcaIndex = 150.0;
 	double vizClusterIndex = 1.0;
+	double rankingIndex = 1.0;
 	Map<CyNetwork, List<ResultsPanel>> resultsPanelMap;
 
 	public ClusterManagerImpl(CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar,
@@ -67,6 +64,7 @@ public class ClusterManagerImpl implements ClusterManager {
 		this.groupMgr = groupMgr;
 		this.algMap = new HashMap<String, ClusterTaskFactory>();
 		this.vizMap = new HashMap<String, ClusterVizFactory>();
+		this.rankMap = new HashMap<String, RankingFactory>();
 		this.resultsPanelMap = new HashMap<CyNetwork, List<ResultsPanel>>();
 		this.tableFactory = tableFactory;
 		this.tableManager = tableManager;
@@ -78,10 +76,7 @@ public class ClusterManagerImpl implements ClusterManager {
 	}
 
 	public ClusterTaskFactory getAlgorithm(String name) {
-		if (algMap.containsKey(name)) {
-		 	return algMap.get(name);
-		}
-		return null;
+        return algMap.get(name);
 	}
 
 	public void addClusterAlgorithm(ClusterTaskFactory alg, Map props) {
@@ -149,6 +144,7 @@ public class ClusterManagerImpl implements ClusterManager {
 		return null;
 	}
 
+	// Find out a way to avoid this duplication??? ref method addRanking
 	public void addVisualizer(ClusterVizFactory viz) {
 		vizMap.put(viz.getName(), viz);
 
@@ -176,6 +172,37 @@ public class ClusterManagerImpl implements ClusterManager {
 	public void removeClusterVisualizer(ClusterVizFactory viz, Map props) {
 		removeVisualizer(viz);
 		serviceRegistrar.unregisterService(viz, TaskFactory.class);
+	}
+
+	// Check why we take this road
+	public void addRankingAlgorithm(RankingFactory ranking, Map props) {
+		addRanking(ranking);
+	}
+
+	// Check why we take this road
+	public void removeRankingAlgorithm(RankingFactory ranking, Map props) {
+		removeRanking(ranking);
+		serviceRegistrar.unregisterService(ranking, TaskFactory.class);
+	}
+
+	// Find out a way to avoid this duplication???
+	public void addRanking(RankingFactory rankingFactory) {
+		rankMap.put(rankingFactory.getName(), rankingFactory);
+
+		Properties props = new Properties();
+		props.setProperty(COMMAND, rankingFactory.getName());
+		props.setProperty(COMMAND_NAMESPACE, "rankingcluster");
+		props.setProperty(IN_MENU_BAR, "true");
+		props.setProperty(PREFERRED_MENU, "Apps.clusterMaker Ranking");
+		props.setProperty(TITLE, rankingFactory.getName());
+		rankingIndex += 1.0;
+		props.setProperty(MENU_GRAVITY, ""+rankingIndex);
+		serviceRegistrar.registerService(rankingFactory, TaskFactory.class, props);
+	}
+
+	public void removeRanking(RankingFactory rankingFactory) {
+		rankMap.remove(rankingFactory.getName());
+        serviceRegistrar.unregisterService(rankingFactory, TaskFactory.class);
 	}
 
 	public CyNetwork getNetwork() {

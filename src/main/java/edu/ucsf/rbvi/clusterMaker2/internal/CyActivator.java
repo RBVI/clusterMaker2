@@ -14,6 +14,7 @@ import static org.cytoscape.work.ServiceProperties.TITLE;
 import java.util.Properties;
 
 // Cytoscape imports
+import edu.ucsf.rbvi.clusterMaker2.internal.api.RankingFactory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.group.CyGroupFactory;
@@ -27,8 +28,6 @@ import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BiMine.BiMineTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BicFinder.BicFinderTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.ChengChurch.ChengChurchTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DBSCAN.DBSCANTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.autosome.AutoSOMETaskFactory;
@@ -100,6 +99,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerServiceListener(bc, clusterManager, "addClusterAlgorithm", "removeClusterAlgorithm", ClusterTaskFactory.class);
 		registerServiceListener(bc, clusterManager, "addClusterVisualizer", "removeClusterVisualizer", ClusterVizFactory.class);
+		registerServiceListener(bc, clusterManager, "addRankingAlgorithm", "removeRankingAlgorithm", RankingFactory.class);
 
 		// Register each of our algorithms
 		// Attribute clusterers
@@ -148,7 +148,10 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new MCODEClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new SCPSClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new TransClustClusterTaskFactory(clusterManager), 
-		                ClusterTaskFactory.class, new Properties());                
+		                ClusterTaskFactory.class, new Properties());
+
+		// Cluster ranking
+
 
 		// Filters
 		registerService(bc, new FilterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
