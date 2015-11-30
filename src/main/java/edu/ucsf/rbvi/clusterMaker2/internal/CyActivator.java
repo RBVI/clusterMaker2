@@ -14,7 +14,9 @@ import static org.cytoscape.work.ServiceProperties.TITLE;
 import java.util.Properties;
 
 // Cytoscape imports
-import edu.ucsf.rbvi.clusterMaker2.internal.api.RankingFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.SimpleRankTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.SimpleCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.RankFactory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.group.CyGroupFactory;
@@ -99,7 +101,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerServiceListener(bc, clusterManager, "addClusterAlgorithm", "removeClusterAlgorithm", ClusterTaskFactory.class);
 		registerServiceListener(bc, clusterManager, "addClusterVisualizer", "removeClusterVisualizer", ClusterVizFactory.class);
-		registerServiceListener(bc, clusterManager, "addRankingAlgorithm", "removeRankingAlgorithm", RankingFactory.class);
+		registerServiceListener(bc, clusterManager, "addRankingAlgorithm", "removeRankingAlgorithm", RankFactory.class);
 
 		// Register each of our algorithms
 		// Attribute clusterers
@@ -151,7 +153,7 @@ public class CyActivator extends AbstractCyActivator {
 		                ClusterTaskFactory.class, new Properties());
 
 		// Cluster ranking
-
+		registerService(bc, new SimpleCluster(clusterManager), SimpleRankTaskFactory.class, new Properties());
 
 		// Filters
 		registerService(bc, new FilterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());

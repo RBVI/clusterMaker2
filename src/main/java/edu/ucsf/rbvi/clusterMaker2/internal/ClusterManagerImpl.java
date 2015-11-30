@@ -43,7 +43,7 @@ public class ClusterManagerImpl implements ClusterManager {
 	CyGroupManager groupMgr;
 	Map<String, ClusterTaskFactory> algMap;
 	Map<String, ClusterVizFactory> vizMap;
-	Map<String, RankingFactory> rankMap;
+	Map<String, RankFactory> rankMap;
 	CyTableFactory tableFactory;
 	CyTableManager tableManager;
 	Map<CyRootNetwork, NetworkSelectionLinker> linkedNetworks;
@@ -64,7 +64,7 @@ public class ClusterManagerImpl implements ClusterManager {
 		this.groupMgr = groupMgr;
 		this.algMap = new HashMap<String, ClusterTaskFactory>();
 		this.vizMap = new HashMap<String, ClusterVizFactory>();
-		this.rankMap = new HashMap<String, RankingFactory>();
+		this.rankMap = new HashMap<String, RankFactory>();
 		this.resultsPanelMap = new HashMap<CyNetwork, List<ResultsPanel>>();
 		this.tableFactory = tableFactory;
 		this.tableManager = tableManager;
@@ -175,34 +175,34 @@ public class ClusterManagerImpl implements ClusterManager {
 	}
 
 	// Check why we take this road
-	public void addRankingAlgorithm(RankingFactory ranking, Map props) {
+	public void addRankingAlgorithm(RankFactory ranking, Map props) {
 		addRanking(ranking);
 	}
 
 	// Check why we take this road
-	public void removeRankingAlgorithm(RankingFactory ranking, Map props) {
+	public void removeRankingAlgorithm(RankFactory ranking, Map props) {
 		removeRanking(ranking);
 		serviceRegistrar.unregisterService(ranking, TaskFactory.class);
 	}
 
 	// Find out a way to avoid this duplication???
-	public void addRanking(RankingFactory rankingFactory) {
-		rankMap.put(rankingFactory.getName(), rankingFactory);
+	public void addRanking(RankFactory rankFactory) {
+		rankMap.put(rankFactory.getName(), rankFactory);
 
 		Properties props = new Properties();
-		props.setProperty(COMMAND, rankingFactory.getName());
+		props.setProperty(COMMAND, rankFactory.getName());
 		props.setProperty(COMMAND_NAMESPACE, "rankingcluster");
 		props.setProperty(IN_MENU_BAR, "true");
 		props.setProperty(PREFERRED_MENU, "Apps.clusterMaker Ranking");
-		props.setProperty(TITLE, rankingFactory.getName());
+		props.setProperty(TITLE, rankFactory.getName());
 		rankingIndex += 1.0;
 		props.setProperty(MENU_GRAVITY, ""+rankingIndex);
-		serviceRegistrar.registerService(rankingFactory, TaskFactory.class, props);
+		serviceRegistrar.registerService(rankFactory, TaskFactory.class, props);
 	}
 
-	public void removeRanking(RankingFactory rankingFactory) {
-		rankMap.remove(rankingFactory.getName());
-        serviceRegistrar.unregisterService(rankingFactory, TaskFactory.class);
+	public void removeRanking(RankFactory rankFactory) {
+		rankMap.remove(rankFactory.getName());
+        serviceRegistrar.unregisterService(rankFactory, TaskFactory.class);
 	}
 
 	public CyNetwork getNetwork() {
