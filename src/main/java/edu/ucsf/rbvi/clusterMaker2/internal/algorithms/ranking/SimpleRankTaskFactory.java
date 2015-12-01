@@ -32,7 +32,7 @@ public class SimpleRankTaskFactory implements RankFactory {
     }
 
     public boolean isAvailable() {
-        return false;
+        return true;
     }
 
     public TaskIterator createTaskIterator() {
@@ -40,6 +40,6 @@ public class SimpleRankTaskFactory implements RankFactory {
     }
 
     public boolean isReady() {
-        return false;
+        return true;
     }
 }
