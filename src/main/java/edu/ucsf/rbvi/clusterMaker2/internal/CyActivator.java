@@ -153,7 +153,7 @@ public class CyActivator extends AbstractCyActivator {
 		                ClusterTaskFactory.class, new Properties());
 
 		// Cluster ranking
-		registerService(bc, new SimpleCluster(clusterManager), SimpleRankTaskFactory.class, new Properties());
+		registerService(bc, new SimpleRankTaskFactory(clusterManager), RankFactory.class, new Properties());
 
 		// Filters
 		registerService(bc, new FilterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
