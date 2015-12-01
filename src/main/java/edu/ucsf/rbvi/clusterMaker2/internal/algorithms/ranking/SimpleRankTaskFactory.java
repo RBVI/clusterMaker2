@@ -7,22 +7,20 @@ import org.cytoscape.work.TaskMonitor;
 
 public class SimpleRankTaskFactory implements RankFactory {
 
-    private static String SHORTNAME = "SR";
-    private static String NAME = "Simple Ranking";
-
     public SimpleClusterContext gui;
     public ClusterManager manager;
 
     public SimpleRankTaskFactory(ClusterManager manager) {
+        this.gui = new SimpleClusterContext();
         this.manager = manager;
     }
 
     public String getShortName() {
-        return SHORTNAME;
+        return SimpleCluster.SHORTNAME;
     }
 
     public String getName() {
-        return NAME;
+        return SimpleCluster.NAME;
     }
 
     public Object getContext() {
@@ -38,7 +36,7 @@ public class SimpleRankTaskFactory implements RankFactory {
     }
 
     public TaskIterator createTaskIterator() {
-        return new TaskIterator(new SimpleCluster(manager));
+        return new TaskIterator(new SimpleCluster(gui, manager));
     }
 
     public boolean isReady() {

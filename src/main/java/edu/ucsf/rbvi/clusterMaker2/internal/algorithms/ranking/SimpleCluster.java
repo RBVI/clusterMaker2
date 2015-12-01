@@ -20,8 +20,9 @@ public class SimpleCluster extends AbstractTask implements Rank {
     @ContainsTunables
     public SimpleClusterContext gui;
 
-    public SimpleCluster(ClusterManager manager) {
+    public SimpleCluster(SimpleClusterContext gui, ClusterManager manager) {
         this.manager = manager;
+        this.gui = gui;
         this.network = this.manager.getNetwork();
 
     }
@@ -39,7 +40,10 @@ public class SimpleCluster extends AbstractTask implements Rank {
     }
 
     public void run(TaskMonitor monitor) {
-
+        monitor.setTitle("Running SimpleCluster...");
+        System.out.println("SimpleCluster is running.");
+        monitor.showMessage(TaskMonitor.Level.INFO, "Done.");
+        System.out.println("SimpleCluster finished.");
     }
 
     public boolean isAvailable() {
