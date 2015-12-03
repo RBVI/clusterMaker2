@@ -7,6 +7,5 @@ public interface RankFactory extends TaskFactory {
     String getShortName();
     String getName();
     Object getContext();
-    void run(TaskMonitor monitor);
     boolean isAvailable();
 }

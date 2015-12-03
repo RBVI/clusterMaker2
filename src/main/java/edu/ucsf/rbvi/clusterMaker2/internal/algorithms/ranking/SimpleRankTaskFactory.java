@@ -3,7 +3,6 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.RankFactory;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
 
 public class SimpleRankTaskFactory implements RankFactory {
 
@@ -25,10 +24,6 @@ public class SimpleRankTaskFactory implements RankFactory {
 
     public Object getContext() {
         return gui;
-    }
-
-    public void run(TaskMonitor monitor) {
-
     }
 
     public boolean isAvailable() {
