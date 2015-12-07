@@ -10,7 +10,7 @@ public class SimpleRankTaskFactory implements RankFactory {
     public ClusterManager manager;
 
     public SimpleRankTaskFactory(ClusterManager manager) {
-        this.gui = new SimpleClusterContext();
+        this.gui = new SimpleClusterContext(manager);
         this.manager = manager;
     }
 
@@ -35,6 +35,6 @@ public class SimpleRankTaskFactory implements RankFactory {
     }
 
     public boolean isReady() {
-        return true;
+        return SimpleCluster.isReady(this.manager.getNetwork());
     }
 }

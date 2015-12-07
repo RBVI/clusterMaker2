@@ -1,18 +1,20 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Rank;
+import edu.ucsf.rbvi.clusterMaker2.internal.commands.GetNetworkClusterTask;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
+import org.cytoscape.work.*;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SimpleCluster extends AbstractTask implements Rank {
 
+    private GetNetworkClusterTask clusterMonitor;
     private List<List<CyNode>> clusters;
     private ClusterManager manager;
     private boolean canceled;
@@ -24,13 +26,14 @@ public class SimpleCluster extends AbstractTask implements Rank {
     public CyNetwork network;
 
     @ContainsTunables
-    public SimpleClusterContext gui;
+    public SimpleClusterContext context;
 
-    public SimpleCluster(SimpleClusterContext gui, ClusterManager manager) {
+    public SimpleCluster(SimpleClusterContext context, ClusterManager manager) {
         this.canceled = false;
         this.manager = manager;
-        this.gui = gui;
+        this.context = context;
         this.network = this.manager.getNetwork();
+        this.clusterMonitor = new GetNetworkClusterTask(manager);
 
     }
 
@@ -43,22 +46,22 @@ public class SimpleCluster extends AbstractTask implements Rank {
     }
 
     public Object getContext() {
-        return this.gui;
+        return this.context;
     }
 
     public void run(TaskMonitor monitor) {
         monitor.setTitle("Running SimpleCluster...");
 
        /*
-        Ensure here that we actually have a cluster to work with
-         */
+        * Ensure here that we actually have a cluster to work with
+        */
 
         if (network == null) {
             this.manager.getNetwork();
         }
 
-        // Is this needed???
-        this.gui.setNetwork(network);
+        // update the GUI
+        this.context.setNetwork(network);
 
         // Ugly abort
         if (this.canceled) {
@@ -77,7 +80,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
         return SimpleCluster.isReady(network);
     }
 
-    private static boolean isReady(CyNetwork network) {
+    public static boolean isReady(CyNetwork network) {
         return network != null;
     }
 
