@@ -18,7 +18,7 @@ public class SimpleClusterContext {
     public ListSingleSelection<String> algorithms = new ListSingleSelection<>("--None--");
 
     public SimpleClusterContext(ClusterManager manager) {
-        System.out.println("SimpleClusterContext constructor: " + manager.toString());
+        System.out.println("SimpleClusterContext constructor");
         this.manager = manager;
         this.network = manager.getNetwork();
         algorithms = new ListSingleSelection<>(getAlgorithms());

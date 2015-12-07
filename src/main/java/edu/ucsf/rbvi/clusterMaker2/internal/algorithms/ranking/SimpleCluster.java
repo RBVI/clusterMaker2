@@ -29,12 +29,11 @@ public class SimpleCluster extends AbstractTask implements Rank {
     public SimpleClusterContext context;
 
     public SimpleCluster(SimpleClusterContext context, ClusterManager manager) {
+        System.out.println("SimpleCluster constructor");
         this.canceled = false;
         this.manager = manager;
         this.context = context;
         this.network = this.manager.getNetwork();
-        this.clusterMonitor = new GetNetworkClusterTask(manager);
-
     }
 
     public String getShortName() {
@@ -50,11 +49,12 @@ public class SimpleCluster extends AbstractTask implements Rank {
     }
 
     public void run(TaskMonitor monitor) {
-        monitor.setTitle("Running SimpleCluster...");
+        monitor.setTitle("SimpleCluster.run()");
 
        /*
         * Ensure here that we actually have a cluster to work with
         */
+        this.clusterMonitor = new GetNetworkClusterTask(manager);
 
         if (network == null) {
             this.manager.getNetwork();
