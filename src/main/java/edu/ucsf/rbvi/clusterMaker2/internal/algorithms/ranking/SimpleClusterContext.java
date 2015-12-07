@@ -15,17 +15,13 @@ public class SimpleClusterContext {
     public ClusterManager manager;
 
     @Tunable(description = "Algorithm", groups = "List of Algorithms", gravity = 1.0)
-    public ListSingleSelection<String> algorithms;
+    public ListSingleSelection<String> algorithms = new ListSingleSelection<>("--None--");
 
     public SimpleClusterContext(ClusterManager manager) {
-        System.out.println("SimpleClusterContext constructor: " + this.manager.toString());
+        System.out.println("SimpleClusterContext constructor: " + manager.toString());
         this.manager = manager;
         this.network = manager.getNetwork();
-        algorithms = new ListSingleSelection<>(this.getAlgorithms());
-    }
-
-    public void setAlgorithms(List<String> algs) {
-        this.algorithms = new ListSingleSelection<>(algs);
+        algorithms = new ListSingleSelection<>(getAlgorithms());
     }
 
     public List<String> getAlgorithms() {
@@ -36,5 +32,9 @@ public class SimpleClusterContext {
 
     public void setNetwork(CyNetwork network) {
         this.network = network;
+    }
+
+    public CyNetwork getNetwork() {
+        return this.network;
     }
 }

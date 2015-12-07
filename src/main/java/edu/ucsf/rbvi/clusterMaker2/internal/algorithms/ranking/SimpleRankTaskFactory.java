@@ -10,8 +10,8 @@ public class SimpleRankTaskFactory implements RankFactory {
     public ClusterManager manager;
 
     public SimpleRankTaskFactory(ClusterManager manager) {
-        this.gui = new SimpleClusterContext(manager);
         this.manager = manager;
+        this.gui = new SimpleClusterContext(manager);
     }
 
     public String getShortName() {
