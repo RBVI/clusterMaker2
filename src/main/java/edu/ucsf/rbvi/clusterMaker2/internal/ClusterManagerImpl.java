@@ -50,7 +50,7 @@ public class ClusterManagerImpl implements ClusterManager {
 	double networkClusterIndex = 50.0;
 	double attributeClusterIndex = 1.0;
 	double filterIndex = 100.0;
-        double pcaIndex = 150.0;
+	double pcaIndex = 150.0;
 	double vizClusterIndex = 1.0;
 	double rankingIndex = 1.0;
 	Map<CyNetwork, List<ResultsPanel>> resultsPanelMap;
