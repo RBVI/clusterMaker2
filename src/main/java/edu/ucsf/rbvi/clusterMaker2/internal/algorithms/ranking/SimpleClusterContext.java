@@ -30,6 +30,10 @@ public class SimpleClusterContext {
                 .map(ClusterTaskFactory::getShortName).collect(Collectors.toList());
     }
 
+    public String getSelectedAlgorithm() {
+        return this.algorithms.getSelectedValue();
+    }
+
     public void setNetwork(CyNetwork network) {
         this.network = network;
     }

@@ -8,8 +8,10 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.*;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SimpleCluster extends AbstractTask implements Rank {
@@ -48,23 +50,33 @@ public class SimpleCluster extends AbstractTask implements Rank {
         return this.context;
     }
 
+    @SuppressWarnings("unchecked")
     public void run(TaskMonitor monitor) {
         monitor.setTitle("SimpleCluster.run()");
-
-       /*
-        * Ensure here that we actually have a cluster to work with
-        */
-        this.clusterMonitor = new GetNetworkClusterTask(manager);
 
         if (network == null) {
             this.manager.getNetwork();
         }
 
-        // update the GUI
+        /*
+         * Update the GUI
+         */
         this.context.setNetwork(network);
 
-        // Ugly abort
-        if (this.canceled) {
+       /*
+        * Get the cluster
+        */
+        this.clusterMonitor = new GetNetworkClusterTask(manager);
+        this.clusterMonitor.algorithm = this.context.getSelectedAlgorithm();
+        this.clusterMonitor.network = this.network;
+        this.clusterMonitor.run(monitor);
+        this.clusters = new ArrayList<>((Collection<List<CyNode>>)
+                ((Map<String, Object>) this.clusterMonitor.getResults(Map.class)).get("networkclusters"));
+
+        if (clusters.size() == 0) {
+            monitor.showMessage(TaskMonitor.Level.INFO, "No clusters to work with");
+            return;
+        } else if (this.canceled) {
             monitor.showMessage(TaskMonitor.Level.INFO, "Canceled");
             return;
         }
