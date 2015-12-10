@@ -84,6 +84,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
         // Start algorithm here
         monitor.showMessage(TaskMonitor.Level.INFO, "Running.");
         System.out.println("SimpleCluster is running."); // Find another way to log
+        System.out.println("INFO: " + this.clusterMonitor.getResults(String.class));
         monitor.showMessage(TaskMonitor.Level.INFO, "Done.");
         System.out.println("SimpleCluster finished."); // Find another way to log
     }
