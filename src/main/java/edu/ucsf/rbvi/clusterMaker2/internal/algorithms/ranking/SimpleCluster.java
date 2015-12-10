@@ -3,14 +3,10 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Rank;
 import edu.ucsf.rbvi.clusterMaker2.internal.commands.GetNetworkClusterTask;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
+import org.cytoscape.model.*;
 import org.cytoscape.work.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SimpleCluster extends AbstractTask implements Rank {
 
@@ -73,11 +69,19 @@ public class SimpleCluster extends AbstractTask implements Rank {
         this.clusters = new ArrayList<>((Collection<List<CyNode>>)
                 ((Map<String, Object>) this.clusterMonitor.getResults(Map.class)).get("networkclusters"));
 
+        // necessary?
+        CyTable nodeTable = network.getDefaultNodeTable();
+
+
         if (clusters.size() == 0) {
             monitor.showMessage(TaskMonitor.Level.INFO, "No clusters to work with");
             return;
         } else if (this.attribute == null || this.attribute.equals("--None--")) {
             monitor.showMessage(TaskMonitor.Level.INFO, "No attribute(s) to work with");
+            return;
+        } else if (nodeTable.getColumn(this.attribute) == null) {
+            monitor.showMessage(TaskMonitor.Level.INFO, "No column with '" + this.attribute + "' as an attribute");
+            return;
         } else if (this.canceled) {
             monitor.showMessage(TaskMonitor.Level.INFO, "Canceled");
             return;
@@ -85,8 +89,21 @@ public class SimpleCluster extends AbstractTask implements Rank {
 
         // Start algorithm here
         monitor.showMessage(TaskMonitor.Level.INFO, "Running.");
+
+        List<Integer> scoreList = new ArrayList<>(this.clusters.size());
+        for (int i = 0; i < this.clusters.size(); i++) {
+            for (CyNode node : this.clusters.get(i)) {
+                if (nodeTable.getRow(node.getSUID()).get(this.attribute, Integer.class) == 1) {
+                    scoreList.set(i, scoreList.get(i) + 1);
+                }
+            }
+        }
         System.out.println("SimpleCluster is running."); // Find another way to log
-        System.out.println("INFO: " + this.clusterMonitor.getResults(String.class));
+        System.out.println("RESULTS:");
+        Arrays.sort(scoreList.toArray());
+        for (int i = 0; i < scoreList.size(); i++) {
+            System.out.println("Cluster <" + this.clusters.get(i).toString() + ">: " + scoreList.get(i));
+        }
         monitor.showMessage(TaskMonitor.Level.INFO, "Done.");
         System.out.println("SimpleCluster finished."); // Find another way to log
     }
