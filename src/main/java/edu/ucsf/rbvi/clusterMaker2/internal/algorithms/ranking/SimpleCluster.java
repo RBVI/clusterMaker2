@@ -88,21 +88,23 @@ public class SimpleCluster extends AbstractTask implements Rank {
         }
 
         // Start algorithm here
-        monitor.showMessage(TaskMonitor.Level.INFO, "Running.");
+        monitor.showMessage(TaskMonitor.Level.INFO, "Running...");
 
+        monitor.showMessage(TaskMonitor.Level.INFO, "Getting scorelist for simpleCluster.");
         List<Integer> scoreList = new ArrayList<>(this.clusters.size());
+        System.out.println("scoreList size: " + this.clusters.size());
         for (int i = 0; i < this.clusters.size(); i++) {
+            scoreList.add(i, 0);
             for (CyNode node : this.clusters.get(i)) {
-                if (nodeTable.getRow(node.getSUID()).get(this.attribute, Integer.class) == 1) {
-                    scoreList.set(i, scoreList.get(i) + 1);
-                }
+                int secretomeValue = nodeTable.getRow(node.getSUID()).get(this.attribute, Integer.class, 0);
+                scoreList.set(i, scoreList.get(i) + secretomeValue);
             }
         }
         System.out.println("SimpleCluster is running."); // Find another way to log
         System.out.println("RESULTS:");
         Arrays.sort(scoreList.toArray());
-        for (int i = 0; i < scoreList.size(); i++) {
-            System.out.println("Cluster <" + this.clusters.get(i).toString() + ">: " + scoreList.get(i));
+        for (Integer scoredCluster : scoreList) {
+            System.out.println("ClusterScore <" + scoredCluster + ">: ");
         }
         monitor.showMessage(TaskMonitor.Level.INFO, "Done.");
         System.out.println("SimpleCluster finished."); // Find another way to log
