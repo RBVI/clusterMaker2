@@ -62,11 +62,6 @@ public class HopachPAMClusterer extends AbstractAttributeClusterer {
 			return;
 		}
 
-		if (nodeAttributeList != null && nodeAttributeList.size() < 2) {
-			monitor.showMessage(TaskMonitor.Level.ERROR,"Must have at least two node columns for cluster weighting");
-			return;
-		}
-
 		if (context.selectedOnly && CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true).size() < 3) {
 			monitor.showMessage(TaskMonitor.Level.ERROR,"Must have at least three nodes to cluster");
 			return;
