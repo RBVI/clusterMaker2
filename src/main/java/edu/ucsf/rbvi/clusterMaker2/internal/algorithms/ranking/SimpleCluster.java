@@ -69,27 +69,12 @@ public class SimpleCluster extends AbstractTask implements Rank {
         this.clusters = new ArrayList<>((Collection<List<CyNode>>)
                 ((Map<String, Object>) this.clusterMonitor.getResults(Map.class)).get("networkclusters"));
 
-        // necessary?
         CyTable nodeTable = network.getDefaultNodeTable();
-
-
-        if (clusters.size() == 0) {
-            monitor.showMessage(TaskMonitor.Level.INFO, "No clusters to work with");
-            return;
-        } else if (this.attribute == null || this.attribute.equals("--None--")) {
-            monitor.showMessage(TaskMonitor.Level.INFO, "No attribute(s) to work with");
-            return;
-        } else if (nodeTable.getColumn(this.attribute) == null) {
-            monitor.showMessage(TaskMonitor.Level.INFO, "No column with '" + this.attribute + "' as an attribute");
-            return;
-        } else if (this.canceled) {
-            monitor.showMessage(TaskMonitor.Level.INFO, "Canceled");
+        if (!readyToGo(nodeTable)) {
             return;
         }
 
         // Start algorithm here
-        monitor.showMessage(TaskMonitor.Level.INFO, "Running...");
-
         monitor.showMessage(TaskMonitor.Level.INFO, "Getting scorelist for simpleCluster.");
         List<Integer> scoreList = createScoreList();
         debugPrintScoreList(scoreList);
@@ -115,12 +100,30 @@ public class SimpleCluster extends AbstractTask implements Rank {
         System.out.println("SimpleCluster is running."); // Find another way to log
         System.out.println("RESULTS:");
         Arrays.sort(scoreList.toArray());
+        return scoreList;
     }
 
     private void debugPrintScoreList(List<Integer> scoreList) {
         for (Integer scoredCluster : scoreList) {
             System.out.println("ClusterScore <" + scoredCluster + ">: ");
         }
+    }
+
+    private boolean readyToGo(CyTable nodeTable) {
+        if (this.clusters.size() == 0) {
+            monitor.showMessage(TaskMonitor.Level.INFO, "No clusters to work with");
+            return;
+        } else if (this.attribute == null || this.attribute.equals("--None--")) {
+            monitor.showMessage(TaskMonitor.Level.INFO, "No attribute(s) to work with");
+            return;
+        } else if (nodeTable.getColumn(this.attribute) == null) {
+            monitor.showMessage(TaskMonitor.Level.INFO, "No column with '" + this.attribute + "' as an attribute");
+            return;
+        } else if (this.canceled) {
+            monitor.showMessage(TaskMonitor.Level.INFO, "Canceled");
+            return;
+        }
+        return true;
     }
 
     public boolean isAvailable() {
