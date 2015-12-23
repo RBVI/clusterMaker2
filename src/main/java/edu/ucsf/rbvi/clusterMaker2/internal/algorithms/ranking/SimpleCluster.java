@@ -91,6 +91,13 @@ public class SimpleCluster extends AbstractTask implements Rank {
         monitor.showMessage(TaskMonitor.Level.INFO, "Running...");
 
         monitor.showMessage(TaskMonitor.Level.INFO, "Getting scorelist for simpleCluster.");
+        List<Integer> scoreList = createScoreList();
+        debugPrintScoreList(scoreList);
+        monitor.showMessage(TaskMonitor.Level.INFO, "Done.");
+        System.out.println("SimpleCluster finished."); // Find another way to log
+    }
+
+    private List<Integer> createScoreList() {
         List<Integer> scoreList = new ArrayList<>(this.clusters.size());
         System.out.println("scoreList size: " + this.clusters.size());
         for (int i = 0; i < this.clusters.size(); i++) {
@@ -108,11 +115,12 @@ public class SimpleCluster extends AbstractTask implements Rank {
         System.out.println("SimpleCluster is running."); // Find another way to log
         System.out.println("RESULTS:");
         Arrays.sort(scoreList.toArray());
+    }
+
+    private void debugPrintScoreList(List<Integer> scoreList) {
         for (Integer scoredCluster : scoreList) {
             System.out.println("ClusterScore <" + scoredCluster + ">: ");
         }
-        monitor.showMessage(TaskMonitor.Level.INFO, "Done.");
-        System.out.println("SimpleCluster finished."); // Find another way to log
     }
 
     public boolean isAvailable() {
