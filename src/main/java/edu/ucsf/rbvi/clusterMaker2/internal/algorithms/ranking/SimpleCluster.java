@@ -94,11 +94,16 @@ public class SimpleCluster extends AbstractTask implements Rank {
         List<Integer> scoreList = new ArrayList<>(this.clusters.size());
         System.out.println("scoreList size: " + this.clusters.size());
         for (int i = 0; i < this.clusters.size(); i++) {
+            int score = 0;
             scoreList.add(i, 0);
             for (CyNode node : this.clusters.get(i)) {
                 int secretomeValue = nodeTable.getRow(node.getSUID()).get(this.attribute, Integer.class, 0);
-                scoreList.set(i, scoreList.get(i) + secretomeValue);
+                // Debug print
+                System.out.println("Row: " + nodeTable.getRow(node.getSUID()));
+                //scoreList.set(i, scoreList.get(i) + secretomeValue);
+                score += secretomeValue;
             }
+            scoreList.set(i, scoreList.get(i) + secretomeValue);
         }
         System.out.println("SimpleCluster is running."); // Find another way to log
         System.out.println("RESULTS:");
