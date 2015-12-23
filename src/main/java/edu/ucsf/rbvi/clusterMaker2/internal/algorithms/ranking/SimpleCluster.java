@@ -70,32 +70,29 @@ public class SimpleCluster extends AbstractTask implements Rank {
                 ((Map<String, Object>) this.clusterMonitor.getResults(Map.class)).get("networkclusters"));
 
         CyTable nodeTable = network.getDefaultNodeTable();
-        if (!readyToGo(nodeTable)) {
+        if (!readyToGo(nodeTable, monitor)) {
             return;
         }
 
         // Start algorithm here
         monitor.showMessage(TaskMonitor.Level.INFO, "Getting scorelist for simpleCluster.");
-        List<Integer> scoreList = createScoreList();
+        List<Integer> scoreList = createScoreList(nodeTable);
         debugPrintScoreList(scoreList);
         monitor.showMessage(TaskMonitor.Level.INFO, "Done.");
         System.out.println("SimpleCluster finished."); // Find another way to log
     }
 
-    private List<Integer> createScoreList() {
+    private List<Integer> createScoreList(CyTable nodeTable) {
         List<Integer> scoreList = new ArrayList<>(this.clusters.size());
         System.out.println("scoreList size: " + this.clusters.size());
         for (int i = 0; i < this.clusters.size(); i++) {
             int score = 0;
             scoreList.add(i, 0);
             for (CyNode node : this.clusters.get(i)) {
-                int secretomeValue = nodeTable.getRow(node.getSUID()).get(this.attribute, Integer.class, 0);
-                // Debug print
                 System.out.println("Row: " + nodeTable.getRow(node.getSUID()));
-                //scoreList.set(i, scoreList.get(i) + secretomeValue);
-                score += secretomeValue;
+                score += nodeTable.getRow(node.getSUID()).get(this.attribute, Integer.class, 0);
             }
-            scoreList.set(i, scoreList.get(i) + secretomeValue);
+            scoreList.set(i, scoreList.get(i) + score);
         }
         System.out.println("SimpleCluster is running."); // Find another way to log
         System.out.println("RESULTS:");
@@ -109,19 +106,19 @@ public class SimpleCluster extends AbstractTask implements Rank {
         }
     }
 
-    private boolean readyToGo(CyTable nodeTable) {
+    private boolean readyToGo(CyTable nodeTable, TaskMonitor monitor) {
         if (this.clusters.size() == 0) {
             monitor.showMessage(TaskMonitor.Level.INFO, "No clusters to work with");
-            return;
+            return false;
         } else if (this.attribute == null || this.attribute.equals("--None--")) {
             monitor.showMessage(TaskMonitor.Level.INFO, "No attribute(s) to work with");
-            return;
+            return false;
         } else if (nodeTable.getColumn(this.attribute) == null) {
             monitor.showMessage(TaskMonitor.Level.INFO, "No column with '" + this.attribute + "' as an attribute");
-            return;
+            return false;
         } else if (this.canceled) {
             monitor.showMessage(TaskMonitor.Level.INFO, "Canceled");
-            return;
+            return false;
         }
         return true;
     }
