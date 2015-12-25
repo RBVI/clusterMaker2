@@ -37,7 +37,6 @@ public class GetNetworkClusterTask extends AbstractTask implements ObservableTas
 	}
 
 	public void run(TaskMonitor monitor) {
-		System.out.println("GetNetworkClusterTask.run()");
 		if (network == null)
 			network = clusterManager.getNetwork();
 

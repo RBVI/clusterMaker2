@@ -1,10 +1,12 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking;
 
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AdvancedProperties;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
@@ -16,27 +18,37 @@ public class SimpleClusterContext {
     public ClusterManager manager;
 
     @Tunable(description = "Algorithm", groups = "List of Algorithms", gravity = 1.0)
-    public ListSingleSelection<String> algorithms = new ListSingleSelection<>("--None--");
+    public ListSingleSelection<String> algorithms;
 
     @Tunable(description = "Attributes", groups = "List of attributes to use", gravity = 10.0)
-    public ListSingleSelection<String> attributes = new ListSingleSelection<>("--None--");
+    public ListSingleSelection<String> attributes;
+
+    @ContainsTunables
+    public AdvancedProperties advancedAttributes;
 
     public SimpleClusterContext(ClusterManager manager) {
         System.out.println("SimpleClusterContext constructor");
         this.manager = manager;
         this.network = manager.getNetwork();
+        advancedAttributes = new AdvancedProperties("__SCRank", false);
         algorithms = new ListSingleSelection<>(getAlgorithms());
         attributes = new ListSingleSelection<>(getAttributes());
     }
 
     public List<String> getAttributes() {
-        return ModelUtils.updateNodeAttributeList(this.network, null).getPossibleValues();
+        if (this.network != null) {
+            return ModelUtils.updateNodeAttributeList(this.network, null).getPossibleValues();
+        }
+        return new ListSingleSelection<>("None").getPossibleValues();
     }
 
     public List<String> getAlgorithms() {
-        return this.manager.getAllAlgorithms().stream()
-                .filter(alg -> alg.getTypeList().contains(ClusterTaskFactory.ClusterType.NETWORK))
-                .map(ClusterTaskFactory::getShortName).collect(Collectors.toList());
+        if (this.network != null) {
+            return this.manager.getAllAlgorithms().stream()
+                    .filter(alg -> alg.getTypeList().contains(ClusterTaskFactory.ClusterType.NETWORK))
+                    .map(ClusterTaskFactory::getShortName).collect(Collectors.toList());
+        }
+        return new ListSingleSelection<>("None").getPossibleValues();
     }
 
     public String getSelectedAlgorithm() {
@@ -48,10 +60,18 @@ public class SimpleClusterContext {
     }
 
     public void setNetwork(CyNetwork network) {
+        if (this.network != null && this.network.equals(network)) {
+            return;
+        }
+
         this.network = network;
     }
 
     public CyNetwork getNetwork() {
         return this.network;
+    }
+
+    public String getClusterAttribute() {
+        return advancedAttributes.getClusterAttribute();
     }
 }

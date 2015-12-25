@@ -6,12 +6,12 @@ import org.cytoscape.work.TaskIterator;
 
 public class SimpleRankTaskFactory implements RankFactory {
 
-    public SimpleClusterContext gui;
+    public SimpleClusterContext context;
     public ClusterManager manager;
 
     public SimpleRankTaskFactory(ClusterManager manager) {
         this.manager = manager;
-        this.gui = new SimpleClusterContext(manager);
+        this.context = new SimpleClusterContext(manager);
     }
 
     public String getShortName() {
@@ -23,18 +23,18 @@ public class SimpleRankTaskFactory implements RankFactory {
     }
 
     public Object getContext() {
-        return gui;
+        return context;
     }
 
     public boolean isAvailable() {
-        return true;
+        return SimpleCluster.isReady();
     }
 
     public TaskIterator createTaskIterator() {
-        return new TaskIterator(new SimpleCluster(gui, manager));
+        return new TaskIterator(new SimpleCluster(context, manager));
     }
 
     public boolean isReady() {
-        return SimpleCluster.isReady(this.manager.getNetwork());
+        return true;
     }
 }

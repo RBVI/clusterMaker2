@@ -20,7 +20,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
     public static String GROUP_ATTRIBUTE = SHORTNAME;
 
     @Tunable(description = "Network to look for cluster", context = "nogui")
-    public CyNetwork network;
+    public static CyNetwork network;
 
     @ContainsTunables
     public SimpleClusterContext context;
@@ -30,7 +30,8 @@ public class SimpleCluster extends AbstractTask implements Rank {
         this.canceled = false;
         this.manager = manager;
         this.context = context;
-        this.network = this.manager.getNetwork();
+        network = this.manager.getNetwork();
+        context.setNetwork(network);
     }
 
     public String getShortName() {
@@ -64,7 +65,12 @@ public class SimpleCluster extends AbstractTask implements Rank {
         this.attribute = this.context.getSelectedAttribute();
         this.clusterMonitor = new GetNetworkClusterTask(manager);
         this.clusterMonitor.algorithm = this.context.getSelectedAlgorithm();
-        this.clusterMonitor.network = this.network;
+
+        if (this.clusterMonitor.algorithm.equals("None")) {
+            return;
+        }
+
+        this.clusterMonitor.network = network;
         this.clusterMonitor.run(monitor);
         this.clusters = new ArrayList<>((Collection<List<CyNode>>)
                 ((Map<String, Object>) this.clusterMonitor.getResults(Map.class)).get("networkclusters"));
@@ -89,7 +95,6 @@ public class SimpleCluster extends AbstractTask implements Rank {
             int score = 0;
             scoreList.add(i, 0);
             for (CyNode node : this.clusters.get(i)) {
-                System.out.println("Row: " + nodeTable.getRow(node.getSUID()));
                 score += nodeTable.getRow(node.getSUID()).get(this.attribute, Integer.class, 0);
             }
             scoreList.set(i, scoreList.get(i) + score);
@@ -101,8 +106,8 @@ public class SimpleCluster extends AbstractTask implements Rank {
     }
 
     private void debugPrintScoreList(List<Integer> scoreList) {
-        for (Integer scoredCluster : scoreList) {
-            System.out.println("ClusterScore <" + scoredCluster + ">: ");
+        for (int i = 0; i < scoreList.size(); i++) {
+            System.out.println("ClusterScore <" + i + ">: " + scoreList.get(i));
         }
     }
 
@@ -124,10 +129,10 @@ public class SimpleCluster extends AbstractTask implements Rank {
     }
 
     public boolean isAvailable() {
-        return SimpleCluster.isReady(network);
+        return SimpleCluster.isReady();
     }
 
-    public static boolean isReady(CyNetwork network) {
+    public static boolean isReady() {
         return network != null;
     }
 
