@@ -92,6 +92,13 @@ public class Clusters {
 		for (int ii = 0; ii < m; ++ii) {
 			elements[ii] = new Integer(ii);
 		}
+
+		/*
+		System.out.println("Cluster init assignments:");
+		for (int ii = 0; ii < m; ++ii) {
+			System.out.println("    assignments["+ii+"] = "+assignments[ii]);
+		}
+		*/
 		
 		// assign new cluster 0-based index
 		Integer k = new Integer(0);

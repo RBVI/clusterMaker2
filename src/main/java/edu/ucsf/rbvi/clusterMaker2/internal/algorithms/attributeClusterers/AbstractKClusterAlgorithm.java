@@ -120,6 +120,7 @@ public abstract class AbstractKClusterAlgorithm {
 		// Create the matrix
 		matrix = new Matrix(network, weightAttributes, transpose, ignoreMissing, selectedOnly);
 		monitor.showMessage(TaskMonitor.Level.INFO,"cluster matrix has "+matrix.nRows()+" rows");
+		int kMax = Math.min(context.kMax, matrix.nRows());
 
 		// Create a weight vector of all ones (we don't use individual weighting, yet)
 		matrix.setUniformWeights();
@@ -131,19 +132,19 @@ public abstract class AbstractKClusterAlgorithm {
 			TaskMonitor saveMonitor = monitor;
 			monitor = null;
 
-			silhouetteResults = new Silhouettes[context.kMax];
+			silhouetteResults = new Silhouettes[kMax];
 
 			int nThreads = Runtime.getRuntime().availableProcessors()-1;
 			if (nThreads > 1)
-				runThreadedSilhouette(context.kMax, nIterations, nThreads, saveMonitor);
+				runThreadedSilhouette(kMax, nIterations, nThreads, saveMonitor);
 			else
-				runLinearSilhouette(context.kMax, nIterations, saveMonitor);
+				runLinearSilhouette(kMax, nIterations, saveMonitor);
 
 			if (cancelled()) return null;
 
 			// Now get the results and find our best k
 			double maxSil = Double.MIN_VALUE;
-			for (int kEstimate = 2; kEstimate < context.kMax; kEstimate++) {
+			for (int kEstimate = 2; kEstimate < kMax; kEstimate++) {
 				double sil = silhouetteResults[kEstimate].getMean();
 				saveMonitor.showMessage(TaskMonitor.Level.INFO,"Average silhouette for "+kEstimate+" clusters is "+sil);
 				if (sil > maxSil) {

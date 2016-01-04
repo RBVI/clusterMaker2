@@ -159,9 +159,9 @@
 			<version>0.10.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.lowagie</groupId>
-			<artifactId>itext</artifactId>
-			<version>4.2.1</version>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>itextpdf</artifactId>
+			<version>5.5.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.freehep</groupId>
@@ -178,11 +178,11 @@
 			<artifactId>freehep-graphicsio-svg</artifactId>
 			<version>2.2.1</version>
 		</dependency>
-                <dependency>
-                        <groupId>org.swinglabs</groupId>
-                        <artifactId>swingx</artifactId>
-                        <version>0.9.2</version>
-                </dependency>
+		<dependency>
+			<groupId>org.swinglabs</groupId>
+			<artifactId>swingx</artifactId>
+			<version>0.9.2</version>
+		</dependency>
 
 	</dependencies>
 

@@ -23,8 +23,6 @@ public class RunPAM extends AbstractKClusterAlgorithm {
 	@Override
 	public int kcluster(int nClusters, int nIterations, Matrix matrix, DistanceMetric metric, int[] clusterId) {
 		
-		monitor.setProgress(0);
-		
 		PAM pam = new PAM(network, matrix, metric);
 		Clusters c = pam.cluster(nClusters);
 		

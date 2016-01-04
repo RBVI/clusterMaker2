@@ -138,6 +138,7 @@ public class KnnView extends TreeView {
 			    !type.equals("autosome_heatmap") &&
 			    !type.equals("pam") &&
 			    !type.equals("dbscan") &&
+			    !type.equals("fft") &&
 			    !type.equals("hopach"))
 				return false;
 		}

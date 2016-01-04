@@ -245,6 +245,19 @@ public class BaseMatrix {
 		}
 		return result;
 	}
+ 
+	public double[][] toArray(double missing){
+		double[][] mat = new double[nRows][nColumns];
+		for(int row=0; row<nRows; row++){
+			for(int column=0; column<nColumns; column++){
+				if (matrix[row][column] != null)
+					mat[row][column] = matrix[row][column];
+				else
+					mat[row][column] = missing;
+			}
+		}
+		return mat;
+	}
 
 	public void printMatrix() {
 		for (int col = 0; col < nColumns; col++)
@@ -293,7 +306,7 @@ public class BaseMatrix {
 			}
 		}
 	}
-	
+
 	public void adjustDiagonals() {
 		for (int col = 0; col < nColumns; col++ ) {
 			matrix[col][col] = maxAttribute;
@@ -321,19 +334,5 @@ public class BaseMatrix {
 			return 0;
 		}
 	}
-        
-        public double[][] toArray(){
-            int row = matrix.length;
-            if(row <= 0)
-                return null;
-            int col = matrix[0].length;
-            double[][] mat = new double[row][col];
-            for(int i=0; i<row; i++){
-                for(int j=0; j<col; j++){
-                    mat[i][j] = (double) matrix[i][j];
-                }
-            }
-            return mat;
-        }
 
 }
