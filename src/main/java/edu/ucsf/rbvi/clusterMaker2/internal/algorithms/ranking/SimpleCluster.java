@@ -10,7 +10,6 @@ import java.util.*;
 
 public class SimpleCluster extends AbstractTask implements Rank {
 
-    private GetNetworkClusterTask clusterMonitor;
     private List<List<CyNode>> clusters;
     private ClusterManager manager;
     private String attribute;
@@ -20,7 +19,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
     public static String GROUP_ATTRIBUTE = SHORTNAME;
 
     @Tunable(description = "Network to look for cluster", context = "nogui")
-    public static CyNetwork network;
+    public CyNetwork network;
 
     @ContainsTunables
     public SimpleClusterContext context;
@@ -30,8 +29,8 @@ public class SimpleCluster extends AbstractTask implements Rank {
         this.canceled = false;
         this.manager = manager;
         this.context = context;
-        network = this.manager.getNetwork();
-        context.setNetwork(network);
+        this.network = this.manager.getNetwork();
+        context.setNetwork(this.network);
     }
 
     public String getShortName() {
@@ -50,6 +49,8 @@ public class SimpleCluster extends AbstractTask implements Rank {
     public void run(TaskMonitor monitor) {
         monitor.setTitle("SimpleCluster.run()");
 
+        GetNetworkClusterTask clusterMonitor = new GetNetworkClusterTask(manager);
+
         if (network == null) {
             this.manager.getNetwork();
         }
@@ -63,17 +64,17 @@ public class SimpleCluster extends AbstractTask implements Rank {
         * Get the cluster etc.
         */
         this.attribute = this.context.getSelectedAttribute();
-        this.clusterMonitor = new GetNetworkClusterTask(manager);
-        this.clusterMonitor.algorithm = this.context.getSelectedAlgorithm();
+        clusterMonitor.algorithm = this.context.getSelectedAlgorithm();
 
-        if (this.clusterMonitor.algorithm.equals("None")) {
+        // This should be removed in the future
+        if (clusterMonitor.algorithm.equals("None")) {
             return;
         }
 
-        this.clusterMonitor.network = network;
-        this.clusterMonitor.run(monitor);
+        clusterMonitor.network = network;
+        clusterMonitor.run(monitor);
         this.clusters = new ArrayList<>((Collection<List<CyNode>>)
-                ((Map<String, Object>) this.clusterMonitor.getResults(Map.class)).get("networkclusters"));
+                ((Map<String, Object>) clusterMonitor.getResults(Map.class)).get("networkclusters"));
 
         CyTable nodeTable = network.getDefaultNodeTable();
         if (!readyToGo(nodeTable, monitor)) {
@@ -85,23 +86,23 @@ public class SimpleCluster extends AbstractTask implements Rank {
         List<Integer> scoreList = createScoreList(nodeTable);
         debugPrintScoreList(scoreList);
         monitor.showMessage(TaskMonitor.Level.INFO, "Done.");
-        System.out.println("SimpleCluster finished."); // Find another way to log
+        System.out.println("SimpleCluster finished.");
     }
 
     private List<Integer> createScoreList(CyTable nodeTable) {
         List<Integer> scoreList = new ArrayList<>(this.clusters.size());
-        System.out.println("scoreList size: " + this.clusters.size());
+
         for (int i = 0; i < this.clusters.size(); i++) {
             int score = 0;
-            scoreList.add(i, 0);
+            scoreList.add(i, score);
             for (CyNode node : this.clusters.get(i)) {
                 score += nodeTable.getRow(node.getSUID()).get(this.attribute, Integer.class, 0);
             }
-            scoreList.set(i, scoreList.get(i) + score);
         }
-        System.out.println("SimpleCluster is running."); // Find another way to log
+
+        System.out.println("SimpleCluster is running.");
         System.out.println("RESULTS:");
-        Arrays.sort(scoreList.toArray());
+
         return scoreList;
     }
 
@@ -115,7 +116,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
         if (this.clusters.size() == 0) {
             monitor.showMessage(TaskMonitor.Level.INFO, "No clusters to work with");
             return false;
-        } else if (this.attribute == null || this.attribute.equals("--None--")) {
+        } else if (this.attribute == null || this.attribute.equals("None")) {
             monitor.showMessage(TaskMonitor.Level.INFO, "No attribute(s) to work with");
             return false;
         } else if (nodeTable.getColumn(this.attribute) == null) {
@@ -125,15 +126,31 @@ public class SimpleCluster extends AbstractTask implements Rank {
             monitor.showMessage(TaskMonitor.Level.INFO, "Canceled");
             return false;
         }
+
         return true;
     }
 
     public boolean isAvailable() {
-        return SimpleCluster.isReady();
+        return SimpleCluster.isReady(this.network, this.manager);
     }
 
-    public static boolean isReady() {
-        return network != null;
+    // This should go through the clustering algorithms and check if one of them have some results.
+    // NB! Only the algorithm run last will have results to work with!
+    public static boolean isReady(CyNetwork network, ClusterManager manager) {
+        GetNetworkClusterTask clusterMonitor;
+
+        if (network == null) {
+            return false;
+        }
+
+        clusterMonitor = new GetNetworkClusterTask(manager);
+        clusterMonitor.algorithm = "shit"; // Temporary
+
+        if (clusterMonitor.algorithm.equals("None")) {
+            return false;
+        }
+
+        return true;
     }
 
     public void cancel() {

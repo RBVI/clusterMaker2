@@ -29,10 +29,10 @@ public class SimpleClusterContext {
     public SimpleClusterContext(ClusterManager manager) {
         System.out.println("SimpleClusterContext constructor");
         this.manager = manager;
-        this.network = manager.getNetwork();
-        advancedAttributes = new AdvancedProperties("__SCRank", false);
-        algorithms = new ListSingleSelection<>(getAlgorithms());
-        attributes = new ListSingleSelection<>(getAttributes());
+        this.network = this.manager.getNetwork();
+        this.advancedAttributes = new AdvancedProperties("__SCRank", false);
+        this.algorithms = new ListSingleSelection<>(getAlgorithms());
+        this.attributes = new ListSingleSelection<>(getAttributes());
     }
 
     public List<String> getAttributes() {

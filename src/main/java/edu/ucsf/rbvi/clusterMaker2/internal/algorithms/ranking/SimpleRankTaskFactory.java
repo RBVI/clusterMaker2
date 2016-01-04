@@ -27,7 +27,7 @@ public class SimpleRankTaskFactory implements RankFactory {
     }
 
     public boolean isAvailable() {
-        return SimpleCluster.isReady();
+        return SimpleCluster.isReady(this.manager.getNetwork(), this.manager);
     }
 
     public TaskIterator createTaskIterator() {
