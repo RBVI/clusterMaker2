@@ -62,7 +62,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
 
         CyTable nodeTable = network.getDefaultNodeTable();
 
-        if (!noNullValues(nodeTable, monitor)) {
+        if (!noNullValuesOrCancel(nodeTable, monitor)) {
             return;
         }
 
@@ -128,7 +128,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
         return scoreList;
     }
 
-    private boolean noNullValues(CyTable nodeTable, TaskMonitor monitor) {
+    private boolean noNullValuesOrCancel(CyTable nodeTable, TaskMonitor monitor) {
         if (this.clusters.size() == 0) {
             monitor.showMessage(TaskMonitor.Level.INFO, "No clusters to work with");
             return false;
