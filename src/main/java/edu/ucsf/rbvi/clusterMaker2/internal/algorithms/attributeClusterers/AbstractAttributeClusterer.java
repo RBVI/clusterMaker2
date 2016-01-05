@@ -202,6 +202,7 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 	      List<CyNode> memberList = new ArrayList<CyNode>();
 	      for (int i = 0; i < matrix.nRows(); i++) {
 	        if (clusters[i] == cluster) {
+						// System.out.println("Setting cluster # for node "+matrix.getRowLabel(i)+"("+i+") to "+cluster);
 	          attrList.add(matrix.getRowLabel(i)+"\t"+cluster);
 	          memberList.add(matrix.getRowNode(i));
 						ModelUtils.createAndSetLocal(network, matrix.getRowNode(i), algorithm+" Cluster", 

@@ -46,6 +46,7 @@ public class SilhouetteCalculator {
 	 */
 	public static Silhouettes calculate(double[][] distancematrix, int[] labels)
 	{
+		// System.out.println("Have "+labels.length+" labels");
 		return calculate(distancematrix, new Clusters(labels));
 	}
 	

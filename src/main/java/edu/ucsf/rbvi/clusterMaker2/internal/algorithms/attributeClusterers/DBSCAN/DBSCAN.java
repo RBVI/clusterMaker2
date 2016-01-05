@@ -64,11 +64,6 @@ public class DBSCAN extends AbstractAttributeClusterer {
 			return;
 		}
 
-		if (nodeAttributeList != null && nodeAttributeList.size() < 2) {
-			monitor.showMessage(TaskMonitor.Level.ERROR,"Must have at least two node columns for cluster weighting");
-			return;
-		}
-
 		if (context.selectedOnly && CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true).size() < 3) {
 			monitor.showMessage(TaskMonitor.Level.ERROR,"Must have at least three nodes to cluster");
 			return;
@@ -81,7 +76,7 @@ public class DBSCAN extends AbstractAttributeClusterer {
 
 		// Get our attributes we're going to use for the cluster
 		String[] attributeArray;
-		if (nodeAttributeList != null && nodeAttributeList.size() > 1) {
+		if (nodeAttributeList != null && nodeAttributeList.size() > 0) {
 			attributeArray = new String[nodeAttributeList.size()];
 			int i = 0;
 			for (String attr: nodeAttributeList) { attributeArray[i++] = "node."+attr; }
@@ -116,16 +111,35 @@ public class DBSCAN extends AbstractAttributeClusterer {
 		// Cluster the nodes
 		monitor.setStatusMessage("Clustering nodes");
 		int[] clusters = algorithm.cluster(false);
-		
+		int nNodes = 0;
+		for (int i = 0; i < clusters.length; i++) {
+			if (clusters[i] >= 0)
+				nNodes++;
+		}
+		monitor.setStatusMessage("Allocated "+nNodes+" nodes to "+algorithm.getNClusters()+" clusters");
+
 		//System.out.println("Nclusters: "+algorithm.getNClusters());
 		//if (algorithm.getMatrix()==null)System.out.println("get matrix returns null : ");
-		
-		if (!algorithm.getMatrix().isTransposed())
+
+		if (!algorithm.getMatrix().isTransposed()) {
 			createGroups(network,algorithm.getMatrix(),algorithm.getNClusters(), clusters, "dbscan");
-		
+		}
+
 		Integer[] rowOrder = algorithm.getMatrix().indexSort(clusters, clusters.length);
+
+		// In DBSCAN, not all nodes will be assigned to a cluster, so they will have a cluster # of -1.  Find
+		// all of those and trim rowOrder accordingly.
+		Integer[] newRowOrder = new Integer[nNodes];
+		int newOrder = 0;
+		for (int i=0; i < rowOrder.length; i++) {
+			int nodeIndex = rowOrder[i];
+			if (clusters[nodeIndex] >= 0) {
+				newRowOrder[newOrder] = nodeIndex;
+				newOrder++;
+			}
+		}
 		//Integer[] rowOrder = algorithm.cluster(context.kcluster.kNumber,1, false, "dbscan", context.kcluster);
-		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, getAttributeList(), 
+		updateAttributes(network, SHORTNAME, newRowOrder, attributeArray, getAttributeList(), 
 		                 algorithm.getMatrix());
 
 		// System.out.println(resultsString);
@@ -134,5 +148,5 @@ public class DBSCAN extends AbstractAttributeClusterer {
 		}
 	}
 
-	
+
 }

@@ -181,34 +181,34 @@ public class CyActivator extends AbstractCyActivator {
                 new Properties());
 		registerService(bc, new DestroyResultsPanelTaskFactory(clusterManager,true), ClusterVizFactory.class, 
                 new Properties());
-                
-                // Principal Component Analysis
-                registerService(bc, new PCAMenuTaskFactory(), ClusterTaskFactory.class, new Properties());
-                registerService(bc, new PCATaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+ 
+		// Principal Component Analysis
+		registerService(bc, new PCAMenuTaskFactory(), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new PCATaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 
 		// Link Network Selections
 		LinkSelectionTaskFactory linkTaskFactory = new LinkSelectionTaskFactory(clusterManager);
 		Properties linkSelectionProps = new Properties();
-    linkSelectionProps.setProperty(INSERT_SEPARATOR_BEFORE, "true");
-    linkSelectionProps.setProperty(PREFERRED_MENU, "Apps.clusterMaker Visualizations");
-    linkSelectionProps.setProperty(TITLE, "Link selection across networks");
-    linkSelectionProps.setProperty(COMMAND, "linkSelection");
-    linkSelectionProps.setProperty(COMMAND_NAMESPACE, "clusterviz");
-    linkSelectionProps.setProperty(ENABLE_FOR, "networkAndView");
-    linkSelectionProps.setProperty(IN_MENU_BAR, "true");
-    linkSelectionProps.setProperty(MENU_GRAVITY, "100.0");
+		linkSelectionProps.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+		linkSelectionProps.setProperty(PREFERRED_MENU, "Apps.clusterMaker Visualizations");
+		linkSelectionProps.setProperty(TITLE, "Link selection across networks");
+		linkSelectionProps.setProperty(COMMAND, "linkSelection");
+		linkSelectionProps.setProperty(COMMAND_NAMESPACE, "clusterviz");
+		linkSelectionProps.setProperty(ENABLE_FOR, "networkAndView");
+		linkSelectionProps.setProperty(IN_MENU_BAR, "true");
+		linkSelectionProps.setProperty(MENU_GRAVITY, "100.0");
 		registerService(bc, linkTaskFactory, NetworkTaskFactory.class, linkSelectionProps);
 
 		// UnLink Network Selections
 		UnlinkSelectionTaskFactory unlinkTaskFactory = new UnlinkSelectionTaskFactory(clusterManager);
 		Properties unlinkSelectionProps = new Properties();
-    unlinkSelectionProps.setProperty(PREFERRED_MENU, "Apps.clusterMaker Visualizations");
-    unlinkSelectionProps.setProperty(TITLE, "Unlink selection across networks");
-    unlinkSelectionProps.setProperty(COMMAND, "unlinkSelection");
-    unlinkSelectionProps.setProperty(COMMAND_NAMESPACE, "clusterviz");
-    unlinkSelectionProps.setProperty(ENABLE_FOR, "networkAndView");
-    unlinkSelectionProps.setProperty(IN_MENU_BAR, "true");
-    unlinkSelectionProps.setProperty(MENU_GRAVITY, "100.0");
+		unlinkSelectionProps.setProperty(PREFERRED_MENU, "Apps.clusterMaker Visualizations");
+		unlinkSelectionProps.setProperty(TITLE, "Unlink selection across networks");
+		unlinkSelectionProps.setProperty(COMMAND, "unlinkSelection");
+		unlinkSelectionProps.setProperty(COMMAND_NAMESPACE, "clusterviz");
+		unlinkSelectionProps.setProperty(ENABLE_FOR, "networkAndView");
+		unlinkSelectionProps.setProperty(IN_MENU_BAR, "true");
+		unlinkSelectionProps.setProperty(MENU_GRAVITY, "100.0");
 		registerService(bc, unlinkTaskFactory, NetworkTaskFactory.class, unlinkSelectionProps);
 
 		// Commands

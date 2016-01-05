@@ -20,61 +20,70 @@ import org.cytoscape.work.Tunable;
  * @author root
  */
 public class PCA extends AbstractTask{
-        ClusterManager clusterManager;
-        public static String SHORTNAME = "pca";
+	ClusterManager clusterManager;
+	public static String SHORTNAME = "pca";
 	public static String NAME = "Principal Component Analysis";
-        private List<String>attrList;       
-        private CyNetworkView networkView;
-        
-        @Tunable(description="Network to cluster", context="nogui")
+	private List<String>attrList;	
+	private CyNetworkView networkView;
+
+	@Tunable(description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
-        
-        @ContainsTunables
-        public PCAContext context = null;
-        
-        public PCA(PCAContext context, ClusterManager clusterManager){
-            this.context = context;
-            this.networkView = clusterManager.getNetworkView();
-            if (network == null)
-                    network = clusterManager.getNetwork();
-            context.setNetwork(network);
-        }
-        
-        public String getShortName() {return SHORTNAME;}
+
+	@ContainsTunables
+	public PCAContext context = null;
+
+	public PCA(PCAContext context, ClusterManager clusterManager){
+		this.context = context;
+		this.networkView = clusterManager.getNetworkView();
+		if (network == null)
+				network = clusterManager.getNetwork();
+		context.setNetwork(network);
+	}
+
+	public String getShortName() {return SHORTNAME;}
 
 	@ProvidesTitle
 	public String getName() {return NAME;}
-        
-        public void run(TaskMonitor monitor){
-            monitor.setStatusMessage("Running Principal Component Analysis");
-            List<String> dataAttributes = context.getNodeAttributeList();
-            
-            if (dataAttributes == null || dataAttributes.isEmpty() ) {
-                monitor.showMessage(TaskMonitor.Level.ERROR, "Error: no attribute list selected");
-                return;
-            }
-            
-            if (context.selectedOnly &&
-			network.getDefaultNodeTable().countMatchingRows(CyNetwork.SELECTED, true) == 0) {
-                monitor.showMessage(TaskMonitor.Level.ERROR, "Error: no nodes selected from network");
-                return;
-            }
-            
-            String[] attrArray = new String[dataAttributes.size()];
-            int att = 0;
-            for (String attribute: dataAttributes) {
-                    attrArray[att++] = "node."+attribute;
-            }
-            
-            RunPCA runPCA = new RunPCA(network, networkView, context, monitor, attrArray);
-            if(context.inputValue.getSelectedValue().equals("Distance Matric") && 
-                    context.pcaType.getSelectedValue().equals("PCA of input weight between nodes")){
-                    runPCA.runOnNodeToNodeDistanceMatric();
-            }else if(context.inputValue.getSelectedValue().equals("Distance Matric") && 
-                    context.pcaType.getSelectedValue().equals("PCA of nodes and attributes") ){
-                    runPCA.runOnNodeToAttributeMatric();
-            }else if(context.inputValue.getSelectedValue().equals("Edge Value")){
-                runPCA.runOnEdgeValues();
-            }
-        }
+
+	public void run(TaskMonitor monitor){
+		monitor.setStatusMessage("Running Principal Component Analysis");
+		String inputValue = context.getInputValue();
+		if (inputValue.equals("Edge Value")) {
+			RunPCA runPCA = new RunPCA(network, networkView, context, monitor, null);
+			runPCA.runOnEdgeValues();
+		} else {
+			List<String> dataAttributes = context.getNodeAttributeList();
+
+			if (dataAttributes == null || dataAttributes.isEmpty() ) {
+				monitor.showMessage(TaskMonitor.Level.ERROR, "Error: no attribute list selected");
+				return;
+			}
+
+			if (context.selectedOnly &&
+				network.getDefaultNodeTable().countMatchingRows(CyNetwork.SELECTED, true) == 0) {
+				monitor.showMessage(TaskMonitor.Level.ERROR, "Error: no nodes selected from network");
+				return;
+			}
+
+			String[] attrArray = new String[dataAttributes.size()];
+			int att = 0;
+			for (String attribute: dataAttributes) {
+					attrArray[att++] = "node."+attribute;
+			}
+
+			RunPCA runPCA = new RunPCA(network, networkView, context, monitor, attrArray);
+			if(context.inputValue.getSelectedValue().equals("Distance Matrix") && 
+				context.pcaType.getSelectedValue().equals("PCA of input weight between nodes")){
+				System.out.println("Calling runOnNodeToNodeDistanceMatrix");
+				runPCA.runOnNodeToNodeDistanceMatrix();
+			} else if(context.inputValue.getSelectedValue().equals("Distance Matrix") && 
+				context.pcaType.getSelectedValue().equals("PCA of nodes and attributes") ){
+				System.out.println("Calling runOnNodeToAttributeMatrix");
+				runPCA.runOnNodeToAttributeMatrix();
+			} else {
+				System.out.println("Calling runOnEdgeValues");
+				runPCA.runOnEdgeValues();
+			}
+		}
+	}
 }
