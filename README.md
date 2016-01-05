@@ -10,6 +10,7 @@
         - KMeansCluster/ModelUtil gets the attributes out! start off with node attribute first!
         - [Done] Selecting single attribute
         - Selecting multiple attributes (not for SimpleCluster)
+- [DONE] Add SimpleCluster results to the node table
 - Checking if ranking of clusters should be able to run ( SimpleCluster.isReady() )
     1. Go through the algorithms in the clusterManager
     2. Check if there exists results from the clustering
