@@ -80,12 +80,14 @@ public class SimpleCluster extends AbstractTask implements Rank {
         String clusterColumnName = this.context.getSelectedAlgorithm();
         String rankColumnName = this.context.getClusterAttribute();
         List<CyRow> rows = table.getAllRows();
+        System.out.println("Number of rows in the table: " + rows.size());
 
         table.createColumn(rankColumnName, String.class, false);
 
         for (CyRow row : rows) {
             int index = row.get(clusterColumnName, Integer.class, 0);
             if (index == 0) {// node is node clustered!
+                System.out.println("No column found with <" + clusterColumnName + "> as columnName");
                 continue;
             }
             row.set(rankColumnName, scoreList.get(index - 1));
@@ -113,6 +115,8 @@ public class SimpleCluster extends AbstractTask implements Rank {
     private List<Integer> createScoreList(CyTable nodeTable) {
         List<Integer> scoreList = new ArrayList<>(this.clusters.size());
 
+        System.out.println("SimpleCluster is running.");
+
         for (int i = 0; i < this.clusters.size(); i++) {
             int score = 0;
             scoreList.add(i, score);
@@ -121,9 +125,6 @@ public class SimpleCluster extends AbstractTask implements Rank {
             }
             scoreList.set(i, score);
         }
-
-        System.out.println("SimpleCluster is running.");
-        System.out.println("RESULTS:");
 
         return scoreList;
     }
