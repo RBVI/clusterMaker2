@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -261,6 +263,25 @@ public class ModelUtils {
 		return Double.valueOf(val.doubleValue());
 	}
 
+	public static List<CyNode>sortNodeList(CyNetwork network, List<CyNode>nodeList) {
+		List<CyNode> list = new ArrayList<CyNode>(nodeList);
+		Collections.sort(list, new CyIdentifiableNameComparator(network));
+		return list;
+	}
+
+	public static List<CyNode>getNodeList(CyNetwork network, boolean selectedOnly) {
+		if (selectedOnly)
+			return new ArrayList<CyNode>(CyTableUtil.getNodesInState(network,"selected",true));
+		else
+			return new ArrayList<CyNode>(network.getNodeList());
+	}
+
+	public static List<CyNode>getSortedNodeList(CyNetwork network, boolean selectedOnly) {
+		List<CyNode> list = getNodeList(network, selectedOnly);
+		Collections.sort(list, new CyIdentifiableNameComparator(network));
+		return list;
+	}
+
 	private static List<String> getAllAttributes(CyNetwork network, CyTable table) {
 		String[] attributeArray = new String[1];
 		// Create the list by combining node and edge attributes into a single list
@@ -283,5 +304,4 @@ public class ModelUtils {
 			}
 		}
 	}
-	
 }
