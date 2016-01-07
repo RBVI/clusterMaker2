@@ -68,7 +68,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
 
         monitor.showMessage(TaskMonitor.Level.INFO, "Getting scorelist for simpleCluster.");
         List<Integer> scoreList = createScoreList(nodeTable);
-        addScoreToColumn(nodeTable, scoreList); // This can be abstract for ALL of ranking cluster algorithms
+        addScoreToColumn(nodeTable, scoreList, monitor); // This can be abstract for ALL of ranking cluster algorithms
         monitor.showMessage(TaskMonitor.Level.INFO, "Done.");
         System.out.println("SimpleCluster finished.");
     }
@@ -76,13 +76,19 @@ public class SimpleCluster extends AbstractTask implements Rank {
     /*
      * For each row in the table, index on the clustering group attribute and add a column with the score
      */
-    private void addScoreToColumn(CyTable table, List<Integer> scoreList) {
-        String clusterColumnName = this.context.getSelectedAlgorithm();
-        String rankColumnName = this.context.getClusterAttribute();
+    private void addScoreToColumn(CyTable table, List<Integer> scoreList, TaskMonitor monitor) {
+        //String clusterColumnName = this.context.getSelectedAlgorithm();
         List<CyRow> rows = table.getAllRows();
+        String clusterColumnName = this.getClusterColumn(table.getColumns());
+        String rankColumnName = this.context.getClusterAttribute();
         System.out.println("Number of rows in the table: " + rows.size());
 
         table.createColumn(rankColumnName, String.class, false);
+
+        if (clusterColumnName.equals("")) {
+            monitor.showMessage(TaskMonitor.Level.INFO, "Could not find cluster column name to work with");
+            return;
+        }
 
         for (CyRow row : rows) {
             int index = row.get(clusterColumnName, Integer.class, 0);
@@ -92,6 +98,17 @@ public class SimpleCluster extends AbstractTask implements Rank {
             }
             row.set(rankColumnName, scoreList.get(index - 1));
         }
+    }
+
+    private String getClusterColumn(Collection<CyColumn> columns) {
+        for (CyColumn column : columns) {
+            String columnName = column.getName().toLowerCase();
+            if (columnName.contains("cluster")) {
+                return columnName;
+            }
+        }
+        System.out.println("ERROR: Could not find clustering column");
+        return "";
     }
 
     private boolean clusterIsReady(GetNetworkClusterTask clusterMonitor) {
