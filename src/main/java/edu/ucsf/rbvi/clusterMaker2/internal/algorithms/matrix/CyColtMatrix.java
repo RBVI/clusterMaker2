@@ -17,6 +17,7 @@ public class CyColtMatrix extends ColtMatrix implements CyMatrix {
 	protected CyNetwork network;
 	protected CyNode[] rowNodes;
 	protected CyNode[] columnNodes;
+	protected boolean assymetricalEdge = false;
 
 	public CyColtMatrix(CyNetwork network) {
 		super();
@@ -125,6 +126,24 @@ public class CyColtMatrix extends ColtMatrix implements CyMatrix {
 	 */
 	public CyNode getColumnNode(int column) {
 		return columnNodes[column];
+	}
+
+	/**
+	 * Return true if the matrix is based on edges, but isn't
+	 * symmetrical.  This will probably be very rara -- currently
+	 * only Hierarchical clusters support it.
+	 *
+	 * @return true if the matrix is edge-based but assymetrical
+	 */
+	public boolean isAssymetricalEdge() { return assymetricalEdge; }
+
+	/**
+	 * Set the value of assymetrical edge.
+	 *
+	 * @param true if the matrix is edge-based but assymetrical
+	 */
+	public void setAssymetricalEdge(boolean assymetricalEdge) {
+		this.assymetricalEdge = assymetricalEdge;
 	}
 
 	/**

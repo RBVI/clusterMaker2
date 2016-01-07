@@ -50,6 +50,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractAttributeClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.TreeView;
@@ -60,6 +61,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.ui.TreeView;
 public class HierarchicalCluster extends AbstractAttributeClusterer {
 	public static String SHORTNAME = "hierarchical";
 	public static String NAME = "Hierarchical cluster";
+	DistanceMetric distanceMetric = DistanceMetric.EUCLIDEAN;
+
 	/**
 	 * Linkage types
 	 */
@@ -141,16 +144,16 @@ public class HierarchicalCluster extends AbstractAttributeClusterer {
 			monitor.setStatusMessage("Clustering attributes");
 
 			Integer[] rowOrder = algorithm.cluster(true);
-			updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
-			                 algorithm.getMatrix());
+			updateAttributes2(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
+			                  algorithm.getMatrix());
 		}
 
 		monitor.setStatusMessage("Clustering nodes");
 
 		// Cluster the nodes
 		Integer[] rowOrder = algorithm.cluster(false);
-		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
-		                 algorithm.getMatrix());
+		updateAttributes2(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
+		                  algorithm.getMatrix());
 
 		// TODO: Deal with params!
 		List<String> params = context.getParams(algorithm.getMatrix());

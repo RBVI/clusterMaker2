@@ -43,8 +43,12 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.work.TaskMonitor;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
+// import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
+// import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.MatrixUtils;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 // clusterMaker imports
@@ -60,7 +64,7 @@ public class RunHierarchical {
 	Integer[] rowOrder;
 	List<String>attrList;
 	final boolean debug = false;
-	Matrix matrix = null;
+	CyMatrix matrix = null;
 
 	// Instance variables
 	ClusterMethod clusterMethod;
@@ -88,11 +92,13 @@ public class RunHierarchical {
 			monitor.setStatusMessage("Creating distance matrix");
 
 		// Create the matrix
-		matrix = new Matrix(network, weightAttributes, transpose, context.ignoreMissing, context.selectedOnly, 
-			                  context.isAssymetric());
+		// matrix = new Matrix(network, weightAttributes, transpose, context.ignoreMissing, context.selectedOnly, 
+		// 	                  context.isAssymetric());
+		matrix = CyMatrixFactory.makeSmallMatrix(network, weightAttributes, context.selectedOnly, 
+		                                         context.ignoreMissing, transpose, context.isAssymetric());
 
 		// Create a weight vector of all ones (we don't use individual weighting, yet)
-		matrix.setUniformWeights();
+		// matrix.setUniformWeights();
 
 		// Handle special cases
 		if (context.zeroMissing)
@@ -203,15 +209,15 @@ public class RunHierarchical {
 		return rowOrder;
 	}
 
-	public Matrix getMatrix() { return matrix; }
+	public CyMatrix getMatrix() { return matrix; }
 	public List<String> getAttributeList() { return attrList; }
 
 
-	private TreeNode[] treeCluster(Matrix matrix, DistanceMetric metric, ClusterMethod clusterMethod) { 
+	private TreeNode[] treeCluster(CyMatrix matrix, DistanceMetric metric, ClusterMethod clusterMethod) { 
 
-		if (debug)
-			matrix.printMatrix();
-		double[][] distanceMatrix = matrix.getDistanceMatrix(metric);
+		// if (debug)
+		// 	matrix.printMatrix();
+		double[][] distanceMatrix = matrix.getDistanceMatrix(metric).toArray();
 		TreeNode[] result = null;
 		// For debugging purposes, output the distance matrix
 		// for (int row = 1; row < matrix.nRows(); row++) {
@@ -268,7 +274,7 @@ public class RunHierarchical {
  	 * it it files for some reason.
  	 **/
 
-	private TreeNode[] pslCluster(Matrix matrix, double[][] distanceMatrix, DistanceMetric metric) {
+	private TreeNode[] pslCluster(CyMatrix matrix, double[][] distanceMatrix, DistanceMetric metric) {
 		int nRows = matrix.nRows();
 		int nNodes = nRows-1;
 
@@ -288,7 +294,7 @@ public class RunHierarchical {
 				for (int j = 0; j < row; j++) temp[j] = distanceMatrix[row][j];
 			} else {
 				for (int j = 0; j < row; j++)
-					temp[j] = metric.getMetric(matrix, matrix, matrix.getWeights(), row, j);
+					temp[j] = metric.getMetric(matrix, matrix, row, j);
 			}
 			for (int j = 0; j < row; j++) {
 				k = vector[j];
@@ -332,7 +338,7 @@ public class RunHierarchical {
  	 * @return the array of TreeNode's that describe the hierarchical clustering solution, or null if
  	 * it it files for some reason.
  	 **/
-	private TreeNode[] pclcluster(Matrix matrix, double[][] distanceMatrix, DistanceMetric metric) {
+	private TreeNode[] pclcluster(CyMatrix matrix, double[][] distanceMatrix, DistanceMetric metric) {
 		int nRows = matrix.nRows();
 		int nColumns = matrix.nColumns();
 		int nNodes = nRows-1;
@@ -341,7 +347,7 @@ public class RunHierarchical {
 		TreeNode[] nodeList = new TreeNode[nNodes]; 
 
 		// Initialize
-		Matrix newData = new Matrix(matrix);
+		CyMatrix newData = matrix.copy();
 		// System.out.println("New matrix: ");
 		// newData.printMatrix();
 
@@ -405,10 +411,10 @@ public class RunHierarchical {
 
 			distID[js] = -inode-1;
 			for (int i = 0; i < js; i++) {
-				distanceMatrix[js][i] = metric.getMetric(newData, newData, newData.getWeights(), js, i);
+				distanceMatrix[js][i] = metric.getMetric(newData, newData, js, i);
 			}
 			for (int i = js+1; i < nNodes-inode; i++) {
-				distanceMatrix[i][js] = metric.getMetric(newData, newData, newData.getWeights(), js, i);
+				distanceMatrix[i][js] = metric.getMetric(newData, newData, js, i);
 			}
 		}
 
@@ -571,7 +577,7 @@ public class RunHierarchical {
 		return distance;
 	}
 
-	private Integer[] treeSort(Matrix matrix, int nNodes, double nodeOrder[], int nodeCounts[], TreeNode nodeList[]) {
+	private Integer[] treeSort(CyMatrix matrix, int nNodes, double nodeOrder[], int nodeCounts[], TreeNode nodeList[]) {
 		int nElements = nNodes+1;
 		double newOrder[] = new double[nElements];
 		int clusterIDs[] = new int[nElements];
@@ -629,7 +635,7 @@ public class RunHierarchical {
 		// for (int i = 0; i < newOrder.length; i++)
 		// 	System.out.println("newOrder["+i+"] = "+newOrder[i]);
 
-		Integer[] rowOrder = matrix.indexSort(newOrder, newOrder.length);
+		Integer[] rowOrder = MatrixUtils.indexSort(newOrder, newOrder.length);
 		if (debug) {
 			for (int i = 0; i < rowOrder.length; i++) {
 				monitor.showMessage(TaskMonitor.Level.INFO,""+i+": "+matrix.getRowLabel(rowOrder[i].intValue()));

@@ -41,10 +41,10 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeList;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BaseMatrix;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 
 public class HierarchicalContext {
 	CyNetwork network;
@@ -55,7 +55,7 @@ public class HierarchicalContext {
 
 	@Tunable(description="Distance Metric", gravity=2.0)
 	public ListSingleSelection<DistanceMetric> metric = 
-		new ListSingleSelection<DistanceMetric>(BaseMatrix.distanceTypes);
+		new ListSingleSelection<DistanceMetric>(DistanceMetric.values());
 
 	@ContainsTunables
 	public AttributeList attributeList = null;
@@ -84,9 +84,10 @@ public class HierarchicalContext {
 
 	public HierarchicalContext() {
 		linkage.setSelectedValue(ClusterMethod.AVERAGE_LINKAGE);
+		metric.setSelectedValue(DistanceMetric.EUCLIDEAN);
 	}
 
-	public List<String> getParams(Matrix matrix) {
+	public List<String> getParams(CyMatrix matrix) {
 		List<String> params = new ArrayList<String>();
 		params.add("linkage="+linkage.getSelectedValue().toString());
 		params.add("metric="+metric.getSelectedValue().toString());

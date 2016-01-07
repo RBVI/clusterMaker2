@@ -270,10 +270,13 @@ public class ModelUtils {
 	}
 
 	public static List<CyNode>getNodeList(CyNetwork network, boolean selectedOnly) {
-		if (selectedOnly)
-			return new ArrayList<CyNode>(CyTableUtil.getNodesInState(network,"selected",true));
-		else
+		if (selectedOnly) {
+			List<CyNode> nodes = CyTableUtil.getNodesInState(network,CyNetwork.SELECTED,true);
+			return new ArrayList<CyNode>(CyTableUtil.getNodesInState(network,CyNetwork.SELECTED,true));
+		} else {
+			List<CyNode> nodes = network.getNodeList();
 			return new ArrayList<CyNode>(network.getNodeList());
+		}
 	}
 
 	public static List<CyNode>getSortedNodeList(CyNetwork network, boolean selectedOnly) {

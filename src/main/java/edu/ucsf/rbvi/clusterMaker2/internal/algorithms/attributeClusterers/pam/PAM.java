@@ -180,6 +180,8 @@ public class PAM implements KClusterable {
 		
 		// find element with minimum total distance to all other elements
 		double[] totalDistances = new double[m];
+		double minDistance = Double.MAX_VALUE;
+		int minIndex = -1;
 		for (int ii = 0; ii < m; ++ii) {
 			// sum distances to all other elements
 			// assume distance to itself is 0
@@ -188,15 +190,12 @@ public class PAM implements KClusterable {
 				d += distances.getValue(ii, jj);
 			}
 			totalDistances[ii] = d;
-		}
-		double minDistance = totalDistances[0];
-		int minIndex = 0;
-		for (int ii = 0; ii < m; ++ii) {
-			if (totalDistances[ii] < minDistance) {
+			if (d < minDistance) {
 				minDistance = totalDistances[ii];
 				minIndex = ii;
 			}
 		}
+
 		// add element to medoid set
 		addMedoid(minIndex);
 		

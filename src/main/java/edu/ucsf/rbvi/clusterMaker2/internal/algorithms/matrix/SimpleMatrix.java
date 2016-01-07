@@ -45,6 +45,8 @@ public class SimpleMatrix implements Matrix {
 		data = new Double[rows][columns];
 		nRows = rows;
 		nColumns = columns;
+		rowLabels = new String[rows];
+		columnLabels = new String[columns];
 		index = null;
 	}
 	

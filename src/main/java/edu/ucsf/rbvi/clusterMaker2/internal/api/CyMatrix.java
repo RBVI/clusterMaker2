@@ -78,6 +78,22 @@ public interface CyMatrix extends Matrix {
 	public CyNode getColumnNode(int column);
 
 	/**
+	 * Return true if the matrix is based on edges, but isn't
+	 * symmetrical.  This will probably be very rara -- currently
+	 * only Hierarchical clusters support it.
+	 *
+	 * @return true if the matrix is edge-based but assymetrical
+	 */
+	public boolean isAssymetricalEdge();
+
+	/**
+	 * Set the value of assymetrical edge.
+	 *
+	 * @param true if the matrix is edge-based but assymetrical
+	 */
+	public void setAssymetricalEdge(boolean assymetricalEdge);
+
+	/**
 	 * Return a copy of this matrix
 	 *
 	 * @return deep copy of the matrix

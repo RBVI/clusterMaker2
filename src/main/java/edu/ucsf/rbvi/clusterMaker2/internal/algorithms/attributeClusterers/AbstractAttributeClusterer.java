@@ -53,6 +53,7 @@ import org.cytoscape.work.swing.TunableUIHelper;
 
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.FuzzyNodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
@@ -138,6 +139,70 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 		ArrayList<String> orderList = new ArrayList<String>();
 
 		String[] columnArray = matrix.getColLabels();
+		ArrayList<String>columnList = new ArrayList<String>(columnArray.length);
+
+		for (int i = 0; i < rowOrder.length; i++) {
+			orderList.add(rowArray[rowOrder[i]]);
+			if (matrix.isSymmetrical())
+				columnList.add(rowArray[rowOrder[i]]);
+		}
+
+		if (!matrix.isSymmetrical()) {
+			for (int col = 0; col < columnArray.length; col++) {
+				columnList.add(columnArray[col]);
+			}
+		}
+
+		if (matrix.isTransposed()) {
+			// We did an Array cluster -- output the calculated array order
+			// and the actual node order
+			// netAttr.setListAttribute(netID, ClusterManager.ARRAY_ORDER_ATTRIBUTE, orderList);
+			ModelUtils.createAndSetLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
+			                             orderList, List.class, String.class);
+
+			// Don't override the columnlist if a node order already exists
+			if (!ModelUtils.hasAttributeLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE))
+				ModelUtils.createAndSetLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE, 
+			                               columnList, List.class, String.class);
+		} else {
+			ModelUtils.createAndSetLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE, 
+			                             orderList, List.class, String.class);
+			// Don't override the columnlist if a node order already exists
+			if (!ModelUtils.hasAttributeLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE))
+				ModelUtils.createAndSetLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
+			                               columnList, List.class, String.class);
+		}
+
+	}
+
+	// Temporary version of updateAttribuets while we move to new Matrix implementations
+	protected void updateAttributes2(CyNetwork network, String cluster_type, Integer[] rowOrder, 
+	                                 String weightAttributes[], List<String> attrList, 
+		                               CyMatrix matrix) {
+
+		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, 
+		                             cluster_type, String.class, null);
+
+		if (matrix.isTransposed()) {
+			ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE, 
+		                               attrList, List.class, String.class);
+		} else {
+			//System.out.println("attrList's size: " + attrList.size());
+			ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE, 
+			                             attrList, List.class, String.class);
+			if (matrix.isSymmetrical() || matrix.isAssymetricalEdge()) {
+				ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_EDGE_ATTRIBUTE, 
+			                               weightAttributes[0], String.class, null);
+			} else if (matrix.isSymmetrical()) {
+				ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE, 
+			                               attrList, List.class, String.class);
+			}
+		}
+
+		String[] rowArray = matrix.getRowLabels();
+		ArrayList<String> orderList = new ArrayList<String>();
+
+		String[] columnArray = matrix.getColumnLabels();
 		ArrayList<String>columnList = new ArrayList<String>(columnArray.length);
 
 		for (int i = 0; i < rowOrder.length; i++) {
