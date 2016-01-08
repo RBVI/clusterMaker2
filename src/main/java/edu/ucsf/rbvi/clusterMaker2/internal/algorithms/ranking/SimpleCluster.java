@@ -31,6 +31,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
         this.context = context;
         this.network = this.manager.getNetwork();
         context.setNetwork(this.network);
+        this.context.updateContext();
     }
 
     public String getShortName() {
@@ -83,7 +84,13 @@ public class SimpleCluster extends AbstractTask implements Rank {
         String rankColumnName = this.context.getClusterAttribute();
         System.out.println("Number of rows in the table: " + rows.size());
 
-        table.createColumn(rankColumnName, String.class, false);
+        // Delete it instead of just editing the current one.
+        // Might give the end-user wrong values to work with!
+        if (table.getColumn(rankColumnName) != null) {
+            table.deleteColumn(rankColumnName);
+        }
+
+        table.createColumn(rankColumnName, Integer.class, false);
 
         if (clusterColumnName.equals("")) {
             monitor.showMessage(TaskMonitor.Level.INFO, "Could not find cluster column name to work with");
@@ -180,11 +187,8 @@ public class SimpleCluster extends AbstractTask implements Rank {
         clusterMonitor = new GetNetworkClusterTask(manager);
         clusterMonitor.algorithm = "shit"; // Temporary
 
-        if (clusterMonitor.algorithm.equals("None")) {
-            return false;
-        }
+        return !clusterMonitor.algorithm.equals("None");
 
-        return true;
     }
 
     public void cancel() {

@@ -43,12 +43,9 @@ public class SimpleClusterContext {
     }
 
     public List<String> getAlgorithms() {
-        if (this.network != null) {
-            return this.manager.getAllAlgorithms().stream()
-                    .filter(alg -> alg.getTypeList().contains(ClusterTaskFactory.ClusterType.NETWORK))
-                    .map(ClusterTaskFactory::getShortName).collect(Collectors.toList());
-        }
-        return new ListSingleSelection<>("None").getPossibleValues();
+        return this.manager.getAllAlgorithms().stream()
+                .filter(alg -> alg.getTypeList().contains(ClusterTaskFactory.ClusterType.NETWORK))
+                .map(ClusterTaskFactory::getShortName).collect(Collectors.toList());
     }
 
     public String getSelectedAlgorithm() {
@@ -63,8 +60,11 @@ public class SimpleClusterContext {
         if (this.network != null && this.network.equals(network)) {
             return;
         }
-
         this.network = network;
+    }
+
+    public void updateContext() {
+        this.attributes = new ListSingleSelection<>(getAttributes());
     }
 
     public CyNetwork getNetwork() {
