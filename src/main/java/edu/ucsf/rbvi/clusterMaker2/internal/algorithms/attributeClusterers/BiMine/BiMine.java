@@ -20,11 +20,11 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractAttributeClusterer;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.ChengChurch.ChengChurchContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.ChengChurch.RunChengChurch;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.BiclusterView;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
@@ -121,7 +121,7 @@ public class BiMine extends AbstractAttributeClusterer{
 		monitor.setStatusMessage("Clustering nodes");
 		Integer[] rowOrder = algorithm.cluster(false);
 		
-		Matrix biclusterMatrix = algorithm.getBiclusterMatrix();
+		CyMatrix biclusterMatrix = algorithm.getBiclusterMatrix();
 		int clusters[] = new int[biclusterMatrix.nRows()];
 		createGroups(network,biclusterMatrix,1, clusters, "bimine");
 		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, getAttributeList(), 

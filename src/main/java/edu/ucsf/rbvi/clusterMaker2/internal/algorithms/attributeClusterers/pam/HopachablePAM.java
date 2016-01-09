@@ -3,10 +3,12 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.pam;
 
 import org.cytoscape.model.CyNetwork;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BaseMatrix;
+
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
+
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Clusters;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMatrix;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hopach.types.Hopachable;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hopach.types.SplitCost;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hopach.types.Subsegregatable;
@@ -32,11 +34,11 @@ public class HopachablePAM extends PAM implements Hopachable, Subsegregatable {
 	
 	Summarizer summarizer = new MeanSummarizer();
 	
-	public HopachablePAM(CyNetwork network, BaseMatrix data, DistanceMetric metric) {
+	public HopachablePAM(CyNetwork network, CyMatrix data, DistanceMetric metric) {
 		super(network, data, metric);
 	}
 	
-	HopachablePAM(BaseMatrix data, DistanceMetric metric, DistanceMatrix distances, int[] idx) {
+	HopachablePAM(CyMatrix data, DistanceMetric metric, Matrix distances, int[] idx) {
 		super(data, metric, distances, idx);
 	}
 	

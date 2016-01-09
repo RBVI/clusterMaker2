@@ -6,9 +6,9 @@ import java.util.Random;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskMonitor;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractKClusterAlgorithm;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmeans.KMeansContext;
 
 public class RunFFT extends AbstractKClusterAlgorithm{
@@ -23,7 +23,7 @@ public class RunFFT extends AbstractKClusterAlgorithm{
 	}
 	
 	@Override
-	public int kcluster(int nClusters, int nIterations, Matrix matrix, 
+	public int kcluster(int nClusters, int nIterations, CyMatrix matrix, 
 			DistanceMetric metric, int[] clusterID) {
 
 		random = null;
@@ -68,7 +68,7 @@ public class RunFFT extends AbstractKClusterAlgorithm{
 				continue;
 			}
 						
-			distance = metric.getMetric(matrix, matrix, matrix.getWeights(), i, k);
+			distance = metric.getMetric(matrix, matrix, i, k);
 			clusterID[i] = k;
 			
 			for (int j = 1; j < nClusters; j++){
@@ -79,7 +79,7 @@ public class RunFFT extends AbstractKClusterAlgorithm{
 					continue;
 				}
 				
-				tdistance = metric.getMetric(matrix, matrix, matrix.getWeights(), i, centers.get(j));
+				tdistance = metric.getMetric(matrix, matrix, i, centers.get(j));
 				if (tdistance < distance) 
 				{ 
 					distance = tdistance;
@@ -92,7 +92,7 @@ public class RunFFT extends AbstractKClusterAlgorithm{
 		return ifound;
 	}
 	
-	public int getMaxMin(HashMap<Integer,Integer> centers, Matrix matrix){
+	public int getMaxMin(HashMap<Integer,Integer> centers, CyMatrix matrix){
 		int y = 0;
 		int nelements = matrix.nRows();
 		int numC = centers.size();
@@ -103,11 +103,11 @@ public class RunFFT extends AbstractKClusterAlgorithm{
 			double minD;
 			if (centers.containsValue(i)) continue;
 			
-			minD = metric.getMetric(matrix, matrix, matrix.getWeights(), i, k);
+			minD = metric.getMetric(matrix, matrix, i, k);
 			
 			if (numC > 1){
 				for (int j = 1; j < numC; j++){
-					double tminD = metric.getMetric(matrix, matrix, matrix.getWeights(), i, centers.get(j));
+					double tminD = metric.getMetric(matrix, matrix, i, centers.get(j));
 					
 					if (tminD < minD) 
 					{ 

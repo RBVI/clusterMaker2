@@ -10,10 +10,9 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeList;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BaseMatrix;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.KClusterAttributes;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hopach.types.SplitCost;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.numeric.SummaryMethod;
@@ -23,7 +22,7 @@ public class HopachPAMContext{
 	@Tunable(description="Distance metric", 
 			 groups={"Basic HOPACH Tuning"}, gravity=10)
 	public ListSingleSelection<DistanceMetric> metric =
-		new ListSingleSelection<DistanceMetric>(BaseMatrix.distanceTypes);
+		new ListSingleSelection<DistanceMetric>(DistanceMetric.values());
 
 	@Tunable(description="Split cost type",  
 			 groups={"Basic HOPACH Tuning"},gravity=11)
@@ -78,6 +77,7 @@ public class HopachPAMContext{
 	
 	public HopachPAMContext() {
 		kcontext.useSilhouette = false;
+		metric.setSelectedValue(DistanceMetric.EUCLIDEAN);
 	}
 	
 	public void setNetwork(CyNetwork network) {

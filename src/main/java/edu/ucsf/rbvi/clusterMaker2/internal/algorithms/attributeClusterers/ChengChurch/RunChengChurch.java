@@ -10,16 +10,18 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.TaskMonitor;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.MatrixUtils;
 
 public class RunChengChurch {
 
 	protected CyNetwork network;
 	protected String[] weightAttributes;
 	//protected DistanceMetric metric;
-	protected Matrix matrix;
-	protected Matrix biclusterMatrix;
+	protected CyMatrix matrix;
+	protected CyMatrix biclusterMatrix;
 	protected Double arr[][];
 	protected int[] clusters;
 	protected TaskMonitor monitor;
@@ -52,19 +54,16 @@ public class RunChengChurch {
 		this.alpha = context.alpha.getValue();
 	}
 
-	public Matrix getMatrix() { return matrix; }
-	public Matrix getBiclusterMatrix() { return biclusterMatrix; }
+	public CyMatrix getMatrix() { return matrix; }
+	public CyMatrix getBiclusterMatrix() { return biclusterMatrix; }
 	public int getNClusters() {return nClusters;}
 	public int[] getClustersArray() {return clusters;}
 	
 	public Integer[] cluster(boolean transpose) {
 		// Create the matrix
-		matrix = new Matrix(network, weightAttributes, transpose, ignoreMissing, selectedOnly);
+		matrix = CyMatrixFactory.makeSmallMatrix(network, weightAttributes, selectedOnly, ignoreMissing, transpose, false);
 		monitor.showMessage(TaskMonitor.Level.INFO,"cluster matrix has "+matrix.nRows()+" rows");
 		
-		// Create a weight vector of all ones (we don't use individual weighting, yet)
-		matrix.setUniformWeights();
-				
 		if (monitor != null) 
 			monitor.setStatusMessage("Clustering...");
 		
@@ -127,7 +126,7 @@ public class RunChengChurch {
 			
 			List<String> attrs = new ArrayList<String>();
 			for (int j = 0; j < cols.size(); j++){
-				attrs.add(matrix.getColLabel(cols.get(j)));				
+				attrs.add(matrix.getColumnLabel(cols.get(j)));				
 			}
 			clusterAttrs.put(iter, attrs);
 			
@@ -139,7 +138,7 @@ public class RunChengChurch {
 		
 		clusters = new int[totalRows];
 		CyNode rowNodes[] = new CyNode[totalRows];
-		biclusterMatrix = new Matrix(network,totalRows,nattrs);
+		biclusterMatrix = CyMatrixFactory.makeSmallMatrix(network, totalRows, nattrs);
 		int i = 0;
 		
 		for(Integer biclust: clusterRows.keySet()){
@@ -156,12 +155,12 @@ public class RunChengChurch {
 		}
 		
 		for(int j = 0; j<nattrs;j++){
-			biclusterMatrix.setColLabel(j, matrix.getColLabel(j));			
+			biclusterMatrix.setColumnLabel(j, matrix.getColumnLabel(j));			
 		}
 		
 		biclusterMatrix.setRowNodes(rowNodes);
 		Integer[] rowOrder;
-		rowOrder = biclusterMatrix.indexSort(clusters, clusters.length);
+		rowOrder = MatrixUtils.indexSort(clusters, clusters.length);
 		return rowOrder;
 	}
 	

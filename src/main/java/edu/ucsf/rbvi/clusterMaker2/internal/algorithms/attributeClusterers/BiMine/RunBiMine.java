@@ -11,9 +11,11 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.TaskMonitor;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.ChengChurch.ChengChurchContext;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.MatrixUtils;
 
 public class RunBiMine {
 
@@ -21,10 +23,10 @@ public class RunBiMine {
 	protected String[] weightAttributes;
 	//protected DistanceMetric metric;
 	protected BET<Integer> bet;
-	protected Matrix matrix;
-	protected Matrix matrix_preproc;
+	protected CyMatrix matrix;
+	protected CyMatrix matrix_preproc;
 	//protected Matrix matrix_preproc_t;
-	protected Matrix biclusterMatrix;
+	protected CyMatrix biclusterMatrix;
 	protected Double arr[][];
 	protected Double geneRho[][];
 	protected Double conditionRho[][];
@@ -39,8 +41,8 @@ public class RunBiMine {
 	protected Map<Integer,List<Long>> clusterNodes;
 	protected Map<Integer,List<String>> clusterAttrs;
 	
-	public Matrix getMatrix() { return matrix; }
-	public Matrix getBiclusterMatrix() { return biclusterMatrix; }
+	public CyMatrix getMatrix() { return matrix; }
+	public CyMatrix getBiclusterMatrix() { return biclusterMatrix; }
 	public int[] getClustersArray() {return clusters;}
 	
 	public RunBiMine(CyNetwork network, String weightAttributes[],
@@ -58,11 +60,11 @@ public class RunBiMine {
 	
 	public Integer[] cluster(boolean transpose) {
 		// Create the matrix
-		matrix = new Matrix(network, weightAttributes, transpose, ignoreMissing, selectedOnly);
+		matrix = CyMatrixFactory.makeSmallMatrix(network, weightAttributes, selectedOnly, ignoreMissing, transpose, false);
 		monitor.showMessage(TaskMonitor.Level.INFO,"cluster matrix has "+matrix.nRows()+" rows");
 		
 		// Create a weight vector of all ones (we don't use individual weighting, yet)
-		matrix.setUniformWeights();
+		// matrix.setUniformWeights();
 				
 		if (monitor != null) 
 			monitor.setStatusMessage("Clustering...");
@@ -70,7 +72,8 @@ public class RunBiMine {
 		int nelements = matrix.nRows();
 		int nattrs = matrix.nColumns();
 		
-		matrix_preproc = new Matrix(network,nelements,nattrs);		
+		// matrix_preproc = new Matrix(network,nelements,nattrs);		
+		matrix_preproc = CyMatrixFactory.makeSmallMatrix(network,nelements,nattrs);		
 		//matrix_preproc_t = new Matrix(network,nattrs,nelements);
 		//arr = preProcess();
 		bet = Init_BET();
@@ -92,7 +95,8 @@ public class RunBiMine {
 		
 		clusters = new int[totalRows];
 		CyNode rowNodes[] = new CyNode[totalRows];
-		biclusterMatrix = new Matrix(network,totalRows,nattrs);
+		// biclusterMatrix = new Matrix(network,totalRows,nattrs);
+		biclusterMatrix = CyMatrixFactory.makeSmallMatrix(network,totalRows,nattrs);		
 		int i = 0;
 		
 		clusterNodes = new HashMap<Integer,List<Long>>();
@@ -119,19 +123,20 @@ public class RunBiMine {
 			
 			List<String> attrs = new ArrayList<String>();
 			for(Integer cond:conditionList){
-				attrs.add(matrix.getColLabel(cond));
+				attrs.add(matrix.getColumnLabel(cond));
 			}
 			clusterAttrs.put(k, attrs);
 		}
 		
 		for(int j = 0; j<nattrs;j++){
-			biclusterMatrix.setColLabel(j, matrix.getColLabel(j));			
+			biclusterMatrix.setColumnLabel(j, matrix.getColumnLabel(j));			
 		}
 		
 		biclusterMatrix.setRowNodes(rowNodes);
 		
 		Integer[] rowOrder;
-		rowOrder = biclusterMatrix.indexSort(clusters, clusters.length);
+		// rowOrder = biclusterMatrix.indexSort(clusters, clusters.length);
+		rowOrder = MatrixUtils.indexSort(clusters, clusters.length);
 		return rowOrder;
 	}
 		
@@ -261,8 +266,8 @@ public class RunBiMine {
 		List<Integer> genes = node.getGenes();
 		List<Integer> conditions = node.getConditions();
 				
-		Matrix data = new Matrix(network,genes.size(),conditions.size());
-		//Matrix data_t = new Matrix(network,conditions.size(),genes.size());
+		//Matrix data = new Matrix(network,genes.size(),conditions.size());
+		CyMatrix data = CyMatrixFactory.makeSmallMatrix(network,genes.size(),conditions.size());
 		for(int i = 0; i < genes.size();i++){
 			for(int j = 0; j < conditions.size();j++){
 				data.setValue(i, j, matrix.getValue(genes.get(i), conditions.get(j)));
@@ -318,7 +323,7 @@ public class RunBiMine {
 		}
 	}
 	*/
-	private Double getSpearmansRho(Matrix data, int i, int j) {
+	private Double getSpearmansRho(CyMatrix data, int i, int j) {
 		Double rho = 0.0;
 		double[] rank1 = data.getRank(i);
 		double[] rank2 = data.getRank(j);

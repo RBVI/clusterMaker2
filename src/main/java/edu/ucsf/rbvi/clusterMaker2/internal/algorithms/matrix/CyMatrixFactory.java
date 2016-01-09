@@ -141,6 +141,33 @@ public class CyMatrixFactory {
 	}
 
 	/**
+	 * Convenience method for testing routines
+	 */
+	public static CyMatrix makeSmallMatrix(int rows, int columns, Double[] data) {
+		return makeSmallMatrix(null, rows, columns, data);
+	}
+
+
+	/**
+	 * Create a small matrix with an initial data set.  Used primarily for test cases
+	 *
+	 * @param network the network that will be the source of the data
+	 * @param rows the number of rows in the matrix
+	 * @param columns the number of columns in the matix
+	 * @param data initial data set
+	 * @return the empty matrix
+	 */
+	public static CyMatrix makeSmallMatrix(CyNetwork network, int rows, int columns, Double[] data) {
+		CyMatrix mat = new CySimpleMatrix(network, rows, columns);
+		for (int row = 0; row < rows; row++) {
+			for (int col = 0; col < columns; col++) {
+				mat.setValue(row, col, data[row*columns+col]);
+			}
+		}
+		return mat;
+	}
+
+	/**
 	 * Create a small matrix populated with data from
 	 * the indicated node attributes
 	 *

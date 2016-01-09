@@ -1,7 +1,8 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Clusters;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMatrix;
 
 
 /**
@@ -17,8 +18,8 @@ public class DistanceCalculator {
 	 * @param clusters cluster assignments
 	 * @return matrix
 	 */
-	public static double[][] segregations(DistanceMatrix distances, Clusters clusters) {
-		int m = distances.size();
+	public static double[][] segregations(Matrix distances, Clusters clusters) {
+		int m = distances.nRows();
 		int k = clusters.getNumberOfClusters();
 		
 		// allocate space
@@ -63,7 +64,7 @@ public class DistanceCalculator {
 	 * @param clusters clustering result
 	 * @return matrix
 	 */
-	public static double[][] separations(DistanceMatrix distances, Clusters clusters) {
+	public static double[][] separations(Matrix distances, Clusters clusters) {
 		final int k = clusters.getNumberOfClusters();
 		
 		// allocate space
@@ -102,7 +103,7 @@ public class DistanceCalculator {
 	 * @param medoids medoid assignments
 	 * @return matrix
 	 */
-	public static double[][] separations(DistanceMatrix distances, int[] medoids) {
+	public static double[][] separations(Matrix distances, int[] medoids) {
 		int k = medoids.length;
 		
 		// allocate space

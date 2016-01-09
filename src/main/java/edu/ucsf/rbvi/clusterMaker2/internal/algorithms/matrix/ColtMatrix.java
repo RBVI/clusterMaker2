@@ -62,7 +62,11 @@ public class ColtMatrix implements Matrix {
 	 *
 	 * @return number of rows
 	 */
-	public int nRows() { return nRows; }
+	public int nRows() { 
+		if (index != null)
+			return index.length;
+		return nRows; 
+	}
 
 	/**
 	 * Return the number of columns in this matrix.

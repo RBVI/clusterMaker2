@@ -51,11 +51,15 @@ import org.cytoscape.work.TaskMonitor;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.SilhouetteCalculator;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.Silhouettes;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.MatrixUtils;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
@@ -71,7 +75,7 @@ public abstract class AbstractKClusterAlgorithm {
 	protected DistanceMetric metric;
 	protected TaskMonitor monitor;
 	protected boolean debug = false;
-	protected Matrix matrix;
+	protected CyMatrix matrix;
 	protected boolean ignoreMissing = true;
 	protected boolean selectedOnly = false;
 	protected boolean useSilhouette = false;
@@ -92,7 +96,7 @@ public abstract class AbstractKClusterAlgorithm {
 	}
 
 	// This should be overridden by any k-cluster implementation
-	public abstract int kcluster(int nClusters, int nIterations, Matrix matrix, 
+	public abstract int kcluster(int nClusters, int nIterations, CyMatrix matrix, 
 	                             DistanceMetric metric, int[] clusters);
 
 	/**
@@ -118,12 +122,13 @@ public abstract class AbstractKClusterAlgorithm {
 			monitor.setStatusMessage("Creating distance matrix");
 
 		// Create the matrix
-		matrix = new Matrix(network, weightAttributes, transpose, ignoreMissing, selectedOnly);
+		// matrix = new Matrix(network, weightAttributes, transpose, ignoreMissing, selectedOnly);
+		matrix = CyMatrixFactory.makeSmallMatrix(network, weightAttributes, selectedOnly, ignoreMissing, transpose, false);
 		monitor.showMessage(TaskMonitor.Level.INFO,"cluster matrix has "+matrix.nRows()+" rows");
 		int kMax = Math.min(context.kMax, matrix.nRows());
 
 		// Create a weight vector of all ones (we don't use individual weighting, yet)
-		matrix.setUniformWeights();
+		// matrix.setUniformWeights();
 
 		if (monitor != null) 
 			monitor.setStatusMessage("Clustering...");
@@ -182,7 +187,7 @@ public abstract class AbstractKClusterAlgorithm {
 	*/
 		// NB  HOPACH clusters should not be re-ordered
 
-		rowOrder = matrix.indexSort(clusters, clusters.length);
+		rowOrder = MatrixUtils.indexSort(clusters, clusters.length);
 		// System.out.println(Arrays.toString(rowOrder));
 		// Update the network attributes
 		
@@ -202,7 +207,7 @@ public abstract class AbstractKClusterAlgorithm {
 		return rowOrder;
 	}
 
-	public Matrix getMatrix() { return matrix; }
+	public CyMatrix getMatrix() { return matrix; }
 	public List<String> getAttributeList() { return attrList; }
 
   /**
@@ -237,7 +242,7 @@ public abstract class AbstractKClusterAlgorithm {
     }
   }
 
-	public void getClusterMeans(int nClusters, Matrix data, Matrix cdata, int[] clusterid) {
+	public void getClusterMeans(int nClusters, CyMatrix data, CyMatrix cdata, int[] clusterid) {
 
 		double[][]cmask = new double[nClusters][cdata.nColumns()];
 
@@ -443,13 +448,13 @@ public abstract class AbstractKClusterAlgorithm {
 	}
 
 	private class RunKMeans implements Runnable {
-		Matrix matrix;
+		CyMatrix matrix;
 		int[] clusters;
 		int kEstimate;
 		int nIterations;
 		TaskMonitor saveMonitor = null;
 
-		public RunKMeans (Matrix matrix, int[] clusters, int k, int nIterations, TaskMonitor saveMonitor) {
+		public RunKMeans (CyMatrix matrix, int[] clusters, int k, int nIterations, TaskMonitor saveMonitor) {
 			this.matrix = matrix;
 			this.clusters = clusters;
 			this.kEstimate = k;

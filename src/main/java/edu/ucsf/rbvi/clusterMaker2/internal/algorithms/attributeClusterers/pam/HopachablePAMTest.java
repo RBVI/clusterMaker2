@@ -4,11 +4,13 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BaseMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
+
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Clusters;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hopach.types.Hopachable;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hopach.types.SplitCost;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.numeric.MedianSummarizer;
 
 public class HopachablePAMTest {
@@ -31,7 +33,7 @@ public class HopachablePAMTest {
 		int[] ans = {0, 0, 1, 2, 1, 2};
 		
 		
-		BaseMatrix mat = new BaseMatrix(0, 2, data);
+		CyMatrix mat = CyMatrixFactory.makeSmallMatrix(6, 2, data);
 		HopachablePAM pam = new HopachablePAM(null, mat, DistanceMetric.CITYBLOCK);
 		// permute sample order
 		Hopachable pamPermuted = pam.subset(index);
@@ -90,7 +92,7 @@ public class HopachablePAMTest {
 		
 		int[] ans = {0, 1, 1, 2, 2, 0, 1, 0, 2};
 		
-		BaseMatrix mat = new BaseMatrix(0, 2, data);
+		CyMatrix mat = CyMatrixFactory.makeSmallMatrix(9, 2, data);
 		HopachablePAM pam = new HopachablePAM(null, mat, DistanceMetric.CITYBLOCK);
 		pam.setParameters(9, 9, SplitCost.AVERAGE_SPLIT_SILHOUETTE, new MedianSummarizer());
 		
@@ -117,7 +119,7 @@ public class HopachablePAMTest {
 		};
 		int k = 3;
 		
-		BaseMatrix mat = new BaseMatrix(0, 2, data);
+		CyMatrix mat = CyMatrixFactory.makeSmallMatrix(6, 2, data);
 		HopachablePAM pam = new HopachablePAM(null, mat, DistanceMetric.CITYBLOCK);
 		
 		Clusters c1 = pam.cluster(k);

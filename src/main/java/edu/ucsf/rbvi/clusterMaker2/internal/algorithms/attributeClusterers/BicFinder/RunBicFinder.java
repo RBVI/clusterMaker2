@@ -15,8 +15,10 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.TaskMonitor;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.MatrixUtils;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BiMine.BETNode;
 
 public class RunBicFinder {
@@ -24,11 +26,11 @@ public class RunBicFinder {
 	protected CyNetwork network;
 	protected String[] weightAttributes;
 
-	protected Matrix matrix;
-	protected Matrix biclusterMatrix;
+	protected CyMatrix matrix;
+	protected CyMatrix biclusterMatrix;
 	protected Double arr[][];
 	protected int[][] discrete_matrix;
-	protected Matrix matrix_t;
+	protected CyMatrix matrix_t;
 
 	protected List<Map<Integer,Integer>> dag;
 	protected List<Map<Integer,List<Boolean>>> csl;
@@ -53,8 +55,8 @@ public class RunBicFinder {
 	protected Map<Integer,List<Long>> clusterNodes;
 	protected Map<Integer,List<String>> clusterAttrs;
 
-	public Matrix getMatrix() { return matrix; }
-	public Matrix getBiclusterMatrix() { return biclusterMatrix; }
+	public CyMatrix getMatrix() { return matrix; }
+	public CyMatrix getBiclusterMatrix() { return biclusterMatrix; }
 	public int[] getClustersArray() {return clusters;}
 
 	public RunBicFinder(CyNetwork network, String weightAttributes[],
@@ -70,7 +72,7 @@ public class RunBicFinder {
 
 	public Integer[] cluster(boolean transpose) {
 		// Create the matrix
-		matrix = new Matrix(network, weightAttributes, transpose, ignoreMissing, selectedOnly);
+		matrix = CyMatrixFactory.makeSmallMatrix(network, weightAttributes, selectedOnly, ignoreMissing, transpose, false);
 		monitor.showMessage(TaskMonitor.Level.INFO,"cluster matrix has "+matrix.nRows()+" rows");
 
 		System.gc();
@@ -79,7 +81,6 @@ public class RunBicFinder {
 		outputInstrument("Initial", rt);
 
 		// Create a weight vector of all ones (we don't use individual weighting, yet)
-		matrix.setUniformWeights();
 
 		if (monitor != null) 
 			monitor.setStatusMessage("Clustering...");
@@ -205,7 +206,8 @@ public class RunBicFinder {
 
 		clusters = new int[totalRows];
 		CyNode rowNodes[] = new CyNode[totalRows];
-		biclusterMatrix = new Matrix(network,totalRows,nattrs);
+		// biclusterMatrix = new Matrix(network,totalRows,nattrs);
+		biclusterMatrix = CyMatrixFactory.makeSmallMatrix(network,totalRows,nattrs);
 
 		int i = 0;
 		clusterNodes = new HashMap<Integer,List<Long>>();
@@ -228,17 +230,17 @@ public class RunBicFinder {
 
 			List<String> attrs = new ArrayList<String>();
 			for(Integer cond:clusterCols.get(biclust)){
-				attrs.add(matrix.getColLabel(cond));
+				attrs.add(matrix.getColumnLabel(cond));
 			}
 			clusterAttrs.put(biclust, attrs);
 		}
 		for(int j = 0; j<nattrs;j++){
-			biclusterMatrix.setColLabel(j, matrix.getColLabel(j));
+			biclusterMatrix.setColumnLabel(j, matrix.getColumnLabel(j));
 		}
 
 		biclusterMatrix.setRowNodes(rowNodes);
 		Integer[] rowOrder;
-		rowOrder = biclusterMatrix.indexSort(clusters, clusters.length);
+		rowOrder = MatrixUtils.indexSort(clusters, clusters.length);
 		return rowOrder;
 	}
 
@@ -271,7 +273,7 @@ public class RunBicFinder {
 
 	private double getASR(List<Integer> genes, List<Integer> conditions) {
 
-		Matrix data = new Matrix(network,genes.size(),conditions.size());
+		CyMatrix data = CyMatrixFactory.makeSmallMatrix(network,genes.size(),conditions.size());
 		//Matrix data_t = new Matrix(network,conditions.size(),genes.size());
 		for(int i = 0; i < genes.size();i++){
 			for(int j = 0; j < conditions.size();j++){
@@ -304,7 +306,7 @@ public class RunBicFinder {
 		return asr;
 	}
 
-	private Double getSpearmansRho(Matrix data, int i, int j) {
+	private Double getSpearmansRho(CyMatrix data, int i, int j) {
 		Double rho = 0.0;
 		double[] rank1 = data.getRank(i);
 		double[] rank2 = data.getRank(j);

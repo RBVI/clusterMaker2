@@ -3,10 +3,11 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.pam;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskMonitor;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
+
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractKClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Clusters;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 
 
 
@@ -21,7 +22,7 @@ public class RunPAM extends AbstractKClusterAlgorithm {
 	}
 	
 	@Override
-	public int kcluster(int nClusters, int nIterations, Matrix matrix, DistanceMetric metric, int[] clusterId) {
+	public int kcluster(int nClusters, int nIterations, CyMatrix matrix, DistanceMetric metric, int[] clusterId) {
 		
 		PAM pam = new PAM(network, matrix, metric);
 		Clusters c = pam.cluster(nClusters);

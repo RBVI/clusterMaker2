@@ -55,10 +55,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractKClusterAlgorithm;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
 
 public class RunKCluster extends AbstractKClusterAlgorithm {
 	Random random = null;
@@ -71,7 +72,7 @@ public class RunKCluster extends AbstractKClusterAlgorithm {
 	}
 
 	// The kmeans implementation of a k-clusterer
-	public int kcluster(int nClusters, int nIterations, Matrix matrix, DistanceMetric metric, int[] clusterID) {
+	public int kcluster(int nClusters, int nIterations, CyMatrix matrix, DistanceMetric metric, int[] clusterID) {
 		// System.out.println("Running kmeans with "+nClusters+" clusters");
 
 		random = null;
@@ -92,7 +93,8 @@ public class RunKCluster extends AbstractKClusterAlgorithm {
 
 		// System.out.println("Creating matrix for "+nClusters);
 		// This matrix will store the centroid data
-		Matrix cData = new Matrix(network, nClusters, matrix.nColumns());
+		// Matrix cData = new Matrix(network, nClusters, matrix.nColumns());
+		CyMatrix cData = CyMatrixFactory.makeSmallMatrix(network, nClusters, matrix.nColumns());
 
 		// Outer initialization
 		if (nIterations <= 1) {
@@ -123,7 +125,7 @@ public class RunKCluster extends AbstractKClusterAlgorithm {
 					randomAssign(nClusters, nelements, tclusterid);
 					// if (nIterations != 0) debugAssign(nClusters, nelements, tclusterid);
 				} else {
-					int centers[] = chooseCentralElementsAsCenters(nelements, nClusters, matrix.getDistanceMatrix(metric), tclusterid);
+					int centers[] = chooseCentralElementsAsCenters(nelements, nClusters, matrix.getDistanceMatrix(metric).toArray(), tclusterid);
 				}
 			}
 
@@ -164,12 +166,12 @@ public class RunKCluster extends AbstractKClusterAlgorithm {
 
 					// Get the distance
 					// distance = metric(ndata,data,cdata,mask,cmask,weight,i,k,transpose);
-					distance = metric.getMetric(matrix, cData, matrix.getWeights(), i, k);
+					distance = metric.getMetric(matrix, cData, i, k);
 					for (int j = 0; j < nClusters; j++) { 
 						double tdistance;
 						if (j==k) continue;
 						// tdistance = metric(ndata,data,cdata,mask,cmask,weight,i,j,transpose);
-						tdistance = metric.getMetric(matrix, cData, matrix.getWeights(), i, j);
+						tdistance = metric.getMetric(matrix, cData, i, j);
 						if (tdistance < distance) 
 						{ 
 							distance = tdistance;

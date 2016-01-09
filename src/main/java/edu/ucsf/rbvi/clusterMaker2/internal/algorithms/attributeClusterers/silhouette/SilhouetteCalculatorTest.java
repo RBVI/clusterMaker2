@@ -4,8 +4,9 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BaseMatrix;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
 
 
 public class SilhouetteCalculatorTest {
@@ -14,9 +15,8 @@ public class SilhouetteCalculatorTest {
 
 	@Test
 	public void testCalculateBaseMatrix() {
-		BaseMatrix test = new BaseMatrix(
-			12, 3,
-			new Double[]{
+		CyMatrix test = CyMatrixFactory.makeSmallMatrix(null, 12, 3);
+		Double data[] = new Double[]{
 				101., 102., 103.,
 				102., 103., 104.,
 				103., 104., 105.,
@@ -29,8 +29,12 @@ public class SilhouetteCalculatorTest {
 				 29.,  30.,  31.,
 				 32.,  33.,  34.,
 				 33.,  34.,  35.,
+		};
+		for (int row = 0; row < 3; row++) {
+			for (int col = 0; col < 12; col++) {
+				test.setValue(row, col, data[row*3+col]);
 			}
-		);
+		}
 		
 		int[] labels = {0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3};
 		

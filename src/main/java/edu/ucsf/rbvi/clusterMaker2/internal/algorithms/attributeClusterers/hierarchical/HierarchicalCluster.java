@@ -144,16 +144,16 @@ public class HierarchicalCluster extends AbstractAttributeClusterer {
 			monitor.setStatusMessage("Clustering attributes");
 
 			Integer[] rowOrder = algorithm.cluster(true);
-			updateAttributes2(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
-			                  algorithm.getMatrix());
+			updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
+			                 algorithm.getMatrix());
 		}
 
 		monitor.setStatusMessage("Clustering nodes");
 
 		// Cluster the nodes
 		Integer[] rowOrder = algorithm.cluster(false);
-		updateAttributes2(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
-		                  algorithm.getMatrix());
+		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
+		                 algorithm.getMatrix());
 
 		// TODO: Deal with params!
 		List<String> params = context.getParams(algorithm.getMatrix());

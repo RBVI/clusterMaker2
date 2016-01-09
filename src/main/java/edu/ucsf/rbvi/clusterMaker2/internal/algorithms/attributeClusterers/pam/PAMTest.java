@@ -9,9 +9,10 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BaseMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Clusters;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
 
 
 public class PAMTest {
@@ -25,7 +26,7 @@ public class PAMTest {
 		
 		int[] ans = {0};
 		
-		BaseMatrix mat = new BaseMatrix(0, 2, data);
+		CyMatrix mat = CyMatrixFactory.makeSmallMatrix(1, 2, data);
 		PAM pam = new PAM(null, mat, DistanceMetric.CITYBLOCK);
 		
 		Clusters c = pam.cluster(k);
@@ -48,7 +49,8 @@ public class PAMTest {
 		
 		int[] ans = {0, 0, 1, 1, 2};//{0, 0, 1, 1, 2, 2};
 		
-		BaseMatrix mat = new BaseMatrix(0, 2, data);
+		// BaseMatrix mat = new BaseMatrix(4, 2, data);
+		CyMatrix mat = CyMatrixFactory.makeSmallMatrix(4, 2, data);
 		PAM pam = new PAM(null, mat, DistanceMetric.CITYBLOCK);
 		
 		Clusters c = pam.cluster(k);
@@ -108,7 +110,8 @@ public class PAMTest {
 		data = new Double[vectors.size()];
 		data = vectors.toArray(data);
 
-		BaseMatrix mat = new BaseMatrix(0, vectorWidth, data);
+		// BaseMatrix mat = new BaseMatrix(0, vectorWidth, data);
+		CyMatrix mat = CyMatrixFactory.makeSmallMatrix(data.length/vectorWidth, vectorWidth, data);
 		PAM pam = new PAM(null, mat, DistanceMetric.EUCLIDEAN);
 		
 		Clusters c = pam.cluster(k);

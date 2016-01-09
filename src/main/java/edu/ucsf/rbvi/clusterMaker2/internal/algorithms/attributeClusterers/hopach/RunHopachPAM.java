@@ -4,10 +4,11 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hopa
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskMonitor;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractKClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Clusters;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hopach.types.SplitCost;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.pam.HopachablePAM;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.numeric.MeanSummarizer;
@@ -44,7 +45,7 @@ public class RunHopachPAM extends AbstractKClusterAlgorithm {
 	}
 	
 	@Override
-	public int kcluster(int nClusters, int nIterations, Matrix matrix, DistanceMetric metric, int[] clusterId) {
+	public int kcluster(int nClusters, int nIterations, CyMatrix matrix, DistanceMetric metric, int[] clusterId) {
 		
 		monitor.setProgress(0);
 		

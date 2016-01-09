@@ -8,9 +8,9 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
+
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeList;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BaseMatrix;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.KClusterAttributes;
 
 
@@ -28,7 +28,7 @@ public class PAMContext {
 	
 	@Tunable(description="Distance Metric", gravity=10)
 	public ListSingleSelection<DistanceMetric> metric = 
-		new ListSingleSelection<DistanceMetric>(BaseMatrix.distanceTypes);
+		new ListSingleSelection<DistanceMetric>(DistanceMetric.values());
 	
 	@ContainsTunables
 	public AttributeList attributeList = null;
