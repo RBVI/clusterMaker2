@@ -125,7 +125,7 @@ public class KMeansCluster extends AbstractAttributeClusterer {
 		resetAttributes(network, SHORTNAME);
 
 		// Create a new clusterer
-		RunKCluster algorithm = new RunKCluster(network, attributeArray, distanceMetric, monitor, context);
+		RunKCluster algorithm = new RunKCluster(network, attributeArray, distanceMetric, monitor, context, this);
 
 		// System.out.println("Algorithm defined");
 

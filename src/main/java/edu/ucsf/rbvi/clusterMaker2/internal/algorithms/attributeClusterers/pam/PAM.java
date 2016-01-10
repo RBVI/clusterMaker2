@@ -77,7 +77,7 @@ public class PAM implements KClusterable {
 		this.network = network;
 	}
 	
-	public PAM(CyMatrix data, DistanceMetric metric, Matrix distances, int[] idx) {
+	public PAM(CyMatrix data, DistanceMetric metric, Matrix dists, int[] idx) {
 		this.data = data;
 		this.metric = metric;
 		
@@ -95,13 +95,13 @@ public class PAM implements KClusterable {
 		}
 		this.idx = idx;
 		
-		if (distances == null) {
+		if (dists == null) {
 			this.distances = data.getDistanceMatrix(metric);
 			// this.distances = new DistanceMatrix(data, metric, idx);
-		} /*else {
-			this.distances = distances.subset(idx);
-		}*/
-			this.distances = distances.submatrix(idx);
+		} else {
+			this.distances = dists;
+		}
+		this.distances = distances.submatrix(idx);
 		
 		this.clusters = null;
 	}

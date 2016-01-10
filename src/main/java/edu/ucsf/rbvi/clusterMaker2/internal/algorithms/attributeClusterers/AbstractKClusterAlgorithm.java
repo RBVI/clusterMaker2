@@ -79,8 +79,8 @@ public abstract class AbstractKClusterAlgorithm {
 	protected boolean ignoreMissing = true;
 	protected boolean selectedOnly = false;
 	protected boolean useSilhouette = false;
-	protected boolean cancelled = false;
 	protected Integer[] rowOrder;
+	private AbstractClusterAlgorithm parentTask = null;
 	private Silhouettes[] silhouetteResults = null;
 
 
@@ -88,11 +88,12 @@ public abstract class AbstractKClusterAlgorithm {
  	 * Common code for the k-cluster algorithms with silhouette
  	 */
 	public AbstractKClusterAlgorithm(CyNetwork network, String weightAttributes[], 
-	                                 DistanceMetric metric, TaskMonitor monitor) {
+	                                 DistanceMetric metric, TaskMonitor monitor, AbstractClusterAlgorithm task) {
 		this.network = network;
 		this.weightAttributes = weightAttributes;
 		this.metric = metric;
 		this.monitor = monitor;
+		this.parentTask = task;
 	}
 
 	// This should be overridden by any k-cluster implementation
@@ -122,13 +123,9 @@ public abstract class AbstractKClusterAlgorithm {
 			monitor.setStatusMessage("Creating distance matrix");
 
 		// Create the matrix
-		// matrix = new Matrix(network, weightAttributes, transpose, ignoreMissing, selectedOnly);
 		matrix = CyMatrixFactory.makeSmallMatrix(network, weightAttributes, selectedOnly, ignoreMissing, transpose, false);
 		monitor.showMessage(TaskMonitor.Level.INFO,"cluster matrix has "+matrix.nRows()+" rows");
 		int kMax = Math.min(context.kMax, matrix.nRows());
-
-		// Create a weight vector of all ones (we don't use individual weighting, yet)
-		// matrix.setUniformWeights();
 
 		if (monitor != null) 
 			monitor.setStatusMessage("Clustering...");
@@ -139,13 +136,15 @@ public abstract class AbstractKClusterAlgorithm {
 
 			silhouetteResults = new Silhouettes[kMax];
 
+			System.out.println("Running silhouette's");
 			int nThreads = Runtime.getRuntime().availableProcessors()-1;
 			if (nThreads > 1)
 				runThreadedSilhouette(kMax, nIterations, nThreads, saveMonitor);
 			else
 				runLinearSilhouette(kMax, nIterations, saveMonitor);
+			System.out.println("Done.");
 
-			if (cancelled()) return null;
+			if (parentTask.cancelled()) return null;
 
 			// Now get the results and find our best k
 			double maxSil = Double.MIN_VALUE;
@@ -163,11 +162,11 @@ public abstract class AbstractKClusterAlgorithm {
 
 		int[] clusters = new int[matrix.nRows()];
 
-		if (cancelled()) return null;
+		if (parentTask.cancelled()) return null;
 
 		// Cluster
 		int nClustersFound = kcluster(nClusters, nIterations, matrix, metric, clusters);
-		if (cancelled()) return null;
+		if (parentTask.cancelled()) return null;
 
 		// TODO Change other algorithms s.t. the number of clusters found is returned
 		if (nClusters == 0) nClusters = nClustersFound;
@@ -277,10 +276,6 @@ public abstract class AbstractKClusterAlgorithm {
 		}
 	}
 
-	public boolean cancelled() {
-		return cancelled;
-	}
-	
 	protected int[] chooseRandomElementsAsCenters(int nElements, int nClusters) {
 		int[] centers = new int[nClusters];
 		List<Integer> candidates = new ArrayList<Integer>(nElements);
@@ -395,19 +390,23 @@ public abstract class AbstractKClusterAlgorithm {
 			// threadPools[0].submit(r);
 		}
 
+		System.out.println("All threads started");
 		// OK, now wait for each thread to complete
 		for (int pool = 0; pool < threadPools.length; pool++) {
+			System.out.println("Shutting down threads");
 			threadPools[pool].shutdown();
 			try {
 				boolean result = threadPools[pool].awaitTermination(7, TimeUnit.DAYS);
+				System.out.println("Pool "+pool+" terminated");
 			} catch (Exception e) {}
 		}
+		System.out.println("Done.");
 	}
 
 	private void runLinearSilhouette(int kMax, int nIterations, TaskMonitor saveMonitor) {
 		for (int kEstimate = 2; kEstimate < kMax; kEstimate++) {
 			int[] clusters = new int[matrix.nRows()];
-			if (cancelled()) return;
+			if (parentTask.cancelled()) return;
 			if (saveMonitor != null) saveMonitor.setStatusMessage("Getting silhouette with a k estimate of "+kEstimate);
 			int ifound = kcluster(kEstimate, nIterations, matrix, metric, clusters);
 			silhouetteResults[kEstimate] = SilhouetteCalculator.calculate(matrix, metric, clusters);
@@ -464,10 +463,13 @@ public abstract class AbstractKClusterAlgorithm {
 
 		public void run() {
 			int[] clusters = new int[matrix.nRows()];
-			if (cancelled()) return;
+			if (parentTask.cancelled()) return;
 			if (saveMonitor != null) saveMonitor.setStatusMessage("Getting silhouette with a k estimate of "+kEstimate);
 			try {
+				System.out.println("Getting silhouette with a k estimate of "+kEstimate);
 				int ifound = kcluster(kEstimate, nIterations, matrix, metric, clusters);
+				System.out.println("Got silhouette with a k estimate of "+kEstimate);
+				if (parentTask.cancelled()) return;
 				silhouetteResults[kEstimate] = SilhouetteCalculator.calculate(matrix, metric, clusters);
 			} catch (Exception e) { e.printStackTrace(); }
 		}

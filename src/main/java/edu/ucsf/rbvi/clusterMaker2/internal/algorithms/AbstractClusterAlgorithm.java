@@ -46,9 +46,14 @@ public abstract class AbstractClusterAlgorithm extends AbstractTask
 	 * Convenience routines                                                 *
 	 ***********************************************************************/
 
-	public void cancel() { canceled = true; }
+	public void cancel() { 
+		cancelled = true; 
+		canceled = true; 
+	}
 
-	public boolean cancelled() { return canceled; }
+	public boolean cancelled() { 
+		return canceled; 
+	}
 
 	public ClusterResults getResults() { return results; }
 

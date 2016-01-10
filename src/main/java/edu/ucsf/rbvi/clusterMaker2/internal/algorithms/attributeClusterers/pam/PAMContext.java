@@ -37,9 +37,9 @@ public class PAMContext {
 	@Tunable(description="Use only selected nodes/edges for cluster",
 			groups={"PAM Parameters"}, gravity=100)
 	public boolean getselectedOnly() { return selectedOnly; }
-	public void setselectedOnly(boolean selectedOnly) {
-		this.selectedOnly = selectedOnly;
-		if (network != null) kcluster.updateKEstimates(network, selectedOnly);
+	public void setselectedOnly(boolean sel) {
+		if (network != null && this.selectedOnly != sel) kcluster.updateKEstimates(network, sel);
+		this.selectedOnly = sel;
 	}
 
 	@Tunable(description="Cluster attributes as well as nodes",
@@ -54,6 +54,7 @@ public class PAMContext {
 
 	
 	public PAMContext() {
+		metric.setSelectedValue(DistanceMetric.EUCLIDEAN);
 	}
 	
 	public void setNetwork(CyNetwork network) {

@@ -8,6 +8,7 @@ import org.cytoscape.work.TaskMonitor;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractKClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmeans.KMeansContext;
 
@@ -17,8 +18,8 @@ public class RunFFT extends AbstractKClusterAlgorithm{
 	FFTContext context;
 	
 	public RunFFT(CyNetwork network, String weightAttributes[], DistanceMetric metric, 
-            TaskMonitor monitor, FFTContext context) {
-		super(network, weightAttributes, metric, monitor);
+            TaskMonitor monitor, FFTContext context, AbstractClusterAlgorithm parentTask) {
+		super(network, weightAttributes, metric, monitor, parentTask);
 		this.context = context;
 	}
 	

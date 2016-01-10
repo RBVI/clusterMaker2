@@ -84,7 +84,7 @@ public class HopachPAMClusterer extends AbstractAttributeClusterer {
 		resetAttributes(network, SHORTNAME);
 
 		RunHopachPAM algo = 
-			new RunHopachPAM(network, attributeArray, distanceMetric, monitor, context);
+			new RunHopachPAM(network, attributeArray, distanceMetric, monitor, context, this);
 		algo.setParameters(context.splitCost.getSelectedValue(), 
 					       context.summaryMethod.getSelectedValue(), 
 					       context.maxLevel, context.K, context.L, 

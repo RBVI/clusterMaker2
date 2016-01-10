@@ -124,7 +124,7 @@ public class KMedoidCluster extends AbstractAttributeClusterer {
 		resetAttributes(network, SHORTNAME);
 
 		// Create a new clusterer
-		RunKMedoidCluster algorithm = new RunKMedoidCluster(network, attributeArray, distanceMetric, monitor, context);
+		RunKMedoidCluster algorithm = new RunKMedoidCluster(network, attributeArray, distanceMetric, monitor, context, this);
 
 		// System.out.println("Algorithm defined");
 

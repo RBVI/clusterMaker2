@@ -87,7 +87,7 @@ public class FFT extends AbstractAttributeClusterer {
 		resetAttributes(network, SHORTNAME);
 
 		// Create a new clusterer
-		RunFFT algorithm = new RunFFT(network, attributeArray, distanceMetric, monitor, context);
+		RunFFT algorithm = new RunFFT(network, attributeArray, distanceMetric, monitor, context, this);
 
 		// System.out.println("Algorithm defined");
 

@@ -7,6 +7,7 @@ import org.cytoscape.work.TaskMonitor;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractKClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Clusters;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hopach.types.SplitCost;
@@ -29,8 +30,8 @@ public class RunHopachPAM extends AbstractKClusterAlgorithm {
 	HopachPAMContext context = null;
 	
 	public RunHopachPAM(CyNetwork network, String weightAttributes[], DistanceMetric metric, 
-			            TaskMonitor monitor, HopachPAMContext context) {
-		super(network, weightAttributes, metric, monitor);
+			            TaskMonitor monitor, HopachPAMContext context, AbstractClusterAlgorithm parentTask) {
+		super(network, weightAttributes, metric, monitor, parentTask);
 		this.context = context;
 	}
 	

@@ -111,6 +111,8 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 	                                String weightAttributes[], List<String> attrList, 
 		                              CyMatrix matrix) {
 
+		if (cancelled) return;
+
 		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, 
 		                             cluster_type, String.class, null);
 
@@ -171,6 +173,8 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 	}
 
 	protected void updateParams(CyNetwork network, List<String> params) {
+		if (cancelled) return;
+
 		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, 
 		                             params, List.class, String.class);
 	}

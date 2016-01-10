@@ -58,6 +58,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractKClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
 
@@ -66,8 +67,8 @@ public class RunKCluster extends AbstractKClusterAlgorithm {
 	KMeansContext context;
 
 	public RunKCluster(CyNetwork network, String weightAttributes[], DistanceMetric metric, 
-	                   TaskMonitor monitor, KMeansContext context) {
-		super(network, weightAttributes, metric, monitor);
+	                   TaskMonitor monitor, KMeansContext context, AbstractClusterAlgorithm parentTask) {
+		super(network, weightAttributes, metric, monitor, parentTask);
 		this.context = context;
 	}
 
@@ -110,6 +111,7 @@ public class RunKCluster extends AbstractKClusterAlgorithm {
 		// System.out.println("Entering do loop for "+nClusters);
 		int iteration = 0;
 		do {
+			// System.out.println("do loop iteration "+iteration+" for "+nClusters);
 
 			if (monitor != null)
 				monitor.setProgress(((double)iteration/(double)nIterations));
@@ -118,21 +120,27 @@ public class RunKCluster extends AbstractKClusterAlgorithm {
 			int counter = 0;
 			int period = 10;
 
+			// System.out.println("Assigning elements "+nClusters);
+
 			// Randomly assign elements to clusters
 			if (nIterations != 0) {
 				if (!context.kcluster.initializeNearCenter) {
+					// System.out.println("Randomly assigning elements "+nClusters);
 					// Use the cluster 3.0 version to be consistent
 					randomAssign(nClusters, nelements, tclusterid);
+					// System.out.println("Done randomly assigning elements "+nClusters);
 					// if (nIterations != 0) debugAssign(nClusters, nelements, tclusterid);
 				} else {
 					int centers[] = chooseCentralElementsAsCenters(nelements, nClusters, matrix.getDistanceMatrix(metric).toArray(), tclusterid);
 				}
 			}
+			// System.out.println("Done assigning elements "+nClusters);
 
 			// Initialize
 			for (int i = 0; i < nClusters; i++) counts[i] = 0;
 			for (int i = 0; i < nelements; i++) counts[tclusterid[i]]++;
 
+			// System.out.println("Inner loop starting "+nClusters);
 			while (true) {
 				double previous = total;
 				total = 0.0;
@@ -146,6 +154,7 @@ public class RunKCluster extends AbstractKClusterAlgorithm {
 				counter++;
 
 				// Find the center
+				// System.out.println("Assigning cluster means "+nClusters);
 				getClusterMeans(nClusters, matrix, cData, tclusterid);
 
 				/*
@@ -182,7 +191,7 @@ public class RunKCluster extends AbstractKClusterAlgorithm {
           }
         	total += distance;
         }
-				// System.out.println("total = "+total+", previous = "+previous);
+				// System.out.println("total = "+total+", previous = "+previous+" nClusters="+nClusters);
       	if (total>=previous) break;
       	/* total>=previous is FALSE on some machines even if total and previous
 				 * are bitwise identical. */
@@ -213,7 +222,7 @@ public class RunKCluster extends AbstractKClusterAlgorithm {
         	{ 
 						ifound = 1;
           	error = total;
-						// System.out.println("Mapping tclusterid to clusterid");
+						// System.out.println("Mapping tclusterid to clusterid nClusters = "+nClusters);
           	for (int i = 0; i < nelements; i++) clusterID[i] = tclusterid[i];
         	}
         	break;
@@ -227,19 +236,25 @@ public class RunKCluster extends AbstractKClusterAlgorithm {
   	return ifound;
 	}
 
-	public void cancel() { cancelled = true; }
-
 	private void randomAssign (int nClusters, int nElements, int[] clusterID) {
 		int n = nElements - nClusters;
 		int k = 0;
 		int i = 0;
+		// System.out.println("randomAssign: nClusters = "+nClusters+" nElements = "+nElements+" n = "+n);
 		for (i = 0; i < nClusters-1; i++) {
 			double p = 1.0/(nClusters-1);
-			int j = binomial(n, p);
-			n -= j;
-			j += k+1; // Assign at least one element to cluster i
-			for (;k<j; k++) clusterID[k] = i;
+			// Special case to avoid infinite loops!
+			if (p == 1.0) {
+				clusterID[i] = i;
+			} else {
+				// System.out.println("randomAssign: nClusters = "+nClusters+" n = "+n+", p = "+p+", i = "+i);
+				int j = binomial(n, p);
+				n -= j;
+				j += k+1; // Assign at least one element to cluster i
+				for (;k<j; k++) clusterID[k] = i;
+			}
 		}
+		// System.out.println("randomAssign: nClusters = "+nClusters+" nElements = "+nElements+" n = "+n+" k = "+k);
 		// Assign the remaining elements to the last cluster
 		for (; k < nElements; k++) clusterID[k] = i;
 
@@ -250,6 +265,7 @@ public class RunKCluster extends AbstractKClusterAlgorithm {
 			clusterID[j] = clusterID[i];
 			clusterID[i] = k;
 		}
+		// System.out.println("randomAssign: nClusters = "+nClusters+" done");
 	}
 
 	// Debug version of "randomAssign" that isn't random

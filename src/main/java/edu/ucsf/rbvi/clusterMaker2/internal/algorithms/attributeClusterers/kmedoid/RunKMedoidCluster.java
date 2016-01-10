@@ -58,14 +58,15 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractKClusterAlgorithm;
 
 public class RunKMedoidCluster extends AbstractKClusterAlgorithm {
 	KMedoidContext context;
 
 	public RunKMedoidCluster(CyNetwork network, String weightAttributes[], DistanceMetric metric, 
-	                   TaskMonitor monitor, KMedoidContext context) {
-		super(network, weightAttributes, metric, monitor);
+	                   TaskMonitor monitor, KMedoidContext context, AbstractClusterAlgorithm parentTask) {
+		super(network, weightAttributes, metric, monitor, parentTask);
 		this.context = context;
 	}
 
@@ -108,8 +109,6 @@ public class RunKMedoidCluster extends AbstractKClusterAlgorithm {
 		// outputCenters(centers);
   	return 1;
 	}
-
-	public void cancel() { cancelled = true; }
 
 
 	private void assignPointsToClosestCenter(int[] centers, double[][] distances, int[] clusterId) {
