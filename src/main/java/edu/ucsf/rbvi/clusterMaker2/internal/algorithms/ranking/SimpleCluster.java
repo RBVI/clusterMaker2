@@ -80,7 +80,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
     private void addScoreToColumn(CyTable table, List<Integer> scoreList, TaskMonitor monitor) {
         //String clusterColumnName = this.context.getSelectedAlgorithm();
         List<CyRow> rows = table.getAllRows();
-        String clusterColumnName = this.getClusterColumn(table.getColumns());
+        String clusterColumnName = this.getClusterColumn();
         String rankColumnName = this.context.getClusterAttribute();
         System.out.println("Number of rows in the table: " + rows.size());
 
@@ -90,6 +90,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
             table.deleteColumn(rankColumnName);
         }
 
+        // TODO: Create column in the network aswell
         table.createColumn(rankColumnName, Integer.class, false);
 
         if (clusterColumnName.equals("")) {
@@ -107,14 +108,13 @@ public class SimpleCluster extends AbstractTask implements Rank {
         }
     }
 
-    private String getClusterColumn(Collection<CyColumn> columns) {
-        for (CyColumn column : columns) {
-            String columnName = column.getName().toLowerCase();
-            if (columnName.contains("cluster")) {
-                return columnName;
-            }
+    private String getClusterColumn() {
+        String clusterColumnName = this.network.getRow(network).get("__clusterAttribute", String.class);
+
+        if (clusterColumnName != null) {
+            return clusterColumnName;
         }
-        System.out.println("ERROR: Could not find clustering column");
+
         return "";
     }
 
