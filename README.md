@@ -1,7 +1,7 @@
 # This is git repository for the Cytoscape 3 clustering app: clusterMaker
 
 ## Start with this:
-Column name is "ap" not "\_\_APCluster" atm. Make the clustering column attriute tunable!
+Column name is "ap" not "\_\_APCluster" atm. Make the clustering column attribute tunable!
 
 ## General TODO's
 - Find the shortname of every algorithm that has been used to cluster the
@@ -18,6 +18,9 @@ Column name is "ap" not "\_\_APCluster" atm. Make the clustering column attriute
     1. Go through the algorithms in the clusterManager
     2. Check if there exists results from the clustering
         - If not, return false (DOOOH!)
+- The way the clustering column attribute is retrieved should be changed
+    - Go after the network table or something, get the "\_\_APCluster" from one of those columns
+        - Tip: __clusteringAttribute column in the network???
 
 ## Refactor TODO's
 - Move the getAlgorithms from the SimpleClusterContext? SimpleCluster or corresponding TaskFactory's responsibility?
