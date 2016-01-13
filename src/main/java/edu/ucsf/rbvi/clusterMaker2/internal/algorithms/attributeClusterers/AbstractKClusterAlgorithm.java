@@ -127,6 +127,13 @@ public abstract class AbstractKClusterAlgorithm {
 		monitor.showMessage(TaskMonitor.Level.INFO,"cluster matrix has "+matrix.nRows()+" rows");
 		int kMax = Math.min(context.kMax, matrix.nRows());
 
+		// If we have a symmetric matrix, and our weightAttribute is an edge attribute
+		// then we need to force the distance metric to be "none"
+		if (matrix.isSymmetrical() && weightAttributes.length == 1 && 
+		    weightAttributes[0].startsWith("edge.")) {
+			metric = DistanceMetric.VALUE_IS_CORRELATION;
+		}
+
 		if (monitor != null) 
 			monitor.setStatusMessage("Clustering...");
 

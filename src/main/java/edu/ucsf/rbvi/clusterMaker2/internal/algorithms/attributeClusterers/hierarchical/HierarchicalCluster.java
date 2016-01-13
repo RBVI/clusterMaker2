@@ -61,7 +61,6 @@ import edu.ucsf.rbvi.clusterMaker2.internal.ui.TreeView;
 public class HierarchicalCluster extends AbstractAttributeClusterer {
 	public static String SHORTNAME = "hierarchical";
 	public static String NAME = "Hierarchical cluster";
-	DistanceMetric distanceMetric = DistanceMetric.EUCLIDEAN;
 
 	/**
 	 * Linkage types
@@ -100,6 +99,7 @@ public class HierarchicalCluster extends AbstractAttributeClusterer {
 	public void run(TaskMonitor monitor) {
 		this.monitor = monitor;
 		monitor.setTitle("Performing "+getName());
+
 		List<String> nodeAttributeList = context.attributeList.getNodeAttributeList();
 		String edgeAttribute = context.attributeList.getEdgeAttribute();
 
@@ -137,7 +137,9 @@ public class HierarchicalCluster extends AbstractAttributeClusterer {
 		resetAttributes(network, SHORTNAME);
 
 		// Create a new clusterer
-		RunHierarchical algorithm = new RunHierarchical(network, attributeArray, distanceMetric, clusterMethod, monitor, context);
+		DistanceMetric metric = context.metric.getSelectedValue();
+		RunHierarchical algorithm = new RunHierarchical(network, attributeArray, metric, 
+		                                                clusterMethod, monitor, context);
 
 		// Cluster the attributes, if requested
 		if (context.clusterAttributes && (attributeArray.length > 1 || context.isAssymetric())) {

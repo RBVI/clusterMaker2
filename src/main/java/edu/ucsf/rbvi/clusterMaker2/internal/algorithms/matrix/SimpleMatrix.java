@@ -124,8 +124,10 @@ public class SimpleMatrix implements Matrix {
 	 * @param value the value to set
 	 */
 	public void setValue(int row, int column, Double value) {
-		if (value < minValue) minValue = value;
-		if (value > maxValue) maxValue = value;
+		if (value != null) {
+			if (value < minValue) minValue = value;
+			if (value > maxValue) maxValue = value;
+		}
 		if (index != null) {
 			row = index[row];
 			column = index[column];

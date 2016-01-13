@@ -92,13 +92,8 @@ public class RunHierarchical {
 			monitor.setStatusMessage("Creating initial matrix");
 
 		// Create the matrix
-		// matrix = new Matrix(network, weightAttributes, transpose, context.ignoreMissing, context.selectedOnly, 
-		// 	                  context.isAssymetric());
 		matrix = CyMatrixFactory.makeSmallMatrix(network, weightAttributes, context.selectedOnly, 
 		                                         context.ignoreMissing, transpose, context.isAssymetric());
-
-		// Create a weight vector of all ones (we don't use individual weighting, yet)
-		// matrix.setUniformWeights();
 
 		// Handle special cases
 		if (context.zeroMissing)
@@ -107,6 +102,13 @@ public class RunHierarchical {
 		// This only makes sense for symmetrical matrices
 		if (context.adjustDiagonals && matrix.isSymmetrical())
 			matrix.adjustDiagonals();
+
+		// If we have a symmetric matrix, and our weightAttribute is an edge attribute
+		// then we need to force the distance metric to be "none"
+		if (matrix.isSymmetrical() && weightAttributes.length == 1 && 
+		    weightAttributes[0].startsWith("edge.")) {
+			metric = DistanceMetric.VALUE_IS_CORRELATION;
+		}
 
 		if (monitor != null) 
 			monitor.setStatusMessage("Clustering...");
@@ -219,7 +221,9 @@ public class RunHierarchical {
 		// 	matrix.printMatrix();
 		if (monitor != null)
 			monitor.showMessage(TaskMonitor.Level.INFO,"Getting distance matrix");
+
 		double[][] distanceMatrix = matrix.getDistanceMatrix(metric).toArray();
+
 		TreeNode[] result = null;
 		// For debugging purposes, output the distance matrix
 		// for (int row = 1; row < matrix.nRows(); row++) {

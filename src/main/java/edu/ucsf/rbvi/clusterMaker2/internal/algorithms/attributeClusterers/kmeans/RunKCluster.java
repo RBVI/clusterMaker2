@@ -131,7 +131,8 @@ public class RunKCluster extends AbstractKClusterAlgorithm {
 					// System.out.println("Done randomly assigning elements "+nClusters);
 					// if (nIterations != 0) debugAssign(nClusters, nelements, tclusterid);
 				} else {
-					int centers[] = chooseCentralElementsAsCenters(nelements, nClusters, matrix.getDistanceMatrix(metric).toArray(), tclusterid);
+					int centers[] = chooseCentralElementsAsCenters(nelements, nClusters, 
+					                                               matrix.getDistanceMatrix(metric).toArray(), tclusterid);
 				}
 			}
 			// System.out.println("Done assigning elements "+nClusters);
