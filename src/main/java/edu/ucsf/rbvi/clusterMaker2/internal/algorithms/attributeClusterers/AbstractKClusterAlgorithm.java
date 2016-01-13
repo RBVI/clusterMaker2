@@ -131,7 +131,9 @@ public abstract class AbstractKClusterAlgorithm {
 		// then we need to force the distance metric to be "none"
 		if (matrix.isSymmetrical() && weightAttributes.length == 1 && 
 		    weightAttributes[0].startsWith("edge.")) {
-			metric = DistanceMetric.VALUE_IS_CORRELATION;
+			if (!metric.equals(DistanceMetric.VALUE_IS_CORRELATION) &&
+					!metric.equals(DistanceMetric.VALUE_IS_DISTANCE))
+				metric = DistanceMetric.VALUE_IS_CORRELATION;
 		}
 
 		if (monitor != null) 

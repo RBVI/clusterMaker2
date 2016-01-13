@@ -10,6 +10,7 @@ import java.util.List;
 public enum DistanceMetric {
 
 	VALUE_IS_CORRELATION("None -- attributes are correlations"),
+	VALUE_IS_DISTANCE("None -- attributes are distances"),
 	UNCENTERED_CORRELATION("Uncentered correlation"),
 	CORRELATION("Pearson correlation"),
 	ABS_UNCENTERED_CORRELATION("Uncentered correlation, absolute value"),
@@ -67,6 +68,8 @@ public enum DistanceMetric {
 				return kendallMetric(data1, data2, index1, index2);
 			case VALUE_IS_CORRELATION:
 				return (1-data1.doubleValue(index1, index2));
+			case VALUE_IS_DISTANCE:
+				return (data1.doubleValue(index1, index2));
 		}
 		return euclidMetric(data1, data2, index1, index2);
 	}
