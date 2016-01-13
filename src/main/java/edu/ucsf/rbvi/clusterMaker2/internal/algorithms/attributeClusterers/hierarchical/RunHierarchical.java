@@ -89,7 +89,7 @@ public class RunHierarchical {
 		}
 
 		if (monitor != null) 
-			monitor.setStatusMessage("Creating distance matrix");
+			monitor.setStatusMessage("Creating initial matrix");
 
 		// Create the matrix
 		// matrix = new Matrix(network, weightAttributes, transpose, context.ignoreMissing, context.selectedOnly, 
@@ -217,6 +217,8 @@ public class RunHierarchical {
 
 		// if (debug)
 		// 	matrix.printMatrix();
+		if (monitor != null)
+			monitor.showMessage(TaskMonitor.Level.INFO,"Getting distance matrix");
 		double[][] distanceMatrix = matrix.getDistanceMatrix(metric).toArray();
 		TreeNode[] result = null;
 		// For debugging purposes, output the distance matrix
@@ -229,25 +231,25 @@ public class RunHierarchical {
 
 		switch (clusterMethod) {
 			case SINGLE_LINKAGE:
-				if (debug) 
+				if (monitor != null) 
 					monitor.showMessage(TaskMonitor.Level.INFO,"Calculating single linkage hierarchical cluster");
 				result = pslCluster(matrix, distanceMatrix, metric);
 				break;
 
 			case MAXIMUM_LINKAGE:
-				if (debug) 
+				if (monitor != null) 
 					monitor.showMessage(TaskMonitor.Level.INFO,"Calculating maximum linkage hierarchical cluster");
 				result = pmlcluster(matrix.nRows(), distanceMatrix);
 				break;
 
 			case AVERAGE_LINKAGE:
-				if (debug) 
+				if (monitor != null) 
 					monitor.showMessage(TaskMonitor.Level.INFO,"Calculating average linkage hierarchical cluster");
 				result = palcluster(matrix.nRows(), distanceMatrix);
 				break;
 
 			case CENTROID_LINKAGE:
-				if (debug) 
+				if (monitor != null) 
 					monitor.showMessage(TaskMonitor.Level.INFO,"Calculating centroid linkage hierarchical cluster");
 				result = pclcluster(matrix, distanceMatrix, metric);
 				break;
@@ -637,9 +639,11 @@ public class RunHierarchical {
 
 		Integer[] rowOrder = MatrixUtils.indexSort(newOrder, newOrder.length);
 		if (debug) {
+			/*
 			for (int i = 0; i < rowOrder.length; i++) {
 				monitor.showMessage(TaskMonitor.Level.INFO,""+i+": "+matrix.getRowLabel(rowOrder[i].intValue()));
 			}
+			*/
 		}
 		return rowOrder;
 	}

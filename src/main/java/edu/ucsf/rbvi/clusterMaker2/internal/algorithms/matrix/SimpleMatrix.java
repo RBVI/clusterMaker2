@@ -239,19 +239,28 @@ public class SimpleMatrix implements Matrix {
 	 * @return a new Matrix of the distances between the rows
 	 */
 	public Matrix getDistanceMatrix(DistanceMetric metric) {
+		System.out.println("getDistanceMatrix.  Metric = "+metric.toString());
 		SimpleMatrix mat = new SimpleMatrix(nRows, nRows);
 		mat.transposed = false;
 		mat.symmetric = true;
 		mat.rowLabels = Arrays.copyOf(rowLabels, rowLabels.length);
 		mat.columnLabels = Arrays.copyOf(rowLabels, rowLabels.length);
 
+		long totalTime = System.currentTimeMillis();
+		long metricTime = 0L;
 		for (int row = 0; row < nRows; row++) {
 			for (int column = row; column < this.nRows; column++) {
-				mat.data[row][column] = metric.getMetric(this, this, row, column);
+				long metricStart = System.currentTimeMillis();
+				double metValue = metric.getMetric(this, this, row, column);
+				metricTime += System.currentTimeMillis() - metricStart;
+				mat.setValue(row, column, metValue);
 				if (row != column)
-					mat.data[column][row] = mat.data[row][column];  // Assumes symmetrical distances
+					mat.setValue(column, row, metValue);
 			}
 		}
+		System.out.println("... getDistanceMatrix done");
+		System.out.println("Total time = "+(System.currentTimeMillis()-totalTime)/100);
+		System.out.println("Metric time = "+metricTime/100);
 		return mat;
 	}
  
@@ -262,6 +271,7 @@ public class SimpleMatrix implements Matrix {
 	 * @return the data in the matrix
 	 */
 	public double[][] toArray() {
+		System.out.println("toArray");
 		double doubleData[][] = new double[nRows][nColumns];
 		for (int row = 0; row < nRows; row++) {
 			for (int col = colStart(row); col < nColumns; col++) {
@@ -270,6 +280,7 @@ public class SimpleMatrix implements Matrix {
 					doubleData[col][row] = doubleValue(row, col);
 			}
 		}
+		System.out.println("... toArray done");
 		return doubleData;
 	}
 

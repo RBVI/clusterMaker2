@@ -293,6 +293,8 @@ public class CyMatrixFactory {
 			int col = indexMap.get(edge.getTarget());
 			if (val != null) {
 				matrix.setValue(row, col, val);
+				if (row != col)
+					matrix.setValue(col, row, val);
 			}
 		}
 		matrix.setSymmetrical(true);
