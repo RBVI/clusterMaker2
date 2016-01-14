@@ -64,6 +64,7 @@ public class SimpleClusterContext {
     }
 
     public void updateContext() {
+        System.out.println("updateContext");
         this.attributes = new ListSingleSelection<>(getAttributes());
     }
 
