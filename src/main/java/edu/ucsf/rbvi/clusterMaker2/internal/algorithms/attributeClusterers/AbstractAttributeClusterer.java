@@ -63,12 +63,12 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
  * clusterMaker.  Fundamentally, an attribute clusterer is an algorithm which functions to
  * partition nodes or node attributes based on properties of the attributes.
  */
-public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorithm 
+public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorithm
                                                  implements RequestsUIHelper {
 	// Common instance variables
 	protected DistanceMetric distanceMetric = DistanceMetric.EUCLIDEAN;
 	protected List<String>attrList;
-	
+
 	public AbstractAttributeClusterer(ClusterManager clusterManager) {
 		super(clusterManager);
 	}
@@ -111,25 +111,25 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
  	 *
  	 * @param cluster_type the cluster type to indicate write into the CLUSTER_TYPE_ATTRIBUTE
  	 */
-	protected void updateAttributes(CyNetwork network, String cluster_type, Integer[] rowOrder, 
-	                                String weightAttributes[], List<String> attrList, 
+	protected void updateAttributes(CyNetwork network, String cluster_type, Integer[] rowOrder,
+	                                String weightAttributes[], List<String> attrList,
 		                              Matrix matrix) {
 
-		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, 
+		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE,
 		                             cluster_type, String.class, null);
 
 		if (matrix.isTransposed()) {
-			ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE, 
+			ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE,
 		                               attrList, List.class, String.class);
 		} else {
 			//System.out.println("attrList's size: " + attrList.size());
-			ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE, 
+			ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE,
 			                             attrList, List.class, String.class);
 			if (matrix.isSymmetrical() || matrix.isAssymetricalEdge()) {
-				ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_EDGE_ATTRIBUTE, 
+				ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_EDGE_ATTRIBUTE,
 			                               weightAttributes[0], String.class, null);
 			} else if (matrix.isSymmetrical()) {
-				ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE, 
+				ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE,
 			                               attrList, List.class, String.class);
 			}
 		}
@@ -140,45 +140,43 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 		String[] columnArray = matrix.getColLabels();
 		ArrayList<String>columnList = new ArrayList<String>(columnArray.length);
 
-		for (int i = 0; i < rowOrder.length; i++) {
-			orderList.add(rowArray[rowOrder[i]]);
+		for (Integer aRowOrder : rowOrder) {
+			orderList.add(rowArray[aRowOrder]);
 			if (matrix.isSymmetrical())
-				columnList.add(rowArray[rowOrder[i]]);
+				columnList.add(rowArray[aRowOrder]);
 		}
 
 		if (!matrix.isSymmetrical()) {
-			for (int col = 0; col < columnArray.length; col++) {
-				columnList.add(columnArray[col]);
-			}
+			Collections.addAll(columnList, columnArray);
 		}
 
 		if (matrix.isTransposed()) {
 			// We did an Array cluster -- output the calculated array order
 			// and the actual node order
 			// netAttr.setListAttribute(netID, ClusterManager.ARRAY_ORDER_ATTRIBUTE, orderList);
-			ModelUtils.createAndSetLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
+			ModelUtils.createAndSetLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE,
 			                             orderList, List.class, String.class);
 
 			// Don't override the columnlist if a node order already exists
 			if (!ModelUtils.hasAttributeLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE))
-				ModelUtils.createAndSetLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE, 
+				ModelUtils.createAndSetLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE,
 			                               columnList, List.class, String.class);
 		} else {
-			ModelUtils.createAndSetLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE, 
+			ModelUtils.createAndSetLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE,
 			                             orderList, List.class, String.class);
 			// Don't override the columnlist if a node order already exists
 			if (!ModelUtils.hasAttributeLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE))
-				ModelUtils.createAndSetLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
+				ModelUtils.createAndSetLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE,
 			                               columnList, List.class, String.class);
 		}
 
 	}
 
 	protected void updateParams(CyNetwork network, List<String> params) {
-		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, 
+		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE,
 		                             params, List.class, String.class);
 	}
-	
+
 	 /**
 		 * This protected method is called to create all of our groups (if desired).
 		 * It is used by all of the k-clustering algorithms.
@@ -205,7 +203,7 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 						// System.out.println("Setting cluster # for node "+matrix.getRowLabel(i)+"("+i+") to "+cluster);
 	          attrList.add(matrix.getRowLabel(i)+"\t"+cluster);
 	          memberList.add(matrix.getRowNode(i));
-						ModelUtils.createAndSetLocal(network, matrix.getRowNode(i), algorithm+" Cluster", 
+						ModelUtils.createAndSetLocal(network, matrix.getRowNode(i), algorithm+" Cluster",
 						                             new Integer(cluster), Integer.class, null);
 	        }
 	      }
@@ -215,6 +213,6 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 				}
 	    }
 	  }
-	  
+
 	  public List<String> getAttributeList() { return attrList; }
 }

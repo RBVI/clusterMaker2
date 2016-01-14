@@ -1,28 +1,12 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.utils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyEdge.Type;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableUtil;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
+import org.cytoscape.model.*;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
+import java.util.*;
 
 public class ModelUtils {
 	public static final String NONEATTRIBUTE = "--None--";
@@ -74,7 +58,7 @@ public class ModelUtils {
 		return true;
 	}
 
-	public static void deleteColumn(CyNetwork network, Class<? extends CyIdentifiable> type, 
+	public static void deleteColumn(CyNetwork network, Class<? extends CyIdentifiable> type,
 	                                String column, String namespace) {
 		CyTable table = network.getTable(type, namespace);
 		if (table.getColumn(column) != null) {
@@ -82,7 +66,7 @@ public class ModelUtils {
 		}
 	}
 
-	public static void deleteColumnLocal(CyNetwork network, Class<? extends CyIdentifiable> type, 
+	public static void deleteColumnLocal(CyNetwork network, Class<? extends CyIdentifiable> type,
 	                                String column) {
 		deleteColumn(network, type, column, CyNetwork.LOCAL_ATTRS);
 	}
@@ -101,7 +85,7 @@ public class ModelUtils {
 		network.getRow(value, namespace).getTable().deleteColumn(column);
 	}
 
-	public static CyNetwork createChildNetwork(ClusterManager manager, CyNetwork network, 
+	public static CyNetwork createChildNetwork(ClusterManager manager, CyNetwork network,
 	                                           List<CyNode> nodeList, List<CyEdge> edgeList, String title) {
 
 		String name = network.getRow(network).get(CyNetwork.NAME, String.class);
@@ -129,7 +113,7 @@ public class ModelUtils {
 	}
 
 	public static void createAndSet(CyNetwork net, CyIdentifiable obj, String column,
-	                                Object value, Class type, Class elementType, String namespace) {				
+	                                Object value, Class type, Class elementType, String namespace) {
 		CyTable tab = net.getRow(obj, namespace).getTable();
 		if (tab.getColumn(column) == null) {
 			if (type.equals(List.class))
@@ -140,7 +124,7 @@ public class ModelUtils {
 		net.getRow(obj, namespace).set(column, value);
 	}
 
-	public static void copyLocalColumn(CyNetwork source, CyNetwork target, 
+	public static void copyLocalColumn(CyNetwork source, CyNetwork target,
 	                                   Class<? extends CyIdentifiable> clazz, String column) {
 		CyTable sourceTable = source.getTable(clazz, CyNetwork.LOCAL_ATTRS);
 		CyColumn sourceColumn = sourceTable.getColumn(column);
@@ -166,11 +150,11 @@ public class ModelUtils {
 		}
 	}
 
-	public static ListMultipleSelection<String> updateAttributeList(CyNetwork network, 
+	public static ListMultipleSelection<String> updateAttributeList(CyNetwork network,
 	                                                                ListMultipleSelection<String> attributes) {
 		List<String> attributeArray = getAllAttributes(network, network.getDefaultNodeTable());
 		attributeArray.addAll(getAllAttributes(network, network.getDefaultEdgeTable()));
-		ListMultipleSelection<String> newAttribute = new ListMultipleSelection<String>(attributeArray);	
+		ListMultipleSelection<String> newAttribute = new ListMultipleSelection<String>(attributeArray);
 		if (attributeArray.size() > 0){
 			if (attributes != null) {
 				newAttribute.setSelectedValues(attributes.getSelectedValues());
@@ -183,11 +167,11 @@ public class ModelUtils {
 	}
 
 
-	public static ListMultipleSelection<String> updateNodeAttributeList(CyNetwork network, 
+	public static ListMultipleSelection<String> updateNodeAttributeList(CyNetwork network,
 	                                                                    ListMultipleSelection<String> attribute) {
 		List<String> attributeArray = getAllAttributes(network, network.getDefaultNodeTable());
 		if (attributeArray.size() > 0){
-			ListMultipleSelection<String> newAttribute = new ListMultipleSelection<String>(attributeArray);	
+			ListMultipleSelection<String> newAttribute = new ListMultipleSelection<String>(attributeArray);
 			if (attribute != null) {
 				try {
 					newAttribute.setSelectedValues(attribute.getSelectedValues());
@@ -202,11 +186,11 @@ public class ModelUtils {
 		return new ListMultipleSelection<String>("--None--");
 	}
 
-	public static ListSingleSelection<String> updateEdgeAttributeList(CyNetwork network, 
+	public static ListSingleSelection<String> updateEdgeAttributeList(CyNetwork network,
 	                                                                  ListSingleSelection<String> attribute) {
 		List<String> attributeArray = getAllAttributes(network, network.getDefaultEdgeTable());
 		if (attributeArray.size() > 0){
-			ListSingleSelection<String> newAttribute = new ListSingleSelection<String>(attributeArray);	
+			ListSingleSelection<String> newAttribute = new ListSingleSelection<String>(attributeArray);
 			if (attribute != null && attributeArray.contains(attribute.getSelectedValue())) {
 				try {
 					newAttribute.setSelectedValue(attribute.getSelectedValue());
@@ -258,7 +242,7 @@ public class ModelUtils {
 
 		if (val == null) return null;
 
-		return Double.valueOf(val.doubleValue());
+		return val.doubleValue();
 	}
 
 	private static List<String> getAllAttributes(CyNetwork network, CyTable table) {
@@ -268,7 +252,7 @@ public class ModelUtils {
 		attributeList.add(NONEATTRIBUTE);
 		getAttributesList(attributeList, table);
 		String[] attrArray = attributeList.toArray(attributeArray);
-		if (attrArray.length > 1) 
+		if (attrArray.length > 1)
 			Arrays.sort(attrArray);
 		return Arrays.asList(attrArray);
 	}
@@ -283,5 +267,5 @@ public class ModelUtils {
 			}
 		}
 	}
-	
+
 }
