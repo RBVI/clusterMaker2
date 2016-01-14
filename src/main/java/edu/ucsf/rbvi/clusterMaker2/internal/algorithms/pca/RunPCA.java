@@ -10,8 +10,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
@@ -151,8 +151,8 @@ public class RunPCA {
 		// weighted Laplacian first.
 
 		// 1. Create a similarity matrix
-		DistanceMatrix disMatrix = context.edgeAttributeHandler.getMatrix();
-		distanceMatrix = disMatrix.getDistanceMatrix().toArray();
+		CyMatrix disMatrix = context.edgeAttributeHandler.getMatrix();
+		distanceMatrix = disMatrix.toArray();
 		// This will divide all entries by the max distance
 		normalizeMatrix(distanceMatrix);
 

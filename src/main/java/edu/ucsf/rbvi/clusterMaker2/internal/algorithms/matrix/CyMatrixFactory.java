@@ -45,10 +45,13 @@ public class CyMatrixFactory {
 	 * @param edgeAttribute the edge attribute to pull the data from
 	 * @param selectedOnly only include selected edges
 	 * @param converter the edge weight converter to use
+	 * @param unDirected if true, the edges are undirected
+	 * @param cutOff the minimum edge value to consider
 	 * @return the resulting matrix
 	 */
 	public static CyMatrix makeLargeMatrix(CyNetwork network, String edgeAttribute, 
-	                                        boolean selectedOnly, EdgeWeightConverter converter) {
+	                                        boolean selectedOnly, EdgeWeightConverter converter,
+																					boolean unDirected, double cutOff) {
 		List<CyNode> nodes;
 		List<CyEdge> edges;
 		double maxAttribute = Double.MIN_VALUE;
@@ -74,6 +77,8 @@ public class CyMatrixFactory {
 			matrix.setColumnLabel(row, ModelUtils.getNodeName(network, node));
 		}
 
+		matrix.setSymmetrical(unDirected);
+
 		CyTable edgeAttributes = network.getDefaultEdgeTable();
 
 		// First, we need the min and max values for our converter
@@ -86,6 +91,8 @@ public class CyMatrixFactory {
 					continue;
 
 				double edgeWeight = ModelUtils.getNumericValue(network, edge, edgeAttribute);
+				if (edgeWeight < cutOff)
+					continue;
 				minAttribute = Math.min(minAttribute, edgeWeight);
 				maxAttribute = Math.max(maxAttribute, edgeWeight);
 			}
@@ -99,10 +106,16 @@ public class CyMatrixFactory {
 				value = ModelUtils.getNumericValue(network, edge, edgeAttribute);
 			}
 
+			if (value < cutOff)
+				continue;
+
 			double weight = converter.convert(value, minAttribute, maxAttribute);
 			int row = nodeMap.get(edge.getSource());
 			int column = nodeMap.get(edge.getTarget());
 			matrix.setValue(row, column, weight);
+			// TODO: should we consider maybe doing this on the getValue side?
+			if (unDirected)
+				matrix.setValue(column, row, weight);
 		}
 		return matrix;
 	}

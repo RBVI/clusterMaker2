@@ -1,6 +1,8 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.api;
 
 import java.util.List;
+import cern.colt.matrix.tdouble.DoubleMatrix2D;
+
 
 /**
  * A generic wrapper around Matrix implementations, from the most simple
@@ -247,7 +249,59 @@ public interface Matrix {
 	public void invertMatrix();
 
 	/**
-	 * Normalize the matrix in place
+	 * Normalize the matrix in place.  This actually doesn't do matrix
+	 * normalization -- it just uses the min and max values to bound
+	 * the matrix
 	 */
 	public void normalize();
+
+	/**
+	 * Normalize the matrix in place.  This is actual matrix normalization,
+	 * i.e. all cells sum to 1.0
+	 */
+	public void normalizeMatrix();
+
+	/**
+	 * Normalize a matrix row in place (all columns in the row sum to 1.0)
+	 *
+	 * @param row the row to normalize
+	 */
+	public void normalizeRow(int row);
+
+	/**
+	 * Normalize a matrix column in place (all rows in the column sum to 1.0)
+	 *
+	 * @param column the column to normalize
+	 */
+	public void normalizeColumn(int column);
+
+	/**
+	 * Return the cardinality (number of non-null values) of this matrix
+	 *
+	 * @return cardinality
+	 */
+	public int cardinality();
+
+	/**
+	 * Return some information about the matrix
+	 *
+	 * @return string information
+	 */
+	public String printMatrixInfo();
+
+	/**
+	 * Print the matrix out in a reasonable format
+	 *
+	 * @return string representation of the matrix
+	 */
+	public String printMatrix();
+
+	/**
+	 * Temporary solution to providing access to Colt Matrices.  Eventually,
+	 * we want to bury all of this in MatrixUtils and the matrix classes
+	 * themselves.
+	 *
+	 * @return the internal (or created) colt 2D matrix
+	 */
+	public DoubleMatrix2D getColtMatrix();
 }

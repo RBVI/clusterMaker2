@@ -81,6 +81,17 @@ public class CyColtMatrix extends ColtMatrix implements CyMatrix {
 	}
 
 	/**
+	 * Get the nodes for all rows
+	 *
+	 * @return the nodes for all rows
+	 */
+	public List<CyNode> getRowNodes() {
+		if (rowNodes == null)
+			return null;
+		return Arrays.asList(rowNodes);
+	}
+
+	/**
 	 * Get the node for a particular row
 	 *
 	 * @param row the row to get the node for
@@ -126,6 +137,17 @@ public class CyColtMatrix extends ColtMatrix implements CyMatrix {
 	 */
 	public CyNode getColumnNode(int column) {
 		return columnNodes[column];
+	}
+
+	/**
+	 * Get the nodes for all columns
+	 *
+	 * @return the nodes for all columns
+	 */
+	public List<CyNode> getColumnNodes() {
+		if (columnNodes == null)
+			return null;
+		return Arrays.asList(columnNodes);
 	}
 
 	/**

@@ -26,7 +26,7 @@ import org.cytoscape.work.swing.TunableUIHelper;
 import org.cytoscape.work.util.BoundedDouble;
 import org.cytoscape.work.util.ListSingleSelection;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeWeightConverter;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.DistanceConverter1;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.DistanceConverter2;
@@ -34,8 +34,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.LogConvert
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.NegLogConverter;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.NoneConverter;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.SCPSConverter;
-
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.ThresholdHeuristic;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.HistogramDialog;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.HistoChangeListener;
@@ -45,7 +45,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelper {
 	
 
-	private DistanceMatrix matrix = null;
+	private CyMatrix matrix = null;
 	private CyNetwork network = null;
 	
 	private List<EdgeWeightConverter>converters = null;
@@ -173,10 +173,13 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 		}
 
 		// System.out.println("Getting distance matrix");
-		this.matrix = new DistanceMatrix(network, attribute.getSelectedValue(), 
-		                                 selectedOnly, edgeWeighter.getSelectedValue());
-		max = matrix.getMaxWeight();
-		min = matrix.getMinWeight();
+		// this.matrix = new DistanceMatrix(network, attribute.getSelectedValue(), 
+		//                                  selectedOnly, edgeWeighter.getSelectedValue());
+		this.matrix = CyMatrixFactory.makeLargeMatrix(network, attribute.getSelectedValue(), 
+		                                              selectedOnly, edgeWeighter.getSelectedValue(),
+																									undirectedEdges, edgeCutOff.getValue());
+		max = matrix.getMaxValue();
+		min = matrix.getMinValue();
 
 		// System.out.println("Setting cutoff to: "+cutOff);
 		if (max != edgeCutOff.getUpperBound() || min != edgeCutOff.getLowerBound()) {
@@ -195,39 +198,33 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 
 	public void createHistogramDialog() {
 		if (this.matrix == null)
-			this.matrix = new DistanceMatrix(network, attribute.getSelectedValue(), 
-			                                 selectedOnly, edgeWeighter.getSelectedValue());
+			getMatrix();
 
 		ThresholdHeuristic thueristic = new ThresholdHeuristic(matrix);
 
-		double dataArray[] = matrix.getEdgeValues();
-
 		// TODO: There really needs to be a better way to calculate the number of bins
 		int nbins = 100;
-		if (dataArray.length < 100)
+		if (matrix.nRows()*matrix.nColumns() < 100)
 			nbins = 10;
 		// else if (dataArray.length > 10000)
 		// 	nbins = 1000;
 		String title = "Histogram for "+attribute.getSelectedValue()+" edge attribute";
-		histo = new HistogramDialog(helper.getParent(), title, dataArray, nbins,thueristic);
+		histo = new HistogramDialog(helper.getParent(), title, matrix, nbins, thueristic);
 		histo.pack();
 		histo.setVisible(true);
 		histo.addHistoChangeListener(this);
 	}
 
-	public DistanceMatrix getMatrix() {
+	public CyMatrix getMatrix() {
 		if (this.matrix == null) {
 			if (attribute.getSelectedValue() == null) return null;
-			this.matrix = new DistanceMatrix(network, attribute.getSelectedValue(), selectedOnly, edgeWeighter.getSelectedValue());
+			this.matrix = CyMatrixFactory.makeLargeMatrix(network, attribute.getSelectedValue(), 
+			                                              selectedOnly, edgeWeighter.getSelectedValue(),
+																										undirectedEdges, edgeCutOff.getValue());
 		}
 
-		matrix.setUndirectedEdges(undirectedEdges);
-
-		if (edgeCutOff != null)
-			matrix.setEdgeCutOff(edgeCutOff.getValue());
-
 		if (adjustLoops)
-			matrix.adjustLoops();
+			this.matrix.adjustDiagonals();
 
 		return this.matrix;
 	}

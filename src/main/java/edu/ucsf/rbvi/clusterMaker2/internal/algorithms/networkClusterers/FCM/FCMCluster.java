@@ -33,9 +33,6 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractFuzzyNetworkClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLCluster;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLContext;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.RunMCL;
 
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
@@ -48,14 +45,12 @@ import org.cytoscape.work.swing.TunableUIHelper;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.FuzzyNodeCluster;
-//import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ClusterResults;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeWeightConverter;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.SilhouetteCalculator;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.Silhouettes;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
 
 
@@ -73,12 +68,12 @@ public class FCMCluster extends AbstractFuzzyNetworkClusterer {
 	public final static String GROUP_ATTRIBUTE = "__FCMGroups.SUID";
 	
 	public static final String NONEATTRIBUTE = "--None--";
-	protected Matrix distanceDataMatrix;
+	protected CyMatrix distanceDataMatrix;
 	private boolean selectedOnly = false;
 	private boolean ignoreMissing = true;
 	private CyTableFactory tableFactory = null;
 	private CyTableManager tableManager = null;
-	private DistanceMatrix distanceMatrix = null;
+	private CyMatrix distanceMatrix = null;
 	private TaskMonitor monitor = null;
 	private Silhouettes[] silhouetteResults = null;
 	
@@ -139,8 +134,9 @@ public class FCMCluster extends AbstractFuzzyNetworkClusterer {
 		// Update our tunable results
 		clusterAttributeName = "CnC_Bicluster";
 		
-		distanceDataMatrix = new Matrix(network,0,0);
-		distanceDataMatrix.buildDistanceMatrix(distanceMatrix);
+		// distanceDataMatrix = new Matrix(network,0,0);
+		// distanceDataMatrix.buildDistanceMatrix(distanceMatrix);
+		distanceDataMatrix = distanceMatrix.copy();
 		
 		// System.out.println("distanceMatrix (0,1) and (1,3) : "+ distanceMatrix.getEdgeValueFromMatrix(0, 1)+", " + distanceMatrix.getEdgeValueFromMatrix(1, 3));
 		// System.out.println("distanceDataMatrix (0,1) and (1,3) : "+distanceDataMatrix.getValue(0, 1) +", " + distanceDataMatrix.getValue(1, 3));
@@ -155,7 +151,8 @@ public class FCMCluster extends AbstractFuzzyNetworkClusterer {
 		
 		FuzzyNodeCluster.fuzzyClusterCount = 0;
 		runFCM = new RunFCM(distanceMatrix, context.iterations, context.cNumber, 
-									context.fIndex, context.beta, context.membershipThreshold.getValue(), context.maxThreads, this.monitor);
+		                    context.fIndex, context.beta, context.membershipThreshold.getValue(), 
+		                    context.maxThreads, this.monitor);
 		
 		runFCM.setDebug(debug);
 
@@ -263,21 +260,22 @@ public class FCMCluster extends AbstractFuzzyNetworkClusterer {
 				//int ifound = kcluster(kEstimate, nIterations, dataMatrix, metric, clusters);
 				// System.out.println("for cEstimate: "+cEstimate +", iterations= "+context.iterations+", Monitor: "+ saveMonitor.toString() );
 				RunFCM silRunFCM = new RunFCM(distanceMatrix, context.iterations,cEstimate, 
-						context.fIndex, context.beta, context.membershipThreshold.getValue(), context.maxThreads, saveMonitor);
+                                      context.fIndex, context.beta, context.membershipThreshold.getValue(), 
+																			context.maxThreads, saveMonitor);
 				List<FuzzyNodeCluster> silClusters = silRunFCM.run(network, saveMonitor,clusters);
-				silhouetteResults[cEstimate] = SilhouetteCalculator.calculate(distanceDataMatrix.getMatrix2DArray(), clusters);
+				silhouetteResults[cEstimate] = SilhouetteCalculator.calculate(distanceDataMatrix.toArray(), clusters);
 			
 			}
 		}
 		
 		private class RunCMeans implements Runnable {
-			Matrix matrix;
+			CyMatrix matrix;
 			int[] clusters;
 			int cEstimate;
 			int nIterations;
 			TaskMonitor saveMonitor = null;
 
-			public RunCMeans (Matrix matrix, int[] clusters, int c, int nIterations, TaskMonitor saveMonitor) {
+			public RunCMeans (CyMatrix matrix, int[] clusters, int c, int nIterations, TaskMonitor saveMonitor) {
 				this.matrix = matrix;
 				this.clusters = clusters;
 				this.cEstimate = c;
@@ -290,7 +288,7 @@ public class FCMCluster extends AbstractFuzzyNetworkClusterer {
 				if (cancelled()) return;
 				if (saveMonitor != null) saveMonitor.setStatusMessage("Getting silhouette with a c estimate of "+cEstimate);
 				try {
-					silhouetteResults[cEstimate] = SilhouetteCalculator.calculate(matrix.getMatrix2DArray(), clusters);
+					silhouetteResults[cEstimate] = SilhouetteCalculator.calculate(matrix.toArray(), clusters);
 				} catch (Exception e) { e.printStackTrace(); }
 			}
 		}

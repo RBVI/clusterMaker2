@@ -16,7 +16,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.work.TaskMonitor;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 
 
 import cern.colt.function.tdouble.IntIntDoubleFunction;
@@ -39,14 +39,14 @@ public class RunAP {
 	private boolean canceled = false;
 	private TaskMonitor monitor;
 	protected int clusterCount = 0;
-	private DistanceMatrix distanceMatrix = null;
+	private CyMatrix distanceMatrix = null;
 	private ResponsibilityMatrix r_matrix = null;
 	private AvailabilityMatrix a_matrix = null;
 	private DoubleMatrix2D s_matrix = null;
 	private DoubleMatrix1D pref_vector = null;
 	private boolean debug;
 
-	public RunAP( DistanceMatrix dMat,
+	public RunAP( CyMatrix dMat,
 	              double lambdaParameter, double preferenceParameter, int num_iterations, 
 	              TaskMonitor monitor, boolean debug)
 	{
@@ -64,9 +64,8 @@ public class RunAP {
 
 		this.number_iterations = num_iterations;
 		
-		nodes = distanceMatrix.getNodes();
-		edges = distanceMatrix.getEdges();
-		this.s_matrix = distanceMatrix.getDistanceMatrix();
+		nodes = distanceMatrix.getRowNodes();
+		this.s_matrix = distanceMatrix.getColtMatrix();
 
 		// Assign the preference vector to the diagonal
 		for (int row = 0; row < s_matrix.rows(); row++) {
@@ -88,10 +87,12 @@ public class RunAP {
 
 		monitor.setProgress(0.01);
 
+		/*
 		if (debug) {
 			monitor.showMessage(TaskMonitor.Level.INFO, "Input matrix: ");
 			monitor.showMessage(TaskMonitor.Level.INFO, distanceMatrix.printMatrix(s_matrix));
 		}
+		*/
 		
 		for (int i=0; i<number_iterations; i++)
 		{
@@ -160,10 +161,12 @@ public class RunAP {
 		// OK, now calculate the responsibility matrix
 		r_matrix.update(a_matrix);
 
+		/*
 		if (debug) {
 			monitor.showMessage(TaskMonitor.Level.INFO, "Responsibility matrix: ");
 			monitor.showMessage(TaskMonitor.Level.INFO, distanceMatrix.printMatrix(r_matrix.getMatrix()));
 		}
+		*/
 
 		// Get the maximum positive responsibilities
 		r_matrix.updateEvidence();
@@ -171,10 +174,12 @@ public class RunAP {
 		// Now, update the availability matrix
 		a_matrix.update(r_matrix);
 
+		/*
 		if (debug) {
 			monitor.showMessage(TaskMonitor.Level.INFO, "Availability matrix: ");
 			monitor.showMessage(TaskMonitor.Level.INFO, distanceMatrix.printMatrix(a_matrix.getMatrix()));
 		}
+		*/
 	}
 
 	

@@ -44,6 +44,8 @@ public class ColtMatrix implements Matrix {
 		data = DoubleFactory2D.sparse.make(rows,columns);
 		nRows = rows;
 		nColumns = columns;
+		rowLabels = new String[rows];
+		columnLabels = new String[columns];
 		index = null;
 	}
 
@@ -105,7 +107,7 @@ public class ColtMatrix implements Matrix {
 		if (d == null) return Double.NaN;
 		return d.doubleValue();
 	}
-	
+
 	/**
 	 * Set the value at a specific location.
 	 *
@@ -522,17 +524,55 @@ public class ColtMatrix implements Matrix {
 		data.viewColumn(column).normalize();
 	}
 
-	private void updateMinMax() {
-		maxValue = Double.MIN_VALUE;
-		minValue = Double.MAX_VALUE;
-		for (int row = 0; row < nRows; row++) {
-			for (int col = 0; col < nColumns; col++) {
-				Double d = getValue(row, col);
-				if (d == null) continue;
-				if (d > maxValue) maxValue = d;
-				if (d < minValue) minValue = d;
-			}
+	public DoubleMatrix2D getColtMatrix() {
+		return data;
+	}
+
+	public int cardinality() { return data.cardinality(); }
+
+	/**
+	 * Debugging routine to print out information about a matrix
+	 *
+	 * @param matrix the matrix we're going to print out information about
+	 */
+	public String printMatrixInfo() {
+		String s = "Colt Matrix("+data.rows()+", "+data.columns()+")\n";
+		if (data.getClass().getName().indexOf("Sparse") >= 0)
+			s += " matrix is sparse\n";
+		else
+			s += " matrix is dense\n";
+		s += " cardinality is "+data.cardinality()+"\n";
+		return s;
+	}
+
+	public String printMatrix() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("ColtMatrix("+nRows+", "+nColumns+")\n");
+		if (data.getClass().getName().indexOf("Sparse") >= 0)
+			sb.append(" matrix is sparse\n");
+		else
+			sb.append(" matrix is dense\n");
+		sb.append(" cardinality is "+data.cardinality()+"\n\t");
+
+		for (int col = 0; col < nColumns; col++) {
+			sb.append(getColumnLabel(col)+"\t");
 		}
+		sb.append("\n");
+		for (int row = 0; row < nRows; row++) {
+			sb.append(getRowLabel(row)+":\t"); //node.getIdentifier()
+			for (int col = 0; col < nColumns; col++) {
+				sb.append(""+getValue(row,col)+"\t");
+			} 
+			sb.append("\n");
+		} 
+		return sb.toString();
+	}
+
+	private void updateMinMax() {
+		double[] min = data.getMinLocation();
+		double[] max = data.getMaxLocation();
+		minValue = min[0];
+		maxValue = max[0];
 	}
 
 	private int colStart(int row) {

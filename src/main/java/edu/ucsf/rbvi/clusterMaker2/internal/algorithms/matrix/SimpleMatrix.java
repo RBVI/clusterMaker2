@@ -9,6 +9,9 @@ import org.apache.log4j.Logger;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
+import cern.colt.matrix.tdouble.DoubleFactory2D;
+import cern.colt.matrix.tdouble.DoubleMatrix2D;
+
 public class SimpleMatrix implements Matrix {
 	protected Double[][] data;
 	protected int[] index;
@@ -241,28 +244,20 @@ public class SimpleMatrix implements Matrix {
 	 * @return a new Matrix of the distances between the rows
 	 */
 	public Matrix getDistanceMatrix(DistanceMetric metric) {
-		System.out.println("getDistanceMatrix.  Metric = "+metric.toString());
 		SimpleMatrix mat = new SimpleMatrix(nRows, nRows);
 		mat.transposed = false;
 		mat.symmetric = true;
 		mat.rowLabels = Arrays.copyOf(rowLabels, rowLabels.length);
 		mat.columnLabels = Arrays.copyOf(rowLabels, rowLabels.length);
 
-		long totalTime = System.currentTimeMillis();
-		long metricTime = 0L;
 		for (int row = 0; row < nRows; row++) {
 			for (int column = row; column < this.nRows; column++) {
-				long metricStart = System.currentTimeMillis();
 				double metValue = metric.getMetric(this, this, row, column);
-				metricTime += System.currentTimeMillis() - metricStart;
 				mat.setValue(row, column, metValue);
 				if (row != column)
 					mat.setValue(column, row, metValue);
 			}
 		}
-		System.out.println("... getDistanceMatrix done");
-		System.out.println("Total time = "+(System.currentTimeMillis()-totalTime)/100);
-		System.out.println("Metric time = "+metricTime/100);
 		return mat;
 	}
  
@@ -273,7 +268,6 @@ public class SimpleMatrix implements Matrix {
 	 * @return the data in the matrix
 	 */
 	public double[][] toArray() {
-		System.out.println("toArray");
 		double doubleData[][] = new double[nRows][nColumns];
 		for (int row = 0; row < nRows; row++) {
 			for (int col = colStart(row); col < nColumns; col++) {
@@ -282,7 +276,6 @@ public class SimpleMatrix implements Matrix {
 					doubleData[col][row] = doubleValue(row, col);
 			}
 		}
-		System.out.println("... toArray done");
 		return doubleData;
 	}
 
@@ -491,7 +484,7 @@ public class SimpleMatrix implements Matrix {
 	 * Invert the matrix in place
 	 */
 	public void invertMatrix() {
-		if (!symmetric) {
+		if (nRows != nColumns) {
 			logger.warn("clusterMaker2 SimpleMatrix: attempt to invert an assymetric network");
 		}
 		Double b[][] = new Double[nRows][nColumns];
@@ -540,16 +533,146 @@ public class SimpleMatrix implements Matrix {
 	 */
 	public void normalize() {
 		double span = maxValue - minValue;
+		double min = minValue;
+		double max = maxValue;
+		minValue = Double.MAX_VALUE;
+		maxValue = Double.MIN_VALUE;
 		for (int row = 0; row < nRows; row++) {
 			for (int col = colStart(row); col < nColumns; col++) {
 				Double d = getValue(row, col);
 				if (d == null)
 					continue;
-				setValue(row, col, (d-minValue)/span);
+				setValue(row, col, (d-min)/span);
 				if (symmetric && col != row)
-					setValue(col, row, (d-minValue)/span);
+					setValue(col, row, (d-min)/span);
 			}
 		}
+	}
+
+	/**
+	 * Normalize the matrix in place.  This is actual matrix normalization,
+	 * i.e. all cells sum to 1.0
+	 */
+	public void normalizeMatrix() {
+		double sum = 0.0;
+		minValue = Double.MAX_VALUE;
+		maxValue = Double.MIN_VALUE;
+		for (int row = 0; row < nRows; row++) {
+			for (int col = colStart(row); col < nColumns; col++) {
+				Double d = getValue(row, col);
+				if (d == null)
+					continue;
+				sum += d.doubleValue();
+				if (symmetric && col != row)
+					sum += d.doubleValue();
+			}
+		}
+
+		for (int row = 0; row < nRows; row++) {
+			for (int col = colStart(row); col < nColumns; col++) {
+				Double d = getValue(row, col);
+				if (d == null)
+					continue;
+				setValue(row, col, d/sum);
+				if (symmetric && col != row)
+					setValue(col, row, d/sum);
+			}
+		}
+	}
+
+	/**
+	 * Normalize a matrix row in place (all columns in the row sum to 1.0)
+	 *
+	 * @param row the row to normalize
+	 */
+	public void normalizeRow(int row) {
+		double sum = 0.0;
+		for (int col = 0; col < nColumns; col++) {
+			Double d = getValue(row, col);
+			if (d == null)
+				continue;
+			sum += d.doubleValue();
+		}
+		for (int col = 0; col < nColumns; col++) {
+			Double d = getValue(row, col);
+			if (d == null)
+				continue;
+			setValue(row, col, d/sum);
+		}
+
+		updateMinMax();
+	}
+
+	/**
+	 * Normalize a matrix column in place (all rows in the column sum to 1.0)
+	 *
+	 * @param column the column to normalize
+	 */
+	public void normalizeColumn(int column) {
+		double sum = 0.0;
+		for (int row = 0; row < nRows; row++) {
+			Double d = getValue(row, column);
+			if (d == null)
+				continue;
+			sum += d.doubleValue();
+		}
+
+		for (int row = 0; row < nRows; row++) {
+			Double d = getValue(row, column);
+			if (d == null)
+				continue;
+			setValue(row, column, d/sum);
+		}
+
+		updateMinMax();
+	}
+
+	public DoubleMatrix2D getColtMatrix() {
+		DoubleMatrix2D mat = DoubleFactory2D.dense.make(nRows, nColumns);
+		mat.assign(toArray());
+		return mat;
+	}
+
+	public int cardinality() {
+		int cardinality = 0;
+		for (int row = 0; row < nRows; row++) {
+			for (int col = colStart(row); col < nColumns; col++) {
+				if (getValue(row, col) != null) {
+					cardinality++;
+					if (symmetric)
+						cardinality++;
+				}
+			}
+		}
+		return cardinality;
+	}
+
+	/**
+	 * Debugging routine to print out information about a matrix
+	 *
+	 * @param matrix the matrix we're going to print out information about
+	 */
+	public String printMatrixInfo() {
+		String s = "Simple Matrix("+nRows+", "+nColumns+")\n";
+		s += " cardinality is "+cardinality()+"\n";
+		return s;
+	}
+
+	public String printMatrix() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("SimpleMatrix("+nRows+", "+nColumns+")\n\t");
+		for (int col = 0; col < nColumns; col++) {
+			sb.append(getColumnLabel(col)+"\t");
+		}
+		sb.append("\n");
+		for (int row = 0; row < nRows; row++) {
+			sb.append(getRowLabel(row)+":\t"); //node.getIdentifier()
+			for (int col = 0; col < nColumns; col++) {
+				sb.append(""+getValue(row,col)+"\t");
+			} 
+			sb.append("\n");
+		} 
+		return sb.toString();
 	}
 
 	private void gaussian(Double a[][], int idx[]) {

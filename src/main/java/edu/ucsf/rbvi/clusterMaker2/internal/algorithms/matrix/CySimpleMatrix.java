@@ -90,6 +90,17 @@ public class CySimpleMatrix extends SimpleMatrix implements CyMatrix {
 	}
 
 	/**
+	 * Get the nodes for all rows
+	 *
+	 * @return the nodes for all rows
+	 */
+	public List<CyNode> getRowNodes() {
+		if (rowNodes == null)
+			return null;
+		return Arrays.asList(rowNodes);
+	}
+
+	/**
 	 * Set the nodes for all columns
 	 *
 	 * @param columnNodes array of {@link CyNode}s for the columns
@@ -129,6 +140,17 @@ public class CySimpleMatrix extends SimpleMatrix implements CyMatrix {
 		if (columnNodes == null)
 			return null;
 		return columnNodes[column];
+	}
+
+	/**
+	 * Get the nodes for all columns
+	 *
+	 * @return the nodes for all columns
+	 */
+	public List<CyNode> getColumnNodes() {
+		if (columnNodes == null)
+			return null;
+		return Arrays.asList(columnNodes);
 	}
 
 	/**

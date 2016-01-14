@@ -48,6 +48,13 @@ public interface CyMatrix extends Matrix {
 	public CyNode getRowNode(int row);
 
 	/**
+	 * Get the nodes for all rows
+	 *
+	 * @return the nodes for all rows
+	 */
+	public List<CyNode> getRowNodes();
+
+	/**
 	 * Set the nodes for all columns
 	 *
 	 * @param columnNodes array of {@link CyNode}s for the columns
@@ -76,6 +83,13 @@ public interface CyMatrix extends Matrix {
 	 * @return the node for that column
 	 */
 	public CyNode getColumnNode(int column);
+
+	/**
+	 * Get the nodes for all columns
+	 *
+	 * @return the nodes for all columns
+	 */
+	public List<CyNode> getColumnNodes();
 
 	/**
 	 * Return true if the matrix is based on edges, but isn't
