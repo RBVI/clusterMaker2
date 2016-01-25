@@ -1,13 +1,25 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.utils;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
-import org.cytoscape.model.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 
 public class ModelUtils {
     public static final String NONEATTRIBUTE = "--None--";
@@ -164,7 +176,7 @@ public class ModelUtils {
             }
             return newAttribute;
         }
-        return new ListMultipleSelection<String>(ModelUtils.NONEATTRIBUTE);
+        return new ListMultipleSelection<String>("--None--");
     }
 
 
@@ -184,7 +196,7 @@ public class ModelUtils {
 
             return newAttribute;
         }
-        return new ListMultipleSelection<String>(ModelUtils.NONEATTRIBUTE);
+        return new ListMultipleSelection<String>("--None--");
     }
 
     public static ListSingleSelection<String> updateEdgeAttributeList(CyNetwork network,
@@ -203,7 +215,7 @@ public class ModelUtils {
 
             return newAttribute;
         }
-        return new ListSingleSelection<String>(ModelUtils.NONEATTRIBUTE);
+        return new ListSingleSelection<String>("--None--");
     }
 
     public static String getName(CyNetwork network, CyIdentifiable obj) {
@@ -243,7 +255,29 @@ public class ModelUtils {
 
         if (val == null) return null;
 
-        return val.doubleValue();
+        return Double.valueOf(val.doubleValue());
+    }
+
+    public static List<CyNode>sortNodeList(CyNetwork network, List<CyNode>nodeList) {
+        List<CyNode> list = new ArrayList<CyNode>(nodeList);
+        Collections.sort(list, new CyIdentifiableNameComparator(network));
+        return list;
+    }
+
+    public static List<CyNode>getNodeList(CyNetwork network, boolean selectedOnly) {
+        if (selectedOnly) {
+            List<CyNode> nodes = CyTableUtil.getNodesInState(network,CyNetwork.SELECTED,true);
+            return new ArrayList<CyNode>(CyTableUtil.getNodesInState(network,CyNetwork.SELECTED,true));
+        } else {
+            List<CyNode> nodes = network.getNodeList();
+            return new ArrayList<CyNode>(network.getNodeList());
+        }
+    }
+
+    public static List<CyNode>getSortedNodeList(CyNetwork network, boolean selectedOnly) {
+        List<CyNode> list = getNodeList(network, selectedOnly);
+        Collections.sort(list, new CyIdentifiableNameComparator(network));
+        return list;
     }
 
     private static List<String> getAllAttributes(CyNetwork network, CyTable table) {
@@ -261,10 +295,11 @@ public class ModelUtils {
     private static void getAttributesList(List<String>attributeList, CyTable attributes) {
         Collection<CyColumn> names = attributes.getColumns();
         java.util.Iterator<CyColumn> itr = names.iterator();
-        attributeList.addAll(attributes.getColumns().stream()
-                .filter(column -> column.getType() == Double.class || column.getType() == Integer.class)
-                .map(CyColumn::getName)
-                .collect(Collectors.toList()));
+        for (CyColumn column: attributes.getColumns()) {
+            if (column.getType() == Double.class ||
+                    column.getType() == Integer.class) {
+                attributeList.add(column.getName());
+            }
+        }
     }
-
 }

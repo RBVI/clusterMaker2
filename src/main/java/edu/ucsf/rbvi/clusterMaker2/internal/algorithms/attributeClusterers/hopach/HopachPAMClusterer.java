@@ -69,7 +69,10 @@ public class HopachPAMClusterer extends AbstractAttributeClusterer {
 
 		createGroups = context.createGroups;
 
-		Collections.sort(nodeAttributeList);
+		if (nodeAttributeList != null && nodeAttributeList.size() > 0) {
+			// To make debugging easier, sort the attribute list
+			Collections.sort(nodeAttributeList);
+		}
 		
 		// Get our attributes we're going to use for the cluster
 		String[] attributeArray;
@@ -84,7 +87,7 @@ public class HopachPAMClusterer extends AbstractAttributeClusterer {
 		resetAttributes(network, SHORTNAME);
 
 		RunHopachPAM algo = 
-			new RunHopachPAM(network, attributeArray, distanceMetric, monitor, context);
+			new RunHopachPAM(network, attributeArray, distanceMetric, monitor, context, this);
 		algo.setParameters(context.splitCost.getSelectedValue(), 
 					       context.summaryMethod.getSelectedValue(), 
 					       context.maxLevel, context.K, context.L, 

@@ -22,13 +22,15 @@ import java.text.DecimalFormat;
 
 import javax.swing.JComponent;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+
 public class Histogram extends JComponent implements MouseMotionListener, MouseListener {
 	
 	// The histogram
 		private int[] histoArray;
 
 		// Original data
-		private double[] graphData;
+		private CyMatrix matrix;
 
 		// Y scale values
 		private int histoMax = Integer.MIN_VALUE;
@@ -62,34 +64,34 @@ public class Histogram extends JComponent implements MouseMotionListener, MouseL
 
 		DecimalFormat form = new DecimalFormat("0.0E0"); //rounds values for drawString
 			
-		Histogram(double[] inputData, int nBins) {
+		Histogram(CyMatrix matrix, int nBins) {
 			super();
 			NBINS = nBins;
 			height = 400;
 			width = 1000;
 			setPreferredSize(new Dimension(width,height));
 			histoArray = new int[NBINS];
-			this.graphData = inputData;
+			this.matrix = matrix;
 			listeners = new ArrayList<HistoChangeListener>();
 
 			adjFont = new Font(FONT_FAMILY, Font.PLAIN, 14);
 
-			createHistogram(graphData);
+			createHistogram(matrix);
 
 			addMouseMotionListener(this);
 			addMouseListener(this);
 		}
 
-		public void updateData(double[] graphData) {
+		public void updateData(CyMatrix matrix) {
 			// Trigger redraw
 			histoArray = new int[NBINS];
-			this.graphData = graphData;
+			this.matrix = matrix;
 
 			minValue = Double.MAX_VALUE;
 			maxValue = Double.MIN_VALUE;
 			histoMax = Integer.MIN_VALUE;
 			histoMaxUp = 0;
-			createHistogram(graphData);
+			createHistogram(matrix);
 			this.repaint();
 		}
 		
@@ -199,21 +201,30 @@ public class Histogram extends JComponent implements MouseMotionListener, MouseL
 			}
 		}
 
-		private void createHistogram(double[] inputData){
+		private void createHistogram(CyMatrix matrix){
 			calculateXScale();
 
 			// System.out.println("Creating histogram: low = "+low);
 			
 			// Bin the data
-			for(double dataItr : inputData){
-				for(int nI=0; nI < NBINS; nI++){
-					if(dataItr==low){
-						histoArray[0]+=1;
-						break;
-					}
-					if(dataItr>low+xInterval*nI && dataItr<=low+xInterval*(nI+1) ){
-						histoArray[nI]+=1;
-						break;
+			for (int row = 0; row < matrix.nRows(); row++) {
+				int colStart = 0;
+				if (matrix.isSymmetrical())
+					colStart = row;
+				for (int col = colStart; col < matrix.nColumns(); col++) {
+					if (!matrix.hasValue(row, col))
+						continue;
+
+					double dataItr = matrix.getValue(row, col);
+						for(int nI=0; nI < NBINS; nI++){
+							if(dataItr==low){
+							histoArray[0]+=1;
+							break;
+						}
+						if(dataItr>low+xInterval*nI && dataItr<=low+xInterval*(nI+1) ){
+							histoArray[nI]+=1;
+							break;
+						}
 					}
 				}
 			}
@@ -223,10 +234,8 @@ public class Histogram extends JComponent implements MouseMotionListener, MouseL
 		private void calculateXScale() {
 
 			// Calculate our minimum and maximum X values
-			for (int i=0; i < graphData.length; i++) {
-				minValue = Math.min(minValue, graphData[i]);
-				maxValue = Math.max(maxValue, graphData[i]);
-			}
+			minValue = matrix.getMinValue();
+			maxValue = matrix.getMaxValue();
 
 			// Calculate our X scale
 			double range = maxValue - minValue;

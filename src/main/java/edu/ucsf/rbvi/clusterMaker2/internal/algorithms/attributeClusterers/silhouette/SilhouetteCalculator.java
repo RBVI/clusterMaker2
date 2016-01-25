@@ -5,9 +5,9 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Clusters;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BaseMatrix;
 
 
 /**
@@ -26,15 +26,15 @@ public class SilhouetteCalculator {
 	 * @param labels the labels for each of clusters
 	 * @return the resulting silhouette
 	 */
-	public static Silhouettes calculate(BaseMatrix matrix, DistanceMetric metric, int[] labels)
+	public static Silhouettes calculate(CyMatrix matrix, DistanceMetric metric, int[] labels)
 	{
-		double[][] distanceMatrix = matrix.getDistanceMatrix(metric);
+		double[][] distanceMatrix = matrix.getDistanceMatrix(metric).toArray();
 		return calculate(distanceMatrix, labels);
 	}
 	
-	public static Silhouettes calculate(BaseMatrix matrix, DistanceMetric metric, Clusters clusters)
+	public static Silhouettes calculate(CyMatrix matrix, DistanceMetric metric, Clusters clusters)
 	{
-		double[][] distanceMatrix = matrix.getDistanceMatrix(metric);
+		double[][] distanceMatrix = matrix.getDistanceMatrix(metric).toArray();
 		return calculate(distanceMatrix, clusters);
 	}
 	

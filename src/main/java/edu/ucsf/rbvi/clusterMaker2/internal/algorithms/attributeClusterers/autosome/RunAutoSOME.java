@@ -58,14 +58,14 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.work.TaskMonitor;
 
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.autosome.cluststruct.*;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.autosome.launch.*;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeWeightConverter;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.NoneConverter;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 public class RunAutoSOME {
@@ -173,7 +173,7 @@ public class RunAutoSOME {
 		}
 
         // Create the matrix
-		Matrix matrix = new Matrix(network, attrArray, false, ignoreMissing, selectedOnly);
+		CyMatrix matrix = CyMatrixFactory.makeSmallMatrix(network, attrArray, selectedOnly, ignoreMissing, false, false);
 
 		// System.out.println("matrix is "+matrix.nRows()+" by "+matrix.nColumns());
 
@@ -201,7 +201,7 @@ public class RunAutoSOME {
 			}
 			for(int l = 0; l < f.length; l++) {
 				if(k==0) {
-					s.columnHeaders[l+1] = matrix.getColLabel(l);
+					s.columnHeaders[l+1] = matrix.getColumnLabel(l);
 					s.columnHeaders[l+1] = s.columnHeaders[l+1].replace("\"","");
 					s.columnHeaders[l+1] = s.columnHeaders[l+1].replace(",","");
 
@@ -268,14 +268,14 @@ public class RunAutoSOME {
 	}
 
 
-	private Map<NodeCluster,NodeCluster> getNodeClusters(clusterRun cr, Map<String, Integer> key, Matrix matrix, Settings s){
+	private Map<NodeCluster,NodeCluster> getNodeClusters(clusterRun cr, Map<String, Integer> key, CyMatrix matrix, Settings s){
 		Map<NodeCluster,NodeCluster> cMap = new HashMap<NodeCluster,NodeCluster>();
 		attrList = new ArrayList<String>();
 		attrOrderList = new ArrayList<String>();
 		nodeOrderList = new ArrayList<String>();
 
 
-		for(int i = 0; i < matrix.nColumns(); i++) attrOrderList.add(matrix.getColLabel(i));
+		for(int i = 0; i < matrix.nColumns(); i++) attrOrderList.add(matrix.getColumnLabel(i));
 
 		for(int i = 0; i < clusterCount; i++){
 			if(cr.c[i].ids.isEmpty()) continue;
@@ -297,7 +297,7 @@ public class RunAutoSOME {
 
 
 
-	private Map<NodeCluster,NodeCluster> getNodeClustersFCN(clusterRun cr, Matrix matrix, Settings s){
+	private Map<NodeCluster,NodeCluster> getNodeClustersFCN(clusterRun cr, CyMatrix matrix, Settings s){
 		attrList = new ArrayList<String>();
 		attrOrderList = new ArrayList<String>();
 		nodeOrderList = new ArrayList<String>();
@@ -316,7 +316,7 @@ public class RunAutoSOME {
 
 		if(!s.FCNrows) for(int i = 1; i < s.columnHeaders.length; i++) attrOrderList.add(s.columnHeaders[i]);
 		else{
-			for(int i = 0; i < matrix.nColumns(); i++) attrOrderList.add(matrix.getColLabel(i));
+			for(int i = 0; i < matrix.nColumns(); i++) attrOrderList.add(matrix.getColumnLabel(i));
 		}
 
 		for(int i = 0; i < cr.fcn_nodes.length; i++){

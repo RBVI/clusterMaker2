@@ -9,11 +9,11 @@ import java.util.concurrent.Semaphore;
 
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.de.costmatrixcreation.dataTypes.Edges;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.de.layclust.iterativeclustering.IteratorThread;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.de.layclust.taskmanaging.TaskConfig;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -24,10 +24,10 @@ public class RunTransClust {
 	private List<CyNode> nodes;
 	private boolean canceled = false;
 	protected int clusterCount = 0;
-	private DistanceMatrix distanceMatrix = null;
+	private CyMatrix distanceMatrix = null;
 	private double threshold;
 
-	public RunTransClust( DistanceMatrix dMat,double threshold, TaskMonitor monitor)
+	public RunTransClust( CyMatrix dMat,double threshold, TaskMonitor monitor)
 	{
 		this.distanceMatrix = dMat;
 		this.threshold = threshold;
@@ -37,9 +37,9 @@ public class RunTransClust {
 
 	public List<NodeCluster> run(TaskMonitor monitor, CyNetwork network)
 	{
-		DoubleMatrix2D matrix = this.distanceMatrix.getDistanceMatrix(threshold, true);
+		DoubleMatrix2D matrix = this.distanceMatrix.getColtMatrix();
 
-		nodes = distanceMatrix.getNodes();
+		nodes = distanceMatrix.getRowNodes();
 		HashMap<String, CyNode> nodeHash = new HashMap<String, CyNode>();
 		for (CyNode node : nodes) {
 			nodeHash.put(ModelUtils.getNodeName(network, node), node);
@@ -63,8 +63,11 @@ public class RunTransClust {
 				CyNode cyNodeJ = this.nodes.get(j);
 					es.sources[count] = i;
 					es.targets[count] = j;
-					es.values[count] = (float) distanceMatrix.getEdgeValueFromMatrix(i, j);
-					count++;
+					Double val = distanceMatrix.getValue(i, j);
+					if (val != null) {
+						es.values[count] = val.floatValue();
+						count++;
+					}
 			}
 			es.endPositions[integers2proteins.get(cyNodeI.getSUID())] = count-1;
 		}

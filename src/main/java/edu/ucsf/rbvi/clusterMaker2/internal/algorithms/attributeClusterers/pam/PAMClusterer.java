@@ -28,13 +28,13 @@ import edu.ucsf.rbvi.clusterMaker2.internal.ui.KnnView;
 public class PAMClusterer extends AbstractAttributeClusterer {
 	public static String SHORTNAME="pam";
 	public static String NAME="Partition Around Medoids (PAM) cluster";
-	
+
 	@Tunable (description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
-	
+
 	@ContainsTunables
 	public PAMContext context = null;
-	
+
 	public PAMClusterer(PAMContext context, ClusterManager clusterManager) {
 		super(clusterManager);
 		this.context = context;
@@ -42,7 +42,7 @@ public class PAMClusterer extends AbstractAttributeClusterer {
 			network=clusterManager.getNetwork();
 		context.setNetwork(network);
 	}
-	
+
 
 	@ProvidesTitle
 	public String getShortName() {
@@ -52,7 +52,7 @@ public class PAMClusterer extends AbstractAttributeClusterer {
 	public String getName() {
 		return NAME;
 	}
-	
+
 	public ClusterViz getVisualizer() {
 		return new KnnView(clusterManager);
 	}
@@ -63,8 +63,10 @@ public class PAMClusterer extends AbstractAttributeClusterer {
 		monitor.setTitle("Performing "+getName());
 		List<String> nodeAttributeList = context.attributeList.getNodeAttributeList();
 		String edgeAttribute = context.attributeList.getEdgeAttribute();
-		
-		
+
+		if (cancelled()) return;
+
+
 		// sanity check of parameters
 		if (nodeAttributeList == null && edgeAttribute == null) {
 			monitor.showMessage(TaskMonitor.Level.ERROR, "Must select either one edge column or two or more node columns");
@@ -83,8 +85,11 @@ public class PAMClusterer extends AbstractAttributeClusterer {
 
 		createGroups = context.createGroups;
 
-		Collections.sort(nodeAttributeList);
-		
+		if (nodeAttributeList != null && nodeAttributeList.size() > 0) {
+			// To make debugging easier, sort the attribute list
+			Collections.sort(nodeAttributeList);
+		}
+
 		// Get our attributes we're going to use for the cluster
 		String[] attributeArray;
 		if (nodeAttributeList != null && nodeAttributeList.size() > 0) {
@@ -97,40 +102,49 @@ public class PAMClusterer extends AbstractAttributeClusterer {
 		}
 		monitor.setStatusMessage("Performing PAM cluster with k = " + 
 		                         context.kcluster.kNumber + " using " + 
-				                 distanceMetric + " and attributes: " + attributeArray);
+				                     distanceMetric + " and attributes: " + attributeArray);
 
 		monitor.setStatusMessage("Initializing");
 		// System.out.println("Initializing");
 
 		resetAttributes(network, SHORTNAME);
 
-		RunPAM algo = new RunPAM(network, attributeArray, distanceMetric, monitor, context);
-		
+		RunPAM algo = new RunPAM(network, attributeArray, distanceMetric, monitor, context, this);
+
 		String resultsString = "PAM results:";
-		
+
 		int nIterations = 0;
-		
+
 		// Cluster the attributes
 		if (context.clusterAttributes && attributeArray.length > 1) {
+			if (cancelled()) {
+				return;
+			}
+
 			monitor.setStatusMessage("Clustering attributes");
-			Integer[] rowOrder = 
-				algo.cluster(clusterManager, context.kcluster.kNumber,  
-							 nIterations,  true, getShortName(), context.kcluster, false);
+			Integer[] rowOrder = algo.cluster(clusterManager, context.kcluster.kNumber,  
+				                                nIterations,  true, getShortName(), context.kcluster, false);
+
 			updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algo.getAttributeList(),
-					         algo.getMatrix());
+			                 algo.getMatrix());
 		}
-		
+
+		if (cancelled()) {
+			return;
+		}
+
 		// Cluster the nodes
 		monitor.setStatusMessage("Clustering nodes");
 
 		Integer[] rowOrder = algo.cluster(clusterManager, context.kcluster.kNumber, 
-				                          nIterations, false, getShortName(),
-				                          context.kcluster, createGroups);
+		                                  nIterations, false, getShortName(),
+		                                  context.kcluster, createGroups);
+
 		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algo.getAttributeList(),
-		         algo.getMatrix());
-		
-		if (context.showUI)	
+		                 algo.getMatrix());
+
+		if (context.showUI)
 			insertTasksAfterCurrentTask(new KnnView(clusterManager));
 	}
-	
+
 }

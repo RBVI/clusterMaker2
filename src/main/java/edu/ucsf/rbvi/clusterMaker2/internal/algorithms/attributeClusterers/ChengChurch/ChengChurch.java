@@ -21,9 +21,9 @@ import org.cytoscape.work.Tunable;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.FuzzyNodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractAttributeClusterer;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.BiclusterView;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
@@ -93,8 +93,10 @@ public class ChengChurch extends AbstractAttributeClusterer {
 
 		createGroups = context.createGroups;
 
-		// To make debugging easier, sort the attribute list
-		Collections.sort(nodeAttributeList);
+		if (nodeAttributeList != null && nodeAttributeList.size() > 0) {
+			// To make debugging easier, sort the attribute list
+			Collections.sort(nodeAttributeList);
+		}
 
 		// Get our attributes we're going to use for the cluster
 		String[] attributeArray;
@@ -126,7 +128,7 @@ public class ChengChurch extends AbstractAttributeClusterer {
 			//createGroups(network,algorithm.getMatrix(),algorithm.getNClusters(), clusters, "cheng&hurch");
 		
 		//createBiclusterGroups(algorithm.getClusterNodes());
-		Matrix biclusterMatrix = algorithm.getBiclusterMatrix();
+		CyMatrix biclusterMatrix = algorithm.getBiclusterMatrix();
 		int clusters[] = new int[biclusterMatrix.nRows()];
 		createGroups(network,biclusterMatrix,1, clusters, "cheng&hurch");
 		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, getAttributeList(), 

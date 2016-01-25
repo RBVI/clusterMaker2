@@ -50,6 +50,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractAttributeClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.TreeView;
@@ -60,6 +61,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.ui.TreeView;
 public class HierarchicalCluster extends AbstractAttributeClusterer {
 	public static String SHORTNAME = "hierarchical";
 	public static String NAME = "Hierarchical cluster";
+
 	/**
 	 * Linkage types
 	 */
@@ -97,6 +99,7 @@ public class HierarchicalCluster extends AbstractAttributeClusterer {
 	public void run(TaskMonitor monitor) {
 		this.monitor = monitor;
 		monitor.setTitle("Performing "+getName());
+
 		List<String> nodeAttributeList = context.attributeList.getNodeAttributeList();
 		String edgeAttribute = context.attributeList.getEdgeAttribute();
 
@@ -134,7 +137,9 @@ public class HierarchicalCluster extends AbstractAttributeClusterer {
 		resetAttributes(network, SHORTNAME);
 
 		// Create a new clusterer
-		RunHierarchical algorithm = new RunHierarchical(network, attributeArray, distanceMetric, clusterMethod, monitor, context);
+		DistanceMetric metric = context.metric.getSelectedValue();
+		RunHierarchical algorithm = new RunHierarchical(network, attributeArray, metric, 
+		                                                clusterMethod, monitor, context);
 
 		// Cluster the attributes, if requested
 		if (context.clusterAttributes && (attributeArray.length > 1 || context.isAssymetric())) {

@@ -45,10 +45,15 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.TaskMonitor;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.SilhouetteCalculator;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.Silhouettes;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.MatrixUtils;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
@@ -64,12 +69,12 @@ public abstract class AbstractKClusterAlgorithm {
     protected DistanceMetric metric;
     protected TaskMonitor monitor;
     protected boolean debug = false;
-    protected Matrix matrix;
+    protected CyMatrix matrix;
     protected boolean ignoreMissing = true;
     protected boolean selectedOnly = false;
     protected boolean useSilhouette = false;
-    protected boolean cancelled = false;
     protected Integer[] rowOrder;
+    private AbstractClusterAlgorithm parentTask = null;
     private Silhouettes[] silhouetteResults = null;
 
 
@@ -77,15 +82,16 @@ public abstract class AbstractKClusterAlgorithm {
      * Common code for the k-cluster algorithms with silhouette
      */
     public AbstractKClusterAlgorithm(CyNetwork network, String weightAttributes[],
-                                     DistanceMetric metric, TaskMonitor monitor) {
+                                     DistanceMetric metric, TaskMonitor monitor, AbstractClusterAlgorithm task) {
         this.network = network;
         this.weightAttributes = weightAttributes;
         this.metric = metric;
         this.monitor = monitor;
+        this.parentTask = task;
     }
 
     // This should be overridden by any k-cluster implementation
-    public abstract int kcluster(int nClusters, int nIterations, Matrix matrix,
+    public abstract int kcluster(int nClusters, int nIterations, CyMatrix matrix,
                                  DistanceMetric metric, int[] clusters);
 
     /**
@@ -111,12 +117,18 @@ public abstract class AbstractKClusterAlgorithm {
             monitor.setStatusMessage("Creating distance matrix");
 
         // Create the matrix
-        matrix = new Matrix(network, weightAttributes, transpose, ignoreMissing, selectedOnly);
+        matrix = CyMatrixFactory.makeSmallMatrix(network, weightAttributes, selectedOnly, ignoreMissing, transpose, false);
         monitor.showMessage(TaskMonitor.Level.INFO,"cluster matrix has "+matrix.nRows()+" rows");
         int kMax = Math.min(context.kMax, matrix.nRows());
 
-        // Create a weight vector of all ones (we don't use individual weighting, yet)
-        matrix.setUniformWeights();
+        // If we have a symmetric matrix, and our weightAttribute is an edge attribute
+        // then we need to force the distance metric to be "none"
+        if (matrix.isSymmetrical() && weightAttributes.length == 1 &&
+                weightAttributes[0].startsWith("edge.")) {
+            if (!metric.equals(DistanceMetric.VALUE_IS_CORRELATION) &&
+                    !metric.equals(DistanceMetric.VALUE_IS_DISTANCE))
+                metric = DistanceMetric.VALUE_IS_CORRELATION;
+        }
 
         if (monitor != null)
             monitor.setStatusMessage("Clustering...");
@@ -127,13 +139,15 @@ public abstract class AbstractKClusterAlgorithm {
 
             silhouetteResults = new Silhouettes[kMax];
 
+            System.out.println("Running silhouette's");
             int nThreads = Runtime.getRuntime().availableProcessors()-1;
             if (nThreads > 1)
                 runThreadedSilhouette(kMax, nIterations, nThreads, saveMonitor);
             else
                 runLinearSilhouette(kMax, nIterations, saveMonitor);
+            System.out.println("Done.");
 
-            if (cancelled()) return null;
+            if (parentTask.cancelled()) return null;
 
             // Now get the results and find our best k
             double maxSil = Double.MIN_VALUE;
@@ -151,11 +165,11 @@ public abstract class AbstractKClusterAlgorithm {
 
         int[] clusters = new int[matrix.nRows()];
 
-        if (cancelled()) return null;
+        if (parentTask.cancelled()) return null;
 
         // Cluster
         int nClustersFound = kcluster(nClusters, nIterations, matrix, metric, clusters);
-        if (cancelled()) return null;
+        if (parentTask.cancelled()) return null;
 
         // TODO Change other algorithms s.t. the number of clusters found is returned
         if (nClusters == 0) nClusters = nClustersFound;
@@ -175,7 +189,7 @@ public abstract class AbstractKClusterAlgorithm {
 	*/
         // NB  HOPACH clusters should not be re-ordered
 
-        rowOrder = matrix.indexSort(clusters, clusters.length);
+        rowOrder = MatrixUtils.indexSort(clusters, clusters.length);
         // System.out.println(Arrays.toString(rowOrder));
         // Update the network attributes
 
@@ -195,7 +209,7 @@ public abstract class AbstractKClusterAlgorithm {
         return rowOrder;
     }
 
-    public Matrix getMatrix() { return matrix; }
+    public CyMatrix getMatrix() { return matrix; }
     public List<String> getAttributeList() { return attrList; }
 
     /**
@@ -220,8 +234,7 @@ public abstract class AbstractKClusterAlgorithm {
                 if (clusters[i] == cluster) {
                     attrList.add(matrix.getRowLabel(i)+"\t"+cluster);
                     memberList.add(matrix.getRowNode(i));
-                    ModelUtils.createAndSetLocal(network, matrix.getRowNode(i), algorithm+" Cluster",
-                            new Integer(cluster), Integer.class, null);
+                    ModelUtils.createAndSetLocal(network, matrix.getRowNode(i), algorithm+" Cluster", cluster, Integer.class, null);
                 }
             }
             if (createGroups) {
@@ -230,7 +243,7 @@ public abstract class AbstractKClusterAlgorithm {
         }
     }
 
-    public void getClusterMeans(int nClusters, Matrix data, Matrix cdata, int[] clusterid) {
+    public void getClusterMeans(int nClusters, CyMatrix data, CyMatrix cdata, int[] clusterid) {
 
         double[][]cmask = new double[nClusters][cdata.nColumns()];
 
@@ -263,10 +276,6 @@ public abstract class AbstractKClusterAlgorithm {
                 }
             }
         }
-    }
-
-    public boolean cancelled() {
-        return cancelled;
     }
 
     protected int[] chooseRandomElementsAsCenters(int nElements, int nClusters) {
@@ -346,8 +355,8 @@ public abstract class AbstractKClusterAlgorithm {
     private void renumberClusters(int nClusters, int [] clusters) {
         int[] clusterSizes = new int[nClusters];
         Arrays.fill(clusterSizes, 0);
-        for (int cluster : clusters) {
-            clusterSizes[cluster] += 1;
+        for (int row = 0; row < clusters.length; row++) {
+            clusterSizes[clusters[row]] += 1;
         }
 
         Integer[] sortedClusters = new Integer[nClusters];
@@ -383,20 +392,23 @@ public abstract class AbstractKClusterAlgorithm {
             // threadPools[0].submit(r);
         }
 
+        System.out.println("All threads started");
         // OK, now wait for each thread to complete
-        for (ExecutorService threadPool : threadPools) {
-            threadPool.shutdown();
+        for (int pool = 0; pool < threadPools.length; pool++) {
+            System.out.println("Shutting down threads");
+            threadPools[pool].shutdown();
             try {
-                boolean result = threadPool.awaitTermination(7, TimeUnit.DAYS);
-            } catch (Exception ignored) {
-            }
+                boolean result = threadPools[pool].awaitTermination(7, TimeUnit.DAYS);
+                System.out.println("Pool "+pool+" terminated");
+            } catch (Exception ignored) {}
         }
+        System.out.println("Done.");
     }
 
     private void runLinearSilhouette(int kMax, int nIterations, TaskMonitor saveMonitor) {
         for (int kEstimate = 2; kEstimate < kMax; kEstimate++) {
             int[] clusters = new int[matrix.nRows()];
-            if (cancelled()) return;
+            if (parentTask.cancelled()) return;
             if (saveMonitor != null) saveMonitor.setStatusMessage("Getting silhouette with a k estimate of "+kEstimate);
             int ifound = kcluster(kEstimate, nIterations, matrix, metric, clusters);
             silhouetteResults[kEstimate] = SilhouetteCalculator.calculate(matrix, metric, clusters);
@@ -437,13 +449,13 @@ public abstract class AbstractKClusterAlgorithm {
     }
 
     private class RunKMeans implements Runnable {
-        Matrix matrix;
+        CyMatrix matrix;
         int[] clusters;
         int kEstimate;
         int nIterations;
         TaskMonitor saveMonitor = null;
 
-        public RunKMeans (Matrix matrix, int[] clusters, int k, int nIterations, TaskMonitor saveMonitor) {
+        public RunKMeans (CyMatrix matrix, int[] clusters, int k, int nIterations, TaskMonitor saveMonitor) {
             this.matrix = matrix;
             this.clusters = clusters;
             this.kEstimate = k;
@@ -453,10 +465,13 @@ public abstract class AbstractKClusterAlgorithm {
 
         public void run() {
             int[] clusters = new int[matrix.nRows()];
-            if (cancelled()) return;
+            if (parentTask.cancelled()) return;
             if (saveMonitor != null) saveMonitor.setStatusMessage("Getting silhouette with a k estimate of "+kEstimate);
             try {
+                System.out.println("Getting silhouette with a k estimate of "+kEstimate);
                 int ifound = kcluster(kEstimate, nIterations, matrix, metric, clusters);
+                System.out.println("Got silhouette with a k estimate of "+kEstimate);
+                if (parentTask.cancelled()) return;
                 silhouetteResults[kEstimate] = SilhouetteCalculator.calculate(matrix, metric, clusters);
             } catch (Exception e) { e.printStackTrace(); }
         }

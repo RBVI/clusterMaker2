@@ -17,7 +17,7 @@ public abstract class AbstractClusterAlgorithm extends AbstractTask
                                                implements RequestsUIHelper, ClusterAlgorithm {
 	
 	// Common class values
-	protected boolean debug = false;
+	protected boolean debug = true;
 	protected boolean createGroups = false;
 	protected String clusterAttributeName = null;
 	protected boolean canceled = false;
@@ -35,9 +35,14 @@ public abstract class AbstractClusterAlgorithm extends AbstractTask
 	 * Convenience routines                                                 *
 	 ***********************************************************************/
 
-	public void cancel() { canceled = true; }
+	public void cancel() { 
+		cancelled = true; 
+		canceled = true; 
+	}
 
-	public boolean cancelled() { return canceled; }
+	public boolean cancelled() { 
+		return canceled; 
+	}
 
 	public ClusterResults getResults() { return results; }
 

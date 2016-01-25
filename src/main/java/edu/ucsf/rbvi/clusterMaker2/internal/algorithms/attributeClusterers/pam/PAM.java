@@ -5,10 +5,11 @@ import java.util.Iterator;
 
 import org.cytoscape.model.CyNetwork;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BaseMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
+
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Clusters;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMatrix;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hopach.types.KClusterable;
 
 
@@ -32,9 +33,9 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hopac
  */
 public class PAM implements KClusterable {
 	
-	protected BaseMatrix data;
+	protected CyMatrix data;
 	protected DistanceMetric metric;
-	protected DistanceMatrix distances;
+	protected Matrix distances;
 	protected int nClusters;
 	
 	protected Clusters clusters;
@@ -71,12 +72,12 @@ public class PAM implements KClusterable {
 	int maxSwaps = 1000;
 	private CyNetwork network;
 	
-	public PAM(CyNetwork network, BaseMatrix data, DistanceMetric metric) {
+	public PAM(CyNetwork network, CyMatrix data, DistanceMetric metric) {
 		this(data, metric, null, null);
 		this.network = network;
 	}
 	
-	public PAM(BaseMatrix data, DistanceMetric metric, DistanceMatrix distances, int[] idx) {
+	public PAM(CyMatrix data, DistanceMetric metric, Matrix dists, int[] idx) {
 		this.data = data;
 		this.metric = metric;
 		
@@ -94,11 +95,13 @@ public class PAM implements KClusterable {
 		}
 		this.idx = idx;
 		
-		if (distances == null) {
-			this.distances = new DistanceMatrix(data, metric, idx);
+		if (dists == null) {
+			this.distances = data.getDistanceMatrix(metric);
+			// this.distances = new DistanceMatrix(data, metric, idx);
 		} else {
-			this.distances = distances.subset(idx);
+			this.distances = dists;
 		}
+		this.distances = distances.submatrix(idx);
 		
 		this.clusters = null;
 	}
@@ -180,6 +183,8 @@ public class PAM implements KClusterable {
 		
 		// find element with minimum total distance to all other elements
 		double[] totalDistances = new double[m];
+		double minDistance = Double.MAX_VALUE;
+		int minIndex = -1;
 		for (int ii = 0; ii < m; ++ii) {
 			// sum distances to all other elements
 			// assume distance to itself is 0
@@ -188,15 +193,12 @@ public class PAM implements KClusterable {
 				d += distances.getValue(ii, jj);
 			}
 			totalDistances[ii] = d;
-		}
-		double minDistance = totalDistances[0];
-		int minIndex = 0;
-		for (int ii = 0; ii < m; ++ii) {
-			if (totalDistances[ii] < minDistance) {
+			if (d < minDistance) {
 				minDistance = totalDistances[ii];
 				minIndex = ii;
 			}
 		}
+
 		// add element to medoid set
 		addMedoid(minIndex);
 		

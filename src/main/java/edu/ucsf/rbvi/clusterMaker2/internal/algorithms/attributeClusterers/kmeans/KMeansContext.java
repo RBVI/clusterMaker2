@@ -50,10 +50,9 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeList;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BaseMatrix;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.KClusterAttributes;
 
 // clusterMaker imports
@@ -69,7 +68,7 @@ public class KMeansContext {
 
 	@Tunable(description="Distance Metric", gravity=11)
 	public ListSingleSelection<DistanceMetric> metric = 
-		new ListSingleSelection<DistanceMetric>(BaseMatrix.distanceTypes);
+		new ListSingleSelection<DistanceMetric>(DistanceMetric.values());
 	
 	@ContainsTunables
 	public AttributeList attributeList = null;
@@ -95,6 +94,7 @@ public class KMeansContext {
 
 
 	public KMeansContext() {
+		metric.setSelectedValue(DistanceMetric.EUCLIDEAN);
 	}
 
 	public void setNetwork(CyNetwork network) {

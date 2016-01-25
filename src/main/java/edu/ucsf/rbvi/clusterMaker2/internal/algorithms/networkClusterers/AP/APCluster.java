@@ -55,8 +55,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
 
 public class APCluster extends AbstractNetworkClusterer  {
@@ -102,7 +102,7 @@ public class APCluster extends AbstractNetworkClusterer  {
 
 		NodeCluster.init();
 		
-		DistanceMatrix matrix = context.edgeAttributeHandler.getMatrix();
+		CyMatrix matrix = context.edgeAttributeHandler.getMatrix();
 		if (matrix == null) {
 			monitor.showMessage(TaskMonitor.Level.ERROR,"Can't get distance matrix: no attribute value?");
 			return;

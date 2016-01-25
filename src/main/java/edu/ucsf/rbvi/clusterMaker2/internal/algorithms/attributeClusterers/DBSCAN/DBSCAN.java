@@ -11,9 +11,9 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractAttributeClusterer;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.fft.FFTContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.fft.RunFFT;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.MatrixUtils;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.KnnView;
@@ -71,8 +71,10 @@ public class DBSCAN extends AbstractAttributeClusterer {
 
 		createGroups = context.createGroups;
 
-		// To make debugging easier, sort the attribute list
-		Collections.sort(nodeAttributeList);
+		if (nodeAttributeList != null && nodeAttributeList.size() > 0) {
+			// To make debugging easier, sort the attribute list
+			Collections.sort(nodeAttributeList);
+		}
 
 		// Get our attributes we're going to use for the cluster
 		String[] attributeArray;
@@ -102,7 +104,7 @@ public class DBSCAN extends AbstractAttributeClusterer {
 			if (!algorithm.getMatrix().isTransposed())
 				createGroups(network,algorithm.getMatrix(),algorithm.getNClusters(), clusters, "dbscan");
 			
-			Integer[] rowOrder = algorithm.getMatrix().indexSort(clusters, clusters.length);
+			Integer[] rowOrder = MatrixUtils.indexSort(clusters, clusters.length);
 			//Integer[] rowOrder = algorithm.cluster(context.kcluster.kNumber,1, true, "dbscan", context.kcluster);
 			updateAttributes(network, SHORTNAME, rowOrder, attributeArray, getAttributeList(), 
 			                 algorithm.getMatrix());
@@ -125,7 +127,7 @@ public class DBSCAN extends AbstractAttributeClusterer {
 			createGroups(network,algorithm.getMatrix(),algorithm.getNClusters(), clusters, "dbscan");
 		}
 
-		Integer[] rowOrder = algorithm.getMatrix().indexSort(clusters, clusters.length);
+		Integer[] rowOrder = MatrixUtils.indexSort(clusters, clusters.length);
 
 		// In DBSCAN, not all nodes will be assigned to a cluster, so they will have a cluster # of -1.  Find
 		// all of those and trim rowOrder accordingly.

@@ -4,9 +4,10 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BaseMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Clusters;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
 
 
 
@@ -28,7 +29,7 @@ public class HopachPAMTest {
 		};
 		int[] ans = {0, 0, 0, 1, 1, 1, 2, 2, 2, 2};
 		
-		BaseMatrix mat = new BaseMatrix(0, 2, data);
+		CyMatrix mat = CyMatrixFactory.makeSmallMatrix(10, 2, data);
 		HopachPAM h = new HopachPAM(mat, DistanceMetric.CITYBLOCK);
 	
 		Clusters c = h.run();
@@ -63,7 +64,7 @@ public class HopachPAMTest {
 		// mean
 		int[] ans = {0, 0, 0, 1, 1, 1, 2, 2, 2, 2};
 		
-		BaseMatrix mat = new BaseMatrix(0, 2, data);
+		CyMatrix mat = CyMatrixFactory.makeSmallMatrix(10, 2, data);
 		HopachPAM h = new HopachPAM(mat, DistanceMetric.CITYBLOCK);
 	
 		Clusters c = h.initLevel();
@@ -95,7 +96,7 @@ public class HopachPAMTest {
 		int[] initMedoids = {0, 0, 0, 3, 3, 3, 3, 5, 5, 5, 5};
 		int[] ans = {0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1};
 		
-		BaseMatrix mat = new BaseMatrix(0, 2, data);
+		CyMatrix mat = CyMatrixFactory.makeSmallMatrix(11, 2, data);
 		HopachPAM h = new HopachPAM(mat, DistanceMetric.CITYBLOCK);
 		
 		Clusters b = new Clusters(initMedoids);

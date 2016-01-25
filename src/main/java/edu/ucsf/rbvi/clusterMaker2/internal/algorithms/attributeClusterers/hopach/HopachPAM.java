@@ -1,8 +1,8 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hopach;
 
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BaseMatrix;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.pam.HopachablePAM;
 
 /**
@@ -14,7 +14,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.pam.H
  */
 public class HopachPAM extends Hopach {
 	
-	public HopachPAM(BaseMatrix data, DistanceMetric metric) {
+	public HopachPAM(CyMatrix data, DistanceMetric metric) {
 		super(new HopachablePAM(null, data, metric));
 	}
 	

@@ -22,10 +22,11 @@ import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.ThresholdHeuristic;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 
 public class HistogramDialog extends JDialog implements ActionListener, ComponentListener, HistoChangeListener {
 	
-	double[] inputArray;
+	CyMatrix matrix;
 	int nBins;
 	int currentBins;
 	Histogram histo;
@@ -39,10 +40,10 @@ public class HistogramDialog extends JDialog implements ActionListener, Componen
 
 	ThresholdHeuristic thueristic = null;
 	
-	public HistogramDialog(Window parent, String title, double[] inputArray, 
+	public HistogramDialog(Window parent, String title, CyMatrix matrix, 
 	                       int nBins, ThresholdHeuristic thueristic) {
 		super(parent);
-		this.inputArray = inputArray;
+		this.matrix = matrix;
 		this.nBins = nBins;
 		this.currentBins = nBins;
 		this.changeListenerList = new ArrayList();
@@ -53,10 +54,10 @@ public class HistogramDialog extends JDialog implements ActionListener, Componen
 		initializeOnce();
 	}
 	
-	public void updateData(double[] inputArray) {
-		this.inputArray = inputArray;
+	public void updateData(CyMatrix matrix) {
+		this.matrix = matrix;
 		if (histo != null) {
-			histo.updateData(inputArray);
+			histo.updateData(matrix);
 		}
 	}
 
@@ -77,7 +78,7 @@ public class HistogramDialog extends JDialog implements ActionListener, Componen
 		if(e.getActionCommand().equals("zoom")){
 			currentBins = currentBins * 2;
 			isZoomed = true;
-			zoom(inputArray, false);
+			zoom(false);
 			zoomOutButton.setEnabled(true);
 		}
 
@@ -88,7 +89,7 @@ public class HistogramDialog extends JDialog implements ActionListener, Componen
 				isZoomed = false;
 				zoomOutButton.setEnabled(false);
 			}
-			zoom(inputArray, true);
+			zoom(true);
 		}
 
 		if(e.getActionCommand().equals("cuttoffHeuristic")){
@@ -131,7 +132,7 @@ private void initializeOnce() {
 		
 
 		// Create and add the histogram component
-		histo = new Histogram(inputArray, nBins);
+		histo = new Histogram(matrix, nBins);
 		histo.addHistoChangeListener(this);
 		scrollPanel = new JScrollPane(histo, JScrollPane.VERTICAL_SCROLLBAR_NEVER, 
 		                              JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -198,7 +199,7 @@ private void initializeOnce() {
 			listener.histoValueChanged(bounds);
 	}
 	
-	private void zoom(double[] inputArray, boolean zoomOut){
+	private void zoom(boolean zoomOut){
 		
 		// Get the width of the current histogram
 		Dimension histoDim = histo.getSize();

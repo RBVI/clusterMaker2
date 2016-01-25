@@ -19,8 +19,8 @@ import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractAttributeClusterer;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.ChengChurch.ChengChurchContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.ChengChurch.RunChengChurch;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
@@ -94,8 +94,10 @@ public class BicFinder extends AbstractAttributeClusterer{
 		
 		createGroups = context.createGroups;
 
-		// To make debugging easier, sort the attribute list
-		Collections.sort(nodeAttributeList);
+		if (nodeAttributeList != null && nodeAttributeList.size() > 0) {
+			// To make debugging easier, sort the attribute list
+			Collections.sort(nodeAttributeList);
+		}
 
 		// Get our attributes we're going to use for the cluster
 		String[] attributeArray;
@@ -121,7 +123,7 @@ public class BicFinder extends AbstractAttributeClusterer{
 		monitor.setStatusMessage("Clustering nodes");
 		Integer[] rowOrder = algorithm.cluster(false);
 		
-		Matrix biclusterMatrix = algorithm.getBiclusterMatrix();
+		CyMatrix biclusterMatrix = algorithm.getBiclusterMatrix();
 		int clusters[] = new int[biclusterMatrix.nRows()];
 		
 		createBiclusterGroups(algorithm.getClusterNodes());

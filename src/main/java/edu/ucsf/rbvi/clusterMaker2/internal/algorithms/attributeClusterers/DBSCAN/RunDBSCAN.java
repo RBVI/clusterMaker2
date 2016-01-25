@@ -6,17 +6,19 @@ import java.util.HashSet;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskMonitor;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
+
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractKClusterAlgorithm;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.fft.FFTContext;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
 
 public class RunDBSCAN  {
 
 	protected CyNetwork network;
 	protected String[] weightAttributes;
 	protected DistanceMetric metric;
-	protected Matrix matrix;
+	protected CyMatrix matrix;
 	protected TaskMonitor monitor;
 	protected boolean ignoreMissing = true;
 	protected boolean selectedOnly = false;
@@ -40,18 +42,18 @@ public class RunDBSCAN  {
 		this.nClusters = 0;
 	}
 
-	public Matrix getMatrix() { return matrix; }
+	public CyMatrix getMatrix() { return matrix; }
 	public int getNClusters() {return nClusters;}
 
 	public int[] cluster(boolean transpose) {
 
 		// Create the matrix
-		matrix = new Matrix(network, weightAttributes, transpose, ignoreMissing, selectedOnly);
+		CyMatrix cData = CyMatrixFactory.makeSmallMatrix(network, weightAttributes, selectedOnly, ignoreMissing, transpose, false);
 		monitor.showMessage(TaskMonitor.Level.INFO,"cluster matrix has "+matrix.nRows()+" rows");
 		DistanceMetric metric = context.metric.getSelectedValue();
 
 		// Create a weight vector of all ones (we don't use individual weighting, yet)
-		matrix.setUniformWeights();
+		// matrix.setUniformWeights();
 
 		if (monitor != null) 
 			monitor.setStatusMessage("Clustering...");
@@ -62,7 +64,7 @@ public class RunDBSCAN  {
 		int[] clusters = new int[nelements];
 
 		// calculate the distances and store in distance matrix
-		distanceMatrix = matrix.getDistanceMatrix(metric);
+		distanceMatrix = matrix.getDistanceMatrix(metric).toArray();
 
 		unvisited = new ArrayList<Integer>();
 

@@ -46,8 +46,12 @@ public class NodeCluster extends ArrayList<CyNode> {
 		clusterNumber = clusterCount;
 	}
 
+	public boolean add(CyNode node) {
+		return super.add(node);
+	}
+
 	public boolean add(List<CyNode>nodeList, int index) {
-		return add(nodeList.get(index));
+		return super.add(nodeList.get(index));
 	}
 
 	public static void init() { clusterCount = 0; hasScore = false; }

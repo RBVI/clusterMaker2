@@ -41,6 +41,7 @@ import java.beans.PropertyChangeListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Observer;
 import java.util.Observable;
@@ -51,6 +52,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,6 +62,8 @@ import java.net.MalformedURLException;
 // Cytoscape imports
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
@@ -67,6 +71,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.ProvidesTitle;
@@ -112,10 +117,12 @@ public class TreeView extends TreeViewApp implements Observer,
 	protected TaskMonitor monitor = null;
 	private	List<CyNode>selectedNodes;
 	private	List<CyNode>selectedArrays;
+	private Set<CyIdentifiable>pendingSelections = null;
 	private boolean disableListeners = false;
 	private boolean ignoreSelection = false;
 	protected ClusterManager manager = null;
 	protected CyNetworkTableManager networkTableManager = null;
+	private Timer selectionTimer = null;
 
 	private static String appName = "clusterMaker TreeView";
 
@@ -226,24 +233,82 @@ public class TreeView extends TreeViewApp implements Observer,
 		if (!e.containsColumn(CyNetwork.SELECTED))
 			return;
 
-		if (ignoreSelection)
+		if (ignoreSelection) {
 			return;
+		}
 
 		// System.out.println("Got selection event");
 
 		CyTable table = e.getSource();
 		CyNetwork net = networkTableManager.getNetworkForTable(table);
-		Class type = networkTableManager.getTableType(table);
+		Class<?> type = networkTableManager.getTableType(table);
+		if (pendingSelections == null)
+			pendingSelections = new HashSet<CyIdentifiable>();
 
 		if (type.equals(CyNode.class)) {
 			// System.out.println("Node selection");
-			if (dataModel.isSymmetrical()) return;
+			// if (dataModel.isSymmetrical()) return;
+			for (RowSetRecord record: e.getColumnRecords(CyNetwork.SELECTED)) {
+				Long nodeSUID = record.getRow().get(CyIdentifiable.SUID, Long.class);
+				CyNode node = net.getNode(nodeSUID);
+				if ((Boolean)record.getValue()) {
+					if (node != null)
+						pendingSelections.add(node);
+				} else if (pendingSelections.contains(node)) {
+					pendingSelections.remove(node);
+				}
+			}
 
+			/*
 			List<CyNode> selectedNodes = CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, true);
 			setNodeSelection(selectedNodes, true);
+			*/
 		} else if (type.equals(CyEdge.class) && dataModel.isSymmetrical()) {
-			List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(net, CyNetwork.SELECTED, true);
-			setEdgeSelection(selectedEdges, true);
+			// System.out.println("Edge selection");
+			for (RowSetRecord record: e.getColumnRecords(CyNetwork.SELECTED)) {
+				Long edgeSUID = record.getRow().get(CyIdentifiable.SUID, Long.class);
+				CyEdge edge = net.getEdge(edgeSUID);
+				if ((Boolean)record.getValue()) {
+					if (edge != null)
+						pendingSelections.add(edge);
+				} else if (pendingSelections.contains(edge)) {
+					pendingSelections.remove(edge);
+				}
+			}
+			// List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(net, CyNetwork.SELECTED, true);
+			// setEdgeSelection(selectedEdges, true);
+		}
+
+		if (selectionTimer == null) {
+			selectionTimer = new Timer(200, new ActionListener() {
+				public void actionPerformed(ActionEvent evt) {
+					// System.out.println("Selection Timer fired");
+					List<CyEdge> edges = new ArrayList<CyEdge>();
+					List<CyNode> nodes = new ArrayList<CyNode>();
+					for (CyIdentifiable id: pendingSelections) {
+						if (CyEdge.class.isAssignableFrom(id.getClass())) {
+							edges.add((CyEdge)id);
+						} else if (CyNode.class.isAssignableFrom(id.getClass())) {
+							nodes.add((CyNode)id);
+						}
+					}
+					if (edges.size() > 0) {
+						setEdgeSelection(edges, true);
+						// System.out.println("Selecting "+edges.size()+" edges");
+					} else {
+						setNodeSelection(nodes, true);
+						// System.out.println("Selecting "+nodes.size()+" nodes");
+					}
+					// pendingSelections.clear();
+				}
+			});
+			selectionTimer.setCoalesce(true);
+			selectionTimer.setRepeats(false);
+			selectionTimer.start();
+		} else if (selectionTimer.isRunning()) {
+			// Don't do anything
+		} else {
+			selectionTimer.restart();
 		}
 		
 	}
@@ -388,8 +453,8 @@ public class TreeView extends TreeViewApp implements Observer,
 			if (!myNetwork.containsEdge(cyEdge))
 				continue;
 
-			CyNode source = (CyNode)cyEdge.getSource();
-			CyNode target = (CyNode)cyEdge.getTarget();
+			CyNode source = cyEdge.getSource();
+			CyNode target = cyEdge.getTarget();
 			int geneIndex = geneInfo.getHeaderIndex(ModelUtils.getName(myNetwork, source));
 			int arrayIndex = arrayInfo.getHeaderIndex(ModelUtils.getName(myNetwork, target));
 			geneSelection.setIndex(geneIndex, select);

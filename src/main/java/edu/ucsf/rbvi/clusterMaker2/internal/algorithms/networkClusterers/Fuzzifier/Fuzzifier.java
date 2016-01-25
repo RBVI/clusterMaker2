@@ -46,13 +46,12 @@ import org.cytoscape.work.swing.TunableUIHelper;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.FuzzyNodeCluster;
 //import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ClusterResults;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.DistanceMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeWeightConverter;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.SilhouetteCalculator;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.Silhouettes;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
@@ -71,7 +70,6 @@ public class Fuzzifier extends AbstractFuzzyNetworkClusterer{
 
 	public static final String NONEATTRIBUTE = ModelUtils.NONEATTRIBUTE;
 	public final static String GROUP_ATTRIBUTE = "__FuzzyGroups.SUID";
-	protected Matrix dataMatrix;
 	private boolean selectedOnly = false;
 	private boolean ignoreMissing = true;
 	CyTableFactory tableFactory = null;
@@ -108,7 +106,8 @@ public class Fuzzifier extends AbstractFuzzyNetworkClusterer{
 	public String getName() { return NAME; }
 
 	/**
-	 * The method run creates an instance of the RunFuzzifier and creates the fuzzy clusters by calling the fuzzifier algorithm.
+	 * The method run creates an instance of the RunFuzzifier and creates the fuzzy clusters 
+	 * by calling the fuzzifier algorithm.
 	 * Also creates fuzzy groups and the Fuzzy Cluster Table
 	 * 
 	 * @param Task Monitor
@@ -127,7 +126,7 @@ public class Fuzzifier extends AbstractFuzzyNetworkClusterer{
 
 		CyTable nodeAttributes = network.getDefaultNodeTable();
 
-		DistanceMatrix distanceMatrix = context.edgeAttributeHandler.getMatrix();
+		CyMatrix distanceMatrix = context.edgeAttributeHandler.getMatrix();
 		if (distanceMatrix == null) {
 			monitor.showMessage(TaskMonitor.Level.ERROR, "Can't get distance matrix: no attribute value?");
 			return;
@@ -136,16 +135,14 @@ public class Fuzzifier extends AbstractFuzzyNetworkClusterer{
 		// Update our tunable results
 		clusterAttributeName = context.getClusterAttribute();
 
-		runFuzzifier = new RunFuzzifier(Clusters, distanceMatrix,cNumber, 
-									context.membershipThreshold.getValue(), context.maxThreads, monitor);
+		runFuzzifier = new RunFuzzifier(Clusters, distanceMatrix, cNumber, 
+		                                context.membershipThreshold.getValue(), context.maxThreads, monitor);
 
 		runFuzzifier.setDebug(debug);
 
 		if (canceled) return;
 
 		monitor.showMessage(TaskMonitor.Level.INFO,"Clustering...");
-
-		// results = runMCL.run(monitor);
 
 		List<FuzzyNodeCluster> FuzzyClusters = runFuzzifier.run(network, monitor);
 		if (FuzzyClusters == null) return; // Canceled?

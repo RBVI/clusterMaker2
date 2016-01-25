@@ -9,8 +9,8 @@ import java.util.HashMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DistanceMetric;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 
 
 /**
@@ -30,9 +30,9 @@ public class SilhouetteUtil {
      * @param labels the labels for each of clusters
      * @return the resulting silhouette
      */
-    public static SilhouetteResult SilhouetteCalculator(Matrix matrix, DistanceMetric metric, int[] labels)
+    public static SilhouetteResult SilhouetteCalculator(CyMatrix matrix, DistanceMetric metric, int[] labels)
     {
-        double[][] distanceMatrix = matrix.getDistanceMatrix(metric);
+        double[][] distanceMatrix = matrix.getDistanceMatrix(metric).toArray();
         return SilhouetteCalculator(distanceMatrix, labels);
     }
     
