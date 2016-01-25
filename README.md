@@ -1,7 +1,7 @@
 # This is git repository for the Cytoscape 3 clustering app: clusterMaker
 
 ## Start with this:
-Column name is "ap" not "\_\_APCluster" atm. Make the clustering column attribute tunable!
+Support both networking and attribute clusters
 
 ## General TODO's
 - Find the shortname of every algorithm that has been used to cluster the
