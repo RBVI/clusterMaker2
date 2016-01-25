@@ -17,7 +17,7 @@ public abstract class AbstractClusterAlgorithm extends AbstractTask
                                                implements RequestsUIHelper, ClusterAlgorithm {
 	
 	// Common class values
-	protected boolean debug = true;
+	protected boolean debug = false;
 	protected boolean createGroups = false;
 	protected String clusterAttributeName = null;
 	protected boolean canceled = false;

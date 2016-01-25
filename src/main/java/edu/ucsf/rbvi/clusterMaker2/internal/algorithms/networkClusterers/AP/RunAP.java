@@ -19,7 +19,6 @@ import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 
 public class RunAP {
-
 	private double lambda; /*lambda value from 0 to 1 dampens messages passed to avoid numberical oscillation*/
 	private double pref; //preference parameter determines cluster density. Larger Parameter equals more Clusters. If < 0, automatically set to avg edge_weight threshold
 	private int number_iterations; //number of inflation/expansion cycles
