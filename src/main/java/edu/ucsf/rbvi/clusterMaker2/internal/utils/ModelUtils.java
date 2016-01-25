@@ -164,7 +164,7 @@ public class ModelUtils {
             }
             return newAttribute;
         }
-        return new ListMultipleSelection<String>("--None--");
+        return new ListMultipleSelection<String>(ModelUtils.NONEATTRIBUTE);
     }
 
 
@@ -184,7 +184,7 @@ public class ModelUtils {
 
             return newAttribute;
         }
-        return new ListMultipleSelection<String>("--None--");
+        return new ListMultipleSelection<String>(ModelUtils.NONEATTRIBUTE);
     }
 
     public static ListSingleSelection<String> updateEdgeAttributeList(CyNetwork network,
@@ -203,7 +203,7 @@ public class ModelUtils {
 
             return newAttribute;
         }
-        return new ListSingleSelection<String>("--None--");
+        return new ListSingleSelection<String>(ModelUtils.NONEATTRIBUTE);
     }
 
     public static String getName(CyNetwork network, CyIdentifiable obj) {

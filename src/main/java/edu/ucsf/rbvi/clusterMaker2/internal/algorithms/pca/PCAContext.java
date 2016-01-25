@@ -83,7 +83,7 @@ public class PCAContext {
 		List<String> attrs = nodeAttributeList.getSelectedValues();
 		if (attrs == null || attrs.isEmpty()) return null;
 		if ((attrs.size() == 1) &&
-		    (attrs.get(0).equals("--None--"))) return null;
+		    (attrs.get(0).equals(ModelUtils.NONEATTRIBUTE))) return null;
 		return attrs;
 	}	
 

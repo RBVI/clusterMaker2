@@ -24,6 +24,7 @@ public interface ClusterManager {
 	public final static String CLUSTER_TYPE_ATTRIBUTE = "__clusterType";
 	public final static String CLUSTER_ATTRIBUTE = "__clusterAttribute";
 	public final static String CLUSTER_PARAMS_ATTRIBUTE = "__clusterParams";
+	public final static String RANKING_ATTRIBUTE = "__rankingAttribute";
 
 
 	// Returns the list of cluster algorithms

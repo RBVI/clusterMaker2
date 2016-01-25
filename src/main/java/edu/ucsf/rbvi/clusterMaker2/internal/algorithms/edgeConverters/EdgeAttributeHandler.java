@@ -166,7 +166,7 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 		double max = 100.0;
 		double min = 0.0;
 
-		if (attribute == null || attribute.getSelectedValue().equals("--None--")) {
+		if (attribute == null || attribute.getSelectedValue().equals(ModelUtils.NONEATTRIBUTE)) {
 			// System.out.println("Setting bounds to: "+min+","+max);
 			edgeCutOff.setBounds(min, max);
 			return edgeCutOff;

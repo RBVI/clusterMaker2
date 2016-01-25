@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JPanel;
 
 //Cytoscape imports
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -72,7 +73,7 @@ public class FCMCluster extends AbstractFuzzyNetworkClusterer {
 	public static String NAME = "Fuzzy C-Means Cluster";
 	public final static String GROUP_ATTRIBUTE = "__FCMGroups.SUID";
 	
-	public static final String NONEATTRIBUTE = "--None--";
+	public static final String NONEATTRIBUTE = ModelUtils.NONEATTRIBUTE;
 	protected Matrix distanceDataMatrix;
 	private boolean selectedOnly = false;
 	private boolean ignoreMissing = true;

@@ -39,12 +39,11 @@ public class SimpleClusterContext {
         if (this.network != null) {
             return ModelUtils.updateNodeAttributeList(this.network, null).getPossibleValues();
         }
-        return new ListSingleSelection<>("None").getPossibleValues();
+        return new ListSingleSelection<>(ModelUtils.NONEATTRIBUTE).getPossibleValues();
     }
 
     public List<String> getAlgorithms() {
         return this.manager.getAllAlgorithms().stream()
-                .filter(alg -> alg.getTypeList().contains(ClusterTaskFactory.ClusterType.NETWORK))
                 .map(ClusterTaskFactory::getShortName).collect(Collectors.toList());
     }
 
@@ -64,7 +63,6 @@ public class SimpleClusterContext {
     }
 
     public void updateContext() {
-        System.out.println("updateContext");
         this.attributes = new ListSingleSelection<>(getAttributes());
     }
 

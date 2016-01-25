@@ -69,7 +69,7 @@ public class Fuzzifier extends AbstractFuzzyNetworkClusterer{
 	public static String SHORTNAME = "fuzzifier";
 	public static String NAME = "Cluster Fuzzifier";
 
-	public static final String NONEATTRIBUTE = "--None--";
+	public static final String NONEATTRIBUTE = ModelUtils.NONEATTRIBUTE;
 	public final static String GROUP_ATTRIBUTE = "__FuzzyGroups.SUID";
 	protected Matrix dataMatrix;
 	private boolean selectedOnly = false;
