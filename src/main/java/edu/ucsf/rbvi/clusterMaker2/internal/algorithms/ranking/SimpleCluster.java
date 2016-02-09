@@ -71,7 +71,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
         }
 
         monitor.showMessage(TaskMonitor.Level.INFO, "Getting scorelist for simpleCluster.");
-        List<Integer> scoreList = createScoreList();
+        List<Double> scoreList = createScoreList();
         addScoreToColumns(scoreList, monitor); // This can be abstract for ALL of ranking cluster algorithms
         monitor.showMessage(TaskMonitor.Level.INFO, "Done.");
         System.out.println("SimpleCluster finished.");
@@ -80,7 +80,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
     /*
      * For each row in the table, index on the clustering group attribute and add a column with the score
      */
-    private void addScoreToColumns(List<Integer> scoreList, TaskMonitor monitor) {
+    private void addScoreToColumns(List<Double> scoreList, TaskMonitor monitor) {
         CyTable nodeTable = network.getDefaultNodeTable();
         CyTable netTable = network.getDefaultNetworkTable();
         List<CyRow> rows = nodeTable.getAllRows();
@@ -101,7 +101,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
             netTable.deleteColumn(ClusterManager.RANKING_ATTRIBUTE);
         }
 
-        nodeTable.createColumn(rankColumnName, Integer.class, false);
+        nodeTable.createColumn(rankColumnName, Double.class, false);
         netTable.createColumn(ClusterManager.RANKING_ATTRIBUTE, String.class, false);
         netTable.getAllRows().stream().forEach(rankRow -> rankRow.set(ClusterManager.RANKING_ATTRIBUTE, "__SCRank"));
 
@@ -114,13 +114,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
     }
 
     private String getClusterColumn() {
-        String clusterColumnName = this.network.getRow(network).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
-
-        if (clusterColumnName != null) {
-            return clusterColumnName;
-        }
-
-        return "";
+        return this.network.getRow(network).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class, "");
     }
 
     private boolean clusterIsReady(GetNetworkClusterTask clusterMonitor) {
@@ -141,18 +135,20 @@ public class SimpleCluster extends AbstractTask implements Rank {
         return true;
     }
 
-    private List<Integer> createScoreList() {
+    private List<Double> createScoreList() {
         CyTable nodeTable = this.network.getDefaultNodeTable();
-        List<Integer> scoreList = new ArrayList<>(this.clusters.size());
+        List<Double> scoreList = new ArrayList<>(this.clusters.size());
 
         System.out.println("SimpleCluster is running.");
 
         for (int i = 0; i < this.clusters.size(); i++) {
-            int score = 0;
+            double score = 0;
             scoreList.add(i, score);
+
             for (CyNode node : this.clusters.get(i)) {
-                score += nodeTable.getRow(node.getSUID()).get(this.attribute, Integer.class, 0);
+                score += nodeTable.getRow(node.getSUID()).get(this.attribute, Double.class, 0.0);
             }
+
             scoreList.set(i, score);
         }
 
@@ -161,6 +157,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
 
     private boolean noNullValuesOrCancel(TaskMonitor monitor) {
         CyTable nodeTable = this.network.getDefaultNodeTable();
+
         if (this.clusters.size() == 0) {
             monitor.showMessage(TaskMonitor.Level.INFO, "No clusters to work with");
             return false;
