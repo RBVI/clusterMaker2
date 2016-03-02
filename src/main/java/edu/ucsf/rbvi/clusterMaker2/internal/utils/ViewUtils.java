@@ -2,6 +2,8 @@ package edu.ucsf.rbvi.clusterMaker2.internal.utils;
 
 import java.util.HashSet;
 
+import org.cytoscape.event.CyEventHelper;
+
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -36,6 +38,10 @@ public class ViewUtils {
 
 		if (register)
 			registerView(manager, view);
+
+		// Make sure we flush our events before we try to do anything else
+		CyEventHelper eventHelper = manager.getService(CyEventHelper.class);
+		eventHelper.flushPayloadEvents();
 
 		return view;
 	}
