@@ -7,7 +7,8 @@
 		<cytoscape.api.version>3.3.0</cytoscape.api.version>
 
 		<maven-bundle-plugin.version>2.3.4</maven-bundle-plugin.version>
-		<osgi.api.version>4.2.0</osgi.api.version>
+                <osgi.api.version>4.2.0</osgi.api.version>
+                <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
 	<groupId>edu.ucsf.rbvi</groupId>
