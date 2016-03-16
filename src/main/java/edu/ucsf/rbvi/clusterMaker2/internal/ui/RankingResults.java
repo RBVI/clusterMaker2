@@ -17,10 +17,21 @@ public class RankingResults extends JPanel implements CytoPanelComponent {
     private final TaskMonitor monitor;
     private final CyNetwork network;
 
-    public RankingResults(final List<NodeCluster> clusters, TaskMonitor monitor, CyNetwork network) {
+    public RankingResults(final List<NodeCluster> clusters, 
+            TaskMonitor monitor, CyNetwork network) {
         this.clusters = clusters;
         this.monitor = monitor;
         this.network = network;
+
+        if (isReady()) {
+            display();
+        }
+    }
+
+    private void display() {
+        JLabel resPanel = new JLabel("This is my Rankig results panel");
+        this.add(resPanel);
+        this.setVisible(true);
     }
 
     @Override
@@ -41,5 +52,9 @@ public class RankingResults extends JPanel implements CytoPanelComponent {
     @Override
     public Icon getIcon() {
         return null;
+    }
+
+    private boolean isReady() {
+        return false;
     }
 }
