@@ -2,7 +2,6 @@ package edu.ucsf.rbvi.clusterMaker2.internal.ui;
 
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
-
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyNetwork;
@@ -10,7 +9,6 @@ import org.cytoscape.work.TaskMonitor;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.*;
 import java.util.List;
 
 public class RankingResults extends JPanel implements CytoPanelComponent {
@@ -37,7 +35,7 @@ public class RankingResults extends JPanel implements CytoPanelComponent {
 
     @Override
     public String getTitle() {
-        return "RakingResults";
+        return "RankingResults";
     }
 
     @Override
