@@ -34,6 +34,7 @@ import org.cytoscape.work.TaskFactory;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.NetworkSelectionLinker;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.ResultsPanel;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.RankingResults;
 
 public class ClusterManagerImpl implements ClusterManager {
 // public class ClusterManagerImpl {
@@ -54,6 +55,7 @@ public class ClusterManagerImpl implements ClusterManager {
 	double vizClusterIndex = 1.0;
 	double rankingIndex = 1.0;
 	Map<CyNetwork, List<ResultsPanel>> resultsPanelMap;
+	Map<CyNetwork, List<RankingResults>> rankingResultsMap;
 
 	public ClusterManagerImpl(CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar,
  	                          CyGroupFactory groupFactory, CyGroupManager groupMgr, 
@@ -66,6 +68,7 @@ public class ClusterManagerImpl implements ClusterManager {
 		this.vizMap = new HashMap<String, ClusterVizFactory>();
 		this.rankMap = new HashMap<String, RankFactory>();
 		this.resultsPanelMap = new HashMap<CyNetwork, List<ResultsPanel>>();
+		this.rankingResultsMap = new HashMap<CyNetwork, List<RankingResults>>();
 		this.tableFactory = tableFactory;
 		this.tableManager = tableManager;
 		this.linkedNetworks = new HashMap<CyRootNetwork, NetworkSelectionLinker>();
@@ -249,6 +252,30 @@ public class ClusterManagerImpl implements ClusterManager {
 		}
 
 		groupMgr.destroyGroup(group);
+	}
+
+	public List<RankingResults> getRankingResults(CyNetwork network) {
+		return rankingResultsMap.get(network);
+	}
+
+	public void addRankingResults(CyNetwork network, RankingResults rankingResults) {
+		if (!rankingResultsMap.containsKey(network)) {
+			rankingResultsMap.put(network, new ArrayList<RankingResults>());
+		}
+		rankingResultsMap.get(network).add(rankingResults);
+	}
+
+	public void removeRankingResults(CyNetwork network, RankingResults rankingResults) {
+        if (!rankingResultsMap.containsKey(network)) {
+			return;
+		}
+
+		List<RankingResults> panels = rankingResultsMap.get(network);
+		panels.remove(rankingResults);
+
+		if (panels.size() == 0) {
+			rankingResultsMap.remove(network);
+		}
 	}
 
 	public List<ResultsPanel> getResultsPanels(CyNetwork network){

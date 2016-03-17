@@ -1,5 +1,6 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.api;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.RankingResults;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -15,48 +16,53 @@ import java.util.List;
 import java.util.Properties;
 
 public interface ClusterManager {
-	public final static String MATRIX_ATTRIBUTE = "__distanceMatrix";
-	public final static String CLUSTER_NODE_ATTRIBUTE = "__nodeClusters";
-	public final static String CLUSTER_ATTR_ATTRIBUTE = "__attrClusters";
-	public final static String CLUSTER_EDGE_ATTRIBUTE = "__clusterEdgeWeight";
-	public final static String NODE_ORDER_ATTRIBUTE = "__nodeOrder";
-	public final static String ARRAY_ORDER_ATTRIBUTE = "__arrayOrder";
-	public final static String CLUSTER_TYPE_ATTRIBUTE = "__clusterType";
-	public final static String CLUSTER_ATTRIBUTE = "__clusterAttribute";
-	public final static String CLUSTER_PARAMS_ATTRIBUTE = "__clusterParams";
-	public final static String RANKING_ATTRIBUTE = "__rankingAttribute";
+	String MATRIX_ATTRIBUTE = "__distanceMatrix";
+	String CLUSTER_NODE_ATTRIBUTE = "__nodeClusters";
+	String CLUSTER_ATTR_ATTRIBUTE = "__attrClusters";
+	String CLUSTER_EDGE_ATTRIBUTE = "__clusterEdgeWeight";
+	String NODE_ORDER_ATTRIBUTE = "__nodeOrder";
+	String ARRAY_ORDER_ATTRIBUTE = "__arrayOrder";
+	String CLUSTER_TYPE_ATTRIBUTE = "__clusterType";
+	String CLUSTER_ATTRIBUTE = "__clusterAttribute";
+	String CLUSTER_PARAMS_ATTRIBUTE = "__clusterParams";
+	String RANKING_ATTRIBUTE = "__rankingAttribute";
 
 
 	// Returns the list of cluster algorithms
-	public Collection<ClusterTaskFactory> getAllAlgorithms();
-	public ClusterTaskFactory getAlgorithm(String name);
-	public Collection<ClusterVizFactory> getAllVisualizers();
-	public ClusterVizFactory getVisualizer(String name);
+	Collection<ClusterTaskFactory> getAllAlgorithms();
+	ClusterTaskFactory getAlgorithm(String name);
+	Collection<ClusterVizFactory> getAllVisualizers();
+	ClusterVizFactory getVisualizer(String name);
 
 	// Add a new algorithm.  This is usually done through listening to
 	// osgi registration, but could also be done manually
-	public void addAlgorithm(ClusterTaskFactory alg);
-	public void removeAlgorithm(ClusterTaskFactory alg);
-	public void addVisualizer(ClusterVizFactory alg);
-	public void removeVisualizer(ClusterVizFactory alg);
+	void addAlgorithm(ClusterTaskFactory alg);
+	void removeAlgorithm(ClusterTaskFactory alg);
+	void addVisualizer(ClusterVizFactory alg);
+	void removeVisualizer(ClusterVizFactory alg);
 
-	public CyNetwork getNetwork();
-	public CyNetworkView getNetworkView();
-	public CyTableFactory getTableFactory();
-	public CyTableManager getTableManager();
-	public CyGroup createGroup(CyNetwork network, String name, List<CyNode> nodeList, List<CyEdge> edgeList, boolean register);
-	public void removeGroup(CyNetwork network, Long suid);
-	
+	CyNetwork getNetwork();
+	CyNetworkView getNetworkView();
+	CyTableFactory getTableFactory();
+	CyTableManager getTableManager();
+	CyGroup createGroup(CyNetwork network, String name, List<CyNode> nodeList, List<CyEdge> edgeList, boolean register);
+	void removeGroup(CyNetwork network, Long suid);
+
+	// getter and setter methods for RankingResults
+	List<RankingResults> getRankingResults(CyNetwork network);
+	void addRankingResults(CyNetwork network, RankingResults rankingResults);
+	void removeRankingResults(CyNetwork network, RankingResults rankingResults);
+
 	//getter and setter methods for ResultsPanel
-	public List<ResultsPanel> getResultsPanels(CyNetwork network);
-	public void addResultsPanel(CyNetwork network, ResultsPanel resultsPanel);
-	public void removeResultsPanel(CyNetwork network, ResultsPanel resultsPanel);
+	List<ResultsPanel> getResultsPanels(CyNetwork network);
+	void addResultsPanel(CyNetwork network, ResultsPanel resultsPanel);
+	void removeResultsPanel(CyNetwork network, ResultsPanel resultsPanel);
 
-	public <T> T getService(Class <? extends T> clazz);
-	public <T> T getService(Class<? extends T> clazz, String filter);
+	<T> T getService(Class <? extends T> clazz);
+	<T> T getService(Class<? extends T> clazz, String filter);
 
 	// Use with caution.  If you register it, you need to unregister it!
-	public void registerService(Object service, Class<?> serviceClass, Properties props);
-	public void unregisterService(Object service, Class<?> serviceClass);
+	void registerService(Object service, Class<?> serviceClass, Properties props);
+	void unregisterService(Object service, Class<?> serviceClass);
 }
 

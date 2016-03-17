@@ -18,6 +18,7 @@ public class RankingResultsTask extends AbstractTask implements ClusterViz, Clus
     private ClusterManager manager;
     private CyNetworkView networkView;
     private CyNetwork network;
+    private RankingResults rankingResults;
     private final CyServiceRegistrar registrar;
 
     public RankingResultsTask(ClusterManager manager, CyNetworkView networkView) {
@@ -48,6 +49,8 @@ public class RankingResultsTask extends AbstractTask implements ClusterViz, Clus
 
     @Override
     public void run(TaskMonitor taskMonitor) {
+        rankingResults = new RankingResults(null, taskMonitor, network);
+        manager.addRankingResults(network, rankingResults);
     }
 
     @Override
