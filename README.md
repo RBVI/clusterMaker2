@@ -26,3 +26,7 @@ Support both networking and attribute clusters
 - Move the getAlgorithms from the SimpleClusterContext? SimpleCluster or corresponding TaskFactory's responsibility?
 - Change GetNetworkClusterTask.getResults to return Map<String, List<CyNode>> and convert the string part of the method
     to a separate function (maybe getResultString())
+
+# 2016 TODO's:
+- Program a new results pane to just show the cluster ID and the rank it has
+  gotten through SimpleCluster
