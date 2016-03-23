@@ -1,5 +1,6 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.ui;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
@@ -49,6 +50,8 @@ public class RankingResultsTask extends AbstractTask implements ClusterViz, Clus
 
     @Override
     public void run(TaskMonitor taskMonitor) {
+        taskMonitor.setProgress(0.0);
+        taskMonitor.setStatusMessage("Calculating Ranking Results...");
         rankingResults = new RankingResults(null, taskMonitor, network);
         manager.addRankingResults(network, rankingResults);
     }

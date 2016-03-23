@@ -57,6 +57,10 @@ public class SimpleCluster extends AbstractTask implements Rank {
 
         GetNetworkClusterTask clusterMonitor = new GetNetworkClusterTask(manager);
 
+        if (network == null) {
+            this.manager.getNetwork();
+        }
+
         if (!clusterIsReady(clusterMonitor)) {
             return;
         }
@@ -64,7 +68,8 @@ public class SimpleCluster extends AbstractTask implements Rank {
         clusterMonitor.run(monitor);
 
         this.clusters = new ArrayList<>((Collection<List<CyNode>>)
-                ((Map<String, Object>) clusterMonitor.getResults(Map.class)).get("networkclusters"));
+                ((Map<String, Object>) clusterMonitor.getResults(Map.class))
+                .get("networkclusters"));
 
         if (!noNullValuesOrCancel(monitor)) {
             return;
@@ -118,10 +123,6 @@ public class SimpleCluster extends AbstractTask implements Rank {
     }
 
     private boolean clusterIsReady(GetNetworkClusterTask clusterMonitor) {
-        if (network == null) {
-            this.manager.getNetwork();
-        }
-
         this.context.setNetwork(network);
         this.attribute = this.context.getSelectedAttribute();
         clusterMonitor.algorithm = this.context.getSelectedAlgorithm();

@@ -23,9 +23,6 @@ public class RankingResults extends JPanel implements CytoPanelComponent {
         this.monitor = monitor;
         this.network = network;
 
-        if (isReady()) {
-            display();
-        }
     }
 
     private void display() {
@@ -52,9 +49,5 @@ public class RankingResults extends JPanel implements CytoPanelComponent {
     @Override
     public Icon getIcon() {
         return null;
-    }
-
-    private boolean isReady() {
-        return false;
     }
 }
