@@ -27,6 +27,8 @@ import org.cytoscape.view.model.CyNetworkView;
  */
 public class NodeCluster extends ArrayList<CyNode> {
 	int clusterNumber = 0;
+    private int rank = 0;
+    private double rankScore = 0;
 	static int clusterCount = 0;
 	static boolean hasScore = false;
 	protected double score = 0.0;
@@ -69,6 +71,18 @@ public class NodeCluster extends ArrayList<CyNode> {
 	}
 
 	public double getClusterScore() { return score; }
+
+    public int getRank() { return rank; }
+
+    public void setRank(int rank) {
+        this.rank = rank;
+    }
+
+    public double getRankScore() { return rankScore; }
+
+    public void setRankScore(int rankScore) {
+        this.ranksScore = rankScore;
+    }
 
 
 	public String toString() {
