@@ -80,8 +80,8 @@ public class NodeCluster extends ArrayList<CyNode> {
 
     public double getRankScore() { return rankScore; }
 
-    public void setRankScore(int rankScore) {
-        this.ranksScore = rankScore;
+    public void setRankScore(double rankScore) {
+        this.rankScore = rankScore;
     }
 
 

@@ -87,7 +87,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
      */
     private void addScoreToColumns(List<Double> scoreList, TaskMonitor monitor) {
         CyTable nodeTable = network.getDefaultNodeTable();
-        CyTable netTable = network.getDefaultNetworkTable();
+        CyTable networkTable = network.getDefaultNetworkTable();
         List<CyRow> rows = nodeTable.getAllRows();
         String clusterColumnName = this.getClusterColumn();
         String rankColumnName = this.context.getClusterAttribute();
@@ -102,13 +102,16 @@ public class SimpleCluster extends AbstractTask implements Rank {
             nodeTable.deleteColumn(rankColumnName);
         }
 
-        if (netTable.getColumn(ClusterManager.RANKING_ATTRIBUTE) != null) {
-            netTable.deleteColumn(ClusterManager.RANKING_ATTRIBUTE);
+        if (networkTable.getColumn(ClusterManager.RANKING_ATTRIBUTE) != null) {
+            networkTable.deleteColumn(ClusterManager.RANKING_ATTRIBUTE);
         }
 
         nodeTable.createColumn(rankColumnName, Double.class, false);
-        netTable.createColumn(ClusterManager.RANKING_ATTRIBUTE, String.class, false);
-        netTable.getAllRows().stream().forEach(rankRow -> rankRow.set(ClusterManager.RANKING_ATTRIBUTE, "__SCRank"));
+        networkTable.createColumn(ClusterManager.RANKING_ATTRIBUTE, String.class, false);
+
+        for (CyRow rankRow : networkTable.getAllRows()) {
+            rankRow.set(ClusterManager.RANKING_ATTRIBUTE, "__SCRank");
+        }
 
         for (CyRow row : rows) {
             int cluster = row.get(clusterColumnName, Integer.class, 0);

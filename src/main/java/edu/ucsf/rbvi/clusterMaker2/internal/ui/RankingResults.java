@@ -26,7 +26,7 @@ public class RankingResults extends JPanel implements CytoPanelComponent {
     }
 
     private void display() {
-        JLabel resPanel = new JLabel("This is my Rankig results panel");
+        JLabel resPanel = new JLabel("This is my Ranking results panel");
         this.add(resPanel);
         this.setVisible(true);
     }
