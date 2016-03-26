@@ -21,6 +21,8 @@ public class RankingResultsTask extends AbstractTask implements ClusterViz, Clus
     private static String appName = "Ranklust Ranking Results Panel";
     public static String RANKLUSTNAME = "Create Results Panel from Ranking Clusters";
     public static String RANKLUSTSHORTNAME = "ranklustRankingResultsPanel";
+    private boolean createFlag = false;
+    private boolean checkAvailable = false;
     private ClusterManager manager;
     private CyNetworkView networkView;
     private RankingResults rankingResults;
@@ -29,10 +31,12 @@ public class RankingResultsTask extends AbstractTask implements ClusterViz, Clus
     @Tunable(description="Network to look for cluster", context="nogui")
     private CyNetwork network;
 
-    public RankingResultsTask(ClusterManager manager, CyNetworkView networkView) {
+    public RankingResultsTask(ClusterManager manager, boolean checkAvailable, boolean createFlag) {
         this.manager = manager;
-        this.networkView = networkView;
+        this.checkAvailable = checkAvailable;
+        this.createFlag = createFlag;
 
+        networkView = manager.getNetworkView();
         registrar = manager.getService(CyServiceRegistrar.class);
 
         if (network == null) {
@@ -122,5 +126,9 @@ public class RankingResultsTask extends AbstractTask implements ClusterViz, Clus
     @Override
     public ClusterResults getResults() {
         return null;
+    }
+
+    public static boolean isReady(CyNetwork network, ClusterManager clusterManager) {
+        return false;
     }
 }

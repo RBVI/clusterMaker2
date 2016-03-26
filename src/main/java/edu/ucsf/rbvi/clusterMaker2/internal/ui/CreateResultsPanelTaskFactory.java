@@ -47,10 +47,8 @@ public class CreateResultsPanelTaskFactory implements ClusterVizFactory {
 		if (!checkAvailable)
 			return true;
 
-		if (network == null)
-			return false;
+		return network != null && ResultsPanelTask.isReady(network, clusterManager);
 
-		return ResultsPanelTask.isReady(network, clusterManager);
 	}
 
 	public List<ClusterType> getTypeList() {
@@ -64,10 +62,10 @@ public class CreateResultsPanelTaskFactory implements ClusterVizFactory {
 	}
 
 	public boolean isReady() {
-		if (!checkAvailable)
+		if (!checkAvailable) {
 			return true;
-		else
-			return ResultsPanelTask.isReady(clusterManager.getNetwork(), clusterManager);
+		}
+        return ResultsPanelTask.isReady(clusterManager.getNetwork(), clusterManager);
 	}
 
 

@@ -17,6 +17,7 @@ import java.util.Properties;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.SimpleRankTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.SimpleCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.RankFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.*;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.group.CyGroupFactory;
@@ -61,15 +62,6 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterVizFactory;
 // Algorithms
 import edu.ucsf.rbvi.clusterMaker2.internal.commands.CommandTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.BiclusterViewTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.CreateResultsPanelTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.DestroyResultsPanelTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.HeatMapViewTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.KnnViewTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.LinkSelectionTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkViewFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.TreeViewTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.UnlinkSelectionTaskFactory;
 // import edu.ucsf.rbvi.clusterMaker2.internal.ui.UITaskFactory;
 // clusterMaker imports
 
@@ -179,9 +171,13 @@ public class CyActivator extends AbstractCyActivator {
 		                new Properties());
 		registerService(bc, new CreateResultsPanelTaskFactory(clusterManager,true), ClusterVizFactory.class, 
                 new Properties());
-		registerService(bc, new DestroyResultsPanelTaskFactory(clusterManager,true), ClusterVizFactory.class, 
+		registerService(bc, new CreateRankingPanelTaskFactory(clusterManager, true), ClusterVizFactory.class,
+				new Properties());
+		registerService(bc, new DestroyResultsPanelTaskFactory(clusterManager,true), ClusterVizFactory.class,
                 new Properties());
- 
+		registerService(bc, new DestroyRankingPanelTaskFactory(clusterManager, true), ClusterVizFactory.class,
+				new Properties());
+
 		// Principal Component Analysis
 		registerService(bc, new PCAMenuTaskFactory(), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new PCATaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
