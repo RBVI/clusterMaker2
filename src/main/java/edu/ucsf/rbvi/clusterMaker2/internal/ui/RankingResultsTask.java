@@ -6,8 +6,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
+import org.cytoscape.application.swing.*;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTask;
@@ -112,10 +115,45 @@ public class RankingResultsTask extends AbstractTask implements ClusterViz, Clus
 
     @Override
     public void run(TaskMonitor taskMonitor) {
-        taskMonitor.setProgress(0.0);
-        taskMonitor.setStatusMessage("Calculating Ranking Results...");
-        rankingResults = new RankingResults(null, taskMonitor, network);
+        CySwingApplication swingApplication = manager.getService(CySwingApplication.class);
+        CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.EAST);
+
+        if (createFlag) {
+            taskMonitor.setTitle("Creating new results panel with ranking results");
+            taskMonitor.setStatusMessage("Calculating Ranking Results...");
+            taskMonitor.setProgress(0.0);
+
+            rankingResults = new RankingResults(createClusters(), taskMonitor, network);
+
+            addAndRegisterPanel(cytoPanel);
+            taskMonitor.setProgress(100.0);
+        } else {
+            taskMonitor.setTitle("Deleting all ranking panels");
+            removeAndUnregisterPanels();
+            hideEmptyPanels(cytoPanel);
+        }
+
+        taskMonitor.setStatusMessage("Done!");
+    }
+
+    private void addAndRegisterPanel(CytoPanel cytoPanel) {
+        registrar.registerService(rankingResults, CytoPanelComponent.class, new Properties());
         manager.addRankingResults(network, rankingResults);
+        cytoPanel.setState(CytoPanelState.DOCK);
+    }
+
+    private void hideEmptyPanels(CytoPanel cytoPanel) {
+        if (cytoPanel.getCytoPanelComponentCount() == 0) {
+            cytoPanel.setState(CytoPanelState.HIDE);
+        }
+    }
+
+    private void removeAndUnregisterPanels() {
+        List<RankingResults> rankingResults = new ArrayList<>(manager.getRankingResults(network));
+        for (RankingResults panel : rankingResults) {
+            registrar.unregisterService(panel, CytoPanelComponent.class);
+            manager.removeRankingResults(network, panel);
+        }
     }
 
     @Override
@@ -129,6 +167,18 @@ public class RankingResultsTask extends AbstractTask implements ClusterViz, Clus
     }
 
     public static boolean isReady(CyNetwork network, ClusterManager clusterManager) {
-        return false;
+        if (network == null) {
+            return false;
+        }
+
+        CyTable networkTable = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
+        Set<String> columnNames = CyTableUtil.getColumnNames(networkTable);
+
+        if (!columnNames.contains(ClusterManager.RANKING_ATTRIBUTE) &&
+                !columnNames.contains(ClusterManager.CLUSTER_TYPE_ATTRIBUTE)) {
+            return false;
+        }
+
+        return true;
     }
 }

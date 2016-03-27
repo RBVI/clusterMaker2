@@ -30,3 +30,5 @@ Support both networking and attribute clusters
 # 2016 TODO's:
 - Program a new results pane to just show the cluster ID and the rank it has
   gotten through SimpleCluster
+- Refactor the ClusterManagerImpl's way of adding and removing panels to
+  something more generic - or is it a reason to not do it?

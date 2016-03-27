@@ -166,7 +166,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		networkViewFactory = clusterManager.getService(CyNetworkViewFactory.class);
 		visualMappingMgr = clusterManager.getService(VisualMappingManager.class);
 		renderingEngineFactory = clusterManager.getService(RenderingEngineFactory.class);
-		clusterType = network.getRow(network).get("__clusterType", String.class);
+		clusterType = network.getRow(network).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class);
 		//System.out.println("RP: after setting variables and fields");
 		
 		this.clusterBrowserPanel = new ClusterBrowserPanel(this);
@@ -197,8 +197,8 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	}
 	
 
-	private static StringBuffer getClusterScore(final NodeCluster cluster) {
-		StringBuffer details = new StringBuffer();
+	private static StringBuilder getClusterScore(final NodeCluster cluster) {
+		StringBuilder details = new StringBuilder();
 
 		details.append("Score: ");
 		NumberFormat nf = NumberFormat.getInstance();
@@ -292,7 +292,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		}
 
 		public void update(final NodeCluster cluster, final int row) {
-			final StringBuffer score = getClusterScore(cluster);
+			final StringBuilder score = getClusterScore(cluster);
 			table.setValueAt(score, row, 1);
 		}
 
@@ -346,7 +346,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 				//System.out.println("CBTM: cluster num: "+ i);
 				final NodeCluster c = clusters.get(i);
 				//c.setRank(i);
-				StringBuffer details = getClusterScore(c);
+				StringBuilder details = getClusterScore(c);
 				data[i][1] = new StringBuffer(details);
 
 				SpringEmbeddedLayouter layouter = new SpringEmbeddedLayouter();

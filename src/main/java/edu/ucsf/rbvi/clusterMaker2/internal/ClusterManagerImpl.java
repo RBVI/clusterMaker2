@@ -260,7 +260,7 @@ public class ClusterManagerImpl implements ClusterManager {
 
 	public void addRankingResults(CyNetwork network, RankingResults rankingResults) {
 		if (!rankingResultsMap.containsKey(network)) {
-			rankingResultsMap.put(network, new ArrayList<RankingResults>());
+			rankingResultsMap.put(network, new ArrayList<>());
 		}
 		rankingResultsMap.get(network).add(rankingResults);
 	}
@@ -284,9 +284,10 @@ public class ClusterManagerImpl implements ClusterManager {
 		return null;
 		
 	}
+
 	public void addResultsPanel(CyNetwork network, ResultsPanel resultsPanel){
 		if (!resultsPanelMap.containsKey(network))
-			resultsPanelMap.put(network, new ArrayList<ResultsPanel>());
+			resultsPanelMap.put(network, new ArrayList<>());
 		resultsPanelMap.get(network).add(resultsPanel);
 	}
 

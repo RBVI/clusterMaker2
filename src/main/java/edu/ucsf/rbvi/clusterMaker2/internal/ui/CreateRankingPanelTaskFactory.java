@@ -11,8 +11,8 @@ import java.util.List;
 
 public class CreateRankingPanelTaskFactory implements ClusterVizFactory {
 
-    ClusterManager clusterManager;
-    boolean checkAvailable;
+    ClusterManager clusterManager = null;
+    boolean checkAvailable = false;
     public static String RANKNAME = "Create Ranking Panel from Clusters";
     public static String RANKSHORTNAME = "createRankingPanel";
 
