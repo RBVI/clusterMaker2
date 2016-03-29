@@ -104,9 +104,9 @@ public class RankingResultsTask extends AbstractTask implements ClusterViz, Clus
             if (a.getRankScore() == b.getRankScore()) {
                 return 0;
             } else if (a.getRankScore() > b.getRankScore()) {
-                return 1;
-            } else {
                 return -1;
+            } else {
+                return 1;
             }
         });
 
