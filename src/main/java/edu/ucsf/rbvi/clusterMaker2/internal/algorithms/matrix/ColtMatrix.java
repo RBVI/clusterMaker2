@@ -10,12 +10,14 @@ import cern.colt.function.tdouble.IntIntDoubleFunction;
 import cern.colt.matrix.tdouble.DoubleFactory2D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
+import cern.colt.matrix.tdouble.algo.SmpDoubleBlas;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 public class ColtMatrix implements Matrix {
 	protected DoubleMatrix2D data;
+	protected SmpDoubleBlas blas;
 	protected int[] index;
 	protected int nRows;
 	protected int nColumns;
@@ -28,6 +30,7 @@ public class ColtMatrix implements Matrix {
 	final Logger logger = Logger.getLogger(CyUserLog.NAME);
 
 	public ColtMatrix() {
+		blas = new SmpDoubleBlas();
 	}
 
 	public ColtMatrix(ColtMatrix mat) {
@@ -37,6 +40,8 @@ public class ColtMatrix implements Matrix {
 		symmetric = mat.symmetric;
 		minValue = mat.minValue;
 		maxValue = mat.maxValue;
+		rowLabels = Arrays.copyOf(rowLabels, rowLabels.length);
+		columnLabels = Arrays.copyOf(columnLabels, columnLabels.length);
 		index = Arrays.copyOf(mat.index, mat.index.length);
 	}
 
@@ -47,6 +52,17 @@ public class ColtMatrix implements Matrix {
 		rowLabels = new String[rows];
 		columnLabels = new String[columns];
 		index = null;
+	}
+
+	public ColtMatrix(ColtMatrix mat, DoubleMatrix2D data) {
+		this();
+		transposed = mat.transposed;
+		symmetric = mat.symmetric;
+		minValue = mat.minValue;
+		maxValue = mat.maxValue;
+		rowLabels = Arrays.copyOf(rowLabels, rowLabels.length);
+		columnLabels = Arrays.copyOf(columnLabels, columnLabels.length);
+		this.data = data;
 	}
 
 	public ColtMatrix(SimpleMatrix mat) {
@@ -529,6 +545,15 @@ public class ColtMatrix implements Matrix {
 	}
 
 	public int cardinality() { return data.cardinality(); }
+
+	public Matrix mult(Matrix b) {
+		DoubleMatrix2D aMat = data;
+		DoubleMatrix2D bMat = b.getColtMatrix();
+		DoubleMatrix2D cMat = DoubleFactory2D.sparse.make(nRows, nColumns);
+		blas.dgemm(false, false, 1.0, aMat, bMat, 0.0, cMat);
+		ColtMatrix c = new ColtMatrix(this, cMat);
+		return c;
+	}
 
 	/**
 	 * Debugging routine to print out information about a matrix

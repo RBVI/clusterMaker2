@@ -7,6 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cern.colt.matrix.tdouble.DoubleFactory2D;
+import cern.colt.matrix.tdouble.DoubleMatrix2D;
+import cern.colt.matrix.tdouble.algo.SmpDoubleBlas;
+
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.model.CyNode;
 import org.apache.log4j.Logger;
@@ -88,9 +92,16 @@ public class MatrixUtils {
 		list1.addAll(list2);
 	}
 
+	/*
 	public static CyMatrix multiplyMatrix(CyMatrix A, CyMatrix B) {
-		return null;
+		DoubleMatrix2D cMat = DoubleFactory2D.sparse.make(A.nRows(), A.nColumns());
+		DoubleMatrix2D aMat = A.getColtMatrix();
+		DoubleMatrix2D bMat = B.getColtMatrix();
+		SmpDoubleBlas blas = new SmpDoubleBlas();
+		blas.dgemm(false, false, 1.0, aMat, bMat, 0.0, cMat);
+		return new CyColtMatrix(cMat);
 	}
+	*/
 
 	public static CyMatrix matrixPow(CyMatrix A, double power) {
 		return null;

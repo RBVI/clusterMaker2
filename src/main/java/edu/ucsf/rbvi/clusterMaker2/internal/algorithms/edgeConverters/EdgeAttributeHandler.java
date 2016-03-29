@@ -181,9 +181,9 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 		max = matrix.getMaxValue();
 		min = matrix.getMinValue();
 
-		// System.out.println("Setting cutoff to: "+cutOff);
+		System.out.println("Setting cutoff to: "+cutOff);
 		if (max != edgeCutOff.getUpperBound() || min != edgeCutOff.getLowerBound()) {
-			// System.out.println("Changing bounds to: "+min+","+max);
+			System.out.println("Changing bounds to: "+min+","+max);
 			edgeCutOff.setBounds(min, max);
 		}
 

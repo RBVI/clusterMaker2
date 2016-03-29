@@ -115,10 +115,10 @@ public class ClusterManagerImpl implements ClusterManager {
 				filterIndex += 1.0;
 				props.setProperty(MENU_GRAVITY, ""+filterIndex);
 				break;
-                            
-                        case PCA:
-                                pcaIndex += 1.0;
-                                props.setProperty(MENU_GRAVITY, ""+pcaIndex);
+
+			case PCA:
+				pcaIndex += 1.0;
+				props.setProperty(MENU_GRAVITY, ""+pcaIndex);
 				break;
 			}
 			serviceRegistrar.registerService(alg, TaskFactory.class, props);

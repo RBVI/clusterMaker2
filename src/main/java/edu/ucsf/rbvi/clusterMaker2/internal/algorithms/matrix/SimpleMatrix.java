@@ -11,9 +11,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 import cern.colt.matrix.tdouble.DoubleFactory2D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
+import cern.colt.matrix.tdouble.algo.SmpDoubleBlas;
 
 public class SimpleMatrix implements Matrix {
 	protected Double[][] data;
+	protected SmpDoubleBlas blas;
 	protected int[] index;
 	protected int nRows;
 	protected int nColumns;
@@ -26,6 +28,7 @@ public class SimpleMatrix implements Matrix {
 	final Logger logger = Logger.getLogger(CyUserLog.NAME);
 
 	public SimpleMatrix() {
+		blas = new SmpDoubleBlas();
 	}
 
 	public SimpleMatrix(SimpleMatrix mat) {
@@ -51,6 +54,22 @@ public class SimpleMatrix implements Matrix {
 		rowLabels = new String[rows];
 		columnLabels = new String[columns];
 		index = null;
+	}
+
+	public SimpleMatrix(SimpleMatrix mat, double[][] inputData) {
+		this();
+		data = new Double[nRows][nColumns];
+		transposed = mat.transposed;
+		symmetric = mat.symmetric;
+		minValue = mat.minValue;
+		maxValue = mat.maxValue;
+		rowLabels = Arrays.copyOf(rowLabels, rowLabels.length);
+		columnLabels = Arrays.copyOf(columnLabels, columnLabels.length);
+		for (int row = 0; row < nRows; row++) {
+			for (int column = 0; column < nColumns; column++) {
+				this.data[row][column] = inputData[row][column];
+			}
+		}
 	}
 	
 	/**
@@ -631,6 +650,15 @@ public class SimpleMatrix implements Matrix {
 		DoubleMatrix2D mat = DoubleFactory2D.dense.make(nRows, nColumns);
 		mat.assign(toArray());
 		return mat;
+	}
+
+	public Matrix mult(Matrix b) {
+		DoubleMatrix2D aMat = getColtMatrix();
+		DoubleMatrix2D bMat = b.getColtMatrix();
+		DoubleMatrix2D cMat = DoubleFactory2D.sparse.make(nRows, nColumns);
+		blas.dgemm(false, false, 1.0, aMat, bMat, 0.0, cMat);
+		double[][] data = cMat.toArray();
+		return new SimpleMatrix(this, data);
 	}
 
 	public int cardinality() {

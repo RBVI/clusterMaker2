@@ -332,6 +332,7 @@ public class TreeView extends TreeViewApp implements Observer,
 		if (disableListeners) return;
 
 		if (o == geneSelection) {
+			// System.out.println("Gene selection");
 			selectedNodes.clear();
 			int[] selections = geneSelection.getSelectedIndexes();
 			HeaderInfo geneInfo = dataModel.getGeneHeaderInfo();
@@ -349,14 +350,16 @@ public class TreeView extends TreeViewApp implements Observer,
 					selectedNodes.add(node);
 			}
 			// System.out.println("Selecting "+selectedNodes.size()+" nodes");
-			if (!dataModel.isSymmetrical() || selectedArrays.size() == 0) {
-				selectNodes(currentNetwork, selectedNodes);
+			if (dataModel.isAssymetricEdge() || !dataModel.isSymmetrical() || selectedArrays.size() == 0) {
+				// System.out.println("Adding "+selectedNodes.size()+" gene nodes to current network");
+				selectNodes(currentNetwork, selectedNodes, true);
 
 				if (currentView != null)
 					currentView.updateView();
 			}
 			return;
 		} else if (o == arraySelection) {
+			// System.out.println("Array selection.  isSymmetrical="+dataModel.isSymmetrical()+", isAssymetricEdge()="+dataModel.isAssymetricEdge());
 			// We only care about array selection for symmetrical models
 			if (!dataModel.isSymmetrical() && !dataModel.isAssymetricEdge())
 				return;
@@ -378,7 +381,10 @@ public class TreeView extends TreeViewApp implements Observer,
 				if (node != null)
 					selectedArrays.add(node);
 			}
-			selectNodes(currentNetwork, selectedArrays);
+			if (selectedNodes.size() > 0)
+				selectNodes(currentNetwork, selectedArrays, false);
+			else
+				selectNodes(currentNetwork, selectedArrays, true);
 		}
 
 		HashMap<CyEdge,CyEdge>edgesToSelect = new HashMap<CyEdge,CyEdge>();
@@ -414,14 +420,16 @@ public class TreeView extends TreeViewApp implements Observer,
 		selectedArrays.clear();
 	}
 
-	private void selectNodes(CyNetwork currentNetwork, List<CyNode> selectedNodes) {
-		List<CyNode> nodesToClear = CyTableUtil.getNodesInState(currentNetwork, CyNetwork.SELECTED, true);
+	private void selectNodes(CyNetwork currentNetwork, List<CyNode> selectedNodes, boolean clear) {
 		ignoreSelection = true;
-		for (CyNode node: nodesToClear) {
-			if (myNetwork.containsNode(node))
-				myNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.FALSE);
-			if (currentNetwork.containsNode(node))
-				currentNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.FALSE);
+		if (clear) {
+			List<CyNode> nodesToClear = CyTableUtil.getNodesInState(currentNetwork, CyNetwork.SELECTED, true);
+			for (CyNode node: nodesToClear) {
+				if (myNetwork.containsNode(node))
+					myNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.FALSE);
+				if (currentNetwork.containsNode(node))
+					currentNetwork.getRow(node).set(CyNetwork.SELECTED, Boolean.FALSE);
+			}
 		}
 
 		for (CyNode node: selectedNodes) {
