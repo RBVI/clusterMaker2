@@ -26,15 +26,11 @@ public class SNATaskFactory implements RankFactory {
         return context;
     }
 
-    public boolean isAvailable() {
-        return SingleNodeAttribute.isReady(this.manager.getNetwork(), this.manager);
-    }
-
     public TaskIterator createTaskIterator() {
         return new TaskIterator(new SingleNodeAttribute(context, manager));
     }
 
     public boolean isReady() {
-        return true;
+        return SingleNodeAttribute.isReady(this.manager.getNetwork(), this.manager);
     }
 }

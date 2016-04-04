@@ -17,9 +17,8 @@ public class MultipleNodeEdgeAdditive extends AbstractTask implements Rank {
     private List<NodeCluster> clusters;
     private ClusterManager manager;
     private boolean canceled;
-    public static String NAME = "Create rank from multiple nodes and edges";
-    public static String SHORTNAME = "MNEArank";
-    public static String GROUP_ATTRIBUTE = "ranklust";
+    final public static String NAME = "Create rank from multiple nodes and edges (additive sum)";
+    final public static String SHORTNAME = "MNEArank";
 
     @Tunable(description = "Network", context = "nogui")
     public CyNetwork network;
@@ -48,20 +47,11 @@ public class MultipleNodeEdgeAdditive extends AbstractTask implements Rank {
     }
 
     @Override
-    public boolean isAvailable() {
-        return true;
-    }
-
-    @Override
     public void run(TaskMonitor taskMonitor) {
         taskMonitor.setTitle("Multiple Node Edge Additive ranking of clusters");
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Creating clusters...");
         clusters = ClusterUtils.createClusters(network);
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Done...");
-    }
-
-    public void cancel() {
-        canceled = true;
     }
 
     public static boolean isReady(CyNetwork network, ClusterManager manager) {

@@ -1,8 +1,10 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.simple;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Rank;
 import edu.ucsf.rbvi.clusterMaker2.internal.commands.GetNetworkClusterTask;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ClusterUtils;
 import org.cytoscape.model.*;
 import org.cytoscape.work.*;
 
@@ -10,13 +12,12 @@ import java.util.*;
 
 public class SingleNodeAttribute extends AbstractTask implements Rank {
 
-    private List<List<CyNode>> clusters;
+    private List<NodeCluster> clusters;
     private ClusterManager manager;
     private String attribute;
     private boolean canceled;
     public static String NAME = "Create rank from clusters";
-    public static String SHORTNAME = "ranklust";
-    public static String GROUP_ATTRIBUTE = SHORTNAME;
+    public static String SHORTNAME = "SNArank";
 
     @Tunable(description = "Network to look for cluster", context = "nogui")
     public CyNetwork network;
@@ -54,21 +55,12 @@ public class SingleNodeAttribute extends AbstractTask implements Rank {
     public void run(TaskMonitor monitor) {
         monitor.setTitle("SingleNodeAttribute.run()");
 
-        GetNetworkClusterTask clusterMonitor = new GetNetworkClusterTask(manager);
 
         if (network == null) {
             this.manager.getNetwork();
         }
 
-        if (!clusterIsReady(clusterMonitor)) {
-            return;
-        }
-
-        clusterMonitor.run(monitor);
-
-        this.clusters = new ArrayList<>((Collection<List<CyNode>>)
-                ((Map<String, Object>) clusterMonitor.getResults(Map.class))
-                .get("networkclusters"));
+        clusters = ClusterUtils.createClusters(network);
 
         if (!noNullValuesOrCancel(monitor)) {
             return;
@@ -181,10 +173,6 @@ public class SingleNodeAttribute extends AbstractTask implements Rank {
         return true;
     }
 
-    public boolean isAvailable() {
-        return SingleNodeAttribute.isReady(this.network, this.manager);
-    }
-
     // This should go through the clustering algorithms and check if one of them have some results.
     // NB! Only the algorithm run last will have results to work with!
     public static boolean isReady(CyNetwork network, ClusterManager manager) {
@@ -199,9 +187,5 @@ public class SingleNodeAttribute extends AbstractTask implements Rank {
 
         return !clusterMonitor.algorithm.equals("None");
 
-    }
-
-    public void cancel() {
-        this.canceled = true;
     }
 }

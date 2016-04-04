@@ -14,33 +14,23 @@ public class MNEATaskFactory implements RankFactory {
         context = new MNEAContext(manager);
     }
 
-    @Override
     public String getShortName() {
         return MultipleNodeEdgeAdditive.SHORTNAME;
     }
 
-    @Override
     public String getName() {
         return MultipleNodeEdgeAdditive.NAME;
     }
 
-    @Override
     public Object getContext() {
         return context;
     }
 
-    @Override
-    public boolean isAvailable() {
-        return MultipleNodeEdgeAdditive.isReady(manager.getNetwork(), manager);
-    }
-
-    @Override
     public TaskIterator createTaskIterator() {
         return new TaskIterator(new MultipleNodeEdgeAdditive(context, manager));
     }
 
-    @Override
     public boolean isReady() {
-        return false;
+        return MultipleNodeEdgeAdditive.isReady(manager.getNetwork(), manager);
     }
 }
