@@ -56,7 +56,7 @@ public class MultipleNodeEdgeAdditive extends AbstractTask implements Rank {
     public void run(TaskMonitor taskMonitor) {
         taskMonitor.setTitle("Multiple Node Edge Additive ranking of clusters");
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Creating clusters...");
-        clusters = ClusterUtils.createClusters(network, false);
+        clusters = ClusterUtils.createClusters(network);
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Done...");
     }
 

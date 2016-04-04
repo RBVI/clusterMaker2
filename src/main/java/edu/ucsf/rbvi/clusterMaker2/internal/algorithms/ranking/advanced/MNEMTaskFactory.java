@@ -19,7 +19,7 @@ public class MNEMTaskFactory implements RankFactory {
     }
 
     public String getName() {
-        return MultipleNodeEdgeAdditive.NAME;
+        return MultipleNodeEdgeMultiplum.NAME;
     }
 
     public Object getContext() {

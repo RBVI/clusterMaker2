@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ClusterUtils {
-    public static List<NodeCluster> createClusters(CyNetwork network, boolean needRankingAttribute) {
+    public static List<NodeCluster> createClusters(CyNetwork network) {
         List<NodeCluster> clusters = new ArrayList<>();
         String clusterAttribute = getClusterAttribute(network, ClusterManager.CLUSTER_ATTRIBUTE);
         String rankingAttribute = getClusterAttribute(network, ClusterManager.RANKING_ATTRIBUTE);
@@ -19,7 +19,7 @@ public class ClusterUtils {
         Map<Integer, ArrayList<CyNode>> clusterMap = new HashMap<>();
         Map<Integer, Double> clusterScoreMap = new HashMap<>();
 
-        insertNodeClusters(network, needRankingAttribute, clusterAttribute, rankingAttribute, clusterMap, clusterScoreMap);
+        insertNodeClusters(network, clusterAttribute, rankingAttribute, clusterMap, clusterScoreMap);
         setNodeClusterInfo(clusters, clusterMap, clusterScoreMap);
         ascendingSort(clusters);
         return clusters;
@@ -43,19 +43,14 @@ public class ClusterUtils {
         });
     }
 
-    private static void insertNodeClusters(CyNetwork network, boolean needRankingAttribute, String clusterAttribute,
+    private static void insertNodeClusters(CyNetwork network, String clusterAttribute,
                                            String rankingAttribute,
                                            Map<Integer, ArrayList<CyNode>> clusterMap,
                                            Map<Integer, Double> clusterScoreMap) {
 
         for (CyNode node : network.getNodeList()) {
-            if (needRankingAttribute) {
-                if (!ModelUtils.hasAttribute(network, node, rankingAttribute)) {
-                    return;
-                }
-            }
-
-            if (ModelUtils.hasAttribute(network, node, clusterAttribute)) {
+            if (ModelUtils.hasAttribute(network, node, clusterAttribute) &&
+                    ModelUtils.hasAttribute(network, node, rankingAttribute)) {
                 Integer cluster = network.getRow(node).get(clusterAttribute, Integer.class);
                 Double clusterScore = network.getRow(node).get(rankingAttribute, Double.class, 0.0);
 

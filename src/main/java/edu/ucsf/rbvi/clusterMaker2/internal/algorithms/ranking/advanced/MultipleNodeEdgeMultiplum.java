@@ -55,7 +55,7 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank{
     public void run(TaskMonitor taskMonitor) {
         taskMonitor.setTitle("Multiple Node Edge Multiplum ranking of clusters");
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Creating clusters...");
-        clusters = ClusterUtils.createClusters(network, false);
+        clusters = ClusterUtils.createClusters(network);
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Done...");
     }
 

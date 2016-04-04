@@ -1,15 +1,12 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.ui;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ClusterUtils;
-import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 import org.cytoscape.application.swing.*;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -19,8 +16,6 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 import java.util.*;
-
-import static edu.ucsf.rbvi.clusterMaker2.internal.utils.ClusterUtils.createClusters;
 
 public class RankingResultsTask extends AbstractTask implements ClusterViz, ClusterAlgorithm {
 
@@ -76,7 +71,7 @@ public class RankingResultsTask extends AbstractTask implements ClusterViz, Clus
             taskMonitor.setStatusMessage("Calculating Ranking Results...");
             taskMonitor.setProgress(0.0);
 
-            rankingResults = new RankingResults(ClusterUtils.createClusters(network, true), network, networkView, manager, taskMonitor);
+            rankingResults = new RankingResults(ClusterUtils.createClusters(network), network, networkView, manager, taskMonitor);
 
             addAndRegisterPanel(cytoPanel);
             taskMonitor.setProgress(100.0);
