@@ -17,9 +17,6 @@ public class SNAContext {
     private CyNetwork network;
     public ClusterManager manager;
 
-    @Tunable(description = "Algorithm", groups = "List of Algorithms", gravity = 1.0)
-    public ListSingleSelection<String> algorithms;
-
     @Tunable(description = "Attributes", groups = "List of attributes to use", gravity = 10.0)
     public ListSingleSelection<String> attributes;
 
@@ -31,7 +28,6 @@ public class SNAContext {
         this.manager = manager;
         this.network = this.manager.getNetwork();
         this.advancedAttributes = new AdvancedProperties("__SCRank", false);
-        this.algorithms = new ListSingleSelection<>(getAlgorithms());
         this.attributes = new ListSingleSelection<>(getAttributes());
     }
 
@@ -45,10 +41,6 @@ public class SNAContext {
     public List<String> getAlgorithms() {
         return this.manager.getAllAlgorithms().stream()
                 .map(ClusterTaskFactory::getShortName).collect(Collectors.toList());
-    }
-
-    public String getSelectedAlgorithm() {
-        return this.algorithms.getSelectedValue();
     }
 
     public String getSelectedAttribute() {

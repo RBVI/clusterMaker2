@@ -76,7 +76,7 @@ public class RankingResultsTask extends AbstractTask implements ClusterViz, Clus
             taskMonitor.setStatusMessage("Calculating Ranking Results...");
             taskMonitor.setProgress(0.0);
 
-            rankingResults = new RankingResults(ClusterUtils.createClusters(network), network, networkView, manager, taskMonitor);
+            rankingResults = new RankingResults(ClusterUtils.createClusters(network, true), network, networkView, manager, taskMonitor);
 
             addAndRegisterPanel(cytoPanel);
             taskMonitor.setProgress(100.0);

@@ -16,7 +16,6 @@ public class MultipleNodeEdgeAdditive extends AbstractTask implements Rank {
 
     private List<NodeCluster> clusters;
     private ClusterManager manager;
-    private boolean canceled;
     final public static String NAME = "Create rank from multiple nodes and edges (additive sum)";
     final public static String SHORTNAME = "MNEArank";
 
@@ -29,6 +28,13 @@ public class MultipleNodeEdgeAdditive extends AbstractTask implements Rank {
     public MultipleNodeEdgeAdditive(MNEAContext context, ClusterManager manager) {
         this.context = context;
         this.manager = manager;
+
+        if (network == null) {
+            network = this.manager.getNetwork();
+        }
+
+        this.context.setNetwork(network);
+        this.context.updateContext();
     }
 
     @Override
@@ -50,7 +56,7 @@ public class MultipleNodeEdgeAdditive extends AbstractTask implements Rank {
     public void run(TaskMonitor taskMonitor) {
         taskMonitor.setTitle("Multiple Node Edge Additive ranking of clusters");
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Creating clusters...");
-        clusters = ClusterUtils.createClusters(network);
+        clusters = ClusterUtils.createClusters(network, false);
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Done...");
     }
 

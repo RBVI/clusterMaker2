@@ -11,25 +11,51 @@ import java.util.List;
 import java.util.Map;
 
 public class ClusterUtils {
-    public static List<NodeCluster> createClusters(CyNetwork network) {
+    public static List<NodeCluster> createClusters(CyNetwork network, boolean needRankingAttribute) {
         List<NodeCluster> clusters = new ArrayList<>();
-
-        String clusterAttribute = network.getRow(network, CyNetwork.LOCAL_ATTRS)
-                .get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
-
-        String rankingAttribute = network.getRow(network, CyNetwork.LOCAL_ATTRS)
-                .get(ClusterManager.RANKING_ATTRIBUTE, String.class);
-
-        assert clusterAttribute != null; // just for dev, remove when in prod
-        assert rankingAttribute != null; // just for dev, remove when in prod
+        String clusterAttribute = getClusterAttribute(network, ClusterManager.CLUSTER_ATTRIBUTE);
+        String rankingAttribute = getClusterAttribute(network, ClusterManager.RANKING_ATTRIBUTE);
 
         Map<Integer, ArrayList<CyNode>> clusterMap = new HashMap<>();
         Map<Integer, Double> clusterScoreMap = new HashMap<>();
 
-        for (CyNode node : network.getNodeList()) {
-            if (ModelUtils.hasAttribute(network, node, clusterAttribute) &&
-                    ModelUtils.hasAttribute(network, node, rankingAttribute)) {
+        insertNodeClusters(network, needRankingAttribute, clusterAttribute, rankingAttribute, clusterMap, clusterScoreMap);
+        setNodeClusterInfo(clusters, clusterMap, clusterScoreMap);
+        ascendingSort(clusters);
+        return clusters;
+    }
 
+    private static String getClusterAttribute(CyNetwork network, String clusterAttribute) {
+        return network.getRow(network, CyNetwork.LOCAL_ATTRS)
+                .get(clusterAttribute, String.class);
+    }
+
+    private static void ascendingSort(List<NodeCluster> clusters) {
+        // Ascending sort
+        clusters.sort((a, b) -> {
+            if (a.getRankScore() == b.getRankScore()) {
+                return 0;
+            } else if (a.getRankScore() > b.getRankScore()) {
+                return -1;
+            } else {
+                return 1;
+            }
+        });
+    }
+
+    private static void insertNodeClusters(CyNetwork network, boolean needRankingAttribute, String clusterAttribute,
+                                           String rankingAttribute,
+                                           Map<Integer, ArrayList<CyNode>> clusterMap,
+                                           Map<Integer, Double> clusterScoreMap) {
+
+        for (CyNode node : network.getNodeList()) {
+            if (needRankingAttribute) {
+                if (!ModelUtils.hasAttribute(network, node, rankingAttribute)) {
+                    return;
+                }
+            }
+
+            if (ModelUtils.hasAttribute(network, node, clusterAttribute)) {
                 Integer cluster = network.getRow(node).get(clusterAttribute, Integer.class);
                 Double clusterScore = network.getRow(node).get(rankingAttribute, Double.class, 0.0);
 
@@ -41,6 +67,11 @@ public class ClusterUtils {
                 clusterMap.get(cluster).add(node);
             }
         }
+    }
+
+    private static void setNodeClusterInfo(List<NodeCluster> clusters,
+                                           Map<Integer, ArrayList<CyNode>> clusterMap,
+                                           Map<Integer, Double> clusterScoreMap) {
 
         for (int clusterNum : clusterMap.keySet()) {
             NodeCluster cluster = new NodeCluster(clusterMap.get(clusterNum));
@@ -48,18 +79,5 @@ public class ClusterUtils {
             cluster.setRankScore(clusterScoreMap.get(clusterNum));
             clusters.add(cluster);
         }
-
-        // Ascending sort
-        clusters.sort((a, b) -> {
-            if (a.getRankScore() == b.getRankScore()) {
-                return 0;
-            } else if (a.getRankScore() > b.getRankScore()) {
-                return -1;
-            } else {
-                return 1;
-            }
-        });
-
-        return clusters;
     }
 }

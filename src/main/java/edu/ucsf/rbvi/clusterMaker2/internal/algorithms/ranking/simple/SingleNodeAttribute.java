@@ -15,7 +15,6 @@ public class SingleNodeAttribute extends AbstractTask implements Rank {
     private List<NodeCluster> clusters;
     private ClusterManager manager;
     private String attribute;
-    private boolean canceled;
     public static String NAME = "Create rank from clusters";
     public static String SHORTNAME = "SNArank";
 
@@ -26,16 +25,14 @@ public class SingleNodeAttribute extends AbstractTask implements Rank {
     public SNAContext context;
 
     public SingleNodeAttribute(SNAContext context, ClusterManager manager) {
-        System.out.println("SingleNodeAttribute constructor");
-        this.canceled = false;
         this.manager = manager;
         this.context = context;
 
-        if (this.network == null) {
-            this.network = this.manager.getNetwork();
+        if (network == null) {
+            network = this.manager.getNetwork();
         }
 
-        context.setNetwork(this.network);
+        this.context.setNetwork(network);
         this.context.updateContext();
     }
 
@@ -60,13 +57,15 @@ public class SingleNodeAttribute extends AbstractTask implements Rank {
             this.manager.getNetwork();
         }
 
-        clusters = ClusterUtils.createClusters(network);
+        context.setNetwork(network);
+        clusters = ClusterUtils.createClusters(network, false);
+        attribute = context.getSelectedAttribute();
 
         if (!noNullValuesOrCancel(monitor)) {
             return;
         }
 
-        monitor.showMessage(TaskMonitor.Level.INFO, "Getting scorelist for simpleCluster.");
+        monitor.showMessage(TaskMonitor.Level.INFO, "Getting scorelist for SingleNodeAttribute.");
         List<Double> scoreList = createScoreList();
         addScoreToColumns(scoreList, monitor); // This can be abstract for ALL of ranking cluster algorithms
         monitor.showMessage(TaskMonitor.Level.INFO, "Done.");
@@ -116,20 +115,6 @@ public class SingleNodeAttribute extends AbstractTask implements Rank {
         return this.network.getRow(network).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class, "");
     }
 
-    private boolean clusterIsReady(GetNetworkClusterTask clusterMonitor) {
-        this.context.setNetwork(network);
-        this.attribute = this.context.getSelectedAttribute();
-        clusterMonitor.algorithm = this.context.getSelectedAlgorithm();
-
-        // This should be removed in the future
-        if (clusterMonitor.algorithm.equals("None")) {
-            return false;
-        }
-
-        clusterMonitor.network = network;
-        return true;
-    }
-
     private List<Double> createScoreList() {
         CyTable nodeTable = this.network.getDefaultNodeTable();
         List<Double> scoreList = new ArrayList<>(this.clusters.size());
@@ -154,18 +139,18 @@ public class SingleNodeAttribute extends AbstractTask implements Rank {
     }
 
     private boolean noNullValuesOrCancel(TaskMonitor monitor) {
-        CyTable nodeTable = this.network.getDefaultNodeTable();
+        CyTable nodeTable = network.getDefaultNodeTable();
 
-        if (this.clusters.size() == 0) {
+        if (clusters.size() == 0) {
             monitor.showMessage(TaskMonitor.Level.INFO, "No clusters to work with");
             return false;
-        } else if (this.attribute == null || this.attribute.equals("None")) {
+        } else if (attribute == null || attribute.equals("None")) {
             monitor.showMessage(TaskMonitor.Level.INFO, "No attribute(s) to work with");
             return false;
-        } else if (nodeTable.getColumn(this.attribute) == null) {
-            monitor.showMessage(TaskMonitor.Level.INFO, "No column with '" + this.attribute + "' as an attribute");
+        } else if (nodeTable.getColumn(attribute) == null) {
+            monitor.showMessage(TaskMonitor.Level.INFO, "No column with '" + attribute + "' as an attribute");
             return false;
-        } else if (this.canceled) {
+        } else if (cancelled) {
             monitor.showMessage(TaskMonitor.Level.INFO, "Canceled");
             return false;
         }
