@@ -1,25 +1,25 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.simple;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.RankFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class SimpleRankTaskFactory implements RankFactory {
+public class SNATaskFactory implements RankFactory {
 
-    public SimpleClusterContext context;
+    public SNAContext context;
     public ClusterManager manager;
 
-    public SimpleRankTaskFactory(ClusterManager manager) {
+    public SNATaskFactory(ClusterManager manager) {
         this.manager = manager;
-        this.context = new SimpleClusterContext(manager);
+        this.context = new SNAContext(manager);
     }
 
     public String getShortName() {
-        return SimpleCluster.SHORTNAME;
+        return SingleNodeAttribute.SHORTNAME;
     }
 
     public String getName() {
-        return SimpleCluster.NAME;
+        return SingleNodeAttribute.NAME;
     }
 
     public Object getContext() {
@@ -27,11 +27,11 @@ public class SimpleRankTaskFactory implements RankFactory {
     }
 
     public boolean isAvailable() {
-        return SimpleCluster.isReady(this.manager.getNetwork(), this.manager);
+        return SingleNodeAttribute.isReady(this.manager.getNetwork(), this.manager);
     }
 
     public TaskIterator createTaskIterator() {
-        return new TaskIterator(new SimpleCluster(context, manager));
+        return new TaskIterator(new SingleNodeAttribute(context, manager));
     }
 
     public boolean isReady() {

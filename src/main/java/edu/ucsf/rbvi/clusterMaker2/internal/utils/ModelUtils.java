@@ -218,6 +218,25 @@ public class ModelUtils {
         return new ListSingleSelection<String>("--None--");
     }
 
+    public static ListMultipleSelection<String> updateEdgeMultiAttributeList(CyNetwork network,
+                                                                             ListMultipleSelection<String> attribute) {
+        List<String> attributeArray = getAllAttributes(network, network.getDefaultEdgeTable());
+        if (attributeArray.size() > 0){
+            ListMultipleSelection<String> newAttribute = new ListMultipleSelection<>(attributeArray);
+            if (attribute != null) {
+                try {
+                    newAttribute.setSelectedValues(attribute.getSelectedValues());
+                } catch (IllegalArgumentException e) {
+                    newAttribute.setSelectedValues(Collections.singletonList(attributeArray.get(0)));
+                }
+            } else
+                newAttribute.setSelectedValues(Collections.singletonList(attributeArray.get(0)));
+
+            return newAttribute;
+        }
+        return new ListMultipleSelection<>("--None--");
+    }
+
     public static String getName(CyNetwork network, CyIdentifiable obj) {
         CyRow row = network.getRow(obj);
         if (row == null) return null;

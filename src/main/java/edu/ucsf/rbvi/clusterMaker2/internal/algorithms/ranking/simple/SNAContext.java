@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.simple;
 
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AdvancedProperties;
@@ -13,7 +13,7 @@ import org.cytoscape.work.util.ListSingleSelection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SimpleClusterContext {
+public class SNAContext {
     private CyNetwork network;
     public ClusterManager manager;
 
@@ -26,8 +26,8 @@ public class SimpleClusterContext {
     @ContainsTunables
     public AdvancedProperties advancedAttributes;
 
-    public SimpleClusterContext(ClusterManager manager) {
-        System.out.println("SimpleClusterContext constructor");
+    public SNAContext(ClusterManager manager) {
+        System.out.println("SNAContext constructor");
         this.manager = manager;
         this.network = this.manager.getNetwork();
         this.advancedAttributes = new AdvancedProperties("__SCRank", false);

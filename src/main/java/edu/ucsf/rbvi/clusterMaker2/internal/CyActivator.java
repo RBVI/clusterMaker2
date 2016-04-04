@@ -14,8 +14,8 @@ import static org.cytoscape.work.ServiceProperties.TITLE;
 import java.util.Properties;
 
 // Cytoscape imports
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.SimpleRankTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.SimpleCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.advanced.MNEATaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.simple.SNATaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.RankFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.*;
 import org.cytoscape.application.CyApplicationManager;
@@ -145,7 +145,8 @@ public class CyActivator extends AbstractCyActivator {
 		                ClusterTaskFactory.class, new Properties());
 
 		// Cluster ranking
-		registerService(bc, new SimpleRankTaskFactory(clusterManager), RankFactory.class, new Properties());
+		registerService(bc, new SNATaskFactory(clusterManager), RankFactory.class, new Properties());
+		registerService(bc, new MNEATaskFactory(clusterManager), RankFactory.class, new Properties());
 
 		// Filters
 		registerService(bc, new FilterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());

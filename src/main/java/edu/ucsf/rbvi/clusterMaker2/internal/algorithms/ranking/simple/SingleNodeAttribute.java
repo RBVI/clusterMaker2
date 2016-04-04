@@ -1,15 +1,14 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.simple;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Rank;
 import edu.ucsf.rbvi.clusterMaker2.internal.commands.GetNetworkClusterTask;
-import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 import org.cytoscape.model.*;
 import org.cytoscape.work.*;
 
 import java.util.*;
 
-public class SimpleCluster extends AbstractTask implements Rank {
+public class SingleNodeAttribute extends AbstractTask implements Rank {
 
     private List<List<CyNode>> clusters;
     private ClusterManager manager;
@@ -23,10 +22,10 @@ public class SimpleCluster extends AbstractTask implements Rank {
     public CyNetwork network;
 
     @ContainsTunables
-    public SimpleClusterContext context;
+    public SNAContext context;
 
-    public SimpleCluster(SimpleClusterContext context, ClusterManager manager) {
-        System.out.println("SimpleCluster constructor");
+    public SingleNodeAttribute(SNAContext context, ClusterManager manager) {
+        System.out.println("SingleNodeAttribute constructor");
         this.canceled = false;
         this.manager = manager;
         this.context = context;
@@ -53,7 +52,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
 
     @SuppressWarnings("unchecked")
     public void run(TaskMonitor monitor) {
-        monitor.setTitle("SimpleCluster.run()");
+        monitor.setTitle("SingleNodeAttribute.run()");
 
         GetNetworkClusterTask clusterMonitor = new GetNetworkClusterTask(manager);
 
@@ -79,7 +78,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
         List<Double> scoreList = createScoreList();
         addScoreToColumns(scoreList, monitor); // This can be abstract for ALL of ranking cluster algorithms
         monitor.showMessage(TaskMonitor.Level.INFO, "Done.");
-        System.out.println("SimpleCluster finished.");
+        System.out.println("SingleNodeAttribute finished.");
     }
 
     /*
@@ -143,7 +142,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
         CyTable nodeTable = this.network.getDefaultNodeTable();
         List<Double> scoreList = new ArrayList<>(this.clusters.size());
 
-        System.out.println("SimpleCluster is running.");
+        System.out.println("SingleNodeAttribute is running.");
 
         for (int i = 0; i < this.clusters.size(); i++) {
             double score = 0;
@@ -183,7 +182,7 @@ public class SimpleCluster extends AbstractTask implements Rank {
     }
 
     public boolean isAvailable() {
-        return SimpleCluster.isReady(this.network, this.manager);
+        return SingleNodeAttribute.isReady(this.network, this.manager);
     }
 
     // This should go through the clustering algorithms and check if one of them have some results.
