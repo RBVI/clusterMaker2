@@ -13,7 +13,6 @@ import org.cytoscape.work.Tunable;
 import java.util.List;
 
 public class MultipleNodeEdgeAdditive extends AbstractTask implements Rank {
-
     private List<NodeCluster> clusters;
     private ClusterManager manager;
     final public static String NAME = "Create rank from multiple nodes and edges (additive sum)";

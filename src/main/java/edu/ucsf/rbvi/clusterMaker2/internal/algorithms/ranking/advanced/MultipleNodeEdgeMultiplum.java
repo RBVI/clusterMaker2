@@ -12,7 +12,7 @@ import org.cytoscape.work.Tunable;
 
 import java.util.List;
 
-public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank{
+public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
     private List<NodeCluster> clusters;
     private ClusterManager manager;
     final public static String NAME = "Create rank from multiple nodes and edges (multiply sum)";
@@ -38,17 +38,17 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank{
 
     @Override
     public String getShortName() {
-        return null;
+        return SHORTNAME;
     }
 
     @Override
     public String getName() {
-        return null;
+        return NAME;
     }
 
     @Override
     public Object getContext() {
-        return null;
+        return context;
     }
 
     @Override

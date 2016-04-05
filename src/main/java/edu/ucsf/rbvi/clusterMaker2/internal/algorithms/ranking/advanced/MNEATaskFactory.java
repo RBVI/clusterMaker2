@@ -31,6 +31,6 @@ public class MNEATaskFactory implements RankFactory {
     }
 
     public boolean isReady() {
-        return MultipleNodeEdgeAdditive.isReady(manager.getNetwork(), manager);
+        return true;
     }
 }

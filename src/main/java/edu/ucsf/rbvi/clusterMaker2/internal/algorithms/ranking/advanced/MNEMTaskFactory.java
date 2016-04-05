@@ -15,7 +15,7 @@ public class MNEMTaskFactory implements RankFactory {
     }
 
     public String getShortName() {
-        return MultipleNodeEdgeAdditive.SHORTNAME;
+        return MultipleNodeEdgeMultiplum.SHORTNAME;
     }
 
     public String getName() {
@@ -31,6 +31,6 @@ public class MNEMTaskFactory implements RankFactory {
     }
 
     public boolean isReady() {
-        return MultipleNodeEdgeMultiplum.isReady(manager.getNetwork(), manager);
+        return true;
     }
 }
