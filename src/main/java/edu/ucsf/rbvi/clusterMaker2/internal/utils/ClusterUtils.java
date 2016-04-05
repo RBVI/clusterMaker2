@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ClusterUtils {
-    public static List<NodeCluster> createClusters(CyNetwork network) {
+    public static List<NodeCluster> fetchClusters(CyNetwork network) {
         List<NodeCluster> clusters = new ArrayList<>();
         String clusterAttribute = getClusterAttribute(network, ClusterManager.CLUSTER_ATTRIBUTE);
 
@@ -38,7 +38,7 @@ public class ClusterUtils {
         return clusters;
     }
 
-    public static List<NodeCluster> createPanelClusters(CyNetwork network) {
+    public static List<NodeCluster> fetchRankingResults(CyNetwork network) {
         List<NodeCluster> clusters = new ArrayList<>();
         String clusterAttribute = getClusterAttribute(network, ClusterManager.CLUSTER_ATTRIBUTE);
         String rankingAttribute = getClusterAttribute(network, ClusterManager.RANKING_ATTRIBUTE);

@@ -58,7 +58,7 @@ public class SingleNodeAttribute extends AbstractTask implements Rank {
         }
 
         context.setNetwork(network);
-        clusters = ClusterUtils.createClusters(network);
+        clusters = ClusterUtils.fetchClusters(network);
         attribute = context.getSelectedAttribute();
 
         if (!noNullValuesOrCancel(monitor)) {
