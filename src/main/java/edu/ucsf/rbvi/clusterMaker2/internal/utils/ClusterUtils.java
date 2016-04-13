@@ -2,15 +2,16 @@ package edu.ucsf.rbvi.clusterMaker2.internal.utils;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
+import org.cytoscape.model.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ClusterUtils {
+
     public static List<NodeCluster> fetchClusters(CyNetwork network) {
         List<NodeCluster> clusters = new ArrayList<>();
         String clusterAttribute = getClusterAttribute(network, ClusterManager.CLUSTER_ATTRIBUTE);
