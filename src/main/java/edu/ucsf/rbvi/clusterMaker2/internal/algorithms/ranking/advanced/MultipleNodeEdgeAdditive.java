@@ -67,17 +67,12 @@ public class MultipleNodeEdgeAdditive extends AbstractTask implements Rank {
 
         nodeAttributes = context.getSelectedNodeAttributes();
         edgeAttributes = context.getSelectedEdgeAttributes();
-        List<Double> scoreList = new ArrayList<>();
 
-        for (String nodeAttr : nodeAttributes) {
-            addNodeScoreToColumn(nodeAttr, taskMonitor, scoreList);
-        }
+        setNodeScoresInCluster();
 
         taskMonitor.setProgress(75.0);
 
-        for (String edgeAttr : edgeAttributes) {
-            addEdgeScoreToColumn(taskMonitor, scoreList);
-        }
+        setEdgeScoresInCluster();
 
         taskMonitor.setProgress(100.0);
 
@@ -88,11 +83,32 @@ public class MultipleNodeEdgeAdditive extends AbstractTask implements Rank {
         return this.network.getRow(network).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class, "");
     }
 
-    private void addNodeScoreToColumn(String nodeAttr, TaskMonitor taskMonitor, List<Double> scoreList) {
+    private void setNodeScoresInCluster() {
+        List<NodeCluster> clusters = new ArrayList<>(this.clusters);
+        List<CyNode> nodes = network.getNodeList();
+        CyTable table = network.getDefaultNodeTable();
 
+        for (String nodeAttr : nodeAttributes) {
+            for (CyNode node : nodes) {
+                CyRow row = table.getRow(node.getSUID());
+                int nodeClusterNumber = row.get(clusterColumnName, Integer.class, -1);
+
+                for (NodeCluster cluster : clusters) {
+                    if (cluster.getClusterNumber() == nodeClusterNumber) {
+                        try {
+                            cluster.setRankScore(cluster.getRankScore() + row.get(nodeAttr, Double.class, 0.0));
+                        } catch (Exception e) {
+                            e.printStackTrace(); // Probably a type mismatch - something not a Double.class
+                        }
+                    }
+                }
+            }
+        }
+
+        this.clusters = clusters;
     }
 
-    private void addEdgeScoreToColumn(TaskMonitor taskMonitor, List<Double> scoreList) {
+    private void setEdgeScoresInCluster() {
         List<NodeCluster> clusters = new ArrayList<>(this.clusters);
         List<CyEdge> edges = network.getEdgeList();
         CyTable table = network.getDefaultNodeTable();
@@ -133,6 +149,8 @@ public class MultipleNodeEdgeAdditive extends AbstractTask implements Rank {
                 }
             }
         }
+
+        this.clusters = clusters;
     }
 
     public static boolean isReady(CyNetwork network, ClusterManager manager) {

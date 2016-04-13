@@ -4,10 +4,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Rank;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ClusterUtils;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
+import org.cytoscape.model.*;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
@@ -71,17 +68,12 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
 
         nodeAttributes = context.getSelectedNodeAttributes();
         edgeAttributes = context.getSelectedEdgeAttributes();
-        List<Double> scoreList = new ArrayList<>();
 
-        for (String nodeAttr : nodeAttributes) {
-            addNodeScoreToColumn(nodeAttr, taskMonitor, scoreList);
-        }
+        setNodeScoreInCluster();
 
         taskMonitor.setProgress(75.0);
 
-        for (String edgeAttr : edgeAttributes) {
-            addEdgeScoreToColumn(edgeAttr, taskMonitor, scoreList);
-        }
+        setEdgeScoreInCluster();
 
         taskMonitor.setProgress(100.0);
 
@@ -92,48 +84,74 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
         return this.network.getRow(network).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class, "");
     }
 
-    private void addNodeScoreToColumn(String nodeAttr, TaskMonitor taskMonitor, List<Double> scoreList) {
-
-    }
-
-    private void addEdgeScoreToColumn(String edgeAttr, TaskMonitor taskMonitor, List<Double> scoreList) {
-        List<CyEdge> edges = network.getEdgeList();
+    private void setNodeScoreInCluster() {
+        List<NodeCluster> clusters = new ArrayList<>(this.clusters);
+        List<CyNode> nodes = network.getNodeList();
         CyTable table = network.getDefaultNodeTable();
 
-        for (CyEdge edge : edges) {
-            CyRow source = table.getRow(edge.getSource().getSUID());
-            CyRow target = table.getRow(edge.getTarget().getSUID());
-            int sourceClusterNumber = source.get(clusterColumnName, Integer.class, -1);
-            int targetClusterNumber = target.get(clusterColumnName, Integer.class, -1);
-            int sourceHighestClusterNumber = -1;
-            int targetHighestClusterNumber = -1;
+        for (String nodeAttr : nodeAttributes) {
+            for (CyNode node : nodes) {
+                CyRow row = table.getRow(node.getSUID());
+                int nodeClusterNumber = row.get(clusterColumnName, Integer.class, -1);
 
-            for (NodeCluster cluster : clusters) {
-                int clusterNumber = cluster.getClusterNumber();
-
-                if (clusterNumber == sourceClusterNumber && (clusterNumber < sourceHighestClusterNumber || sourceHighestClusterNumber == -1)) {
-
-                    try {
-                        cluster.setRankScore(cluster.getRankScore() * (source.get(edgeAttr, Double.class, 0.0) + 1.0)); // assumes values between 0 and 1
-                    } catch (Exception e) { // Probably not a double class in the edgeAttr column
-                        e.printStackTrace(); // just print the trace and continue
+                for (NodeCluster cluster : clusters) {
+                    if (cluster.getClusterNumber() == nodeClusterNumber) {
+                        try {
+                            cluster.setRankScore(cluster.getRankScore() * row.get(nodeAttr, Double.class, 0.0));
+                        } catch (Exception e) {
+                            e.printStackTrace(); // Probably a type mismatch - something not a Double.class
+                        }
                     }
-
-                    sourceHighestClusterNumber = clusterNumber;
-                }
-
-                if (clusterNumber == targetClusterNumber && (clusterNumber < targetHighestClusterNumber || sourceHighestClusterNumber == -1)) {
-
-                    try {
-                        cluster.setRankScore(cluster.getRankScore() * (target.get(edgeAttr, Double.class, 0.0) + 1.0)); // assumes values between 0 and 1
-                    } catch (Exception e) { // Probably not a double class in the edgeAttr column
-                        e.printStackTrace(); // just print the trace and continue
-                    }
-
-                    targetHighestClusterNumber = clusterNumber;
                 }
             }
         }
+
+        this.clusters = clusters;
+    }
+
+    private void setEdgeScoreInCluster() {
+        List<NodeCluster> clusters = new ArrayList<>(this.clusters);
+        List<CyEdge> edges = network.getEdgeList();
+        CyTable table = network.getDefaultNodeTable();
+
+        for (String edgeAttr : edgeAttributes) {
+            for (CyEdge edge : edges) {
+                CyRow source = table.getRow(edge.getSource().getSUID());
+                CyRow target = table.getRow(edge.getTarget().getSUID());
+                int sourceClusterNumber = source.get(clusterColumnName, Integer.class, -1);
+                int targetClusterNumber = target.get(clusterColumnName, Integer.class, -1);
+                int sourceHighestClusterNumber = -1;
+                int targetHighestClusterNumber = -1;
+
+                for (NodeCluster cluster : clusters) {
+                    int clusterNumber = cluster.getClusterNumber();
+
+                    if (clusterNumber == sourceClusterNumber && (clusterNumber < sourceHighestClusterNumber || sourceHighestClusterNumber == -1)) {
+
+                        try {
+                            cluster.setRankScore(cluster.getRankScore() * (source.get(edgeAttr, Double.class, 0.0) + 1.0)); // assumes values between 0 and 1
+                        } catch (Exception e) { // Probably not a double class in the edgeAttr column
+                            e.printStackTrace(); // just print the trace and continue
+                        }
+
+                        sourceHighestClusterNumber = clusterNumber;
+                    }
+
+                    if (clusterNumber == targetClusterNumber && (clusterNumber < targetHighestClusterNumber || sourceHighestClusterNumber == -1)) {
+
+                        try {
+                            cluster.setRankScore(cluster.getRankScore() * (target.get(edgeAttr, Double.class, 0.0) + 1.0)); // assumes values between 0 and 1
+                        } catch (Exception e) { // Probably not a double class in the edgeAttr column
+                            e.printStackTrace(); // just print the trace and continue
+                        }
+
+                        targetHighestClusterNumber = clusterNumber;
+                    }
+                }
+            }
+        }
+
+        this.clusters = clusters;
     }
 
     public static boolean isReady(CyNetwork network, ClusterManager manager) {
