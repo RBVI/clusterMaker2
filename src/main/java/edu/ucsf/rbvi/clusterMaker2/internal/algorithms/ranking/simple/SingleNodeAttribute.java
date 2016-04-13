@@ -61,7 +61,7 @@ public class SingleNodeAttribute extends AbstractTask implements Rank {
         clusters = ClusterUtils.fetchClusters(network);
         attribute = context.getSelectedAttribute();
 
-        if (!noNullValuesOrCancel(monitor)) {
+        if (nullValuesOrCancel(monitor)) {
             return;
         }
 
@@ -138,7 +138,7 @@ public class SingleNodeAttribute extends AbstractTask implements Rank {
         return scoreList;
     }
 
-    private boolean noNullValuesOrCancel(TaskMonitor monitor) {
+    private boolean nullValuesOrCancel(TaskMonitor monitor) {
         CyTable nodeTable = network.getDefaultNodeTable();
 
         if (clusters.size() == 0) {
