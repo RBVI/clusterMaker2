@@ -1,6 +1,7 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.advanced;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.autosome.mapping.som.Node;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Rank;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ClusterUtils;
@@ -69,11 +70,11 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
         nodeAttributes = context.getSelectedNodeAttributes();
         edgeAttributes = context.getSelectedEdgeAttributes();
 
-        setNodeScoreInCluster();
+        clusters = setNodeScoreInCluster();
 
         taskMonitor.setProgress(75.0);
 
-        setEdgeScoreInCluster();
+        clusters = setEdgeScoreInCluster();
 
         taskMonitor.setProgress(100.0);
 
@@ -84,7 +85,7 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
         return this.network.getRow(network).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class, "");
     }
 
-    private void setNodeScoreInCluster() {
+    private List<NodeCluster> setNodeScoreInCluster() {
         List<NodeCluster> clusters = new ArrayList<>(this.clusters);
         List<CyNode> nodes = network.getNodeList();
         CyTable table = network.getDefaultNodeTable();
@@ -96,8 +97,10 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
 
                 for (NodeCluster cluster : clusters) {
                     if (cluster.getClusterNumber() == nodeClusterNumber) {
+                        double score = cluster.getRankScore();
+
                         try {
-                            cluster.setRankScore(cluster.getRankScore() * row.get(nodeAttr, Double.class, 0.0));
+                            cluster.setRankScore(cluster.getRankScore() * (row.get(nodeAttr, Double.class, 0.0) + 1.0)); // assumes scores to be between 0 and 1
                         } catch (Exception e) {
                             e.printStackTrace(); // Probably a type mismatch - something not a Double.class
                         }
@@ -106,10 +109,10 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
             }
         }
 
-        this.clusters = clusters;
+        return clusters;
     }
 
-    private void setEdgeScoreInCluster() {
+    private List<NodeCluster> setEdgeScoreInCluster() {
         List<NodeCluster> clusters = new ArrayList<>(this.clusters);
         List<CyEdge> edges = network.getEdgeList();
         CyTable table = network.getDefaultNodeTable();
@@ -151,7 +154,7 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
             }
         }
 
-        this.clusters = clusters;
+        return clusters;
     }
 
     public static boolean isReady(CyNetwork network, ClusterManager manager) {
