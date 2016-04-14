@@ -55,6 +55,7 @@ public class SingleNodeAttribute extends AbstractTask implements Rank {
 
         if (network == null) {
             this.manager.getNetwork();
+            monitor.showMessage(TaskMonitor.Level.INFO, "");
         }
 
         context.setNetwork(network);
@@ -62,14 +63,16 @@ public class SingleNodeAttribute extends AbstractTask implements Rank {
         attribute = context.getSelectedAttribute();
 
         if (nullValuesOrCancel(monitor)) {
+            monitor.showMessage(TaskMonitor.Level.INFO, "There exists null values or process was canceled");
             return;
         }
 
         monitor.showMessage(TaskMonitor.Level.INFO, "Getting scorelist for SingleNodeAttribute.");
+        monitor.showMessage(TaskMonitor.Level.INFO, "Creating scoring list...");
         List<Double> scoreList = createScoreList();
-        addScoreToColumns(scoreList, monitor); // This can be abstract for ALL of ranking cluster algorithms
+        monitor.showMessage(TaskMonitor.Level.INFO, "Adding score to columns...");
+        addScoreToColumns(createScoreList(), monitor);
         monitor.showMessage(TaskMonitor.Level.INFO, "Done.");
-        System.out.println("SingleNodeAttribute finished.");
     }
 
     /*
@@ -143,19 +146,19 @@ public class SingleNodeAttribute extends AbstractTask implements Rank {
 
         if (clusters.size() == 0) {
             monitor.showMessage(TaskMonitor.Level.INFO, "No clusters to work with");
-            return false;
+            return true;
         } else if (attribute == null || attribute.equals("None")) {
             monitor.showMessage(TaskMonitor.Level.INFO, "No attribute(s) to work with");
-            return false;
+            return true;
         } else if (nodeTable.getColumn(attribute) == null) {
             monitor.showMessage(TaskMonitor.Level.INFO, "No column with '" + attribute + "' as an attribute");
-            return false;
+            return true;
         } else if (cancelled) {
             monitor.showMessage(TaskMonitor.Level.INFO, "Canceled");
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     // This should go through the clustering algorithms and check if one of them have some results.

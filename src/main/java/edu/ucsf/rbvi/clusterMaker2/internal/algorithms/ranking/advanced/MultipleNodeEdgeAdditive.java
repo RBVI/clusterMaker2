@@ -69,14 +69,39 @@ public class MultipleNodeEdgeAdditive extends AbstractTask implements Rank {
         edgeAttributes = context.getSelectedEdgeAttributes();
 
         clusters = setNodeScoresInCluster();
-
         taskMonitor.setProgress(75.0);
-
         clusters = setEdgeScoresInCluster();
-
+        createColumns();
         taskMonitor.setProgress(100.0);
 
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Done...");
+    }
+
+    private void createColumns() {
+        CyTable nodeTable = network.getDefaultNodeTable();
+        CyTable edgeTable = network.getDefaultEdgeTable();
+        CyTable networkTable = network.getDefaultNetworkTable();
+        List<CyEdge> edges = network.getEdgeList();
+
+        ClusterUtils.createNewSingleColumn(networkTable, ClusterManager.RANKING_ATTRIBUTE, String.class, false);
+        ClusterUtils.createNewSingleColumn(nodeTable, SHORTNAME, Double.class, false);
+        ClusterUtils.createNewSingleColumn(edgeTable, SHORTNAME, Double.class, false);
+
+        for (CyRow row : networkTable.getAllRows()) {
+            row.set(ClusterManager.RANKING_ATTRIBUTE, SHORTNAME);
+        }
+
+        ClusterUtils.setNodeTableColumnValues(nodeTable, clusters, SHORTNAME);
+        ClusterUtils.setEdgeTableColumnValues(edgeTable, edges, clusters, SHORTNAME);
+    }
+
+
+    private void createNewSingleColumn(CyTable table, String columnName) {
+        if (table.getColumn(columnName) != null) {
+            table.deleteColumn(columnName);
+        }
+
+        table.createColumn(columnName, Double.class, false);
     }
 
     private String getClusterColumnName() {

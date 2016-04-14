@@ -71,15 +71,32 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
         edgeAttributes = context.getSelectedEdgeAttributes();
 
         clusters = setNodeScoreInCluster();
-
         taskMonitor.setProgress(75.0);
-
         clusters = setEdgeScoreInCluster();
-
+        createColumns();
         taskMonitor.setProgress(100.0);
 
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Done...");
     }
+
+    private void createColumns() {
+        CyTable nodeTable = network.getDefaultNodeTable();
+        CyTable edgeTable = network.getDefaultEdgeTable();
+        CyTable networkTable = network.getDefaultNetworkTable();
+        List<CyEdge> edges = network.getEdgeList();
+
+        ClusterUtils.createNewSingleColumn(networkTable, ClusterManager.RANKING_ATTRIBUTE, String.class, false);
+        ClusterUtils.createNewSingleColumn(nodeTable, SHORTNAME, Double.class, false);
+        ClusterUtils.createNewSingleColumn(edgeTable, SHORTNAME, Double.class, false);
+
+        for (CyRow row : networkTable.getAllRows()) {
+            row.set(ClusterManager.RANKING_ATTRIBUTE, SHORTNAME);
+        }
+
+        ClusterUtils.setNodeTableColumnValues(nodeTable, clusters, SHORTNAME);
+        ClusterUtils.setEdgeTableColumnValues(edgeTable, edges, clusters, SHORTNAME);
+    }
+
 
     private String getClusterColumnName() {
         return this.network.getRow(network).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class, "");

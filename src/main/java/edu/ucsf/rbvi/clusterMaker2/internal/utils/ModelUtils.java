@@ -274,7 +274,7 @@ public class ModelUtils {
 
         if (val == null) return null;
 
-        return Double.valueOf(val.doubleValue());
+        return val.doubleValue();
     }
 
     public static List<CyNode>sortNodeList(CyNetwork network, List<CyNode>nodeList) {

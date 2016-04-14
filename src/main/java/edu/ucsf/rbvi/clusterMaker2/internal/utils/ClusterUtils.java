@@ -8,9 +8,38 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class ClusterUtils {
+    public static void createNewSingleColumn(CyTable table, String columnName, Class clzz, boolean isImmutable) {
+        if (table.getColumn(columnName) != null) {
+            table.deleteColumn(columnName);
+        }
+
+        table.createColumn(columnName, clzz, isImmutable);
+    }
+
+    public static void setNodeTableColumnValues(CyTable nodeTable, List<NodeCluster> clusters, String columnName) {
+        for (NodeCluster cluster : clusters) {
+            for (CyNode node : cluster) {
+                nodeTable.getRow(node.getSUID()).set(columnName, cluster.getRankScore());
+            }
+        }
+    }
+
+    public static void setEdgeTableColumnValues(CyTable edgeTable, List<CyEdge> edges, List<NodeCluster> clusters, String columnName) {
+        for (CyEdge edge : edges) {
+            for (NodeCluster cluster : clusters) {
+                for (CyNode node : cluster) {
+                    if (edge.getSource().getSUID().equals(node.getSUID())) {
+                        edgeTable.getRow(edge.getSUID()).set(columnName, cluster.getRankScore());
+                    }
+                    if (edge.getTarget().getSUID().equals(node.getSUID())) {
+                        edgeTable.getRow(edge.getSUID()).set(columnName, cluster.getRankScore());
+                    }
+                }
+            }
+        }
+    }
 
     public static List<NodeCluster> fetchClusters(CyNetwork network) {
         List<NodeCluster> clusters = new ArrayList<>();
