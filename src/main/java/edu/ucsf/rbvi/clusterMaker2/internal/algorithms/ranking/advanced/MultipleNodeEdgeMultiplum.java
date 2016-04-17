@@ -1,7 +1,6 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.advanced;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.autosome.mapping.som.Node;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Rank;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ClusterUtils;
@@ -73,13 +72,13 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
         clusters = setNodeScoreInCluster();
         taskMonitor.setProgress(75.0);
         clusters = setEdgeScoreInCluster();
-        createColumns();
+        insertResultsInColumns();
         taskMonitor.setProgress(100.0);
 
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Done...");
     }
 
-    private void createColumns() {
+    private void insertResultsInColumns() {
         CyTable nodeTable = network.getDefaultNodeTable();
         CyTable edgeTable = network.getDefaultEdgeTable();
         CyTable networkTable = network.getDefaultNetworkTable();
@@ -114,13 +113,7 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
 
                 for (NodeCluster cluster : clusters) {
                     if (cluster.getClusterNumber() == nodeClusterNumber) {
-                        double score = cluster.getRankScore();
-
-                        try {
-                            cluster.setRankScore(cluster.getRankScore() * (row.get(nodeAttr, Double.class, 0.0) + 1.0)); // assumes scores to be between 0 and 1
-                        } catch (Exception e) {
-                            e.printStackTrace(); // Probably a type mismatch - something not a Double.class
-                        }
+                        setRankScore(nodeAttr, row, cluster);
                     }
                 }
             }
@@ -148,12 +141,7 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
 
                     if (clusterNumber == sourceClusterNumber && (clusterNumber < sourceHighestClusterNumber || sourceHighestClusterNumber == -1)) {
 
-                        try {
-                            cluster.setRankScore(cluster.getRankScore() * (source.get(edgeAttr, Double.class, 0.0) + 1.0)); // assumes values between 0 and 1
-                        } catch (Exception e) { // Probably not a double class in the edgeAttr column
-                            e.printStackTrace(); // just print the trace and continue
-                        }
-
+                        setRankScore(edgeAttr, source, cluster);
                         sourceHighestClusterNumber = clusterNumber;
                     }
 
@@ -172,6 +160,17 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
         }
 
         return clusters;
+    }
+
+    private void setRankScore(String edgeAttr, CyRow source, NodeCluster cluster) {
+        try {
+            if (cluster.getRankScore() == 0.0) {
+                cluster.setRankScore(1.0);
+            }
+            cluster.setRankScore(cluster.getRankScore() * (source.get(edgeAttr, Double.class, 0.0) + 1.0)); // assumes values between 0 and 1
+        } catch (Exception e) { // Probably not a double class in the edgeAttr column
+            e.printStackTrace(); // just print the trace and continue
+        }
     }
 
     public static boolean isReady(CyNetwork network, ClusterManager manager) {

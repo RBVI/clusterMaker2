@@ -71,13 +71,13 @@ public class MultipleNodeEdgeAdditive extends AbstractTask implements Rank {
         clusters = setNodeScoresInCluster();
         taskMonitor.setProgress(75.0);
         clusters = setEdgeScoresInCluster();
-        createColumns();
+        insertResultsInColumns();
         taskMonitor.setProgress(100.0);
 
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Done...");
     }
 
-    private void createColumns() {
+    private void insertResultsInColumns() {
         CyTable nodeTable = network.getDefaultNodeTable();
         CyTable edgeTable = network.getDefaultEdgeTable();
         CyTable networkTable = network.getDefaultNetworkTable();
@@ -93,15 +93,6 @@ public class MultipleNodeEdgeAdditive extends AbstractTask implements Rank {
 
         ClusterUtils.setNodeTableColumnValues(nodeTable, clusters, SHORTNAME);
         ClusterUtils.setEdgeTableColumnValues(edgeTable, edges, clusters, SHORTNAME);
-    }
-
-
-    private void createNewSingleColumn(CyTable table, String columnName) {
-        if (table.getColumn(columnName) != null) {
-            table.deleteColumn(columnName);
-        }
-
-        table.createColumn(columnName, Double.class, false);
     }
 
     private String getClusterColumnName() {
@@ -120,17 +111,21 @@ public class MultipleNodeEdgeAdditive extends AbstractTask implements Rank {
 
                 for (NodeCluster cluster : clusters) {
                     if (cluster.getClusterNumber() == nodeClusterNumber) {
-                        try {
-                            cluster.setRankScore(cluster.getRankScore() + row.get(nodeAttr, Double.class, 0.0));
-                        } catch (Exception e) {
-                            e.printStackTrace(); // Probably a type mismatch - something not a Double.class
-                        }
+                        setRankScore(nodeAttr, row, cluster);
                     }
                 }
             }
         }
 
         return clusters;
+    }
+
+    private void setRankScore(String nodeAttr, CyRow row, NodeCluster cluster) {
+        try {
+            cluster.setRankScore(cluster.getRankScore() + row.get(nodeAttr, Double.class, 0.0));
+        } catch (Exception e) {
+            e.printStackTrace(); // Probably a type mismatch - something not a Double.class
+        }
     }
 
     private List<NodeCluster> setEdgeScoresInCluster() {
@@ -152,23 +147,13 @@ public class MultipleNodeEdgeAdditive extends AbstractTask implements Rank {
 
                     if (clusterNumber == sourceClusterNumber && (clusterNumber < sourceHighestClusterNumber || sourceHighestClusterNumber == -1)) {
 
-                        try {
-                            cluster.setRankScore(cluster.getRankScore() + source.get(edgeAttr, Double.class, 0.0));
-                        } catch (Exception e) { // Probably not a double class in the edgeAttr column
-                            e.printStackTrace(); // just print the trace and continue
-                        }
-
+                        setRankScore(edgeAttr, source, cluster);
                         sourceHighestClusterNumber = clusterNumber;
                     }
 
                     if (clusterNumber == targetClusterNumber && (clusterNumber < targetHighestClusterNumber || sourceHighestClusterNumber == -1)) {
 
-                        try {
-                            cluster.setRankScore(cluster.getRankScore() + target.get(edgeAttr, Double.class, 0.0));
-                        } catch (Exception e) { // Probably not a double class in the edgeAttr column
-                            e.printStackTrace(); // just print the trace and continue
-                        }
-
+                        setRankScore(edgeAttr, target, cluster);
                         targetHighestClusterNumber = clusterNumber;
                     }
                 }
