@@ -50,7 +50,7 @@ public class CreateRankingPanelTaskFactory implements ClusterVizFactory {
             return true;
         }
 
-        return network != null && RankingResultsTask.isReady(network, clusterManager);
+        return network != null && RankingResultsTask.isReady(network);
     }
 
     @Override
@@ -69,6 +69,6 @@ public class CreateRankingPanelTaskFactory implements ClusterVizFactory {
             return true;
         }
 
-        return RankingResultsTask.isReady(clusterManager.getNetwork(), clusterManager);
+        return RankingResultsTask.isReady(clusterManager.getNetwork());
     }
 }

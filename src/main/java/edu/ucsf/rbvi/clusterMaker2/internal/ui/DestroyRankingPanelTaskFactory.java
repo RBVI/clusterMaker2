@@ -48,7 +48,7 @@ public class DestroyRankingPanelTaskFactory implements ClusterVizFactory {
             return true;
         }
 
-        return network != null && RankingResultsTask.isReady(network, clusterManager);
+        return network != null && RankingResultsTask.isReady(network);
     }
 
     @Override

@@ -164,16 +164,6 @@ public class SingleNodeAttribute extends AbstractTask implements Rank {
     // This should go through the clustering algorithms and check if one of them have some results.
     // NB! Only the algorithm run last will have results to work with!
     public static boolean isReady(CyNetwork network, ClusterManager manager) {
-        GetNetworkClusterTask clusterMonitor;
-
-        if (network == null) {
-            return false;
-        }
-
-        clusterMonitor = new GetNetworkClusterTask(manager);
-        clusterMonitor.algorithm = "shit"; // Temporary
-
-        return !clusterMonitor.algorithm.equals("None");
-
+        return true;
     }
 }

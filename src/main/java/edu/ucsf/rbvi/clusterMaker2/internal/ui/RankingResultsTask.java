@@ -114,7 +114,7 @@ public class RankingResultsTask extends AbstractTask implements ClusterViz, Clus
         return null;
     }
 
-    public static boolean isReady(CyNetwork network, ClusterManager clusterManager) {
+    public static boolean isReady(final CyNetwork network) {
         if (network == null) {
             return false;
         }

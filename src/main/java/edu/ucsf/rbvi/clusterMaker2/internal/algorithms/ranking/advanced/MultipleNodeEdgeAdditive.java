@@ -120,9 +120,9 @@ public class MultipleNodeEdgeAdditive extends AbstractTask implements Rank {
         return clusters;
     }
 
-    private void setRankScore(String nodeAttr, CyRow row, NodeCluster cluster) {
+    private void setRankScore(String attribute, CyRow row, NodeCluster cluster) {
         try {
-            cluster.setRankScore(cluster.getRankScore() + row.get(nodeAttr, Double.class, 0.0));
+            cluster.setRankScore(cluster.getRankScore() + row.get(attribute, Double.class, 0.0));
         } catch (Exception e) {
             e.printStackTrace(); // Probably a type mismatch - something not a Double.class
         }
@@ -131,12 +131,14 @@ public class MultipleNodeEdgeAdditive extends AbstractTask implements Rank {
     private List<NodeCluster> setEdgeScoresInCluster() {
         List<NodeCluster> clusters = new ArrayList<>(this.clusters);
         List<CyEdge> edges = network.getEdgeList();
-        CyTable table = network.getDefaultNodeTable();
+        CyTable nodeTable = network.getDefaultNodeTable();
+        CyTable edgeTable = network.getDefaultEdgeTable();
 
         for (String edgeAttr : edgeAttributes) {
             for (CyEdge edge : edges) {
-                CyRow source = table.getRow(edge.getSource().getSUID());
-                CyRow target = table.getRow(edge.getTarget().getSUID());
+                CyRow source = nodeTable.getRow(edge.getSource().getSUID());
+                CyRow target = nodeTable.getRow(edge.getTarget().getSUID());
+                CyRow edgeRow = edgeTable.getRow(edge.getSUID());
                 int sourceClusterNumber = source.get(clusterColumnName, Integer.class, -1);
                 int targetClusterNumber = target.get(clusterColumnName, Integer.class, -1);
                 int sourceHighestClusterNumber = -1;
@@ -146,14 +148,10 @@ public class MultipleNodeEdgeAdditive extends AbstractTask implements Rank {
                     int clusterNumber = cluster.getClusterNumber();
 
                     if (clusterNumber == sourceClusterNumber && (clusterNumber < sourceHighestClusterNumber || sourceHighestClusterNumber == -1)) {
-
-                        setRankScore(edgeAttr, source, cluster);
+                        setRankScore(edgeAttr, edgeRow, cluster);
                         sourceHighestClusterNumber = clusterNumber;
-                    }
-
-                    if (clusterNumber == targetClusterNumber && (clusterNumber < targetHighestClusterNumber || sourceHighestClusterNumber == -1)) {
-
-                        setRankScore(edgeAttr, target, cluster);
+                    } else if (clusterNumber == targetClusterNumber && (clusterNumber < targetHighestClusterNumber || targetHighestClusterNumber == -1)) {
+                        setRankScore(edgeAttr, edgeRow, cluster);
                         targetHighestClusterNumber = clusterNumber;
                     }
                 }
