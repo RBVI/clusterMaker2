@@ -1,21 +1,32 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.ui;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ClusterUtils;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ViewUtils;
 import org.cytoscape.application.swing.*;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
-import java.util.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 public class RankingResultsTask extends AbstractTask implements ClusterViz, ClusterAlgorithm {
 
@@ -24,6 +35,7 @@ public class RankingResultsTask extends AbstractTask implements ClusterViz, Clus
     public static String RANKLUSTSHORTNAME = "ranklustRankingResultsPanel";
     private boolean createFlag = false;
     private boolean checkAvailable = false;
+    private List<NodeCluster> clusters = null;
     private ClusterManager manager;
     private CyNetworkView networkView;
     private RankingResults rankingResults;
@@ -67,14 +79,16 @@ public class RankingResultsTask extends AbstractTask implements ClusterViz, Clus
         CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.EAST);
 
         if (createFlag) {
-            taskMonitor.setTitle("Creating new results panel with ranking results");
+            taskMonitor.setTitle("Creating new ranking panel with ranking results");
             taskMonitor.setStatusMessage("Calculating Ranking Results...");
             taskMonitor.setProgress(0.0);
 
-            rankingResults = new RankingResults(ClusterUtils.fetchRankingResults(network), network, networkView, manager, taskMonitor);
+            clusters = ClusterUtils.fetchRankingResults(network);
+            rankingResults = new RankingResults(clusters, network, networkView, manager, taskMonitor);
 
             addAndRegisterPanel(cytoPanel);
-            taskMonitor.setProgress(100.0);
+            setNodeColors();
+            taskMonitor.setProgress(1.0);
         } else {
             taskMonitor.setTitle("Deleting all ranking panels");
             removeAndUnregisterPanels();
@@ -82,6 +96,28 @@ public class RankingResultsTask extends AbstractTask implements ClusterViz, Clus
         }
 
         taskMonitor.setStatusMessage("Done!");
+    }
+
+    private void setNodeColors() {
+        String rankingAlgorithmName = getRankingAlgorithmName();
+        VisualStyle vs = ViewUtils.copyStyle(manager, ViewUtils.getCurrentVisualStyle(manager), "_removeThis");
+        vs.setTitle("Ranking results colors");
+
+        VisualMappingFunctionFactory vmff = manager.getService(VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
+        ContinuousMapping mapping = (ContinuousMapping) vmff.createVisualMappingFunction(rankingAlgorithmName, Double.class,
+                BasicVisualLexicon.NODE_FILL_COLOR);
+
+        double average = NodeCluster.getAverageRankScore(clusters);
+        BoundaryRangeValues<Paint> range1 = new BoundaryRangeValues<>(Color.GREEN, Color.YELLOW, Color.RED);
+
+        mapping.addPoint(average, range1);
+
+        vs.addVisualMappingFunction(mapping);
+        ViewUtils.setVisualStyle(manager, manager.getNetworkView(), vs);
+    }
+
+    private String getRankingAlgorithmName() {
+        return network.getRow(network).get(ClusterManager.RANKING_ATTRIBUTE, String.class, "");
     }
 
     private void addAndRegisterPanel(CytoPanel cytoPanel) {

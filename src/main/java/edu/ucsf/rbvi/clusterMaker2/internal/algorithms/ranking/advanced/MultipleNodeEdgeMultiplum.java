@@ -62,18 +62,20 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
         taskMonitor.setProgress(0.0);
         taskMonitor.setTitle("Multiple Node Edge Multiplum ranking of clusters");
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Fetching clusters...");
-        taskMonitor.setProgress(10.0);
+        taskMonitor.setProgress(0.1);
         clusters = ClusterUtils.fetchClusters(network);
-        taskMonitor.setProgress(50.0);
+        taskMonitor.setProgress(0.5);
 
         nodeAttributes = context.getSelectedNodeAttributes();
         edgeAttributes = context.getSelectedEdgeAttributes();
 
-        clusters = setNodeScoreInCluster();
-        taskMonitor.setProgress(75.0);
-        clusters = setEdgeScoreInCluster();
+        taskMonitor.setProgress(0.6);
+        clusters = setNodeScoresInCluster();
+        taskMonitor.setProgress(0.75);
+        clusters = setEdgeScoresInCluster();
+        taskMonitor.setProgress(0.80);
         insertResultsInColumns();
-        taskMonitor.setProgress(100.0);
+        taskMonitor.setProgress(1.0);
 
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Done...");
     }
@@ -96,12 +98,11 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
         ClusterUtils.setEdgeTableColumnValues(edgeTable, edges, clusters, SHORTNAME);
     }
 
-
     private String getClusterColumnName() {
         return this.network.getRow(network).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class, "");
     }
 
-    private List<NodeCluster> setNodeScoreInCluster() {
+    private List<NodeCluster> setNodeScoresInCluster() {
         List<NodeCluster> clusters = new ArrayList<>(this.clusters);
         List<CyNode> nodes = network.getNodeList();
         CyTable table = network.getDefaultNodeTable();
@@ -122,7 +123,7 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
         return clusters;
     }
 
-    private List<NodeCluster> setEdgeScoreInCluster() {
+    private List<NodeCluster> setEdgeScoresInCluster() {
         List<NodeCluster> clusters = new ArrayList<>(this.clusters);
         List<CyEdge> edges = network.getEdgeList();
         CyTable nodeTable = network.getDefaultNodeTable();

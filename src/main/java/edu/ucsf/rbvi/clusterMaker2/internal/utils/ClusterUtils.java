@@ -100,12 +100,10 @@ public class ClusterUtils {
 
         // Ascending sort
         ascendingSort(clusters);
-        System.out.println("Size: " + clusters.size());
-
         return clusters;
     }
 
-    private static void ascendingSort(List<NodeCluster> clusters) {
+    public static void ascendingSort(List<NodeCluster> clusters) {
         clusters.sort((a, b) -> {
             if (a.getRankScore() == b.getRankScore()) {
                 return 0;
