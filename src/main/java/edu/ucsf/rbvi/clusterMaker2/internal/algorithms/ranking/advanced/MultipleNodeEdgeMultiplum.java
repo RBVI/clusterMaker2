@@ -70,32 +70,45 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
         edgeAttributes = context.getSelectedEdgeAttributes();
 
         taskMonitor.setProgress(0.6);
+        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Setting node scores in clusters");
         clusters = setNodeScoresInCluster();
         taskMonitor.setProgress(0.75);
+        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Setting edge scores in clusters");
         clusters = setEdgeScoresInCluster();
         taskMonitor.setProgress(0.80);
+        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Sorting and ranking clusters");
+        ClusterUtils.ascendingSort(clusters);
+        NodeCluster.setClusterRanks(clusters);
+        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Insert cluster information in tables");
         insertResultsInColumns();
         taskMonitor.setProgress(1.0);
-
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Done...");
     }
 
+    /*
+     * Assumes ascending sorted clusters
+     */
     private void insertResultsInColumns() {
         CyTable nodeTable = network.getDefaultNodeTable();
         CyTable edgeTable = network.getDefaultEdgeTable();
         CyTable networkTable = network.getDefaultNetworkTable();
         List<CyEdge> edges = network.getEdgeList();
 
+        // Create columns for the score
         ClusterUtils.createNewSingleColumn(networkTable, ClusterManager.RANKING_ATTRIBUTE, String.class, false);
         ClusterUtils.createNewSingleColumn(nodeTable, SHORTNAME, Double.class, false);
         ClusterUtils.createNewSingleColumn(edgeTable, SHORTNAME, Double.class, false);
+
+        // Create columns for the rank (calculated from the score)
+        ClusterUtils.createNewSingleColumn(nodeTable, SHORTNAME + "_rank", Double.class, false);
+        ClusterUtils.createNewSingleColumn(edgeTable, SHORTNAME + "_rank", Double.class, false);
 
         for (CyRow row : networkTable.getAllRows()) {
             row.set(ClusterManager.RANKING_ATTRIBUTE, SHORTNAME);
         }
 
-        ClusterUtils.setNodeTableColumnValues(nodeTable, clusters, SHORTNAME);
-        ClusterUtils.setEdgeTableColumnValues(edgeTable, edges, clusters, SHORTNAME);
+        ClusterUtils.setNodeTableColumnValues(nodeTable, clusters, SHORTNAME, SHORTNAME + "_rank");
+        ClusterUtils.setEdgeTableColumnValues(edgeTable, edges, clusters, SHORTNAME, SHORTNAME + "_rank");
     }
 
     private String getClusterColumnName() {

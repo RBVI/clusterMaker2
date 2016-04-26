@@ -84,7 +84,6 @@ public class SingleNodeAttribute extends AbstractTask implements Rank {
         List<CyRow> rows = nodeTable.getAllRows();
         String clusterColumnName = this.getClusterColumn();
         String rankColumnName = this.context.getClusterAttribute();
-        System.out.println("Number of rows in the table: " + rows.size());
 
         if (clusterColumnName.equals("")) {
             monitor.showMessage(TaskMonitor.Level.INFO, "Could not find cluster column name to work with");
@@ -121,8 +120,6 @@ public class SingleNodeAttribute extends AbstractTask implements Rank {
     private List<Double> createScoreList() {
         CyTable nodeTable = this.network.getDefaultNodeTable();
         List<Double> scoreList = new ArrayList<>(this.clusters.size());
-
-        System.out.println("SingleNodeAttribute is running.");
 
         for (int i = 0; i < this.clusters.size(); i++) {
             double score = 0;

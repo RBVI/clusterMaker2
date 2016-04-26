@@ -18,23 +18,26 @@ public class ClusterUtils {
         table.createColumn(columnName, clzz, isImmutable);
     }
 
-    public static void setNodeTableColumnValues(CyTable nodeTable, List<NodeCluster> clusters, String columnName) {
+    public static void setNodeTableColumnValues(CyTable nodeTable, List<NodeCluster> clusters, String scoreCol, String rankCol) {
         for (NodeCluster cluster : clusters) {
             for (CyNode node : cluster) {
-                nodeTable.getRow(node.getSUID()).set(columnName, cluster.getRankScore());
+                nodeTable.getRow(node.getSUID()).set(scoreCol, cluster.getRankScore());
+                nodeTable.getRow(node.getSUID()).set(rankCol, cluster.getRank());
             }
         }
     }
 
-    public static void setEdgeTableColumnValues(CyTable edgeTable, List<CyEdge> edges, List<NodeCluster> clusters, String columnName) {
+    public static void setEdgeTableColumnValues(CyTable edgeTable, List<CyEdge> edges, List<NodeCluster> clusters, String scoreCol, String rankCol) {
         for (CyEdge edge : edges) {
             for (NodeCluster cluster : clusters) {
                 for (CyNode node : cluster) {
                     if (edge.getSource().getSUID().equals(node.getSUID())) {
-                        edgeTable.getRow(edge.getSUID()).set(columnName, cluster.getRankScore());
+                        edgeTable.getRow(edge.getSUID()).set(scoreCol, cluster.getRankScore());
+                        edgeTable.getRow(edge.getSUID()).set(rankCol, cluster.getRank());
                     }
                     if (edge.getTarget().getSUID().equals(node.getSUID())) {
-                        edgeTable.getRow(edge.getSUID()).set(columnName, cluster.getRankScore());
+                        edgeTable.getRow(edge.getSUID()).set(scoreCol, cluster.getRankScore());
+                        edgeTable.getRow(edge.getSUID()).set(rankCol, cluster.getRank());
                     }
                 }
             }

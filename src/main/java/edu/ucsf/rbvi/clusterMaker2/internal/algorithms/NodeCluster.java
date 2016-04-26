@@ -84,11 +84,29 @@ public class NodeCluster extends ArrayList<CyNode> {
 		return str+")";
 	}
 
+    public static void setClusterRanks(List<NodeCluster> list) {
+        int rank = 1;
+        double previousScore = getHighestRankScore(list);
+        for (NodeCluster cluster : list) {
+            if (previousScore < cluster.getRankScore()) {
+                rank++;
+            }
+            cluster.setRank(rank);
+        }
+    }
+
 	public static Double getAverageRankScore(List<NodeCluster> list) {
 		return list.stream()
 				.mapToDouble(NodeCluster::getRankScore)
+				.filter(score -> score != 0.0)
 				.average()
 				.getAsDouble();
+	}
+
+	public static double getHighestRankScore(List<NodeCluster> clusters) {
+		return clusters.stream()
+                .mapToDouble(NodeCluster::getRankScore)
+                .reduce(0.0, (top, cur) -> cur > top ? cur : top);
 	}
 
 	public static List<Double> getScoreList(List<NodeCluster> list) {
