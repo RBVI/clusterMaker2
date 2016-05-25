@@ -145,6 +145,22 @@ public class ComputationMatrix {
 
 		return nonZero;
 	}
+	
+	public double[] eigenValuesAll(){
+		if (decomp == null)
+			decomp = new DenseDoubleEigenvalueDecomposition(matrix);
+
+		double[] allValues = decomp.getRealEigenvalues().toArray();
+		int size = 0;
+		for (double d: allValues) {
+			if (d > 0)size++;
+		}
+		double [] nonZero = new double[size];
+		for (int i = 0; i < size; i++)
+			nonZero[i] = allValues[i];
+
+		return allValues;
+	}
 
 	public double[][] eigenVectors(){
 		if (decomp == null)

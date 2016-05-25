@@ -119,7 +119,6 @@ public class ResultPanelPCA extends JPanel{
 
 			JButton dispose = new JButton("Close");
 			dispose.addActionListener(new AbstractAction() {
-				@Override
 				public void actionPerformed(ActionEvent e) {
 					ResultPanelPCA.closeGui();
 				}

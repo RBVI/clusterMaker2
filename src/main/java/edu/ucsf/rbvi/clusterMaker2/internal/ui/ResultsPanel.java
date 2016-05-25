@@ -267,7 +267,6 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 
 			JButton dispose = new JButton("Remove Results");
 			dispose.addActionListener(new AbstractAction() {
-				@Override
 				public void actionPerformed(ActionEvent e) {
 					CySwingApplication swingApplication = clusterManager.getService(CySwingApplication.class);
 					CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.EAST);
