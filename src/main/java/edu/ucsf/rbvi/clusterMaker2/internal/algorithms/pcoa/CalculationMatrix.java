@@ -9,7 +9,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ComputationMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
-public class CalculationMatrix implements Matrix{
+public class CalculationMatrix{
 
 	double data[][];
 	int rows;
@@ -26,112 +26,13 @@ public class CalculationMatrix implements Matrix{
 		}
 		
 	}
-	public int nRows() {
-		// TODO Auto-generated method stub
-		return rows;
-	}
-
-	public int nColumns() {
-		// TODO Auto-generated method stub
-		return columns;
-	}
+	
 
 	public Double getValue(int row, int column) {
 		// TODO Auto-generated method stub
 		return data[row][column];
 	}
 
-	public double doubleValue(int row, int column) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	
-	public void setValue(int row, int column, double value) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void setValue(int row, int column, Double value) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public boolean hasValue(int row, int column) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public String[] getColumnLabels() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public String getColumnLabel(int col) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void setColumnLabel(int col, String label) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	public void setColumnLabels(List<String> labelList) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public String[] getRowLabels() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public String getRowLabel(int row) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void setRowLabel(int row, String label) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void setRowLabels(List<String> labelList) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public Matrix getDistanceMatrix(DistanceMetric metric) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public double[][] toArray() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public double getMaxValue() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	public double getMinValue() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	public boolean isTransposed() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public void setTransposed(boolean transposed) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	public boolean isSymmetrical() {
 		for( int row=0; row < data.length; row++ ){
@@ -145,91 +46,16 @@ public class CalculationMatrix implements Matrix{
         return true;
 	}
 
-	public void setSymmetrical(boolean symmetrical) {
-		// TODO Auto-generated method stub
-		
-	}
+	public static double[] matrixReverse(double[] x) {
 
-	public void setMissingToZero() {
-		// TODO Auto-generated method stub
-		
-	}
+	    double[] d = new double[x.length];
 
-	public void adjustDiagonals() {
-		// TODO Auto-generated method stub
-		
-	}
 
-	public double[] getRank(int row) {
-		// TODO Auto-generated method stub
-		return null;
+	    for (int i = 0; i < x.length; i++) {
+	        d[i] = x[x.length - 1 -i];
+	    }
+	    return d;
 	}
-
-	public Matrix copy() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void index() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public Matrix submatrix(int[] index) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public Matrix submatrix(int row, int col, int rows, int cols) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void invertMatrix() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void normalize() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void normalizeMatrix() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void normalizeRow(int row) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void normalizeColumn(int column) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public int cardinality() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	public String printMatrixInfo() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public String printMatrix() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public DoubleMatrix2D getColtMatrix() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
 	public static double[][] multiplyByMatrix(double[][] m1, double[][] m2) {
         int m1ColLength = m1[0].length; // m1 columns length
         int m2RowLength = m2.length;    // m2 rows length
@@ -299,27 +125,45 @@ public class CalculationMatrix implements Matrix{
 	}
 	
 	
-	public void eigenAnalysis(){
+	public double[][] eigenAnalysis(){
 		ComputationMatrix computationMatrix=new ComputationMatrix(getGowernsMatrix());
 		double eigenvector[][]=computationMatrix.eigenVectors();
-		double eigenvalues[]=computationMatrix.eigenValuesAll();
+		double eigenvalues[]=computationMatrix.eigenValuesAll();		
 		double tolerance=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
 		
-		int count=0;//for set idx length 
+		int idx_size=0;//for set idx length 
 		double tempeigen[]=new double[eigenvalues.length];
 		for(int i=0;i<eigenvalues.length;i++){
 			if(Math.abs(eigenvalues[i])>tolerance){
 				tempeigen[i]=1;
-				count++;
+				idx_size++;
 			}
 		}
+		
 		//calculate idx value from eigen values
-		double idx[]=new double[count];
-		for(int i=0;i<tempeigen.length;i++){
-			if(tempeigen[i]!=0){
-				idx[i]=i+1;
-			}}
-		
-		
+		double idx[]=matrixReverse(tempeigen);
+		int count=1;
+		//double idx[]=new double[idx_size];
+		for(int i=0;i<idx.length;i++){
+			if(idx[i]!=0){
+				idx[i]=count;
+			}
+			count++;
+		}	
+		//discard eigen values
+		double reverseeigen[]=new double[eigenvalues.length];
+		int j=0;
+		for(int i=eigenvalues.length-1;i>=0;i--){
+			reverseeigen[j]=eigenvalues[i];
+			j++;
+		}
+		double temp_reverseeigen[]=new double[idx.length];
+		for(int i=0;i<reverseeigen.length;i++){
+			for(j=0;j<idx.length;j++){
+		if(i+1==idx[j]){
+			temp_reverseeigen[j]=reverseeigen[i];
+		}
+			}}		
+		return eigenvector;
 	}
 }

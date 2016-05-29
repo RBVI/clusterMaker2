@@ -23,16 +23,23 @@ public class CalculationMatrixTest {
 	RunPCoA runpcoa=new RunPCoA(3, 3, inputdata);
 	
 	double gowermatrix[][]=runpcoa.getCalculationMatrix().getGowernsMatrix();
-	
+	double eigen_vals[][]=runpcoa.getCalculationMatrix().eigenAnalysis();
 	double outputeigenvectors[][]={{0.3280,0.5910,0.7370},{0.5910,-0.7370,0.3280},{0.7370,0.3280,-0.5910}};
 	double outputeigenvalues[][]={{1,1,1},{0,0,0},{0,0,0}};
 	ComputationMatrix computationmatrix=new ComputationMatrix(inputdata);
 	double compval[][]=computationmatrix.eigenVectors();
 	
 	double idxvalues[]={1,2,3};
+	
+	
 	@Test
 	public void test() {
-		
+		for(int i=0;i<eigen_vals.length;i++){
+			for(int j=0;j<gowermatrix.length;j++){
+				System.out.print(eigen_vals[i][j]+" ");
+			}
+			System.out.println("");
+		}
 		//Assert.assertEquals(runpcoa.getCalculationMatrix().isSymmetrical(),true );//symmetric testing
 		//assertArrayEquals(inputdata, outputdata);//transpose testing
 		//assertArrayEquals(outputdatagower, gowermatrix);//goerns matrix testing
