@@ -3,6 +3,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.advanced;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Rank;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ClusterUtils;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
@@ -58,7 +59,19 @@ public class RandomWalkRanking extends AbstractTask implements Rank {
 
     @Override
     public void run(TaskMonitor taskMonitor) {
+        taskMonitor.setProgress(0.0);
+        taskMonitor.setTitle("Random walking Ranking of clusters");
+        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Fetching clusters...");
+        taskMonitor.setProgress(0.1);
+        clusters = ClusterUtils.fetchClusters(network);
+        taskMonitor.setProgress(0.5);
 
+        nodeAttributes = context.getSelectedNodeAttributes();
+        edgeAttributes = context.getSelectedEdgeAttributes();
+
+        taskMonitor.setProgress(0.6);
+
+        // Continue here!!!
     }
 
     public String getClusterColumnName() {
