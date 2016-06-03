@@ -25,6 +25,7 @@ public class NodeCluster extends ArrayList<CyNode> {
 	static int clusterCount = 0;
 	static boolean hasScore = false;
 	protected double score = 0.0;
+	private HashMap<Long, Double> nodeScores;
 
 	private CyNetworkView view; // keeps track of layout so that layout process doesn't have to be repeated unnecessarily
 	private boolean disposed;
@@ -82,6 +83,16 @@ public class NodeCluster extends ArrayList<CyNode> {
 		for (Object i: this)
 			str += i.toString();
 		return str+")";
+	}
+
+	public void initSWRWRScores() {
+		nodeScores = new HashMap<>();
+		double defaultScore = 1 / super.size();
+		super.forEach(node -> nodeScores.put(node.getSUID(), defaultScore));
+	}
+
+	public Collection<Double> getNodeScores() {
+		return nodeScores.values();
 	}
 
     public static void setClusterRanks(List<NodeCluster> list) {

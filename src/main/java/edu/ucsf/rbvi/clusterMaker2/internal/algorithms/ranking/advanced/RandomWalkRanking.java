@@ -18,6 +18,7 @@ public class RandomWalkRanking extends AbstractTask implements Rank {
     private List<String> nodeAttributes;
     private List<String> edgeAttributes;
     private String clusterColumnName;
+    private int iterations = 5;
 
     public static final String SHORTNAME = "RWR";
     public static final String NAME = "RandomWalkRanking";
@@ -71,7 +72,27 @@ public class RandomWalkRanking extends AbstractTask implements Rank {
 
         taskMonitor.setProgress(0.6);
 
-        // Continue here!!!
+        assignStartValues(clusters);
+        for (int i = 0; i < iterations; i++) {
+            iterate(clusters);
+        }
+        summarize(clusters);
+
+    }
+
+    private void assignStartValues(List<NodeCluster> clusters) {
+        for (NodeCluster cluster : clusters) {
+            cluster.initSWRWRScores();
+        }
+    }
+
+    private void iterate(List<NodeCluster> clusters) {
+    }
+
+    private void summarize(List<NodeCluster> clusters) {
+        for (NodeCluster cluster : clusters) {
+            cluster.setClusterScore(cluster.getNodeScores().stream().reduce(0.0, Double::sum));
+        }
     }
 
     public String getClusterColumnName() {
