@@ -13,30 +13,28 @@ import org.cytoscape.work.Tunable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
+public class MultipleAttributeMultiplicative extends AbstractTask implements Rank {
     private List<NodeCluster> clusters;
     private ClusterManager manager;
     private List<String> nodeAttributes;
     private List<String> edgeAttributes;
     private String clusterColumnName;
     final public static String NAME = "Create rank from multiple nodes and edges (multiply sum)";
-    final public static String SHORTNAME = "MNEMrank";
+    final public static String SHORTNAME = "MAM";
 
     @Tunable(description = "Network", context = "nogui")
     public CyNetwork network;
 
     @ContainsTunables
-    public MNEMContext context;
+    public MAMContext context;
 
-    public MultipleNodeEdgeMultiplum(MNEMContext context, ClusterManager manager) {
+    public MultipleAttributeMultiplicative(MAMContext context, ClusterManager manager) {
         this.context = context;
         this.manager = manager;
 
         if (network == null) {
             network = this.manager.getNetwork();
         }
-
-        clusterColumnName = getClusterColumnName();
 
         this.context.setNetwork(network);
         this.context.updateContext();
@@ -66,6 +64,7 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
         clusters = ClusterUtils.fetchClusters(network);
         taskMonitor.setProgress(0.5);
 
+        clusterColumnName = getClusterColumnName();
         nodeAttributes = context.getSelectedNodeAttributes();
         edgeAttributes = context.getSelectedEdgeAttributes();
 
@@ -99,16 +98,12 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
         ClusterUtils.createNewSingleColumn(nodeTable, SHORTNAME, Double.class, false);
         ClusterUtils.createNewSingleColumn(edgeTable, SHORTNAME, Double.class, false);
 
-        // Create columns for the rank (calculated from the score)
-        ClusterUtils.createNewSingleColumn(nodeTable, SHORTNAME + "_rank", Double.class, false);
-        ClusterUtils.createNewSingleColumn(edgeTable, SHORTNAME + "_rank", Double.class, false);
-
         for (CyRow row : networkTable.getAllRows()) {
             row.set(ClusterManager.RANKING_ATTRIBUTE, SHORTNAME);
         }
 
-        ClusterUtils.setNodeTableColumnValues(nodeTable, clusters, SHORTNAME, SHORTNAME + "_rank");
-        ClusterUtils.setEdgeTableColumnValues(edgeTable, edges, clusters, SHORTNAME, SHORTNAME + "_rank");
+        ClusterUtils.setNodeTableColumnValues(nodeTable, clusters, SHORTNAME);
+        ClusterUtils.setEdgeTableColumnValues(edgeTable, edges, clusters, SHORTNAME);
     }
 
     private String getClusterColumnName() {
@@ -175,8 +170,12 @@ public class MultipleNodeEdgeMultiplum extends AbstractTask implements Rank {
                 cluster.setRankScore(1.0);
             }
             cluster.setRankScore(cluster.getRankScore() * (source.get(edgeAttr, Double.class, 0.0) + 1.0)); // assumes values between 0.0 and 1.0
-        } catch (Exception e) { // Probably not a double class in the edgeAttr column
-            e.printStackTrace(); // just print the trace and continue
+        } catch (ClassCastException cce) { //
+            try {
+                cluster.setRankScore(cluster.getRankScore() * (source.get(edgeAttr, Integer.class, 0) + 1));
+            } catch (Exception e) { // Not a number type!
+                e.printStackTrace();
+            }
         }
     }
 

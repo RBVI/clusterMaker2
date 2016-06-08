@@ -4,22 +4,22 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.RankFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class MNEATaskFactory implements RankFactory {
+public class MAMTaskFactory implements RankFactory {
 
-    public MNEAContext context;
+    public MAMContext context;
     public ClusterManager manager;
 
-    public MNEATaskFactory(ClusterManager manager) {
+    public MAMTaskFactory(ClusterManager manager) {
         this.manager = manager;
-        context = new MNEAContext(manager);
+        context = new MAMContext(manager);
     }
 
     public String getShortName() {
-        return MultipleNodeEdgeAdditive.SHORTNAME;
+        return MultipleAttributeMultiplicative.SHORTNAME;
     }
 
     public String getName() {
-        return MultipleNodeEdgeAdditive.NAME;
+        return MultipleAttributeMultiplicative.NAME;
     }
 
     public Object getContext() {
@@ -27,7 +27,7 @@ public class MNEATaskFactory implements RankFactory {
     }
 
     public TaskIterator createTaskIterator() {
-        return new TaskIterator(new MultipleNodeEdgeAdditive(context, manager));
+        return new TaskIterator(new MultipleAttributeMultiplicative(context, manager));
     }
 
     public boolean isReady() {

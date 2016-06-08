@@ -7,8 +7,9 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListMultipleSelection;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class MNEAContext {
+public class MAAContext {
     private CyNetwork network;
     public ClusterManager manager;
 
@@ -18,7 +19,7 @@ public class MNEAContext {
     @Tunable(description = "Edge attributes", groups = "Biomarker information", gravity = 10.0)
     public ListMultipleSelection<String> edgeAttributes;
 
-    public MNEAContext(ClusterManager manager) {
+    public MAAContext(ClusterManager manager) {
         this.manager = manager;
         network = this.manager.getNetwork();
         updateContext();
@@ -30,19 +31,31 @@ public class MNEAContext {
     }
 
     private List<String> updateEdgeAttributes() {
+        List<String> edgeAttrs;
         if (this.network != null) {
-            return ModelUtils.updateEdgeMultiAttributeList(network, null).getPossibleValues();
+            edgeAttrs = ModelUtils.updateEdgeMultiAttributeList(network, null).getPossibleValues()
+                    .stream()
+                    .filter(attribute -> !attribute.equals(getClusterColumnName()))
+                    .collect(Collectors.toList());
+        } else {
+            edgeAttrs = new ListMultipleSelection<>(ModelUtils.NONEATTRIBUTE).getPossibleValues();
         }
 
-        return new ListMultipleSelection<>(ModelUtils.NONEATTRIBUTE).getPossibleValues();
+        return edgeAttrs;
     }
 
     private List<String> updateNodeAttributes() {
+        List<String> nodeAttrs;
         if (this.network != null) {
-            return ModelUtils.updateNodeAttributeList(network, null).getPossibleValues();
+            nodeAttrs = ModelUtils.updateNodeAttributeList(network, null).getPossibleValues()
+                    .stream()
+                    .filter(attribute -> !attribute.equals(getClusterColumnName()))
+                    .collect(Collectors.toList());
+        } else {
+            nodeAttrs = new ListMultipleSelection<>(ModelUtils.NONEATTRIBUTE).getPossibleValues();
         }
 
-        return new ListMultipleSelection<>(ModelUtils.NONEATTRIBUTE).getPossibleValues();
+        return nodeAttrs;
     }
 
     public List<String> getSelectedNodeAttributes() {
@@ -51,6 +64,10 @@ public class MNEAContext {
 
     public List<String> getSelectedEdgeAttributes() {
         return edgeAttributes.getSelectedValues();
+    }
+
+    private String getClusterColumnName() {
+        return this.network.getRow(network).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class, "");
     }
 
     public void setNetwork(CyNetwork network) {

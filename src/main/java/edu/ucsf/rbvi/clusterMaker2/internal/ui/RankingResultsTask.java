@@ -109,8 +109,8 @@ public class RankingResultsTask extends AbstractTask implements ClusterViz, Clus
 
         double belowAverage = NodeCluster.getAverageRankScore(clusters) / 2.0;
         double overAverage = NodeCluster.getHighestRankScore(clusters) / 2.0;
-        BoundaryRangeValues<Paint> range1 = new BoundaryRangeValues<>(Color.BLUE, Color.CYAN, Color.GREEN);
-        BoundaryRangeValues<Paint> range2 = new BoundaryRangeValues<>(Color.YELLOW, Color.ORANGE, Color.RED);
+        BoundaryRangeValues<Paint> range1 = new BoundaryRangeValues<>(Color.LIGHT_GRAY, Color.LIGHT_GRAY, Color.BLUE);
+        BoundaryRangeValues<Paint> range2 = new BoundaryRangeValues<>(Color.BLUE, Color.ORANGE, Color.ORANGE);
 
         mapping.addPoint(belowAverage, range1);
         mapping.addPoint(overAverage, range2);

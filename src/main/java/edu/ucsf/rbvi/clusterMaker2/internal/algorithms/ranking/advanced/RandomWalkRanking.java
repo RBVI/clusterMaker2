@@ -37,8 +37,6 @@ public class RandomWalkRanking extends AbstractTask implements Rank {
             network = this.manager.getNetwork();
         }
 
-        clusterColumnName = getClusterColumnName();
-
         this.context.setNetwork(network);
         this.context.updateContext();;
     }
@@ -67,6 +65,7 @@ public class RandomWalkRanking extends AbstractTask implements Rank {
         clusters = ClusterUtils.fetchClusters(network);
         taskMonitor.setProgress(0.5);
 
+        clusterColumnName = getClusterColumnName();
         nodeAttributes = context.getSelectedNodeAttributes();
         edgeAttributes = context.getSelectedEdgeAttributes();
 
