@@ -107,10 +107,17 @@ public class RankingResultsTask extends AbstractTask implements ClusterViz, Clus
         ContinuousMapping mapping = (ContinuousMapping) vmff.createVisualMappingFunction(rankingAlgorithmName, Double.class,
                 BasicVisualLexicon.NODE_FILL_COLOR);
 
+        Color color1 = new Color(170, 221, 221);
+        Color color2 = new Color(212, 229, 212);
+        Color color3 = new Color(255, 238, 204);
+        Color color4 = new Color(255, 195, 178);
+        Color color5 = new Color(255, 153, 153);
+
         double belowAverage = NodeCluster.getAverageRankScore(clusters) / 2.0;
         double overAverage = NodeCluster.getHighestRankScore(clusters) / 2.0;
-        BoundaryRangeValues<Paint> range1 = new BoundaryRangeValues<>(Color.LIGHT_GRAY, Color.LIGHT_GRAY, Color.BLUE);
-        BoundaryRangeValues<Paint> range2 = new BoundaryRangeValues<>(Color.BLUE, Color.ORANGE, Color.ORANGE);
+        BoundaryRangeValues<Paint> range1 = new BoundaryRangeValues<>(color1, color1, color2);
+        BoundaryRangeValues<Paint> range2 = new BoundaryRangeValues<>(color3, color4, color5);
+
 
         mapping.addPoint(belowAverage, range1);
         mapping.addPoint(overAverage, range2);
