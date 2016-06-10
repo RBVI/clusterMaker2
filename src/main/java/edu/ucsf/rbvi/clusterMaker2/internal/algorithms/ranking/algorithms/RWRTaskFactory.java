@@ -1,35 +1,40 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.advanced;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.algorithms;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.RankFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class MAMTaskFactory implements RankFactory {
+public class RWRTaskFactory implements RankFactory {
 
-    public MAMContext context;
+    public RWRContext context;
     public ClusterManager manager;
 
-    public MAMTaskFactory(ClusterManager manager) {
+    public RWRTaskFactory(ClusterManager manager) {
         this.manager = manager;
-        context = new MAMContext(manager);
+        context = new RWRContext(manager);
     }
 
+    @Override
     public String getShortName() {
-        return MultipleAttributeMultiplicative.SHORTNAME;
+        return RandomWalkRanking.SHORTNAME;
     }
 
+    @Override
     public String getName() {
-        return MultipleAttributeMultiplicative.NAME;
+        return RandomWalkRanking.NAME;
     }
 
+    @Override
     public Object getContext() {
         return context;
     }
 
+    @Override
     public TaskIterator createTaskIterator() {
-        return new TaskIterator(new MultipleAttributeMultiplicative(context, manager));
+        return new TaskIterator(new RandomWalkRanking(context, manager));
     }
 
+    @Override
     public boolean isReady() {
         return true;
     }

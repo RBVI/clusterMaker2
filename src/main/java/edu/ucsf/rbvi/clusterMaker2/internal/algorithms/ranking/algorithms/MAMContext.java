@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.advanced;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.algorithms;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
@@ -9,7 +9,7 @@ import org.cytoscape.work.util.ListMultipleSelection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MAAContext {
+public class MAMContext {
     private CyNetwork network;
     public ClusterManager manager;
 
@@ -19,7 +19,7 @@ public class MAAContext {
     @Tunable(description = "Edge attributes", groups = "Biomarker information", gravity = 10.0)
     public ListMultipleSelection<String> edgeAttributes;
 
-    public MAAContext(ClusterManager manager) {
+    public MAMContext(ClusterManager manager) {
         this.manager = manager;
         network = this.manager.getNetwork();
         updateContext();
@@ -78,3 +78,4 @@ public class MAAContext {
         return network;
     }
 }
+
