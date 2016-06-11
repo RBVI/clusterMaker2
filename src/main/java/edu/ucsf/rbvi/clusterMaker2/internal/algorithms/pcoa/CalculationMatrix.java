@@ -35,6 +35,16 @@ public class CalculationMatrix{
 				this.data[row][column] = inputdata[row][column];
 			}
 		}
+		
+		if(isSymmetrical()){
+	
+			getGowernsMatrix();
+			eigenAnalysis();
+			getVarianceExplained();
+			negativeEigenAnalysis();
+			scaleEigenVectors();
+		}
+	
 	}
 	
 
@@ -189,7 +199,7 @@ public class CalculationMatrix{
 	}
 	
 	
-	public double[][] eigenAnalysis(){
+	public double[] eigenAnalysis(){
 		ComputationMatrix computationMatrix=new ComputationMatrix(getGowernsMatrix());
 		double eigenvector[][]=computationMatrix.eigenVectors();
 		double eigenvalues[]=computationMatrix.eigenValuesAll();		
@@ -275,7 +285,7 @@ public class CalculationMatrix{
 			}
 		}}
 	}
-		return eigenvectors;
+		return eigen_values;
 	}
 	
 	//get Variance explained
@@ -353,6 +363,7 @@ public class CalculationMatrix{
 	// handle negative eigen values
 	public double[][] negativeEigenAnalysis(){
 		
+		//neg=0;//for test
 		double negSum=0;
 		for(int i=0;i<eigen_values.length;i++){
 			if(eigen_values[i]<0){
@@ -384,7 +395,8 @@ public class CalculationMatrix{
 			 scores=calc.getScores();
 
 			 
-		}else if(negSum>0 && neg==1){
+		}else if(negSum>0 && neg<1){//discard negative eigen values
+			
 			int count=0;
 			for(int i=0;i<eigen_values.length;i++){
 				if(eigen_values[i]<0){
@@ -400,7 +412,7 @@ public class CalculationMatrix{
 					}}}
 			
 			for(int i=0;i<combine_array.length;i++){
-				for(int j=0;j<combine_array.length;j++){
+				for(int j=0;j<2;j++){//combine array column length is 2. Because it declares using two column matrixes
 					if(i+1==count){
 						combine_array[i][j]=0;
 					}}}
@@ -409,11 +421,11 @@ public class CalculationMatrix{
 	}
 	
 	//scale eigen vectors
-	public void scaleEigenVectors(){
+	public double[][] scaleEigenVectors(){
 		double temp_eigen[][]=new double[eigen_values.length][eigen_values.length];
 		double multi_matrix[][];
 		
-		if(scale>0){
+		if(scale<1){//default value
 			
 			for(int i=0;i<eigen_values.length;i++){
 				for(int j=0;j<eigen_values.length;j++){
@@ -432,8 +444,8 @@ public class CalculationMatrix{
 				}
 			}
 			scores=multiplyByMatrix(eigenvectors, multi_matrix);
-			}else{
 				scores=eigenvectors;
 			}
+	return scores;
 	}
 }
