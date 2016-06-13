@@ -11,11 +11,15 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 import cern.colt.matrix.tdouble.DoubleFactory2D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
+import cern.colt.matrix.tdouble.algo.decomposition.DenseDoubleEigenvalueDecomposition;
+import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
+import cern.colt.matrix.tdouble.algo.DoubleStatistic;
 import cern.colt.matrix.tdouble.algo.SmpDoubleBlas;
 
 public class SimpleMatrix implements Matrix {
 	protected Double[][] data;
 	protected SmpDoubleBlas blas;
+	private DenseDoubleEigenvalueDecomposition decomp = null;
 	protected int[] index;
 	protected int nRows;
 	protected int nColumns;
@@ -25,6 +29,7 @@ public class SimpleMatrix implements Matrix {
 	protected double minValue = Double.MAX_VALUE;
 	protected boolean symmetric = false;
 	protected boolean transposed = false;
+	private static double EPSILON=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
 	final Logger logger = Logger.getLogger(CyUserLog.NAME);
 
 	public SimpleMatrix() {
@@ -646,10 +651,87 @@ public class SimpleMatrix implements Matrix {
 		updateMinMax();
 	}
 
+	public void centralizeColumns() {
+		for(int i=0;i<nColumns;i++){
+			// Replace with parallel function?
+			double mean = 0.0;
+			for(int j=0;j<nRows; j++){
+				double cell = this.getValue(j, i);
+				if (!Double.isNaN(cell))
+					mean += cell;
+			}
+			mean /= nRows;
+			for(int j=0;j<nRows;j++){
+				double cell = this.getValue(j, i);
+				if (!Double.isNaN(cell))
+					this.setValue(j, i, cell - mean);
+				else
+					this.setValue(i, j, 0.0d);
+			}
+		}
+	}
+
+	public void centralizeRows() {
+		for(int i=0;i<nRows;i++){
+			// Replace with parallel function?
+			double mean = 0.0;
+			for(int j=0;j<nColumns; j++){
+				double cell = this.getValue(i, j);
+				if (!Double.isNaN(cell))
+					mean += cell;
+			}
+			mean /= nColumns;
+			for(int j=0;j<nColumns;j++){
+				double cell = this.getValue(i, j);
+				if (!Double.isNaN(cell))
+					this.setValue(i, j, cell - mean);
+				else
+					this.setValue(i, j, 0.0d);
+			}
+		}
+	}
+
 	public DoubleMatrix2D getColtMatrix() {
 		DoubleMatrix2D mat = DoubleFactory2D.dense.make(nRows, nColumns);
 		mat.assign(toArray());
 		return mat;
+	}
+
+	public Matrix multiplyMatrix(Matrix b) {
+		return mult(b);
+	}
+
+	public Matrix covariance() {
+		DoubleMatrix2D matrix2D = DoubleStatistic.covariance(getColtMatrix());
+		return new SimpleMatrix(this, matrix2D.toArray());
+	}
+
+	public double[] eigenValues(boolean nonZero){
+		if (decomp == null)
+			decomp = new DenseDoubleEigenvalueDecomposition(getColtMatrix());
+
+		double[] allValues = decomp.getRealEigenvalues().toArray();
+		if (!nonZero)
+			return allValues;
+
+		int size = 0;
+		for (double d: allValues) {
+			if (Math.abs(d) > EPSILON)size++;
+		}
+		double [] nonZ = new double[size];
+		int index = 0;
+		for (double d: allValues) {
+			if (Math.abs(d) > EPSILON)
+				nonZ[index++] = d;
+		}
+
+		return nonZ;
+	}
+
+	public double[][] eigenVectors(){
+		if (decomp == null)
+			decomp = new DenseDoubleEigenvalueDecomposition(getColtMatrix());
+		return decomp.getV().toArray();
 	}
 
 	public Matrix mult(Matrix b) {

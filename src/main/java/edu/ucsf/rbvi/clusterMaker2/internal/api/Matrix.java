@@ -276,11 +276,53 @@ public interface Matrix {
 	public void normalizeColumn(int column);
 
 	/**
+	 * Centralize the rows of a matrix around the mean of the row
+	 *
+	 */
+	public void centralizeRows();
+
+	/**
+	 * Centralize the column of a matrix around the mean of the column
+	 *
+	 */
+	public void centralizeColumns();
+
+	/**
 	 * Return the cardinality (number of non-null values) of this matrix
 	 *
 	 * @return cardinality
 	 */
 	public int cardinality();
+
+	/**
+	 * Multiply two matrices together
+	 *
+	 * @param the matrix to multiple with our matrix
+	 * @return the multiplied matrix
+	 */
+	public Matrix multiplyMatrix(Matrix matrix);
+
+	/**
+	 * Return the covariance of a matrix
+	 *
+	 * @return the covariance of the matrix
+	 */
+	public Matrix covariance();
+
+	/**
+	 * Return the eigenvalues of a matrix
+	 *
+	 * @param nonZero if true, only return the non-zero eigenvalues
+	 * @return the eigenvalues of the matrix
+	 */
+	public double[] eigenValues(boolean nonZero);
+
+	/**
+	 * Return the eigenvectors of a matrix
+	 *
+	 * @return the eigenvectors of the matrix
+	 */
+	public double[][] eigenVectors();
 
 	/**
 	 * Return some information about the matrix

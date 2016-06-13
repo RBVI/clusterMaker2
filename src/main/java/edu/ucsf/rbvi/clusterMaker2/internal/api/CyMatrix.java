@@ -113,4 +113,13 @@ public interface CyMatrix extends Matrix {
 	 * @return deep copy of the matrix
 	 */
 	public CyMatrix copy();
+
+	/**
+	 * Return a copy of this matrix, but replace the data with a different
+	 * Matrix
+	 *
+	 * @param matrix the data matrix to insert
+	 * @return new CyMatrix with new underlying data
+	 */
+	public CyMatrix copy(Matrix matrix);
 }

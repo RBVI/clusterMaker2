@@ -169,6 +169,34 @@ public class CyColtMatrix extends ColtMatrix implements CyMatrix {
 	}
 
 	/**
+	 * Return a copy of this matrix with the data replaced by the
+	 * argument
+	 *
+	 * @param matrix the data matrix to insert
+	 * @return new CyMatrix with new underlying data
+	 */
+	public CyMatrix copy(Matrix matrix) {
+		ColtMatrix cMatrix;
+		if (matrix instanceof SimpleMatrix) {
+			cMatrix = new ColtMatrix((SimpleMatrix)matrix);
+		} else {
+			cMatrix = (ColtMatrix)matrix;
+		}
+		CyColtMatrix newMatrix = new CyColtMatrix(this.network, nRows, nColumns);
+		newMatrix.data = cMatrix.data;
+		newMatrix.transposed = cMatrix.transposed;
+		newMatrix.symmetric = cMatrix.symmetric;
+		newMatrix.minValue = cMatrix.minValue;
+		newMatrix.maxValue = cMatrix.maxValue;
+		newMatrix.rowLabels = Arrays.copyOf(cMatrix.rowLabels, cMatrix.rowLabels.length);
+		newMatrix.columnLabels = Arrays.copyOf(cMatrix.columnLabels, cMatrix.columnLabels.length);
+		newMatrix.index = Arrays.copyOf(cMatrix.index, cMatrix.index.length);
+		newMatrix.rowNodes = Arrays.copyOf(rowNodes, rowNodes.length);
+		newMatrix.columnNodes = Arrays.copyOf(columnNodes, columnNodes.length);
+		return newMatrix;
+	}
+
+	/**
 	 * Return a copy of this matrix
 	 *
 	 * @return deep copy of the matrix

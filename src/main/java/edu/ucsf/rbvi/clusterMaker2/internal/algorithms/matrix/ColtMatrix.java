@@ -9,7 +9,9 @@ import org.apache.log4j.Logger;
 import cern.colt.function.tdouble.IntIntDoubleFunction;
 import cern.colt.matrix.tdouble.DoubleFactory2D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
+import cern.colt.matrix.tdouble.algo.decomposition.DenseDoubleEigenvalueDecomposition;
 import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
+import cern.colt.matrix.tdouble.algo.DoubleStatistic;
 import cern.colt.matrix.tdouble.algo.SmpDoubleBlas;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
@@ -27,6 +29,8 @@ public class ColtMatrix implements Matrix {
 	protected double minValue = Double.MAX_VALUE;
 	protected boolean symmetric = false;
 	protected boolean transposed = false;
+	private static double EPSILON=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
+	private DenseDoubleEigenvalueDecomposition decomp = null;
 	final Logger logger = Logger.getLogger(CyUserLog.NAME);
 
 	public ColtMatrix() {
@@ -74,7 +78,7 @@ public class ColtMatrix implements Matrix {
 		maxValue = mat.maxValue;
 		index = Arrays.copyOf(mat.index, mat.index.length);
 	}
-	
+
 	/**
 	 * Return the number of rows in this matrix.
 	 *
@@ -540,6 +544,83 @@ public class ColtMatrix implements Matrix {
 		data.viewColumn(column).normalize();
 	}
 
+	public void centralizeColumns() {
+		for(int i=0;i<nColumns;i++){
+			// Replace with parallel function?
+			double mean = 0.0;
+			for(int j=0;j<nRows; j++){
+				double cell = this.getValue(j, i);
+				if (!Double.isNaN(cell))
+					mean += cell;
+			}
+			mean /= nRows;
+			for(int j=0;j<nRows;j++){
+				double cell = this.getValue(j, i);
+				if (!Double.isNaN(cell))
+					this.setValue(j, i, cell - mean);
+				else
+					this.setValue(i, j, 0.0d);
+			}
+		}
+	}
+
+	public void centralizeRows() {
+		for(int i=0;i<nRows;i++){
+			// Replace with parallel function?
+			double mean = 0.0;
+			for(int j=0;j<nColumns; j++){
+				double cell = this.getValue(i, j);
+				if (!Double.isNaN(cell))
+					mean += cell;
+			}
+			mean /= nColumns;
+			for(int j=0;j<nColumns;j++){
+				double cell = this.getValue(i, j);
+				if (!Double.isNaN(cell))
+					this.setValue(i, j, cell - mean);
+				else
+					this.setValue(i, j, 0.0d);
+			}
+		}
+	}
+
+	public Matrix multiplyMatrix(Matrix matrix) {
+		return mult(matrix);
+	}
+
+	public Matrix covariance() {
+		DoubleMatrix2D matrix2D = DoubleStatistic.covariance(data);
+		return new ColtMatrix(this, matrix2D);
+	}
+
+	public double[] eigenValues(boolean nonZero){
+		if (decomp == null)
+			decomp = new DenseDoubleEigenvalueDecomposition(data);
+
+		double[] allValues = decomp.getRealEigenvalues().toArray();
+		if (!nonZero)
+			return allValues;
+
+		int size = 0;
+		for (double d: allValues) {
+			if (Math.abs(d) > EPSILON)size++;
+		}
+		double [] nonZ = new double[size];
+		int index = 0;
+		for (double d: allValues) {
+			if (Math.abs(d) > EPSILON)
+				nonZ[index++] = d;
+		}
+
+		return nonZ;
+	}
+
+	public double[][] eigenVectors(){
+		if (decomp == null)
+			decomp = new DenseDoubleEigenvalueDecomposition(data);
+		return decomp.getV().toArray();
+	}
+
 	public DoubleMatrix2D getColtMatrix() {
 		return data;
 	}
@@ -591,6 +672,22 @@ public class ColtMatrix implements Matrix {
 			sb.append("\n");
 		} 
 		return sb.toString();
+	}
+
+	public SimpleMatrix getSimpleMatrix() {
+		SimpleMatrix sm = new SimpleMatrix(nRows, nColumns);
+		double[][] inputData = toArray();
+		for (int row = 0; row < nRows; row++) {
+			for (int column = 0; column < nColumns; column++) {
+				sm.data[row][column] = inputData[row][column];
+			}
+		}
+		sm.transposed = this.transposed;
+		sm.symmetric = this.symmetric;
+		sm.minValue = this.minValue;
+		sm.maxValue = this.maxValue;
+		sm.index = Arrays.copyOf(this.index, this.index.length);
+		return sm;
 	}
 
 	private void updateMinMax() {

@@ -180,6 +180,34 @@ public class CySimpleMatrix extends SimpleMatrix implements CyMatrix {
 		return new CySimpleMatrix(this);
 	}
 
+	/**
+	 * Return a copy of this matrix with the data replaced by the
+	 * argument
+	 *
+	 * @param matrix the data matrix to insert
+	 * @return new CyMatrix with new underlying data
+	 */
+	public CyMatrix copy(Matrix matrix) {
+		SimpleMatrix sMatrix;
+		if (matrix instanceof ColtMatrix) {
+			sMatrix = ((ColtMatrix)matrix).getSimpleMatrix();
+		} else {
+			sMatrix = (SimpleMatrix)matrix;
+		}
+		CySimpleMatrix newMatrix = new CySimpleMatrix(this.network, nRows, nColumns);
+		newMatrix.data = sMatrix.data;
+		newMatrix.transposed = sMatrix.transposed;
+		newMatrix.symmetric = sMatrix.symmetric;
+		newMatrix.minValue = sMatrix.minValue;
+		newMatrix.maxValue = sMatrix.maxValue;
+		newMatrix.rowLabels = Arrays.copyOf(sMatrix.rowLabels, sMatrix.rowLabels.length);
+		newMatrix.columnLabels = Arrays.copyOf(sMatrix.columnLabels, sMatrix.columnLabels.length);
+		newMatrix.index = Arrays.copyOf(sMatrix.index, sMatrix.index.length);
+		newMatrix.rowNodes = Arrays.copyOf(rowNodes, rowNodes.length);
+		newMatrix.columnNodes = Arrays.copyOf(columnNodes, columnNodes.length);
+		return newMatrix;
+	}
+
 	/*
 	public CyMatrix convertToLargeMatrix() {
 		return new CyLargeMatrix(this);
