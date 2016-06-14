@@ -31,6 +31,7 @@ public class PRTaskFactory implements RankFactory{
 
     @Override
     public TaskIterator createTaskIterator() {
+        System.out.println("YOLOBAGGINS HERE WE GO AGAIN");
         return new TaskIterator(new PageRank(context, manager));
     }
 
