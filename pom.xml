@@ -46,7 +46,14 @@
 						<Import-Package>*;resolution:=optional</Import-Package>
 						<Embed-Dependency>
 							parallelcolt;scope=compile|runtime,
-							csparsej;scope=compile|runtime
+							csparsej;scope=compile|runtime,
+							jung-api;scope=compile|runtime,
+							jung-graph-impl;scope=compile|runtime,
+							jung-algorithms;scope=compile|runtime,
+							swingx;scope=compile|runtime,
+							freehep-graphicsio-svg;scope=compile|runtime,
+							freehep-graphicsio-pdf;scope=compile|runtime,
+							freehep-graphicsio-ps;scope=compile|runtime
 						</Embed-Dependency>
 						<Embed-Transitive>true</Embed-Transitive>
 					</instructions>
@@ -211,5 +218,10 @@
 			<artifactId>jung-algorithms</artifactId>
 			<version>2.1</version>
 		</dependency>
-    </dependencies>
+		<dependency>
+			<groupId>net.sf.jung</groupId>
+			<artifactId>jung-api</artifactId>
+			<version>2.1</version>
+		</dependency>
+	</dependencies>
 </project>
