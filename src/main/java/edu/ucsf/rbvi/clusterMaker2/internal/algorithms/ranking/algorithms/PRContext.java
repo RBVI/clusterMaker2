@@ -13,11 +13,14 @@ public class PRContext {
     private CyNetwork network;
     public ClusterManager manager;
 
-    @Tunable(description = "Node attributes", groups = "Biomarker information", gravity = 1.0)
+    @Tunable(description = "Node attributes", groups = "Biomarker information", gravity = 10.0)
     public ListMultipleSelection<String> nodeAttributes;
 
-    @Tunable(description = "Edge attributes", groups = "Biomarker information", gravity = 10.0)
+    @Tunable(description = "Edge attributes", groups = "Biomarker information", gravity = 20.0)
     public ListMultipleSelection<String> edgeAttributes;
+
+    @Tunable(description = "Alpha value",groups= "PageRank factors",gravity=1.0)
+    public double alpha = 0.1;
 
     public PRContext(ClusterManager manager) {
         this.manager = manager;
@@ -76,5 +79,9 @@ public class PRContext {
 
     public CyNetwork getNetwork() {
         return network;
+    }
+
+    public double getAlpha() {
+        return alpha;
     }
 }
