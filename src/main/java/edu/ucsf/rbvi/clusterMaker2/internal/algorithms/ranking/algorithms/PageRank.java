@@ -106,13 +106,10 @@ public class PageRank extends AbstractTask implements Rank {
 
         for (PRNode node : graph.getVertices()) {
             node.setPRScore(pageRank.getVertexScore(node));
-            System.out.println(node.getPRScore());
 
             for (NodeCluster cluster : clusters) {
                 if (cluster.getNodeScores().containsKey(node.getCyNode().getSUID())) {
-                    double oldscore = cluster.getNodeScores().get(node.getCyNode().getSUID());
                     cluster.increaseRankScore(node.getPRScore());
-                    System.out.println("Increasing score from: " + oldscore + " to : " + cluster.getNodeScores().get(node.getCyNode().getSUID()));
                 }
             }
         }
