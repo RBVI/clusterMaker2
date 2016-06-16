@@ -25,12 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class PageRank extends AbstractTask implements Rank {
-    private PageRankWithPriors<PRNode, PREdge> pageRank;
-    private List<NodeCluster> clusters;
     private ClusterManager manager;
-    private List<String> nodeAttributes;
-    private List<String> edgeAttributes;
-    private String clusterColumnName;
     final public static String NAME = "Create rank from the Page Rank algorithm with priors";
     final public static String SHORTNAME = "PRP";
 
@@ -73,14 +68,56 @@ public class PageRank extends AbstractTask implements Rank {
         taskMonitor.setTitle("PageRank with Priors ranking of clusters");
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Fetching clusters...");
         taskMonitor.setProgress(0.1);
-        clusters = ClusterUtils.fetchClusters(network);
+        List<NodeCluster> clusters = ClusterUtils.fetchClusters(network);
         taskMonitor.setProgress(0.5);
 
-        clusterColumnName = getClusterColumnName();
-        nodeAttributes = context.getSelectedNodeAttributes();
-        edgeAttributes = context.getSelectedEdgeAttributes();
+        List<String> nodeAttributes = context.getSelectedNodeAttributes();
+        List<String> edgeAttributes = context.getSelectedEdgeAttributes();
 
-        runner();
+        Hypergraph<PRNode, PREdge> graph = new DirectedSparseGraph<>();
+        HashMap<Long, PRNode> idToNode = new HashMap<>();
+        List<CyNode> nodeList = network.getNodeList();
+        List<CyEdge> edgeList = network.getEdgeList();
+        CyTable nodeTable = network.getDefaultNodeTable();
+        CyTable edgeTable = network.getDefaultEdgeTable();
+
+        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Setting node scores in clusters");
+
+        clusters.forEach(NodeCluster::initNodeScores);
+
+        for (CyNode node : nodeList) {
+            PRNode prNode = new PRNode(node);
+            insertNodeScore(prNode, nodeTable, nodeAttributes);
+            graph.addVertex(prNode);
+            idToNode.put(node.getSUID(), prNode);
+        }
+
+        for (CyEdge edge : edgeList) {
+            PRNode sourceNode = idToNode.get(edge.getSource().getSUID());
+            PRNode targetNode = idToNode.get(edge.getTarget().getSUID());
+            PREdge prEdge = new PREdge(edge);
+            insertEdgeScore(prEdge, edgeTable, edgeAttributes);
+            graph.addEdge(prEdge, new Pair<>(sourceNode, targetNode), EdgeType.DIRECTED);
+        }
+
+        PageRankWithPriors<PRNode, PREdge> pageRank = new PageRankWithPriors<>(graph, transformEdge(), transformNode(), 0.7d);
+        pageRank.setMaxIterations(1000);
+        pageRank.evaluate();
+
+        for (PRNode node : graph.getVertices()) {
+            node.setPRScore(pageRank.getVertexScore(node));
+            System.out.println(node.getPRScore());
+
+            for (NodeCluster cluster : clusters) {
+                if (cluster.getNodeScores().containsKey(node.getCyNode().getSUID())) {
+                    double oldscore = cluster.getNodeScores().get(node.getCyNode().getSUID());
+                    cluster.increaseRankScore(node.getPRScore());
+                    System.out.println("Increasing score from: " + oldscore + " to : " + cluster.getNodeScores().get(node.getCyNode().getSUID()));
+                }
+            }
+        }
+
+        ClusterUtils.insertResultsInColumns(network, clusters, SHORTNAME);
 
         taskMonitor.setProgress(0.6);
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Setting node scores in clusters");
@@ -93,37 +130,7 @@ public class PageRank extends AbstractTask implements Rank {
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Done...");
     }
 
-    private void runner() {
-        Hypergraph<PRNode, PREdge> graph = new DirectedSparseGraph<>();
-        HashMap<Long, PRNode> idToNode = new HashMap<>();
-        List<CyNode> nodeList = network.getNodeList();
-        List<CyEdge> edgeList = network.getEdgeList();
-        CyTable nodeTable = network.getDefaultNodeTable();
-        CyTable edgeTable = network.getDefaultEdgeTable();
-
-        for (CyNode node : nodeList) {
-            PRNode prNode = new PRNode(node);
-            setNodeScore(prNode, nodeTable);
-            graph.addVertex(prNode);
-            idToNode.put(node.getSUID(), prNode);
-        }
-
-        for (CyEdge edge : edgeList) {
-            PRNode sourceNode = idToNode.get(edge.getSource().getSUID());
-            PRNode targetNode = idToNode.get(edge.getTarget().getSUID());
-            PREdge prEdge = new PREdge(edge);
-            setEdgeScore(prEdge, edgeTable);
-            graph.addEdge(prEdge, new Pair<>(sourceNode, targetNode), EdgeType.DIRECTED);
-        }
-
-        System.out.println(graph);
-        pageRank = new PageRankWithPriors<>(graph, transformEdge(), transformNode(), 0.7d);
-        pageRank.setMaxIterations(15);
-        pageRank.evaluate();
-        pageRank.getVertexScore(null);
-    }
-
-    private void setNodeScore(PRNode prNode, CyTable nodeTable) {
+    private void insertNodeScore(PRNode prNode, CyTable nodeTable, List<String> nodeAttributes) {
         Double totalNodeScore = 0.0d;
 
         for (String nodeAttribute : nodeAttributes) {
@@ -132,7 +139,7 @@ public class PageRank extends AbstractTask implements Rank {
             try { // Double
                 singleAttributeScore = nodeTable.getRow(prNode.getCyNode().getSUID())
                         .get(nodeAttribute, Double.class, 0.0d);
-            } catch (NumberFormatException nfe) {
+            } catch (ClassCastException cce) {
                 try { // Integer
                     singleAttributeScore = nodeTable.getRow(prNode.getCyNode().getSUID())
                             .get(nodeAttribute, Integer.class, 0);
@@ -147,7 +154,7 @@ public class PageRank extends AbstractTask implements Rank {
         prNode.setScore(totalNodeScore);
     }
 
-    private void setEdgeScore(PREdge prEdge, CyTable edgeTable) {
+    private void insertEdgeScore(PREdge prEdge, CyTable edgeTable, List<String> edgeAttributes) {
         Double totalEdgeScore = 0.0d;
 
         for (String edgeAttribute : edgeAttributes) {
@@ -156,7 +163,7 @@ public class PageRank extends AbstractTask implements Rank {
             try { // Double
                 singleEdgeAttributeScore = edgeTable.getRow(prEdge.getCyEdge().getSUID())
                 .get(edgeAttribute, Double.class, 0.0d);
-            } catch (NumberFormatException nfe) {
+            } catch (ClassCastException cce) {
                 try { // Integer
                     singleEdgeAttributeScore = edgeTable.getRow(prEdge.getCyEdge().getSUID())
                             .get(edgeAttribute, Integer.class, 0);

@@ -5,6 +5,7 @@ import org.cytoscape.model.CyNode;
 public class PRNode {
     private CyNode node;
     private Double score;
+    private Double prScore;
 
     public PRNode(CyNode node) {
         this.node = node;
@@ -17,6 +18,14 @@ public class PRNode {
 
     public void setScore(Double score) {
         this.score = score;
+    }
+
+    public void setPRScore(Double score) {
+        this.prScore = score;
+    }
+
+    public Double getPRScore() {
+        return prScore;
     }
 
     public CyNode getCyNode() {

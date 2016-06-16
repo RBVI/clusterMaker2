@@ -40,12 +40,12 @@
 					<instructions>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
-						<Export-Package>!${bundle.namespace}.*</Export-Package>
-						<Private-Package>${bundle.namespace}.*</Private-Package>
+						<Export-Package>!${bundle.namespace}.*,*</Export-Package>
+						<Private-Package>${bundle.namespace}.*,*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
 						<Import-Package>*;resolution:=optional</Import-Package>
 						<Embed-Dependency>
-							parallelcolt;scope=compile|runtime,
+							<!--parallelcolt;scope=compile|runtime,
 							csparsej;scope=compile|runtime,
 							jung-api;scope=compile|runtime,
 							jung-graph-impl;scope=compile|runtime,
@@ -53,7 +53,8 @@
 							swingx;scope=compile|runtime,
 							freehep-graphicsio-svg;scope=compile|runtime,
 							freehep-graphicsio-pdf;scope=compile|runtime,
-							freehep-graphicsio-ps;scope=compile|runtime
+							freehep-graphicsio-ps;scope=compile|runtime-->
+							*
 						</Embed-Dependency>
 						<Embed-Transitive>true</Embed-Transitive>
 					</instructions>
@@ -208,6 +209,7 @@
 			<version>1.5.2</version>
 			<scope>provided</scope>
 		</dependency>
+		<!-- TODO: convert these three packages below to OSGi-bundles -->
         <dependency>
             <groupId>net.sf.jung</groupId>
             <artifactId>jung-graph-impl</artifactId>
