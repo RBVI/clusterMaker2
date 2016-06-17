@@ -101,7 +101,6 @@ public class PageRank extends AbstractTask implements Rank {
         }
 
         PageRankWithPriors<PRNode, PREdge> pageRank = new PageRankWithPriors<>(graph, transformEdge(), transformNode(), context.getAlpha());
-        System.out.println("ALPHA: " + context.getAlpha());
         pageRank.setMaxIterations(1000);
         pageRank.evaluate();
 

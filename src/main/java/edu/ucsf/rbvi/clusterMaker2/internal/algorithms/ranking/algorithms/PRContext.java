@@ -19,7 +19,7 @@ public class PRContext {
     @Tunable(description = "Edge attributes", groups = "Biomarker information", gravity = 20.0)
     public ListMultipleSelection<String> edgeAttributes;
 
-    @Tunable(description = "Alpha value",groups= "PageRank factors",gravity=1.0)
+    @Tunable(description = "Alpha value", groups = "PageRank factors", gravity = 1.0)
     public double alpha = 0.1;
 
     public PRContext(ClusterManager manager) {
