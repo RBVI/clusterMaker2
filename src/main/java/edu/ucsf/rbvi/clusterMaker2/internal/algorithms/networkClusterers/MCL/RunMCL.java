@@ -30,6 +30,7 @@ import org.cytoscape.work.TaskMonitor;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 import cern.colt.function.tdouble.IntIntDoubleFunction;
 import cern.colt.matrix.tdouble.DoubleFactory2D;
@@ -47,7 +48,8 @@ public class RunMCL {
 	protected int clusterCount = 0;
 	private boolean createMetaNodes = false;
 	private CyMatrix distanceMatrix = null;
-	private DoubleMatrix2D matrix = null;
+	private CyMatrix matrix = null;
+	// private DoubleMatrix2D matrix = null;
 	private List<CyNode> nodes = null;
 	private boolean debug = true;
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
@@ -57,11 +59,12 @@ public class RunMCL {
 	{
 			
 		this.distanceMatrix = dMat;
+		this.matrix = dMat.copy();
 		this.inflationParameter = inflationParameter;
 		this.number_iterations = num_iterations;
 		this.clusteringThresh = clusteringThresh;
 		this.maxResidual = maxResidual;
-		this.matrix = distanceMatrix.getColtMatrix();
+		// this.matrix = distanceMatrix.getColtMatrix();
 		nodes = distanceMatrix.getRowNodes();
 		if (maxThreads > 0)
 			nThreads = maxThreads;
@@ -91,14 +94,16 @@ public class RunMCL {
 
 		System.out.println("Debug = "+debug);
 		debugln("Initial matrix:");
-		printMatrixInfo(matrix);
+		matrix.printMatrixInfo();
+		// printMatrixInfo(matrix);
 		// printMatrix(matrix);
 
 		// Normalize
-		normalize(matrix, clusteringThresh, false);
+		normalize(matrix.getColtMatrix(), clusteringThresh, false);
 
 		debugln("Normalized matrix:");
-		printMatrixInfo(matrix);
+		matrix.printMatrixInfo();
+		// printMatrixInfo(matrix);
 		// printMatrix(matrix);
 
 		// logger.info("Calculating clusters");
@@ -113,15 +118,19 @@ public class RunMCL {
 				long t = System.currentTimeMillis();
 				monitor.setStatusMessage("Iteration: "+(i+1)+" expanding "); //monitor.setStatus();
 				debugln("Iteration: "+(i+1)+" expanding ");
-				printMatrixInfo(matrix);
+				matrix.printMatrixInfo();
+				Matrix multiMatrix = matrix.multiplyMatrix(matrix);
+				matrix = matrix.copy(multiMatrix);
+				/*
 				if (nThreads > 1) {
 					matrix = multiplyMatrix(matrix, matrix);
 				} else {
 					DoubleMatrix2D newMatrix = DoubleFactory2D.sparse.make(matrix.rows(), matrix.columns());
 					matrix = matrix.zMult(matrix, newMatrix);
 				}
+				*/
 				// Normalize
-				normalize(matrix, clusteringThresh, false);
+				normalize(matrix.getColtMatrix(), clusteringThresh, false);
 				monitor.showMessage(TaskMonitor.Level.INFO,"Expansion "+(i+1)+" took "+(System.currentTimeMillis()-t)+"ms");
 			}
 
@@ -129,21 +138,22 @@ public class RunMCL {
 			debugln("^ "+(i+1)+" after expansion");
 
 			// Inflate
+			DoubleMatrix2D m = matrix.getColtMatrix();
 			{
 				long t = System.currentTimeMillis();
 				monitor.setStatusMessage("Iteration: "+(i+1)+" inflating");	//monitor.setStatusMessage
 				debugln("Iteration: "+(i+1)+" inflating");
 				// printMatrixInfo(matrix);
-				matrix.forEachNonZero(myPow);
+				m.forEachNonZero(myPow);
 				// Normalize
-				normalize(matrix, clusteringThresh, true);
+				normalize(matrix.getColtMatrix(), clusteringThresh, true);
 			}
 
 			// printMatrix(matrix);
 			debugln("^ "+(i+1)+" after inflation");
 
-			matrix.trimToSize();
-			residual = calculateResiduals(matrix);
+			m.trimToSize();
+			residual = calculateResiduals(m);
 			debugln("Iteration: "+(i+1)+" residual: "+residual);
 
 			if (canceled) {
@@ -153,14 +163,14 @@ public class RunMCL {
 		}
 
 		// If we're in debug mode, output the matrix
-		printMatrixInfo(matrix);
+		matrix.printMatrixInfo();
 		// printMatrix(matrix);
 
 		monitor.setStatusMessage("Assigning nodes to clusters");	//monitor.setStatusMessage
 
 		clusterCount = 0;
 		HashMap<Integer, NodeCluster> clusterMap = new HashMap<Integer, NodeCluster>();
-		matrix.forEachNonZero(new ClusterMatrix(clusterMap));
+		matrix.getColtMatrix().forEachNonZero(new ClusterMatrix(clusterMap));
 		// System.out.println("Cluster map has "+clusterMap.keySet().size()+" clusters");
 
 		//Update node attributes in network to include clusters. Create cygroups from clustered nodes

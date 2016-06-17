@@ -10,8 +10,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
+// import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
@@ -28,7 +30,7 @@ public class RunPCA {
 	protected String[] weightAttributes;
 	protected boolean ignoreMissing;
 	protected boolean selectedOnly;
-	protected double[][] distanceMatrix;
+	protected Matrix distanceMatrix;
 
 	private static final int PCA_NODE_NODE = 1;
 	private static final int PCA_NODE_ATTRIBUTE = 2;
@@ -52,9 +54,12 @@ public class RunPCA {
 
 	// this method assumes that eigen values returned by DenseDoubleEigenvalueDecomposition class
 	// are not sorted in their order from maximum to minimum
+	/*
 	public ComputationMatrix[] runOnNodeToNodeDistanceMatrixSorted(){ 
-		Matrix matrix = new Matrix(network, weightAttributes, false, context.ignoreMissing, context.selectedOnly);
-		matrix.setUniformWeights();
+		// Matrix matrix = new Matrix(network, weightAttributes, false, context.ignoreMissing, context.selectedOnly);
+		// matrix.setUniformWeights();
+		CyMatrix matrix = CyMatrixFactory.makeLargeMatrix(network, weightAttributes, context.selectedOnly, 
+		                                                  context.ignoreMissing, false, false);
 		distanceMatrix = matrix.getDistanceMatrix(context.distanceMetric.getSelectedValue());
 		ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
 
@@ -104,16 +109,19 @@ public class RunPCA {
 
 		return components;
 	}
+	*/
 
 	// this method assumes that eigen values returned by DenseDoubleEigenvalueDecomposition class
 	// are not sorted in their order from maximum to minimum
 	public void runOnNodeToAttributeMatrixSorted(){ 
 		System.out.println("runOnNodeToAttributeDistanceMatrixSorted");
-		Matrix matrix = new Matrix(network, weightAttributes, false, context.ignoreMissing, context.selectedOnly);
-		double[][] matrixArray = matrix.toArray(ComputationMatrix.MISSING_DATA);
+		CyMatrix matrix = CyMatrixFactory.makeLargeMatrix(network, weightAttributes, context.selectedOnly, 
+		                                                  context.ignoreMissing, false, false);
+		distanceMatrix = matrix.getDistanceMatrix(context.distanceMetric.getSelectedValue());
 
 		System.out.println("Creating computationMatrix");
-		ComputationMatrix mat = new ComputationMatrix(matrixArray);
+		ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
+		// double[][] matrixArray = matrix.toArray(ComputationMatrix.MISSING_DATA);
 
 		System.out.println("Computing principle components(sorted)");
 		ComputationMatrix[] components = this.computePCsSorted(mat, PCA_NODE_ATTRIBUTE);
@@ -127,24 +135,26 @@ public class RunPCA {
 	// are sorted in increasing order
 	public void runOnNodeToAttributeMatrix(){
 		System.out.println("runOnNodeToAttributeDistanceMatrix");
-		Matrix matrix = new Matrix(network, weightAttributes, false, context.ignoreMissing, context.selectedOnly);
-		double[][] matrixArray = matrix.toArray(ComputationMatrix.MISSING_DATA);
+		CyMatrix matrix = CyMatrixFactory.makeLargeMatrix(network, weightAttributes, context.selectedOnly, 
+		                                                  context.ignoreMissing, false, false);
+		distanceMatrix = matrix.getDistanceMatrix(context.distanceMetric.getSelectedValue());
 
 		System.out.println("Creating computationMatrix");
-		ComputationMatrix mat = new ComputationMatrix(matrixArray);
+		ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
 
 		System.out.println("Computing principle components");
 		ComputationMatrix[] components = this.computePCs(mat, PCA_NODE_ATTRIBUTE);
 
 		if(context.pcaResultPanel)
 			ResultPanelPCA.createAndShowGui(components, network, networkView, 
-			                                matrix.getNodes(), computeVariance(mat));
+			                                matrix.getRowNodes(), computeVariance(mat));
 
 		if(context.pcaPlot)
 			ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));
 
 	}
 
+	/*
 	public void runOnEdgeValues(){
 		// We can't do PCA on the distance matrix because the covariance of the
 		// distance matrix is not positive semi-definite.  We need to create a
@@ -169,6 +179,7 @@ public class RunPCA {
 		if(context.pcaPlot)
 			ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));
 	}
+	*/
 
 	public ComputationMatrix[] computePCs(ComputationMatrix matrix, int type){
 		matrix.writeMatrix("output.txt");

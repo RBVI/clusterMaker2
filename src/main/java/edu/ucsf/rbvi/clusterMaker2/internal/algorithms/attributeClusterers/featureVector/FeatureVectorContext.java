@@ -44,7 +44,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeList;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+// import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 
 public class FeatureVectorContext {
 	CyNetwork network;
@@ -82,7 +83,7 @@ public class FeatureVectorContext {
 		metric.setSelectedValue(DistanceMetric.EUCLIDEAN);
 	}
 
-	public List<String> getParams(Matrix matrix) {
+	public List<String> getParams(CyMatrix matrix) {
 		List<String> params = new ArrayList<String>();
 		params.add("metric="+metric.getSelectedValue().toString());
 		if (nodeAttributeList.getSelectedValues() != null)

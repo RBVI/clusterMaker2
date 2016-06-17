@@ -20,11 +20,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 public class ColtMatrix implements Matrix {
 	protected DoubleMatrix2D data;
 	protected SmpDoubleBlas blas;
-	protected int[] index;
+	protected int[] index = null;
 	protected int nRows;
 	protected int nColumns;
-	protected String[] rowLabels;
-	protected String[] columnLabels;
+	protected String[] rowLabels = null;
+	protected String[] columnLabels = null;
 	protected double maxValue = Double.MIN_VALUE;
 	protected double minValue = Double.MAX_VALUE;
 	protected boolean symmetric = false;
@@ -40,16 +40,23 @@ public class ColtMatrix implements Matrix {
 	public ColtMatrix(ColtMatrix mat) {
 		this();
 		data = mat.data.copy();
+		nRows = data.rows();
+		nColumns = data.columns();
 		transposed = mat.transposed;
 		symmetric = mat.symmetric;
 		minValue = mat.minValue;
 		maxValue = mat.maxValue;
-		rowLabels = Arrays.copyOf(rowLabels, rowLabels.length);
-		columnLabels = Arrays.copyOf(columnLabels, columnLabels.length);
-		index = Arrays.copyOf(mat.index, mat.index.length);
+		if (mat.rowLabels != null)
+			rowLabels = Arrays.copyOf(mat.rowLabels, mat.rowLabels.length);
+		if (mat.columnLabels != null)
+			columnLabels = Arrays.copyOf(mat.columnLabels, mat.columnLabels.length);
+
+		if (mat.index != null)
+			index = Arrays.copyOf(mat.index, mat.index.length);
 	}
 
 	public ColtMatrix(int rows, int columns) {
+		this();
 		data = DoubleFactory2D.sparse.make(rows,columns);
 		nRows = rows;
 		nColumns = columns;
@@ -64,19 +71,27 @@ public class ColtMatrix implements Matrix {
 		symmetric = mat.symmetric;
 		minValue = mat.minValue;
 		maxValue = mat.maxValue;
-		rowLabels = Arrays.copyOf(rowLabels, rowLabels.length);
-		columnLabels = Arrays.copyOf(columnLabels, columnLabels.length);
+		if (mat.rowLabels != null)
+			rowLabels = Arrays.copyOf(mat.rowLabels, mat.rowLabels.length);
+		if (mat.columnLabels != null)
+			columnLabels = Arrays.copyOf(mat.columnLabels, mat.columnLabels.length);
+
 		this.data = data;
+		nRows = data.rows();
+		nColumns = data.columns();
 	}
 
 	public ColtMatrix(SimpleMatrix mat) {
 		this();
 		data = DoubleFactory2D.sparse.make(mat.toArray());
+		nRows = data.rows();
+		nColumns = data.columns();
 		transposed = mat.transposed;
 		symmetric = mat.symmetric;
 		minValue = mat.minValue;
 		maxValue = mat.maxValue;
-		index = Arrays.copyOf(mat.index, mat.index.length);
+		if (mat.index != null)
+			index = Arrays.copyOf(mat.index, mat.index.length);
 	}
 
 	/**
@@ -631,6 +646,9 @@ public class ColtMatrix implements Matrix {
 		DoubleMatrix2D aMat = data;
 		DoubleMatrix2D bMat = b.getColtMatrix();
 		DoubleMatrix2D cMat = DoubleFactory2D.sparse.make(nRows, nColumns);
+		System.out.println("aMat ("+aMat.rows()+", "+aMat.columns()+")");
+		System.out.println("bMat ("+bMat.rows()+", "+bMat.columns()+")");
+		System.out.println("cMat ("+cMat.rows()+", "+cMat.columns()+")");
 		blas.dgemm(false, false, 1.0, aMat, bMat, 0.0, cMat);
 		ColtMatrix c = new ColtMatrix(this, cMat);
 		return c;
