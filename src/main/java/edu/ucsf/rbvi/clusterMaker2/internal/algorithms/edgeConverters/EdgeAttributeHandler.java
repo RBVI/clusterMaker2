@@ -13,7 +13,6 @@ import java.util.List;
 
 import javax.swing.text.html.HTMLDocument.Iterator;
 
-
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
@@ -43,32 +42,37 @@ import edu.ucsf.rbvi.clusterMaker2.internal.ui.HistoChangeListener;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelper {
-	
 
 	private CyMatrix matrix = null;
 	private CyNetwork network = null;
-	
+
+	// Remember all of our state so we can avoid unnecessary calls
+	// to CyMatrixFactory
+	String arrayAttribute = null;
+	boolean selOnly;
+	EdgeWeightConverter converter = null;
+	double cutOff = 0.0;
+	boolean unDirected = true;
+	boolean adjLoops = false;
+
 	private List<EdgeWeightConverter>converters = null;
 
 	private TunableUIHelper helper = null;
-	
+
 	private ListSingleSelection<String> attribute ;
-	
-	@Tunable(description = "Array Sources", groups={"Source for array data"}, params="displayState=expanded", gravity=10.0)
+	@Tunable(description = "Array Sources", groups={"Source for array data"}, params="displayState=uncollapsed", gravity=10.0)
 	public ListSingleSelection<String> getattribute(){
 		attribute = ModelUtils.updateEdgeAttributeList(network, attribute);
 		return attribute;
 	}
 	public void setattribute(ListSingleSelection<String> attr) { }
-	
-	
+
 	@Tunable(description = "Cluster only selected nodes", groups={"Source for array data"}, gravity=11.0)
-	public boolean selectedOnly ;
-	
-	
+	public boolean selectedOnly = false;
+
 	@Tunable(description = "Edge weight conversion", groups={"Source for array data"}, gravity=12.0)
 	public ListSingleSelection<EdgeWeightConverter> edgeWeighter;
-	
+
 	public BoundedDouble edgeCutOff;
 	@Tunable(description="Edge cut off", 
 	         listenForChange={"selectedOnly", "attribute", "edgeWeighter", "EdgeHistogram"},
@@ -80,7 +84,7 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 		return edgeCutOff;
 	}
 	public void setedgeCutOff(BoundedDouble value) { }
-	
+
 	public boolean edgeHistogram = false;
 	@Tunable(description="Show/Hide Edge Weight Histogram", 
 	         groups={"Source for array data", "Edge weight cutoff"}, context="gui", gravity=14.0)
@@ -100,13 +104,13 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 	@Tunable(description = "Assume edges are undirected", 
 	         groups={"Source for array data", "Array data adjustments"}, gravity=15.0)
 	public boolean undirectedEdges = true;
-	
+
 	@Tunable(description = "Adjust loops before clustering", 
 	         groups={"Source for array data", "Array data adjustments"}, gravity=16.0)
 	public boolean adjustLoops = true;
-	
+
 	private HistogramDialog histo = null;
-	
+
 	// TODO: Convert this to a listener
 	public EdgeAttributeHandler(CyNetwork network) {
 		this(network, true);
@@ -142,16 +146,16 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 
 	public void initializeTunables() {
 		attribute = ModelUtils.updateEdgeAttributeList(network, attribute);
-		
+
 		EdgeWeightConverter[] edgeWeightConverters = converters.toArray(new EdgeWeightConverter[1]);
 		if (edgeWeightConverters.length > 0){
-			edgeWeighter = new ListSingleSelection<EdgeWeightConverter>(edgeWeightConverters);	
+			edgeWeighter = new ListSingleSelection<EdgeWeightConverter>(edgeWeightConverters);
 			edgeWeighter.setSelectedValue(edgeWeightConverters[0]);
 		}
 		else{
 			edgeWeighter = new ListSingleSelection<EdgeWeightConverter>();
 		}
-		
+
 		edgeCutOff = new BoundedDouble(0.0, 0.0, 100.0, false, false);
 	}
 
@@ -167,10 +171,13 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 		double min = 0.0;
 
 		if (attribute == null || attribute.getSelectedValue().equals("--None--")) {
-			System.out.println("Setting bounds to: "+min+","+max);
+			// System.out.println("Setting bounds to: "+min+","+max);
 			edgeCutOff.setBounds(min, max);
 			return edgeCutOff;
 		}
+
+		if (!somethingChanged())
+			return edgeCutOff;
 
 		// System.out.println("Getting distance matrix");
 		// this.matrix = new DistanceMatrix(network, attribute.getSelectedValue(), 
@@ -181,11 +188,18 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 		max = matrix.getMaxValue();
 		min = matrix.getMinValue();
 
-		System.out.println("Setting cutoff to: "+cutOff);
+		// System.out.println("Setting cutoff to: "+cutOff);
 		if (max != edgeCutOff.getUpperBound() || min != edgeCutOff.getLowerBound()) {
-			System.out.println("Changing bounds to: "+min+","+max);
+			// System.out.println("Changing bounds to: "+min+","+max);
 			edgeCutOff.setBounds(min, max);
 		}
+
+		arrayAttribute = attribute.getSelectedValue();
+		selOnly = selectedOnly;
+		converter = edgeWeighter.getSelectedValue();
+		cutOff = edgeCutOff.getValue();
+		unDirected = undirectedEdges;
+		adjLoops = adjustLoops;
 
 		// System.out.println("Setting bounds to: "+min+"-"+max+" and cutOff to "+cutOff);
 		return edgeCutOff;
@@ -255,5 +269,19 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 
 	public void setUIHelper(TunableUIHelper helper) {
 		this.helper = helper;
+	}
+
+	public boolean somethingChanged() {
+		if (attribute == null || arrayAttribute == null || edgeWeighter == null || edgeCutOff == null)
+			return true;
+
+		if (!arrayAttribute.equals(attribute.getSelectedValue()))
+			return true;
+		if (selOnly != selectedOnly) return true;
+		if (converter != edgeWeighter.getSelectedValue()) return true;
+		if (cutOff != edgeCutOff.getValue()) return true;
+		if (unDirected != undirectedEdges) return true;
+		if (adjLoops != adjustLoops) return true;
+		return false;
 	}
 }

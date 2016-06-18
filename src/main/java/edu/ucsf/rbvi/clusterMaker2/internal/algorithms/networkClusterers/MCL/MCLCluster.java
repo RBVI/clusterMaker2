@@ -78,7 +78,7 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 		runMCL = new RunMCL(matrix, context.inflation_parameter, context.iterations, 
 		                    context.clusteringThresh, context.maxResidual, context.maxThreads, monitor);
 
-		runMCL.setDebug(debug);
+		runMCL.setDebug(false);
 
 		if (canceled) return;
 

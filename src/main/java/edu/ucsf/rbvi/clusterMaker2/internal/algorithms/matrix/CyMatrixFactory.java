@@ -106,17 +106,20 @@ public class CyMatrixFactory {
 				value = ModelUtils.getNumericValue(network, edge, edgeAttribute);
 			}
 
-			if (value < cutOff)
+			double weight = converter.convert(value, minAttribute, maxAttribute);
+
+			if (weight < cutOff)
 				continue;
 
-			double weight = converter.convert(value, minAttribute, maxAttribute);
-			int row = nodeMap.get(edge.getSource());
-			int column = nodeMap.get(edge.getTarget());
-			matrix.setValue(row, column, weight);
+			int sourceIndex = nodeMap.get(edge.getSource());
+			int targetIndex = nodeMap.get(edge.getTarget());
+			matrix.setValue(targetIndex, sourceIndex, weight);
 			// TODO: should we consider maybe doing this on the getValue side?
 			if (unDirected)
-				matrix.setValue(column, row, weight);
+				matrix.setValue(sourceIndex, targetIndex, weight);
 		}
+
+		// System.out.println("distance matrix: "+matrix.printMatrix());
 		return matrix;
 	}
 
