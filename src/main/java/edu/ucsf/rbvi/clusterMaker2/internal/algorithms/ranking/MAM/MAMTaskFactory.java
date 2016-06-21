@@ -1,25 +1,25 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.algorithms;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.MAM;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.RankFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class MAATaskFactory implements RankFactory {
+public class MAMTaskFactory implements RankFactory {
 
-    public MAAContext context;
+    public MAMContext context;
     public ClusterManager manager;
 
-    public MAATaskFactory(ClusterManager manager) {
+    public MAMTaskFactory(ClusterManager manager) {
         this.manager = manager;
-        context = new MAAContext(manager);
+        context = new MAMContext(manager);
     }
 
     public String getShortName() {
-        return MultipleAttributeAddition.SHORTNAME;
+        return MultipleAttributeMultiplicative.SHORTNAME;
     }
 
     public String getName() {
-        return MultipleAttributeAddition.NAME;
+        return MultipleAttributeMultiplicative.NAME;
     }
 
     public Object getContext() {
@@ -27,7 +27,7 @@ public class MAATaskFactory implements RankFactory {
     }
 
     public TaskIterator createTaskIterator() {
-        return new TaskIterator(new MultipleAttributeAddition(context, manager));
+        return new TaskIterator(new MultipleAttributeMultiplicative(context, manager));
     }
 
     public boolean isReady() {

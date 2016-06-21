@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.algorithms;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.MAA;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
@@ -9,20 +9,17 @@ import org.cytoscape.work.util.ListMultipleSelection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class PRContext {
+public class MAAContext {
     private CyNetwork network;
     public ClusterManager manager;
 
-    @Tunable(description = "Node attributes", groups = "Biomarker information", gravity = 10.0)
+    @Tunable(description = "Node attributes", groups = "Biomarker information", gravity = 1.0)
     public ListMultipleSelection<String> nodeAttributes;
 
-    @Tunable(description = "Edge attributes", groups = "Biomarker information", gravity = 20.0)
+    @Tunable(description = "Edge attributes", groups = "Biomarker information", gravity = 10.0)
     public ListMultipleSelection<String> edgeAttributes;
 
-    @Tunable(description = "Alpha value", groups = "PageRank factors", gravity = 1.0)
-    public double alpha = 0.1;
-
-    public PRContext(ClusterManager manager) {
+    public MAAContext(ClusterManager manager) {
         this.manager = manager;
         network = this.manager.getNetwork();
         updateContext();
@@ -69,7 +66,7 @@ public class PRContext {
         return edgeAttributes.getSelectedValues();
     }
 
-    public String getClusterColumnName() {
+    private String getClusterColumnName() {
         return this.network.getRow(network).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class, "");
     }
 
@@ -79,9 +76,5 @@ public class PRContext {
 
     public CyNetwork getNetwork() {
         return network;
-    }
-
-    public double getAlpha() {
-        return alpha;
     }
 }

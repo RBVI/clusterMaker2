@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.algorithms;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PR;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.RankFactory;
@@ -31,7 +31,6 @@ public class PRTaskFactory implements RankFactory{
 
     @Override
     public TaskIterator createTaskIterator() {
-        System.out.println("YOLOBAGGINS HERE WE GO AGAIN");
         return new TaskIterator(new PageRank(context, manager));
     }
 

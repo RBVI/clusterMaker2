@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.algorithms;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.MAM;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
@@ -12,18 +12,18 @@ import org.cytoscape.work.Tunable;
 
 import java.util.List;
 
-public class MultipleAttributeAddition extends AbstractTask implements Rank {
+public class MultipleAttributeMultiplicative extends AbstractTask implements Rank {
     private ClusterManager manager;
-    final public static String NAME = "Create rank from multiple nodes and edges (additive sum)";
-    final public static String SHORTNAME = "MAA";
+    final public static String NAME = "Create rank from multiple nodes and edges (multiply sum)";
+    final public static String SHORTNAME = "MAM";
 
     @Tunable(description = "Network", context = "nogui")
     public CyNetwork network;
 
     @ContainsTunables
-    public MAAContext context;
+    public MAMContext context;
 
-    public MultipleAttributeAddition(MAAContext context, ClusterManager manager) {
+    public MultipleAttributeMultiplicative(MAMContext context, ClusterManager manager) {
         this.context = context;
         this.manager = manager;
 
@@ -53,7 +53,7 @@ public class MultipleAttributeAddition extends AbstractTask implements Rank {
     @Override
     public void run(TaskMonitor taskMonitor) {
         taskMonitor.setProgress(0.0);
-        taskMonitor.setTitle("Multiple Node Edge Additive ranking of clusters");
+        taskMonitor.setTitle("Multiple Node Edge Multiplum ranking of clusters");
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Fetching clusters...");
         taskMonitor.setProgress(0.1);
         List<NodeCluster> clusters = ClusterUtils.fetchClusters(network);
@@ -65,10 +65,10 @@ public class MultipleAttributeAddition extends AbstractTask implements Rank {
 
         taskMonitor.setProgress(0.6);
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Setting node scores in clusters");
-        clusters = ClusterUtils.setNodeScoresInCluster(network, clusters, nodeAttributes, clusterColumnName, false);
+        clusters = ClusterUtils.setNodeScoresInCluster(network, clusters, nodeAttributes, clusterColumnName, true);
         taskMonitor.setProgress(0.75);
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Setting edge scores in clusters");
-        clusters = ClusterUtils.setEdgeScoresInCluster(network, clusters, edgeAttributes, clusterColumnName, false);
+        clusters = ClusterUtils.setEdgeScoresInCluster(network, clusters, edgeAttributes, clusterColumnName, true);
         taskMonitor.setProgress(0.80);
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Sorting and ranking clusters");
         ClusterUtils.ascendingSort(clusters);
