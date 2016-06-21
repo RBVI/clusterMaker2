@@ -1,6 +1,5 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.HITS;
 
-import com.google.common.base.Function;
 import edu.uci.ics.jung.algorithms.scoring.HITS;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
@@ -15,7 +14,6 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ClusterUtils;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
@@ -27,15 +25,11 @@ import java.util.List;
 public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank {
     private ClusterManager manager;
     public static final String NAME = "Create rank from the HyperlinkInducedTopicSearch algorithm with priors";
-    public static final String SHORTNAME = "HyperlinkInducedTopicSearch";
+    public static final String SHORTNAME = "HITS";
     private Graph<PRNode, PREdge> graph;
     private List<CyNode> nodeList;
     private HashMap<Long, PRNode> idToNode;
     private List<CyEdge> edgeList;
-    private CyTable nodeTable;
-    private CyTable edgeTable;
-    private List<String> nodeAttributes;
-    private List<String> edgeAttributes;
 
     @Tunable(description = "Network", context = "nogui")
     public CyNetwork network;
@@ -52,7 +46,6 @@ public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank {
         }
 
         this.context.setNetwork(network);
-        this.context.updateContext();
     }
 
     @Override
@@ -106,14 +99,10 @@ public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank {
     }
 
     private void initVariables() {
-        nodeAttributes = context.getSelectedNodeAttributes();
-        edgeAttributes = context.getSelectedEdgeAttributes();
         graph = new DirectedSparseMultigraph<>();
         idToNode = new HashMap<>();
         nodeList = network.getNodeList();
         edgeList = network.getEdgeList();
-        nodeTable = network.getDefaultNodeTable();
-        edgeTable = network.getDefaultEdgeTable();
     }
 
     private HITS<PRNode, PREdge> performHITS(Graph<PRNode, PREdge> graph) {
@@ -140,7 +129,6 @@ public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank {
             PRNode sourceNode = idToNode.get(edge.getSource().getSUID());
             PRNode targetNode = idToNode.get(edge.getTarget().getSUID());
             PREdge prEdge = new PREdge(edge);
-            insertEdgeScore(prEdge, edgeTable, edgeAttributes);
             graph.addEdge(prEdge, new Pair<>(sourceNode, targetNode), EdgeType.DIRECTED);
         }
     }
@@ -148,57 +136,8 @@ public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank {
     private void addNodes() {
         for (CyNode node : nodeList) {
             PRNode prNode = new PRNode(node);
-            insertNodeScore(prNode, nodeTable, nodeAttributes);
             graph.addVertex(prNode);
             idToNode.put(node.getSUID(), prNode);
         }
-    }
-
-    private void insertNodeScore(PRNode prNode, CyTable nodeTable, List<String> nodeAttributes) {
-        Double totalNodeScore = 0.0d;
-
-        for (String nodeAttribute : nodeAttributes) {
-            double singleAttributeScore = 0.0d;
-
-            try { // Double
-                singleAttributeScore = nodeTable.getRow(prNode.getCyNode().getSUID())
-                        .get(nodeAttribute, Double.class, 0.0d);
-            } catch (ClassCastException cce) {
-                try { // Integer
-                    singleAttributeScore = nodeTable.getRow(prNode.getCyNode().getSUID())
-                            .get(nodeAttribute, Integer.class, 0);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } finally {
-                totalNodeScore += singleAttributeScore;
-            }
-        }
-
-        prNode.setScore(totalNodeScore);
-    }
-
-    private void insertEdgeScore(PREdge prEdge, CyTable edgeTable, List<String> edgeAttributes) {
-        Double totalEdgeScore = 0.0d;
-
-        for (String edgeAttribute : edgeAttributes) {
-            double singleEdgeAttributeScore = 0.0d;
-
-            try { // Double
-                singleEdgeAttributeScore = edgeTable.getRow(prEdge.getCyEdge().getSUID())
-                        .get(edgeAttribute, Double.class, 0.0d);
-            } catch (ClassCastException cce) {
-                try { // Integer
-                    singleEdgeAttributeScore = edgeTable.getRow(prEdge.getCyEdge().getSUID())
-                            .get(edgeAttribute, Integer.class, 0);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } finally {
-                totalEdgeScore += singleEdgeAttributeScore;
-            }
-        }
-
-        prEdge.setScore(totalEdgeScore);
     }
 }
