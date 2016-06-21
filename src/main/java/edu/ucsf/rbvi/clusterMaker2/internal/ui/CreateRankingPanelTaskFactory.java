@@ -13,7 +13,7 @@ public class CreateRankingPanelTaskFactory implements ClusterVizFactory {
 
     ClusterManager clusterManager = null;
     boolean checkAvailable = false;
-    public static String RANKNAME = "Create Ranking Panel from Clusters";
+    public static String RANKNAME = "Show results from ranking clusters";
     public static String RANKSHORTNAME = "createRankingPanel";
 
     public CreateRankingPanelTaskFactory(ClusterManager clusterManager, boolean checkAvailable) {
@@ -50,7 +50,7 @@ public class CreateRankingPanelTaskFactory implements ClusterVizFactory {
             return true;
         }
 
-        return network != null && RankingResultsTask.isReady(network);
+        return network != null && RankingPanelTask.isReady(network);
     }
 
     @Override
@@ -60,7 +60,7 @@ public class CreateRankingPanelTaskFactory implements ClusterVizFactory {
 
     @Override
     public TaskIterator createTaskIterator() {
-        return new TaskIterator(new RankingResultsTask(clusterManager, checkAvailable, true));
+        return new TaskIterator(new RankingPanelTask(clusterManager, checkAvailable, true));
     }
 
     @Override
@@ -69,6 +69,6 @@ public class CreateRankingPanelTaskFactory implements ClusterVizFactory {
             return true;
         }
 
-        return RankingResultsTask.isReady(clusterManager.getNetwork());
+        return RankingPanelTask.isReady(clusterManager.getNetwork());
     }
 }

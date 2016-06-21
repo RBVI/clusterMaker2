@@ -12,7 +12,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterVizFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 
 public class CreateResultsPanelTaskFactory implements ClusterVizFactory {
-	
+
 	ClusterManager clusterManager;
 	boolean checkAvailable;
 	public static String CLUSTERNAME = "Create Results Panel from Clusters";

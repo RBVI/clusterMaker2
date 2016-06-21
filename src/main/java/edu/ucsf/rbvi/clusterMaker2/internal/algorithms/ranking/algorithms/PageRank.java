@@ -2,7 +2,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.algorithms;
 
 import com.google.common.base.Function;
 import edu.uci.ics.jung.algorithms.scoring.PageRankWithPriors;
-import edu.uci.ics.jung.graph.DirectedSparseGraph;
+import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Hypergraph;
 import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.graph.util.Pair;
@@ -74,7 +74,7 @@ public class PageRank extends AbstractTask implements Rank {
         List<String> nodeAttributes = context.getSelectedNodeAttributes();
         List<String> edgeAttributes = context.getSelectedEdgeAttributes();
 
-        Hypergraph<PRNode, PREdge> graph = new DirectedSparseGraph<>();
+        Hypergraph<PRNode, PREdge> graph = new DirectedSparseMultigraph<>();
         HashMap<Long, PRNode> idToNode = new HashMap<>();
         List<CyNode> nodeList = network.getNodeList();
         List<CyEdge> edgeList = network.getEdgeList();

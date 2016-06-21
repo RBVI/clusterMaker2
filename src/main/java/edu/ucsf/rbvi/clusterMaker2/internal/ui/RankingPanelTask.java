@@ -28,23 +28,23 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-public class RankingResultsTask extends AbstractTask implements ClusterViz, ClusterAlgorithm {
+public class RankingPanelTask extends AbstractTask implements ClusterViz, ClusterAlgorithm {
 
-    private static String appName = "Ranklust Ranking Results Panel";
-    public static String RANKLUSTNAME = "Create Results Panel from Ranking Clusters";
-    public static String RANKLUSTSHORTNAME = "ranklustRankingResultsPanel";
+    private static String appName = "Ranklust Ranking Panel";
+    public static String RANKLUSTNAME = "Show results from ranking clusters";
+    public static String RANKLUSTSHORTNAME = "RanklustPanel";
     private boolean createFlag = false;
     private boolean checkAvailable = false;
     private List<NodeCluster> clusters = null;
     private ClusterManager manager;
     private CyNetworkView networkView;
-    private RankingResults rankingResults;
+    private RankingPanel rankingPanel;
     private final CyServiceRegistrar registrar;
 
     @Tunable(description="Network to look for cluster", context="nogui")
     private CyNetwork network;
 
-    public RankingResultsTask(ClusterManager manager, boolean checkAvailable, boolean createFlag) {
+    public RankingPanelTask(ClusterManager manager, boolean checkAvailable, boolean createFlag) {
         this.manager = manager;
         this.checkAvailable = checkAvailable;
         this.createFlag = createFlag;
@@ -84,7 +84,7 @@ public class RankingResultsTask extends AbstractTask implements ClusterViz, Clus
             taskMonitor.setProgress(0.0);
 
             clusters = ClusterUtils.fetchRankingResults(network);
-            rankingResults = new RankingResults(clusters, network, networkView, manager, taskMonitor);
+            rankingPanel = new RankingPanel(clusters, network, networkView, manager, taskMonitor);
 
             addAndRegisterPanel(cytoPanel);
             setNodeColors();
@@ -131,8 +131,8 @@ public class RankingResultsTask extends AbstractTask implements ClusterViz, Clus
     }
 
     private void addAndRegisterPanel(CytoPanel cytoPanel) {
-        registrar.registerService(rankingResults, CytoPanelComponent.class, new Properties());
-        manager.addRankingResults(network, rankingResults);
+        registrar.registerService(rankingPanel, CytoPanelComponent.class, new Properties());
+        manager.addRankingPanel(network, rankingPanel);
         cytoPanel.setState(CytoPanelState.DOCK);
     }
 
@@ -143,10 +143,10 @@ public class RankingResultsTask extends AbstractTask implements ClusterViz, Clus
     }
 
     private void removeAndUnregisterPanels() {
-        List<RankingResults> rankingResults = new ArrayList<>(manager.getRankingResults(network));
-        for (RankingResults panel : rankingResults) {
+        List<RankingPanel> rankingResults = new ArrayList<>(manager.getRankingResults(network));
+        for (RankingPanel panel : rankingResults) {
             registrar.unregisterService(panel, CytoPanelComponent.class);
-            manager.removeRankingResults(network, panel);
+            manager.removeRankingPanel(network, panel);
         }
     }
 

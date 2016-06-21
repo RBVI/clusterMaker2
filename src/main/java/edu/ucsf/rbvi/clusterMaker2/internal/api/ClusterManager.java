@@ -1,6 +1,6 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.api;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.RankingResults;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.RankingPanel;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -48,10 +48,10 @@ public interface ClusterManager {
 	CyGroup createGroup(CyNetwork network, String name, List<CyNode> nodeList, List<CyEdge> edgeList, boolean register);
 	void removeGroup(CyNetwork network, Long suid);
 
-	// getter and setter methods for RankingResults
-	List<RankingResults> getRankingResults(CyNetwork network);
-	void addRankingResults(CyNetwork network, RankingResults rankingResults);
-	void removeRankingResults(CyNetwork network, RankingResults rankingResults);
+	// getter and setter methods for RankingPanel
+	List<RankingPanel> getRankingResults(CyNetwork network);
+	void addRankingPanel(CyNetwork network, RankingPanel rankingPanel);
+	void removeRankingPanel(CyNetwork network, RankingPanel rankingPanel);
 
 	//getter and setter methods for ResultsPanel
 	List<ResultsPanel> getResultsPanels(CyNetwork network);

@@ -40,20 +40,17 @@
 					<instructions>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
-						<Export-Package>!${bundle.namespace}.*</Export-Package>
+						<Export-Package>!${bundle.namespace}.*,*;-split-package:=merge-first</Export-Package>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
 						<Import-Package>*;resolution:=optional</Import-Package>
 						<Embed-Dependency>
 							parallelcolt;scope=compile|runtime,
 							csparsej;scope=compile|runtime,
-							jung-api;scope=compile|runtime,
-							jung-graph-impl;scope=compile|runtime,
-							jung-algorithms;scope=compile|runtime,
-							swingx;scope=compile|runtime,
-							freehep-graphicsio-svg;scope=compile|runtime,
-							freehep-graphicsio-pdf;scope=compile|runtime,
-							freehep-graphicsio-ps;scope=compile|runtime
+							jung-api;scope=compile|runtime;inline=true,
+							jung-graph-impl;scope=compile|runtime;inline=true,
+							jung-algorithms;scope=compile|runtime;inline=true
+							<!--*;scope=!provided|test;groupId=!org.cytoscape-->
 						</Embed-Dependency>
 						<Embed-Transitive>true</Embed-Transitive>
 					</instructions>

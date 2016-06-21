@@ -79,7 +79,7 @@ import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.TaskMonitor;
 
 
-public class RankingResults extends JPanel implements CytoPanelComponent{
+public class RankingPanel extends JPanel implements CytoPanelComponent{
 
     private static final long serialVersionUID = 868213052692609076L;
 
@@ -124,7 +124,7 @@ public class RankingResults extends JPanel implements CytoPanelComponent{
         return null;
     }
 
-    public RankingResults(final List<NodeCluster> clusters,
+    public RankingPanel(final List<NodeCluster> clusters,
                         final CyNetwork network,
                         final CyNetworkView networkView,
                         ClusterManager clusterManager,
@@ -184,14 +184,14 @@ public class RankingResults extends JPanel implements CytoPanelComponent{
      */
     private class RankingBrowserPanel extends JPanel implements ListSelectionListener {
 
-        private final RankingResults.RankingBrowserPanelModel browserModel;
+        private final RankingPanel.RankingBrowserPanelModel browserModel;
         private final JTable table;
-        private final RankingResults rankingResults;
+        private final RankingPanel rankingPanel;
 
-        public RankingBrowserPanel(RankingResults component) {
+        public RankingBrowserPanel(RankingPanel component) {
 
             super();
-            rankingResults = component;
+            rankingPanel = component;
 
             //System.out.println("CBP: inside constructor, after super()");
             setLayout(new BorderLayout());
@@ -205,7 +205,7 @@ public class RankingResults extends JPanel implements CytoPanelComponent{
             border.setTitleJustification(TitledBorder.LEFT);
             border.setTitleColor(Color.BLUE);
 
-            browserModel = new RankingResults.RankingBrowserPanelModel();
+            browserModel = new RankingPanel.RankingBrowserPanelModel();
 
             table = new JTable(browserModel);
             table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -233,8 +233,8 @@ public class RankingResults extends JPanel implements CytoPanelComponent{
                 public void actionPerformed(ActionEvent e) {
                     CySwingApplication swingApplication = clusterManager.getService(CySwingApplication.class);
                     CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.EAST);
-                    clusterManager.unregisterService(rankingResults, CytoPanelComponent.class);
-                    clusterManager.removeRankingResults(network, rankingResults);
+                    clusterManager.unregisterService(rankingPanel, CytoPanelComponent.class);
+                    clusterManager.removeRankingPanel(network, rankingPanel);
                     if (cytoPanel.getCytoPanelComponentCount() == 0)
                         cytoPanel.setState(CytoPanelState.HIDE);
                 }

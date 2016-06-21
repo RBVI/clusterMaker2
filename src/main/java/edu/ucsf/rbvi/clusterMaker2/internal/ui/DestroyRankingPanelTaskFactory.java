@@ -13,7 +13,7 @@ public class DestroyRankingPanelTaskFactory implements ClusterVizFactory {
 
     ClusterManager clusterManager;
     boolean checkAvailable;
-    public static String RANKNAME = "Destroy All Ranking Panels";
+    public static String RANKNAME = "Hide results from ranking clusters";
     public static String RANKSHORTNAME = "destroyRankingPanel";
 
     public DestroyRankingPanelTaskFactory(ClusterManager clusterManager, boolean checkAvailable) {
@@ -48,7 +48,7 @@ public class DestroyRankingPanelTaskFactory implements ClusterVizFactory {
             return true;
         }
 
-        return network != null && RankingResultsTask.isReady(network);
+        return network != null && RankingPanelTask.isReady(network);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class DestroyRankingPanelTaskFactory implements ClusterVizFactory {
 
     @Override
     public TaskIterator createTaskIterator() {
-        return new TaskIterator(new RankingResultsTask(clusterManager, checkAvailable, false));
+        return new TaskIterator(new RankingPanelTask(clusterManager, checkAvailable, false));
     }
 
     @Override
