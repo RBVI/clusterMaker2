@@ -34,6 +34,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.HITS.HITSTaskFact
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.MAA.MAATaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.MAM.MAMTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PR.PRTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PRWP.PRWPTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterVizFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.RankFactory;
@@ -142,6 +143,7 @@ public class CyActivator extends AbstractCyActivator {
 		// Cluster ranking
 		registerService(bc, new MAATaskFactory(clusterManager), RankFactory.class, new Properties());
 		registerService(bc, new MAMTaskFactory(clusterManager), RankFactory.class, new Properties());
+		registerService(bc, new PRWPTaskFactory(clusterManager), RankFactory.class, new Properties());
 		registerService(bc, new PRTaskFactory(clusterManager), RankFactory.class, new Properties());
 		registerService(bc, new HITSTaskFactory(clusterManager), RankFactory.class, new Properties());
 

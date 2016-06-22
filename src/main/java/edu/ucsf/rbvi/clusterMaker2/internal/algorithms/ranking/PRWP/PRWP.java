@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PR;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PRWP;
 
 import com.google.common.base.Function;
 import edu.uci.ics.jung.algorithms.scoring.PageRankWithPriors;
@@ -24,18 +24,26 @@ import org.cytoscape.work.Tunable;
 import java.util.HashMap;
 import java.util.List;
 
-public class PageRank extends AbstractTask implements Rank {
+public class PRWP extends AbstractTask implements Rank {
     private ClusterManager manager;
-    final public static String NAME = "Create rank from the PageRank algorithm with priors";
-    final public static String SHORTNAME = "PRP";
+    final public static String NAME = "Create rank from the PageRankWithPriors algorithm";
+    final public static String SHORTNAME = "PRWP";
 
     @Tunable(description = "Network", context = "nogui")
     public CyNetwork network;
 
     @ContainsTunables
-    public PRContext context;
+    public PRWPContext context;
+    private Hypergraph<PRNode, PREdge> graph;
+    private HashMap<Long, PRNode> idToNode;
+    private List<CyNode> nodeList;
+    private List<CyEdge> edgeList;
+    private CyTable nodeTable;
+    private CyTable edgeTable;
+    private List<String> nodeAttributes;
+    private List<String> edgeAttributes;
 
-    public PageRank(PRContext context, ClusterManager manager) {
+    public PRWP(PRWPContext context, ClusterManager manager) {
         this.context = context;
         this.manager = manager;
 
@@ -65,33 +73,57 @@ public class PageRank extends AbstractTask implements Rank {
     @Override
     public void run(TaskMonitor taskMonitor) {
         taskMonitor.setProgress(0.0);
-        taskMonitor.setTitle("PageRank with Priors ranking of clusters");
+        taskMonitor.setTitle("PRWP with Priors ranking of clusters");
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Fetching clusters...");
         taskMonitor.setProgress(0.1);
         List<NodeCluster> clusters = ClusterUtils.fetchClusters(network);
         taskMonitor.setProgress(0.5);
 
-        List<String> nodeAttributes = context.getSelectedNodeAttributes();
-        List<String> edgeAttributes = context.getSelectedEdgeAttributes();
-
-        Hypergraph<PRNode, PREdge> graph = new DirectedSparseMultigraph<>();
-        HashMap<Long, PRNode> idToNode = new HashMap<>();
-        List<CyNode> nodeList = network.getNodeList();
-        List<CyEdge> edgeList = network.getEdgeList();
-        CyTable nodeTable = network.getDefaultNodeTable();
-        CyTable edgeTable = network.getDefaultEdgeTable();
-
-        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Setting node scores in clusters");
-
+        initVariables();
         clusters.forEach(NodeCluster::initNodeScores);
 
-        for (CyNode node : nodeList) {
-            PRNode prNode = new PRNode(node);
-            insertNodeScore(prNode, nodeTable, nodeAttributes);
-            graph.addVertex(prNode);
-            idToNode.put(node.getSUID(), prNode);
-        }
+        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Setting node scores in clusters");
+        addNodes();
+        taskMonitor.setProgress(0.6);
 
+        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Setting edge scores in clusters");
+        addEdges();
+        taskMonitor.setProgress(0.7);
+
+        PageRankWithPriors<PRNode, PREdge> pageRank = performPageRank();
+        taskMonitor.setProgress(0.8);
+
+        insertScores(clusters, pageRank);
+        taskMonitor.setProgress(0.9);
+
+        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Insert cluster information in tables");
+        ClusterUtils.insertResultsInColumns(network, clusters, SHORTNAME);
+
+        taskMonitor.setProgress(1.0);
+        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Done...");
+    }
+
+    private void insertScores(List<NodeCluster> clusters, PageRankWithPriors<PRNode, PREdge> pageRank) {
+        for (PRNode node : graph.getVertices()) {
+            node.setPRScore(pageRank.getVertexScore(node));
+            System.out.println(pageRank.getVertexScore(node));
+
+            for (NodeCluster cluster : clusters) {
+                if (cluster.getNodeScores().containsKey(node.getCyNode().getSUID())) {
+                    cluster.increaseRankScore(pageRank.getVertexScore(node));
+                }
+            }
+        }
+    }
+
+    private PageRankWithPriors<PRNode, PREdge> performPageRank() {
+        PageRankWithPriors<PRNode, PREdge> pageRank = new PageRankWithPriors<>(graph, transformEdge(), transformNode(), context.getAlpha());
+        pageRank.setMaxIterations(context.getMaxIterations());
+        pageRank.evaluate();
+        return pageRank;
+    }
+
+    private void addEdges() {
         for (CyEdge edge : edgeList) {
             PRNode sourceNode = idToNode.get(edge.getSource().getSUID());
             PRNode targetNode = idToNode.get(edge.getTarget().getSUID());
@@ -99,32 +131,27 @@ public class PageRank extends AbstractTask implements Rank {
             insertEdgeScore(prEdge, edgeTable, edgeAttributes);
             graph.addEdge(prEdge, new Pair<>(sourceNode, targetNode), EdgeType.DIRECTED);
         }
+    }
 
-        PageRankWithPriors<PRNode, PREdge> pageRank = new PageRankWithPriors<>(graph, transformEdge(), transformNode(), context.getAlpha());
-        pageRank.setMaxIterations(1000);
-        pageRank.evaluate();
-
-        for (PRNode node : graph.getVertices()) {
-            node.setPRScore(pageRank.getVertexScore(node));
-
-            for (NodeCluster cluster : clusters) {
-                if (cluster.getNodeScores().containsKey(node.getCyNode().getSUID())) {
-                    cluster.increaseRankScore(node.getPRScore());
-                }
-            }
+    private void addNodes() {
+        for (CyNode node : nodeList) {
+            PRNode prNode = new PRNode(node);
+            insertNodeScore(prNode, nodeTable, nodeAttributes);
+            graph.addVertex(prNode);
+            idToNode.put(node.getSUID(), prNode);
         }
+    }
 
-        ClusterUtils.insertResultsInColumns(network, clusters, SHORTNAME);
+    private void initVariables() {
+        nodeAttributes = context.getSelectedNodeAttributes();
+        edgeAttributes = context.getSelectedEdgeAttributes();
 
-        taskMonitor.setProgress(0.6);
-        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Setting node scores in clusters");
-        taskMonitor.setProgress(0.75);
-        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Setting edge scores in clusters");
-        taskMonitor.setProgress(0.80);
-        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Sorting and ranking clusters");
-        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Insert cluster information in tables");
-        taskMonitor.setProgress(1.0);
-        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Done...");
+        graph = new DirectedSparseMultigraph<>();
+        idToNode = new HashMap<>();
+        nodeList = network.getNodeList();
+        edgeList = network.getEdgeList();
+        nodeTable = network.getDefaultNodeTable();
+        edgeTable = network.getDefaultEdgeTable();
     }
 
     private void insertNodeScore(PRNode prNode, CyTable nodeTable, List<String> nodeAttributes) {
@@ -159,7 +186,7 @@ public class PageRank extends AbstractTask implements Rank {
 
             try { // Double
                 singleEdgeAttributeScore = edgeTable.getRow(prEdge.getCyEdge().getSUID())
-                .get(edgeAttribute, Double.class, 0.0d);
+                        .get(edgeAttribute, Double.class, 0.0d);
             } catch (ClassCastException cce) {
                 try { // Integer
                     singleEdgeAttributeScore = edgeTable.getRow(prEdge.getCyEdge().getSUID())
@@ -172,6 +199,7 @@ public class PageRank extends AbstractTask implements Rank {
             }
         }
 
+        System.out.println("Settings edge score to: " + totalEdgeScore);
         prEdge.setScore(totalEdgeScore);
     }
 
@@ -181,9 +209,5 @@ public class PageRank extends AbstractTask implements Rank {
 
     private Function<PRNode, Double> transformNode() {
         return PRNode::getScore;
-    }
-
-    public String getClusterColumnName() {
-        return this.network.getRow(network).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class, "");
     }
 }

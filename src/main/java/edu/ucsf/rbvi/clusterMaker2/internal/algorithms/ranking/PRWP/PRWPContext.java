@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PR;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PRWP;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
@@ -9,26 +9,30 @@ import org.cytoscape.work.util.ListMultipleSelection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class PRContext {
+public class PRWPContext {
     private CyNetwork network;
     public ClusterManager manager;
 
-    @Tunable(description = "Edge attributes", groups = "Biomarker information", gravity = 20.0)
-    public ListMultipleSelection<String> edgeAttributes;
-
-    @Tunable(description = "Alpha value", groups = "PR factors", gravity = 1.0)
+    @Tunable(description = "Alpha value", groups = "PRWP factors", gravity = 1.0)
     public double alpha = 0.1;
 
-    @Tunable(description = "Iterations", groups = "PR factors", gravity = 10.0)
+    @Tunable(description = "Maximum iterations", groups = "PRWP factors", gravity = 10.0)
     public int iterations = 1000;
 
-    public PRContext(ClusterManager manager) {
+    @Tunable(description = "Node attributes", groups = "Biomarker information", gravity = 20.0)
+    public ListMultipleSelection<String> nodeAttributes;
+
+    @Tunable(description = "Edge attributes", groups = "Biomarker information", gravity = 30.0)
+    public ListMultipleSelection<String> edgeAttributes;
+
+    public PRWPContext(ClusterManager manager) {
         this.manager = manager;
         network = this.manager.getNetwork();
         updateContext();
     }
 
     public void updateContext() {
+        nodeAttributes = new ListMultipleSelection<>(updateNodeAttributes());
         edgeAttributes = new ListMultipleSelection<>(updateEdgeAttributes());
     }
 
@@ -44,6 +48,24 @@ public class PRContext {
         }
 
         return edgeAttrs;
+    }
+
+    private List<String> updateNodeAttributes() {
+        List<String> nodeAttrs;
+        if (this.network != null) {
+            nodeAttrs = ModelUtils.updateNodeAttributeList(network, null).getPossibleValues()
+                    .stream()
+                    .filter(attribute -> !attribute.equals(getClusterColumnName()))
+                    .collect(Collectors.toList());
+        } else {
+            nodeAttrs = new ListMultipleSelection<>(ModelUtils.NONEATTRIBUTE).getPossibleValues();
+        }
+
+        return nodeAttrs;
+    }
+
+    public List<String> getSelectedNodeAttributes() {
+        return nodeAttributes.getSelectedValues();
     }
 
     public List<String> getSelectedEdgeAttributes() {
@@ -64,5 +86,9 @@ public class PRContext {
 
     public double getAlpha() {
         return alpha;
+    }
+
+    public int getMaxIterations() {
+        return iterations;
     }
 }

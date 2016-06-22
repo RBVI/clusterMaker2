@@ -37,7 +37,7 @@ public class FORCEnDLayoutUtility {
 		double temp = Math.pow((1.0 / (iteration + 1)), k)
 				* param.getTemperature() * node_no;
 //		double dummy = param.getTemperature()*param.getTemperature();
-//		double temp = Math.sqrt(dummy-(iteration*(dummy/param.getIterations())));
+//		double temp = Math.sqrt(dummy-(iteration*(dummy/param.getMaxIterations())));
 		return temp;
 	}
 

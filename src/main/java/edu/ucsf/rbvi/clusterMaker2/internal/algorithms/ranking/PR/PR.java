@@ -1,8 +1,9 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.HITS;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PR;
 
-import edu.uci.ics.jung.algorithms.scoring.HITS;
+import com.google.common.base.Function;
+import edu.uci.ics.jung.algorithms.scoring.PageRank;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
-import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.Hypergraph;
 import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.graph.util.Pair;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
@@ -14,6 +15,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ClusterUtils;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
@@ -22,22 +24,26 @@ import org.cytoscape.work.Tunable;
 import java.util.HashMap;
 import java.util.List;
 
-public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank {
+public class PR extends AbstractTask implements Rank {
     private ClusterManager manager;
-    public static final String NAME = "Create rank from the HyperlinkInducedTopicSearch algorithm with priors";
-    public static final String SHORTNAME = "HITS";
-    private Graph<PRNode, PREdge> graph;
-    private List<CyNode> nodeList;
-    private HashMap<Long, PRNode> idToNode;
-    private List<CyEdge> edgeList;
+    final public static String NAME = "Create rank from the PageRank algorithm ";
+    final public static String SHORTNAME = "PR";
 
     @Tunable(description = "Network", context = "nogui")
     public CyNetwork network;
 
     @ContainsTunables
-    public HITSContext context;
+    public PRContext context;
+    private Hypergraph<PRNode, PREdge> graph;
+    private HashMap<Long, PRNode> idToNode;
+    private List<CyNode> nodeList;
+    private List<CyEdge> edgeList;
+    private CyTable nodeTable;
+    private CyTable edgeTable;
+    private List<String> nodeAttributes;
+    private List<String> edgeAttributes;
 
-    public HyperlinkInducedTopicSearch(HITSContext context, ClusterManager manager) {
+    public PR(PRContext context, ClusterManager manager) {
         this.context = context;
         this.manager = manager;
 
@@ -46,6 +52,7 @@ public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank {
         }
 
         this.context.setNetwork(network);
+        this.context.updateContext();
     }
 
     @Override
@@ -66,7 +73,7 @@ public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank {
     @Override
     public void run(TaskMonitor taskMonitor) {
         taskMonitor.setProgress(0.0);
-        taskMonitor.setTitle("Hyperlink-Induced Topic Search ranking of clusters");
+        taskMonitor.setTitle("PRWP with Priors ranking of clusters");
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Fetching clusters...");
         taskMonitor.setProgress(0.1);
         List<NodeCluster> clusters = ClusterUtils.fetchClusters(network);
@@ -83,12 +90,10 @@ public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank {
         addEdges();
         taskMonitor.setProgress(0.7);
 
-        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Performing HITS algorithm");
-        HITS<PRNode, PREdge> hyperlinkInducedTopicSearchPriors = performHITS(graph);
+        PageRank<PRNode, PREdge> pageRank = performPageRank();
         taskMonitor.setProgress(0.8);
 
-        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Setting cluster scores");
-        insertScores(clusters, graph, hyperlinkInducedTopicSearchPriors);
+        insertScores(clusters, pageRank);
         taskMonitor.setProgress(0.9);
 
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Insert cluster information in tables");
@@ -98,30 +103,24 @@ public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank {
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Done...");
     }
 
-    private void initVariables() {
-        graph = new DirectedSparseMultigraph<>();
-        idToNode = new HashMap<>();
-        nodeList = network.getNodeList();
-        edgeList = network.getEdgeList();
-    }
-
-    private HITS<PRNode, PREdge> performHITS(Graph<PRNode, PREdge> graph) {
-        HITS<PRNode, PREdge> hits = new HITS<>(graph, context.getAlpha());
-        hits.setMaxIterations(1000);
-        hits.evaluate();
-        return hits;
-    }
-
-    private void insertScores(List<NodeCluster> clusters, Graph<PRNode, PREdge> graph, HITS<PRNode, PREdge> hits) {
+    private void insertScores(List<NodeCluster> clusters, PageRank<PRNode, PREdge> pageRank) {
         for (PRNode node : graph.getVertices()) {
-            node.setPRScore(hits.getVertexScore(node).authority);
+            node.setPRScore(pageRank.getVertexScore(node));
+            System.out.println(pageRank.getVertexScore(node));
 
             for (NodeCluster cluster : clusters) {
                 if (cluster.getNodeScores().containsKey(node.getCyNode().getSUID())) {
-                    cluster.increaseRankScore(node.getPRScore());
+                    cluster.increaseRankScore(pageRank.getVertexScore(node));
                 }
             }
         }
+    }
+
+    private PageRank<PRNode, PREdge> performPageRank() {
+        PageRank<PRNode, PREdge> pageRank = new PageRank<>(graph, transformEdge(), context.getAlpha());
+        pageRank.setMaxIterations(1000);
+        pageRank.evaluate();
+        return pageRank;
     }
 
     private void addEdges() {
@@ -129,6 +128,7 @@ public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank {
             PRNode sourceNode = idToNode.get(edge.getSource().getSUID());
             PRNode targetNode = idToNode.get(edge.getTarget().getSUID());
             PREdge prEdge = new PREdge(edge);
+            insertEdgeScore(prEdge, edgeTable, edgeAttributes);
             graph.addEdge(prEdge, new Pair<>(sourceNode, targetNode), EdgeType.DIRECTED);
         }
     }
@@ -139,5 +139,46 @@ public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank {
             graph.addVertex(prNode);
             idToNode.put(node.getSUID(), prNode);
         }
+    }
+
+    private void initVariables() {
+        edgeAttributes = context.getSelectedEdgeAttributes();
+
+        graph = new DirectedSparseMultigraph<>();
+        idToNode = new HashMap<>();
+        nodeList = network.getNodeList();
+        edgeList = network.getEdgeList();
+        nodeTable = network.getDefaultNodeTable();
+        edgeTable = network.getDefaultEdgeTable();
+    }
+
+
+    private void insertEdgeScore(PREdge prEdge, CyTable edgeTable, List<String> edgeAttributes) {
+        Double totalEdgeScore = 0.0d;
+
+        for (String edgeAttribute : edgeAttributes) {
+            double singleEdgeAttributeScore = 0.0d;
+
+            try { // Double
+                singleEdgeAttributeScore = edgeTable.getRow(prEdge.getCyEdge().getSUID())
+                        .get(edgeAttribute, Double.class, 0.0d);
+            } catch (ClassCastException cce) {
+                try { // Integer
+                    singleEdgeAttributeScore = edgeTable.getRow(prEdge.getCyEdge().getSUID())
+                            .get(edgeAttribute, Integer.class, 0);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } finally {
+                totalEdgeScore += singleEdgeAttributeScore;
+            }
+        }
+
+        System.out.println("Settings edge score to: " + totalEdgeScore);
+        prEdge.setScore(totalEdgeScore);
+    }
+
+    private Function<PREdge, Double> transformEdge() {
+        return PREdge::getScore;
     }
 }

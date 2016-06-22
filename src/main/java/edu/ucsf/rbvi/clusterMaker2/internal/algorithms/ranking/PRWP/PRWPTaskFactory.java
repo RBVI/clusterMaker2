@@ -1,27 +1,27 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PR;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PRWP;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.RankFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class PRTaskFactory implements RankFactory{
+public class PRWPTaskFactory implements RankFactory{
 
-    public PRContext context;
+    public PRWPContext context;
     public ClusterManager manager;
 
-    public PRTaskFactory(ClusterManager manager) {
+    public PRWPTaskFactory(ClusterManager manager) {
         this.manager = manager;
-        context = new PRContext(manager);
+        context = new PRWPContext(manager);
     }
 
     @Override
     public String getShortName() {
-        return PR.SHORTNAME;
+        return PRWP.SHORTNAME;
     }
 
     @Override
     public String getName() {
-        return PR.NAME;
+        return PRWP.NAME;
     }
 
     @Override
@@ -31,7 +31,7 @@ public class PRTaskFactory implements RankFactory{
 
     @Override
     public TaskIterator createTaskIterator() {
-        return new TaskIterator(new PR(context, manager));
+        return new TaskIterator(new PRWP(context, manager));
     }
 
     @Override
