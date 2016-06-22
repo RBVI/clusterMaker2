@@ -108,6 +108,7 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
     private RankingBrowserPanel rankingBrowserPanel;
 
     private String clusterType = null;
+    private String rankingType = null;
 
     public Component getComponent() {
         return this;
@@ -142,6 +143,7 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
         visualMappingMgr = clusterManager.getService(VisualMappingManager.class);
         renderingEngineFactory = clusterManager.getService(RenderingEngineFactory.class);
         clusterType = network.getRow(network).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class);
+        rankingType = network.getRow(network).get(ClusterManager.RANKING_ATTRIBUTE, String.class);
 
         this.rankingBrowserPanel = new RankingBrowserPanel(this);
         add(rankingBrowserPanel, BorderLayout.CENTER);
@@ -150,7 +152,7 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
 
 
     public String getTitle() {
-        return clusterType+"("+network+")";
+        return "[" + clusterType + "]{" + rankingType + "}("+network+")";
     }
 
 
