@@ -15,8 +15,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
  */
 public class CyColtMatrix extends ColtMatrix implements CyMatrix {
 	protected CyNetwork network;
-	protected CyNode[] rowNodes;
-	protected CyNode[] columnNodes;
+	protected CyNode[] rowNodes = null;
+	protected CyNode[] columnNodes = null;
 	protected boolean assymetricalEdge = false;
 
 	public CyColtMatrix(CyNetwork network) {
@@ -32,15 +32,19 @@ public class CyColtMatrix extends ColtMatrix implements CyMatrix {
 	public CyColtMatrix(CyColtMatrix matrix) {
 		super((ColtMatrix)matrix);
 		network = matrix.network;
-		rowNodes = Arrays.copyOf(rowNodes, rowNodes.length);
-		columnNodes = Arrays.copyOf(columnNodes, columnNodes.length);
+		if (matrix.rowNodes != null)
+			rowNodes = Arrays.copyOf(matrix.rowNodes, matrix.rowNodes.length);
+		if (matrix.columnNodes != null)
+			columnNodes = Arrays.copyOf(matrix.columnNodes, matrix.columnNodes.length);
 	}
 
 	public CyColtMatrix(CySimpleMatrix matrix) {
 		super((SimpleMatrix)matrix);
 		network = matrix.network;
-		rowNodes = Arrays.copyOf(rowNodes, rowNodes.length);
-		columnNodes = Arrays.copyOf(columnNodes, columnNodes.length);
+		if (matrix.rowNodes != null)
+			rowNodes = Arrays.copyOf(matrix.rowNodes, matrix.rowNodes.length);
+		if (matrix.columnNodes != null)
+			columnNodes = Arrays.copyOf(matrix.columnNodes, matrix.columnNodes.length);
 	}
 
 	/**
@@ -77,6 +81,9 @@ public class CyColtMatrix extends ColtMatrix implements CyMatrix {
 	 * @param node the node for that row
 	 */
 	public void setRowNode(int row, CyNode node) {
+		if (rowNodes == null) {
+			rowNodes = new CyNode[nRows()];
+		}
 		rowNodes[row] = node;
 	}
 
@@ -126,6 +133,9 @@ public class CyColtMatrix extends ColtMatrix implements CyMatrix {
 	 * @param node the node for that column
 	 */
 	public void setColumnNode(int column, CyNode node) {
+		if (columnNodes == null) {
+			columnNodes = new CyNode[nColumns()];
+		}
 		columnNodes[column] = node;
 	}
 
@@ -188,11 +198,16 @@ public class CyColtMatrix extends ColtMatrix implements CyMatrix {
 		newMatrix.symmetric = cMatrix.symmetric;
 		newMatrix.minValue = cMatrix.minValue;
 		newMatrix.maxValue = cMatrix.maxValue;
-		newMatrix.rowLabels = Arrays.copyOf(cMatrix.rowLabels, cMatrix.rowLabels.length);
-		newMatrix.columnLabels = Arrays.copyOf(cMatrix.columnLabels, cMatrix.columnLabels.length);
-		newMatrix.index = Arrays.copyOf(cMatrix.index, cMatrix.index.length);
-		newMatrix.rowNodes = Arrays.copyOf(rowNodes, rowNodes.length);
-		newMatrix.columnNodes = Arrays.copyOf(columnNodes, columnNodes.length);
+		if (cMatrix.rowLabels != null)
+			newMatrix.rowLabels = Arrays.copyOf(cMatrix.rowLabels, cMatrix.rowLabels.length);
+		if (cMatrix.columnLabels != null)
+			newMatrix.columnLabels = Arrays.copyOf(cMatrix.columnLabels, cMatrix.columnLabels.length);
+		if (cMatrix.index != null)
+			newMatrix.index = Arrays.copyOf(cMatrix.index, cMatrix.index.length);
+		if (rowNodes != null)
+			newMatrix.rowNodes = Arrays.copyOf(rowNodes, rowNodes.length);
+		if (columnNodes != null)
+			newMatrix.columnNodes = Arrays.copyOf(columnNodes, columnNodes.length);
 		return newMatrix;
 	}
 
