@@ -3,18 +3,26 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa;
 import java.util.List;
 import java.util.TreeMap;
 
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+
 import com.itextpdf.text.pdf.PdfStructTreeController.returnType;
 
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
+import cern.colt.matrix.tdouble.algo.decomposition.DenseDoubleEigenvalueDecomposition;
+import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ComputationMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
-public class CalculationMatrix{
+public class CalculationMatrix implements CyMatrix{
 
 	double data[][];
 	int rows;
 	int columns;
+	private int nRows;
+	private int nColumns;
 	int diag;//make diagnostic plots 
 	int scale;//scale eigenvectors (= scores) by their eigenvalue 
 	int neg;//discard (= 0), keep (= 1), or correct (= 2)  negative eigenvalues  
@@ -22,8 +30,13 @@ public class CalculationMatrix{
 	double eigenvectors[][];
 	double combine_array[][];
 	double scores[][];
+	private DoubleMatrix2D matrix;
+	private DenseDoubleEigenvalueDecomposition decomp = null;
 	
 	public CalculationMatrix(int rows,int columns,double inputdata[][],int diag,int scale,int neg){
+		this.matrix = new DenseDoubleMatrix2D(inputdata);
+		nRows = matrix.rows();
+		nColumns = matrix.columns();
 		this.rows=rows;
 		this.columns=columns;
 		this.diag=diag;
@@ -200,9 +213,9 @@ public class CalculationMatrix{
 	
 	
 	public double[] eigenAnalysis(){
-		ComputationMatrix computationMatrix=new ComputationMatrix(getGowernsMatrix());
-		double eigenvector[][]=computationMatrix.eigenVectors();
-		double eigenvalues[]=computationMatrix.eigenValuesAll();		
+		this.matrix = new DenseDoubleMatrix2D(getGowernsMatrix());
+		double eigenvector[][]=eigenVectors();
+		double eigenvalues[]=eigenValues(true);	
 		double tolerance=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
 		
 		int idx_size=0;//for set idx length 
@@ -447,5 +460,352 @@ public class CalculationMatrix{
 				scores=eigenvectors;
 			}
 	return scores;
+	}
+
+
+	public int nRows() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+
+	public int nColumns() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+
+	public double doubleValue(int row, int column) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+
+	public void setValue(int row, int column, double value) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public void setValue(int row, int column, Double value) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public boolean hasValue(int row, int column) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+
+	public String[] getColumnLabels() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public String getColumnLabel(int col) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public void setColumnLabel(int col, String label) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public void setColumnLabels(List<String> labelList) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public String[] getRowLabels() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public String getRowLabel(int row) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public void setRowLabel(int row, String label) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public void setRowLabels(List<String> labelList) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public Matrix getDistanceMatrix(DistanceMetric metric) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public double[][] toArray() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public double getMaxValue() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+
+	public double getMinValue() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+
+	public boolean isTransposed() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+
+	public void setTransposed(boolean transposed) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public void setSymmetrical(boolean symmetrical) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public void setMissingToZero() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public void adjustDiagonals() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public double[] getRank(int row) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public void index() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public Matrix submatrix(int[] index) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public Matrix submatrix(int row, int col, int rows, int cols) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public void invertMatrix() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public void normalize() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public void normalizeMatrix() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public void normalizeRow(int row) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public void normalizeColumn(int column) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public void centralizeRows() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public void centralizeColumns() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public int cardinality() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+
+	public Matrix multiplyMatrix(Matrix matrix) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public Matrix covariance() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public double[] eigenValues(boolean nonZero) {
+		 if (decomp == null)
+		decomp = new DenseDoubleEigenvalueDecomposition(matrix);
+
+	return decomp.getRealEigenvalues().toArray();
+		
+	}
+
+
+	public double[][] eigenVectors() {
+		if (decomp == null)
+			decomp = new DenseDoubleEigenvalueDecomposition(matrix);
+		return decomp.getV().toArray();
+		
+	}
+
+
+	public String printMatrixInfo() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public String printMatrix() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public DoubleMatrix2D getColtMatrix() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public CyNetwork getNetwork() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public void setRowNodes(CyNode[] rowNodes) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public void setRowNodes(List<CyNode> rowNodes) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public void setRowNode(int row, CyNode node) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public CyNode getRowNode(int row) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public List<CyNode> getRowNodes() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public void setColumnNodes(CyNode[] columnNodes) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public void setColumnNodes(List<CyNode> columnNodes) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public void setColumnNode(int column, CyNode node) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public CyNode getColumnNode(int column) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public List<CyNode> getColumnNodes() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public boolean isAssymetricalEdge() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+
+	public void setAssymetricalEdge(boolean assymetricalEdge) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public CyMatrix copy() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public CyMatrix copy(Matrix matrix) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

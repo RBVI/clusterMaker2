@@ -121,7 +121,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		addMouseMotionListener(this);
 	}
 
-	@Override
+	
 	public void mouseClicked(MouseEvent event) {
 		int x = event.getPoint().x;
 		int y = event.getPoint().y;
@@ -138,15 +138,15 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		}
 	}
 
-	@Override
+	
 	public void mouseEntered(MouseEvent event) {
 	}
 
-	@Override
+	
 	public void mouseExited(MouseEvent event) {
 	}
 
-	@Override
+	
 	public void mousePressed(MouseEvent event) {
 		Point point = event.getPoint();
 		startingX = point.x;
@@ -154,14 +154,14 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		dragging = true;
 	}
 
-	@Override
+	
 	public void mouseReleased(MouseEvent event) {
 		dragging = false;
 		previousDX += currentX - startingX;
 		previosDY += currentY - startingY;
 	}
 
-	@Override
+	
 	public void mouseDragged(MouseEvent event) {
 		Point p = event.getPoint();
 		currentX = p.x;

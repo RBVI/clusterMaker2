@@ -45,13 +45,11 @@ public class TSneImplement implements TSne{
 		return tsne(X,k,initial_dims, perplexity, maxIterations, true);
 	}
 
-	public double [][] tsne(double[][] X, int no_dims, int initial_dims, double perplexity, int max_iter, boolean use_pca) {
+	public double [][] tsne(double[][] X, int no_dims, int initial_dims, double perplexity, int max_iter, boolean val) {
 		String IMPLEMENTATION_NAME = this.getClass().getSimpleName();
 		System.out.println("X:Shape is = " + X.length + " x " + X[0].length);
 		System.out.println("Running " + IMPLEMENTATION_NAME + ".");
 		
-		
-
 		int n = X.length;
 		double momentum = .5;
 		double initial_momentum = 0.5;
@@ -62,6 +60,7 @@ public class TSneImplement implements TSne{
 		double [][] dY          = fillMatrix(n,no_dims,0.0);
 		double [][] iY          = fillMatrix(n,no_dims,0.0);
 		double [][] gains       = fillMatrix(n,no_dims,1.0);
+		
 		
 		// Compute P-values
 		double [][] P = x2p(X, 1e-5, perplexity).P;

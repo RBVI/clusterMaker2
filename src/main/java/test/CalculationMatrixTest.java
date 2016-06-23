@@ -7,6 +7,7 @@ import java.util.Arrays;
 import org.junit.Test;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ComputationMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa.CalculationMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa.RunPCoA;
 import junit.framework.Assert;
 
@@ -15,15 +16,16 @@ public class CalculationMatrixTest {
 	double inputdata[][]={{0,3,4,5},{3,0,6,3},{4,6,0,1},{5,3,1,0}};
 	double single_line_data[]={2,4,57,76};
 	
-	RunPCoA runpcoa=new RunPCoA(4, 4, inputdata);
+
+	CalculationMatrix calcmatrix=new CalculationMatrix(4, 4, inputdata, 0, 0, 0);
 	@Test
 	public void isSymmetricaltest() {
-		assertTrue(runpcoa.getCalculationMatrix().isSymmetrical());
+		assertTrue(calcmatrix.isSymmetrical());
 	}
 	@Test
 	public void matrixReversetest() {
 		double expect[]={76,57,4,2};
-		assertArrayEquals(expect,(runpcoa.getCalculationMatrix().matrixReverse(single_line_data)),0);
+		assertArrayEquals(expect,(calcmatrix.matrixReverse(single_line_data)),0);
 	}
 	
 	@Test
@@ -38,7 +40,7 @@ public class CalculationMatrixTest {
 		double expect[][]={
 				{67,40},
 				{48,35}};
-		assertArrayEquals(null,expect,(runpcoa.getCalculationMatrix().multiplyByMatrix(value_1,value_2)));
+		assertArrayEquals(null,expect,(calcmatrix.multiplyByMatrix(value_1,value_2)));
 	}
 	
 	@Test
@@ -51,7 +53,7 @@ public class CalculationMatrixTest {
 				{3,5},
 				{1,2}
 		};
-		assertArrayEquals(null,expect,(runpcoa.getCalculationMatrix().transposeMatrix(actual)));
+		assertArrayEquals(null,expect,(calcmatrix.transposeMatrix(actual)));
 	}
 	
 	@Test
@@ -62,7 +64,7 @@ public class CalculationMatrixTest {
 				{-1.125,-10.625,7.25,4.5},
 				{-7.875,0.625,4.5,2.75}
 		};
-		assertArrayEquals(null,expect,(runpcoa.getCalculationMatrix().getGowernsMatrix()));
+		assertArrayEquals(null,expect,(calcmatrix.getGowernsMatrix()));
 	}
 	
 	
@@ -71,7 +73,7 @@ public class CalculationMatrixTest {
 		double expect[]={
 				19.942260245679883,10.940200595315455,-6.882460840995355 ,0.0
 		};
-		assertArrayEquals(expect,(runpcoa.getCalculationMatrix().eigenAnalysis()),0);
+		assertArrayEquals(expect,(calcmatrix.eigenAnalysis()),0);
 	}
 	
 	@Test
@@ -81,7 +83,7 @@ public class CalculationMatrixTest {
 				{45.58416914714777,128.67692017081401 },
 				{-28.676920170814007,100.0 }
 		};
-		assertArrayEquals(null,expect,(runpcoa.getCalculationMatrix().getVarianceExplained()));
+		assertArrayEquals(null,expect,(calcmatrix.getVarianceExplained()));
 	}
 	
 	@Test
@@ -89,7 +91,7 @@ public class CalculationMatrixTest {
 		double expect[]={
 				3.0 ,4.0 ,5.0 ,6.0 ,3.0 ,1.0 	
 		};
-		assertArrayEquals(expect,(runpcoa.getCalculationMatrix().getUpperMatrixInVector(inputdata)),0);
+		assertArrayEquals(expect,(calcmatrix.getUpperMatrixInVector(inputdata)),0);
 	}
 	
 	@Test
@@ -98,7 +100,7 @@ public class CalculationMatrixTest {
 				3.0 ,4.0 ,5.0 ,6.0 ,3.0 ,1.0	
 		};
 		double expect[][]={{0,3,4,5},{3,0,6,3},{4,6,0,1},{5,3,1,0}};
-		assertArrayEquals(null,expect,(runpcoa.getCalculationMatrix().convertColumntoMatrix(input)));
+		assertArrayEquals(null,expect,(calcmatrix.convertColumntoMatrix(input)));
 	}
 	
 	@Test
@@ -108,7 +110,7 @@ public class CalculationMatrixTest {
 				{45.58416914714777,128.67692017081401}, 
 				{0.0,0.0} 		
 		};
-		assertArrayEquals(null,expect,(runpcoa.getCalculationMatrix().negativeEigenAnalysis()));
+		assertArrayEquals(null,expect,(calcmatrix.negativeEigenAnalysis()));
 	}
 	
 	@Test
@@ -119,11 +121,19 @@ public class CalculationMatrixTest {
 				{-0.5147954337536527,-0.4999999999999998,0.6469800144154148,0.0}, 
 				{0.5944129043987613,-0.5000000000000001,0.30584655853107445,0.0} 	
 		};
-		assertArrayEquals(null,expect,(runpcoa.getCalculationMatrix().scaleEigenVectors()));
+		assertArrayEquals(null,expect,(calcmatrix.scaleEigenVectors()));
 	}
 	@Test
 	public void test() {
-		isSymmetricaltest();
+		double arr[][]=calcmatrix.getVarianceExplained();
+		for(int i=0;i<arr.length;i++){
+			
+			for(int j=0;j<2;j++){
+				System.out.print(arr[i][j]+" ");
+			}
+			System.out.println("");
+		}
+		/*isSymmetricaltest();
 		matrixReversetest();
 		matrixMultiplytest();
 		transposeMatrixtest();
@@ -131,9 +141,9 @@ public class CalculationMatrixTest {
 		eigenAnalysistest();
 		getVarianceExplainedtest();
 		getUpperMatrixInVector();
-		convertColumntoMatrixtest();
-		negativeEigenAnalysistest();
-		scaleEigenVectorstest();
+		convertColumntoMatrixtest();*/
+		//negativeEigenAnalysistest();
+		///scaleEigenVectorstest();
 		
 	}
 	

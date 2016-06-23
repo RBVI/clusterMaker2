@@ -56,6 +56,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.SCPS.SC
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.TransClustClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.PCAMenuTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.PCATaskFactory;
+
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa.PCoATaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterVizFactory;
 // Algorithms
@@ -181,6 +183,10 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new PCAMenuTaskFactory(), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new PCATaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 
+		//Principal Coordinate Analysis
+		//registerService(bc, new PCoAMenuTaskFactory(), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new PCoATaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+		
 		// Link Network Selections
 		LinkSelectionTaskFactory linkTaskFactory = new LinkSelectionTaskFactory(clusterManager);
 		Properties linkSelectionProps = new Properties();

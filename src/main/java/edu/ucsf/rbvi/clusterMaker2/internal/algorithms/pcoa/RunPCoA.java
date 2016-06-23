@@ -1,56 +1,127 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.work.TaskMonitor;
 import org.netlib.util.doubleW;
 
+import cern.colt.function.tdouble.IntIntDoubleFunction;
+import cern.colt.matrix.tdouble.DoubleFactory2D;
+import cern.colt.matrix.tdouble.DoubleMatrix1D;
+import cern.colt.matrix.tdouble.DoubleMatrix2D;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
+
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ComputationMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 public class RunPCoA {
 
-	CalculationMatrix calculationMatrix;
-	double inputdata[][];
 	
-	public RunPCoA(int rows,int columns,double inputdata[][]){
-		calculationMatrix=new CalculationMatrix(rows, columns, inputdata,0,0,0);
-			
-			
-	}
-	public CalculationMatrix getCalculationMatrix(){
-		return calculationMatrix;
-	}
+	private boolean canceled = false;
+	protected int clusterCount = 0;
+	private CyMatrix distanceMatrix = null;
 	
-	public static void main(String args[]){
-		//double inputdata[][]={{0,3,4,5},{3,0,6,3},{4,6,0,1},{5,3,1,0}};
-		double inputdata[][]={{0,12,5,7,1},{12,0,8,3,11},{5,8,0,2,6},{7,3,2,0,4},{1,11,6,4,0}};
-		//double inputdata[][]={{0,3,4},{3,0,1},{4,1,0}};
-		RunPCoA runPCoA=new RunPCoA(inputdata.length, inputdata.length, inputdata);
-		//runPCoA.getCalculationMatrix().setNeg(0);
-		double scores[][]=runPCoA.getCalculationMatrix().getScores();
-		double combine_array[][]=runPCoA.getCalculationMatrix().getCombine_array();
-		double evals[]=runPCoA.getCalculationMatrix().getEigen_values();
+	
+	private boolean debug = true;
+	private Matrix dismatrix=null;
+	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
+	
+	
+	
+	public RunPCoA(CyMatrix dMat, boolean selectonly, boolean ignore_missing, 
+             TaskMonitor monitor )
+	{
+			
+		this.dismatrix=dMat.getDistanceMatrix(DistanceMetric.EUCLIDEAN);
 		
-		System.out.println("Eigen Values");
-		for(int i=0;i<evals.length;i++){
-			System.out.print(evals[i]+" ");
-		}
-		System.out.println("");
-		System.out.println("Combine Array");
-		for(int i=0;i<combine_array.length;i++){
-			for(int j=0;j<2;j++){
-				System.out.print(combine_array[i][j]+" ");	
+		//nodes = distanceMatrix.getRowNodes();
+		
+		for(int i=0;i<dismatrix.nRows();i++){
+			for(int j=0;j<dismatrix.nColumns();j++){
+				System.out.print(dismatrix.doubleValue(i, j)+" ");
 			}
 			System.out.println("");
 		}
-		System.out.println("Scores Array");
-		for(int i=0;i<scores.length;i++){
-			for(int j=0;j<scores.length;j++){
-				System.out.print(scores[i][j]+" ");
+		
+		monitor.showMessage(TaskMonitor.Level.INFO,"Threads = "+nThreads);
+		monitor.showMessage(TaskMonitor.Level.INFO,"Matrix info: = "+distanceMatrix.printMatrixInfo());
+		
+	}
+	
+	public void cancel () { canceled = true; }
+
+	public void setDebug(boolean debug) { this.debug = debug; }
+	
+	
+	
+	
+	/**
+	 * Debugging routine to print out information about a matrix
+	 *
+	 * @param matrix the matrix we're going to print out information about
+	 */
+	private void printMatrixInfo(DoubleMatrix2D matrix) {
+		debugln("Matrix("+matrix.rows()+", "+matrix.columns()+")");
+		if (matrix.getClass().getName().indexOf("Sparse") >= 0)
+			debugln(" matrix is sparse");
+		else
+			debugln(" matrix is dense");
+		debugln(" cardinality is "+matrix.cardinality());
+	}
+
+	/**
+	 * Debugging routine to print out information about a matrix
+	 *
+	 * @param matrix the matrix we're going to print out information about
+	 */
+	private void printMatrix(DoubleMatrix2D matrix) {
+		for (int row = 0; row < matrix.rows(); row++) {
+			debug(distanceMatrix.getRowLabel(row)+":\t"); //node.getIdentifier()
+			for (int col = 0; col < matrix.columns(); col++) {
+				debug(""+matrix.get(row,col)+"\t");
 			}
-			System.out.println("");
+			debugln();
 		}
-		}
+		debugln("Matrix("+matrix.rows()+", "+matrix.columns()+")");
+		if (matrix.getClass().getName().indexOf("Sparse") >= 0)
+			debugln(" matrix is sparse");
+		else
+			debugln(" matrix is dense");
+		debugln(" cardinality is "+matrix.cardinality());
+	}
+
+	private void debugln(String message) {
+		if (debug) System.out.println(message);
+	}
+
+	private void debugln() {
+		if (debug) System.out.println();
+	}
+
+	private void debug(String message) {
+		if (debug) System.out.print(message);
+	}
+
+	
+
+	
+	
+	
+
+	
+	
+	
 	}
 
