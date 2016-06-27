@@ -39,6 +39,9 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
+
 /**
  *
  * @author root
@@ -47,7 +50,7 @@ public class ResultPanelPCA extends JPanel{
 
 	private final CyNetwork network;
 	private CyNetworkView networkView;
-	private final ComputationMatrix[] components;
+	private final CyMatrix[] components;
 
 	// table size parameters
 	private static final int graphPicSize = 80;
@@ -59,7 +62,7 @@ public class ResultPanelPCA extends JPanel{
 
 	private static JFrame frame;
 
-	public ResultPanelPCA(final ComputationMatrix[] components, 
+	public ResultPanelPCA(final CyMatrix[] components, 
 		final CyNetwork network, 
 		final CyNetworkView networkView){
 
@@ -155,11 +158,11 @@ public class ResultPanelPCA extends JPanel{
 			// Get the clusters
 			for (int index = 0; index < rowIndices.length; index++) {
 				int row = rowIndices[index];
-				ComputationMatrix matrix = components[row];
-				for(int i=0;i<matrix.nRow();i++){
-					for(int j=0;j<matrix.nColumn();j++){
-						if(matrix.getCell(i, j) > threshold){
-							CyNode node = network.getNodeList().get(i);
+				CyMatrix matrix = components[row];
+				for(int i=0;i<matrix.nRows();i++){
+					for(int j=0;j<matrix.nColumns();j++){
+						if(matrix.getValue(i, j) > threshold){
+							CyNode node = matrix.getRowNode(i);
 							selectedMap.put(node, node);
 							break;
 						}
@@ -231,7 +234,7 @@ public class ResultPanelPCA extends JPanel{
 		}
 	}
 
-	public Image createPCImage(ComputationMatrix pc, final int height, final int width){
+	public Image createPCImage(CyMatrix pc, final int height, final int width){
 		final Image image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		final Graphics2D g = (Graphics2D) image.getGraphics();
 
@@ -239,10 +242,12 @@ public class ResultPanelPCA extends JPanel{
 		double cx = networkView.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION);
 		double cy = networkView.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION);
 		List<Point> nodes = new ArrayList<Point>();
-		for(int i=0;i<pc.nRow();i++){
-			for(int j=0;j<pc.nColumn();j++){
-				if(pc.getCell(i, j) > threshold){
-					CyNode node = network.getNodeList().get(i);
+		System.out.println("createPCImage: "+pc.printMatrixInfo());
+		for(int i=0;i<pc.nRows();i++){
+			for(int j=0;j<pc.nColumns();j++){
+				// System.out.println("Value("+i+","+j+")="+pc.getValue(i,j));
+				if(pc.getValue(i, j) > threshold){
+					CyNode node = pc.getRowNode(i);
 					View<CyNode> nodeView = networkView.getNodeView(node);
 					Double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 					Double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
@@ -287,11 +292,11 @@ public class ResultPanelPCA extends JPanel{
 		return image;
 	}
 
-	public static void createAndShowGui(final ComputationMatrix[] components, 
-		final CyNetwork network, 
-		final CyNetworkView networkView,
-		final List<CyNode> nodeList,
-		final double[] varianceArray){
+	public static void createAndShowGui(final CyMatrix[] components, 
+	                                    final CyNetwork network, 
+	                                    final CyNetworkView networkView,
+	                                    final List<CyNode> nodeList,
+	                                    final double[] varianceArray){
 		ResultPanelPCA.varianceArray = varianceArray;
 		ResultPanelPCA resultPanelPCA = new ResultPanelPCA(components, network, networkView);
 		frame = new JFrame("Result Panel");

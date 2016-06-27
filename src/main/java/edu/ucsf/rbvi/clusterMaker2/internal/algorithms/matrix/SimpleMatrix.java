@@ -1,5 +1,8 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
 
@@ -703,7 +706,25 @@ public class SimpleMatrix implements Matrix {
 
 	public Matrix covariance() {
 		DoubleMatrix2D matrix2D = DoubleStatistic.covariance(getColtMatrix());
-		return new SimpleMatrix(this, matrix2D.toArray());
+		SimpleMatrix mat = new SimpleMatrix(matrix2D.rows(), matrix2D.columns());
+		mat.symmetric = true;
+		mat.transposed = this.transposed;
+		double[][]inputData = matrix2D.toArray();
+		for (int row = 0; row < mat.nRows; row++) {
+			for (int column = 0; column < mat.nColumns; column++) {
+				mat.data[row][column] = inputData[row][column];
+			}
+		}
+		String[] labels;
+		if (this.transposed)
+			labels = rowLabels;
+		else
+			labels = columnLabels;
+		if (labels != null) {
+			mat.rowLabels = Arrays.copyOf(labels, labels.length);
+			mat.columnLabels = Arrays.copyOf(labels, labels.length);
+		}
+		return mat;
 	}
 
 	public double[] eigenValues(boolean nonZero){
@@ -783,6 +804,21 @@ public class SimpleMatrix implements Matrix {
 			sb.append("\n");
 		} 
 		return sb.toString();
+	}
+	
+	public void writeMatrix(String fileName) {
+		String tmpDir = System.getProperty("java.io.tmpdir");
+		try{
+			File file = new File(tmpDir + fileName);
+			if(!file.exists()) {
+				file.createNewFile();
+			}
+			PrintWriter writer = new PrintWriter(tmpDir + fileName, "UTF-8");
+			writer.write(printMatrix());
+			writer.close();
+		}catch(IOException e){
+			e.printStackTrace(System.out);
+		}
 	}
 
 	private void gaussian(Double a[][], int idx[]) {

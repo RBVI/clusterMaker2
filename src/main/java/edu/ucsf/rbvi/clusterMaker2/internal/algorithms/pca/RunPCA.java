@@ -5,6 +5,7 @@
  */
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca;
 
+import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -30,11 +31,8 @@ public class RunPCA {
 	protected String[] weightAttributes;
 	protected boolean ignoreMissing;
 	protected boolean selectedOnly;
-	protected Matrix distanceMatrix;
+	protected CyMatrix distanceMatrix;
 
-	private static final int PCA_NODE_NODE = 1;
-	private static final int PCA_NODE_ATTRIBUTE = 2;
-	private static final int PCA_EDGE = 3;
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
 
 	public RunPCA(CyNetwork network, CyNetworkView networkView, 
@@ -54,80 +52,21 @@ public class RunPCA {
 
 	// this method assumes that eigen values returned by DenseDoubleEigenvalueDecomposition class
 	// are not sorted in their order from maximum to minimum
-	/*
-	public ComputationMatrix[] runOnNodeToNodeDistanceMatrixSorted(){ 
-		// Matrix matrix = new Matrix(network, weightAttributes, false, context.ignoreMissing, context.selectedOnly);
-		// matrix.setUniformWeights();
-		CyMatrix matrix = CyMatrixFactory.makeLargeMatrix(network, weightAttributes, context.selectedOnly, 
-		                                                  context.ignoreMissing, false, false);
-		distanceMatrix = matrix.getDistanceMatrix(context.distanceMetric.getSelectedValue());
-		ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
-
-		ComputationMatrix[] components = this.computePCsSorted(mat, PCA_NODE_NODE);
-
-		if(context.pcaPlot)
-			ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));
-
-		return components;
-	}
-
-	// this method assumes that eigen values returned by DenseDoubleEigenvalueDecomposition class
-	// are sorted in increasing order
-	public ComputationMatrix[] runOnNodeToNodeDistanceMatrix(){ 
-		// We can't do PCA on the distance matrix because the covariance of the
-		// distance matrix is not positive semi-definite.  We need to create a matrix
-		// that roughly corresponds to the covariance matrix.  We'll use Euclidean Similarity
-		// (see the paper by Elmore & Richman, 2000)
-
-		System.out.println("runOnNodeToNodeDistanceMatrix");
-
-		// 1. Create the distance matrix
-		Matrix matrix = new Matrix(network, weightAttributes, false, context.ignoreMissing, context.selectedOnly);
-		matrix.setUniformWeights();
-		Matrix distMat = matrix.makeDistanceMatrix(context.distanceMetric.getSelectedValue());
-		distanceMatrix = distMat.toArray(ComputationMatrix.MISSING_DATA);
-		ComputationMatrix dist = new ComputationMatrix(distanceMatrix);
-		dist.writeMatrix("distance1.out");
-
-		// This will divide all entries by the max distance
-		normalizeMatrix(distanceMatrix);
-		dist = new ComputationMatrix(distanceMatrix);
-		dist.writeMatrix("distance2.out");
-
-		// 2. Now calculate the similarity matrix
-		double[][] similarityMatrix = convertToSimilarityMatrix(distanceMatrix);
-
-		System.out.println("Creating computationMatrix");
-		ComputationMatrix mat = new ComputationMatrix(similarityMatrix);
-		mat.writeMatrix("similarity.out");
-
-		System.out.println("Computing principle components");
-		ComputationMatrix[] components = this.computePCsSorted(mat, PCA_NODE_NODE);
-
-		if(context.pcaPlot)
-			ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));
-
-		return components;
-	}
-	*/
-
-	// this method assumes that eigen values returned by DenseDoubleEigenvalueDecomposition class
-	// are not sorted in their order from maximum to minimum
 	public void runOnNodeToAttributeMatrixSorted(){ 
 		System.out.println("runOnNodeToAttributeDistanceMatrixSorted");
 		CyMatrix matrix = CyMatrixFactory.makeLargeMatrix(network, weightAttributes, context.selectedOnly, 
 		                                                  context.ignoreMissing, false, false);
-		distanceMatrix = matrix.getDistanceMatrix(context.distanceMetric.getSelectedValue());
+		// distanceMatrix = matrix.getDistanceMatrix(context.distanceMetric.getSelectedValue());
 
-		System.out.println("Creating computationMatrix");
-		ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
+		// System.out.println("Creating computationMatrix");
+		// ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
 		// double[][] matrixArray = matrix.toArray(ComputationMatrix.MISSING_DATA);
 
 		System.out.println("Computing principle components(sorted)");
-		ComputationMatrix[] components = this.computePCsSorted(mat, PCA_NODE_ATTRIBUTE);
+		CyMatrix[] components = this.computePCsSorted(distanceMatrix);
 
 		if(context.pcaPlot)
-			ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));
+			ScatterPlotPCA.createAndShowGui(components, computeVariance(distanceMatrix));
 
 	}
 
@@ -137,130 +76,86 @@ public class RunPCA {
 		System.out.println("runOnNodeToAttributeDistanceMatrix");
 		CyMatrix matrix = CyMatrixFactory.makeLargeMatrix(network, weightAttributes, context.selectedOnly, 
 		                                                  context.ignoreMissing, false, false);
-		distanceMatrix = matrix.getDistanceMatrix(context.distanceMetric.getSelectedValue());
+		// distanceMatrix = matrix.getDistanceMatrix(context.distanceMetric.getSelectedValue());
 
-		System.out.println("Creating computationMatrix");
-		ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
+		// System.out.println("Creating computationMatrix");
+		// ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
 
 		System.out.println("Computing principle components");
-		ComputationMatrix[] components = this.computePCs(mat, PCA_NODE_ATTRIBUTE);
+		CyMatrix[] components = this.computePCs(matrix);
+
+		double[] variance = computeVariance(matrix);
 
 		if(context.pcaResultPanel)
 			ResultPanelPCA.createAndShowGui(components, network, networkView, 
-			                                matrix.getRowNodes(), computeVariance(mat));
+			                                matrix.getRowNodes(), variance);
 
 		if(context.pcaPlot)
-			ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));
+			ScatterPlotPCA.createAndShowGui(components, variance);
 
 	}
 
-	/*
-	public void runOnEdgeValues(){
-		// We can't do PCA on the distance matrix because the covariance of the
-		// distance matrix is not positive semi-definite.  We need to create a
-		// weighted Laplacian first.
-
-		// 1. Create a similarity matrix
-		CyMatrix disMatrix = context.edgeAttributeHandler.getMatrix();
-		distanceMatrix = disMatrix.toArray();
-		// This will divide all entries by the max distance
-		normalizeMatrix(distanceMatrix);
-
-		// 2. Now calculate the similarity matrix
-		double[][] similarityMatrix = convertToSimilarityMatrix(distanceMatrix);
-
-		System.out.println("Creating computationMatrix");
-		ComputationMatrix mat = new ComputationMatrix(similarityMatrix);
-
-		System.out.println("Computing principle components");
-		ComputationMatrix[] components = this.computePCs(mat, PCA_EDGE);
-		mat.writeMatrix("output.txt");
-
-		if(context.pcaPlot)
-			ScatterPlotPCA.createAndShowGui(components, computeVariance(mat));
-	}
-	*/
-
-	public ComputationMatrix[] computePCs(ComputationMatrix matrix, int type){
+	public CyMatrix[] computePCs(CyMatrix matrix){
 		matrix.writeMatrix("output.txt");
 
-		ComputationMatrix mat;
-		ComputationMatrix C;
-		if (type == PCA_NODE_ATTRIBUTE) {
-			System.out.println("centralizing columns");
-			mat = matrix.centralizeColumns();
-			mat.writeMatrix("centralized.txt");
+		Matrix C;
+		System.out.println("centralizing columns");
+		matrix.centralizeColumns();
+		matrix.writeMatrix("centralized.txt");
 
-			System.out.println("Creating covariance matrix");
-			C = mat.covariance();
-			mat.writeMatrix("covariance.txt");
-		} else {
-			// The matrix already has similarities, which are roughly equivalent to
-			// covariances.
-			mat = matrix.centralizeColumns();
-			C = mat;
-		}
+		System.out.println("Creating covariance matrix");
+		C = matrix.covariance();
+		C.writeMatrix("covariance.txt");
 
 		System.out.println("Finding eigenValues");
-		double[] values = C.eigenValues();
+		double[] values = C.eigenValues(true);
 		System.out.println("Finding eigenVectors");
 		double[][] vectors = C.eigenVectors();
 
 		monitor.showMessage(TaskMonitor.Level.INFO, "Found "+values.length+" EigenValues");
+		monitor.showMessage(TaskMonitor.Level.INFO, "Found "+vectors.length+" EigenVectors of length "+vectors[0].length);
 
 		System.out.println("EigenValues: ");
 		for (double v: values) {
 			System.out.println("     "+v);
 		}
 
-		ComputationMatrix[] components = new ComputationMatrix[values.length];
-
-		// Create the thread pools
-		final ExecutorService[] threadPools = new ExecutorService[nThreads];
-		for (int pool = 0; pool < threadPools.length; pool++) {
-			threadPools[pool] = Executors.newFixedThreadPool(1);
-		}
+		CyMatrix[] components = new CyMatrix[values.length];
 
 		for(int j=values.length-1, k=0;j>=0;j--,k++){
-			double[] w = new double[vectors.length];
+			// double[] w = new double[vectors.length];
+			CyMatrix result = CyMatrixFactory.makeLargeMatrix(matrix.getNetwork(), values.length, 1);
 			for(int i=0;i<vectors.length;i++){
-				w[i] = vectors[i][j];
+				result.setValue(i,0,vectors[i][j]);
 			}
-			Runnable r = new CalculateComponent(components, k, mat, type, w);
-			threadPools[k%nThreads].submit(r);
-			// System.out.println("PC: " + k);
-			// components[k].printMatrix();
-		}
-		for (int pool = 0; pool < threadPools.length; pool++) {
-			threadPools[pool].shutdown();
-			try {
-				boolean result = threadPools[pool].awaitTermination(7, TimeUnit.DAYS);
-			} catch (Exception e) {}
-		}
+			System.out.println("matrix: "+matrix.printMatrixInfo());
+			System.out.println("vector: "+result.printMatrixInfo());
 
+			Matrix mat = matrix.multiplyMatrix(result);
+			System.out.println("After vector multiply: "+mat.printMatrixInfo());
+			components[k] = matrix.copy(mat);
+			components[k].printMatrixInfo();
+			components[k].writeMatrix("component_"+k+".txt");
+			System.out.println("Component matrix "+k+" has "+components[k].getRowNodes().size()+" nodes");
+		}
 		return components;
 	}
 
-	public ComputationMatrix[] computePCsSorted(ComputationMatrix matrix, int type){
-		ComputationMatrix mat;
-		ComputationMatrix C;
+	public CyMatrix[] computePCsSorted(CyMatrix matrix){
 		matrix.writeMatrix("output.txt");
-		if (type == PCA_NODE_ATTRIBUTE) {
-			System.out.println("centralizing columns");
-			mat = matrix.centralizeColumns();
-			mat.writeMatrix("centralized.txt");
 
-			System.out.println("Creating covariance matrix");
-			C = mat.covariance();
-			mat.writeMatrix("covariance.txt");
-		} else {
-			// The matrix already has similarities, which are roughly equivalent to
-			// covariances.
-			mat = matrix.centralizeColumns();
-			C = mat;
-		}
+		Matrix C;
+		System.out.println("centralizing columns");
+		matrix.centralizeColumns();
+		matrix.writeMatrix("centralized.txt");
 
-		double[] values = C.eigenValues();
+		// Scale???
+
+		System.out.println("Creating covariance matrix");
+		C = matrix.covariance();
+		C.writeMatrix("covariance.txt");
+
+		double[] values = C.eigenValues(true);
 		double[][] vectors = C.eigenVectors();
 		monitor.showMessage(TaskMonitor.Level.INFO, "Found "+values.length+" EigenValues");
 
@@ -276,13 +171,7 @@ public class RunPCA {
 				nEV++;
 		}
 
-		ComputationMatrix[] components = new ComputationMatrix[nEV];
-
-		// Create the thread pools
-		final ExecutorService[] threadPools = new ExecutorService[nThreads];
-		for (int pool = 0; pool < threadPools.length; pool++) {
-			threadPools[pool] = Executors.newFixedThreadPool(1);
-		}
+		CyMatrix[] components = new CyMatrix[nEV];
 
 		for(int j=0;j<values.length;j++){
 			double value = Double.MIN_VALUE;
@@ -306,28 +195,20 @@ public class RunPCA {
 			}
 			System.out.println("     "+values[pos]);
 
-			Runnable r = new CalculateComponent(components, j, mat, type, w);
-			threadPools[j%nThreads].submit(r);
+			CyMatrix result = CyMatrixFactory.makeLargeMatrix(matrix.getNetwork(), matrix.nRows(), 1);
+			Matrix mat = matrix.multiplyMatrix(result);
+			components[j] = matrix.copy(mat);
 
 			max = value;
-		}
-
-		for (int pool = 0; pool < threadPools.length; pool++) {
-			threadPools[pool].shutdown();
-			try {
-				boolean result = threadPools[pool].awaitTermination(7, TimeUnit.DAYS);
-			} catch (Exception e) {}
 		}
 
 		return components;
 	}
 
-	public double[] computeVariance(ComputationMatrix matrix){
-		ComputationMatrix mat = matrix.centralizeColumns();
+	public double[] computeVariance(CyMatrix matrix){
+		Matrix C = matrix.covariance();
 
-		ComputationMatrix C = mat.covariance();
-
-		double[] values = C.eigenValues();
+		double[] values = C.eigenValues(true);
 		double[] variances = new double[values.length];
 
 		double sum = 0;
@@ -368,6 +249,14 @@ public class RunPCA {
 		return result;
 	}
 
+	double[] reverseArray(double[] arr) {
+		double[] result = new double[arr.length];
+		for (int i=0; i < arr.length; i++) {
+			result[i] = arr[arr.length-1-i];
+		}
+		return result;
+	}
+
 	private class CalculateComponent implements Runnable {
 		ComputationMatrix[] components;
 		ComputationMatrix mat;
@@ -385,13 +274,8 @@ public class RunPCA {
 		}
 
 		public void run() {
-			if(type == PCA_NODE_NODE) {
-				// System.out.println("k = "+k+": NODE_NODE -- mutiplying array");
-				components[k] = mat.multiplyMatrix(ComputationMatrix.multiplyArray(w, w));
-			} else if(type == PCA_NODE_ATTRIBUTE) {
-				// System.out.println("k = "+k+": NODE_ATTRIBUTE -- mutiplying matrix with array");
-				components[k] = ComputationMatrix.multiplyMatrixWithArray(mat, w);
-			}
+			// System.out.println("k = "+k+": NODE_ATTRIBUTE -- mutiplying matrix with array");
+			components[k] = ComputationMatrix.multiplyMatrixWithArray(mat, w);
 		}
 	}
 }

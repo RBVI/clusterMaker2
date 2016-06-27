@@ -297,7 +297,7 @@ public interface Matrix {
 	/**
 	 * Multiply two matrices together
 	 *
-	 * @param the matrix to multiple with our matrix
+	 * @param matrix the matrix to multiple with our matrix
 	 * @return the multiplied matrix
 	 */
 	public Matrix multiplyMatrix(Matrix matrix);
@@ -337,6 +337,13 @@ public interface Matrix {
 	 * @return string representation of the matrix
 	 */
 	public String printMatrix();
+
+	/**
+	 * Write the matrix out in a reasonable format
+	 *
+	 * @param filename the name of the output file
+	 */
+	public void writeMatrix(String filename);
 
 	/**
 	 * Temporary solution to providing access to Colt Matrices.  Eventually,

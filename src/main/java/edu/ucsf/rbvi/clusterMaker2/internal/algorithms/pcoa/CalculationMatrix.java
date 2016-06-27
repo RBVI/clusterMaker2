@@ -16,7 +16,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
-public class CalculationMatrix implements CyMatrix{
+public class CalculationMatrix implements CyMatrix {
 
 	double data[][];
 	int rows;
@@ -546,12 +546,10 @@ public class CalculationMatrix implements CyMatrix{
 		
 	}
 
-
-	public Matrix getDistanceMatrix(DistanceMetric metric) {
+	public CyMatrix getDistanceMatrix(DistanceMetric metric) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 
 	public double[][] toArray() {
 		// TODO Auto-generated method stub
@@ -808,4 +806,6 @@ public class CalculationMatrix implements CyMatrix{
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	public void writeMatrix(String matrix) {}
 }

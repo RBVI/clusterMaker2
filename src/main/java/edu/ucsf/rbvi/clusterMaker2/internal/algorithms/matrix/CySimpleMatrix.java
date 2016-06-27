@@ -7,6 +7,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 /**
@@ -169,6 +170,16 @@ public class CySimpleMatrix extends SimpleMatrix implements CyMatrix {
 	 */
 	public void setAssymetricalEdge(boolean assymetricalEdge) {
 		this.assymetricalEdge = assymetricalEdge;
+	}
+
+	public CyMatrix getDistanceMatrix(DistanceMetric metric) {
+		CySimpleMatrix dist = new CySimpleMatrix(network, nRows, nRows);
+		if (rowNodes != null) {
+			dist.rowNodes = Arrays.copyOf(rowNodes, nRows);
+			dist.columnNodes = Arrays.copyOf(rowNodes, nRows);
+		}
+		Matrix cMatrix = super.getDistanceMatrix(metric);
+		return dist.copy(cMatrix);
 	}
 
 	/**

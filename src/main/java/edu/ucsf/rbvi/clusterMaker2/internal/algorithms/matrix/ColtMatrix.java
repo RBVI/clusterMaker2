@@ -1,5 +1,8 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
@@ -616,9 +619,14 @@ public class ColtMatrix implements Matrix {
 	}
 
 	// For some reason, the parallelcolt version of zMult doesn't
-	// really take advantage of the available cores.  This version does.
+	// really take advantage of the available cores.  This version does, but
+	// it seems like it only works for multiplying matrices of the same
+	// size.
 	public Matrix multiplyMatrix(Matrix matrix) {
 		// return mult(matrix);
+		// if (matrix.nRows() != nRows() || matrix.nColumns() != nColumns())
+		// 	return mult(matrix);
+
 		DoubleMatrix2D A = data;
 		DoubleMatrix2D B = matrix.getColtMatrix();
 
@@ -626,13 +634,15 @@ public class ColtMatrix implements Matrix {
 		int n = A.columns();
 		int p = B.columns();
 
+		System.out.println("multiplyMatrix: m="+m+", n="+n+", p="+p);
+
 		// Create views into B
 		final DoubleMatrix1D[] Brows= new DoubleMatrix1D[n];
 		for (int i = n; --i>=0; ) Brows[i] = B.viewRow(i);
 
 		// Create a series of 1D vectors
-		final DoubleMatrix1D[] Crows= new DoubleMatrix1D[n];
-		for (int i = m; --i>=0; ) Crows[i] = B.like1D(m);
+		final DoubleMatrix1D[] Crows= new DoubleMatrix1D[m];
+		for (int i = m; --i>=0; ) Crows[i] = B.like1D(p);
 
 		// Create the thread pools
 		final ExecutorService[] threadPools = new ExecutorService[nThreads];
@@ -676,7 +686,19 @@ public class ColtMatrix implements Matrix {
 
 	public Matrix covariance() {
 		DoubleMatrix2D matrix2D = DoubleStatistic.covariance(data);
-		return new ColtMatrix(this, matrix2D);
+		ColtMatrix mat = new ColtMatrix(matrix2D.rows(), matrix2D.columns());
+		mat.symmetric = true;
+		mat.data = matrix2D;
+		String[] labels;
+		if (this.transposed)
+			labels = rowLabels;
+		else
+			labels = columnLabels;
+		if (labels != null) {
+			mat.rowLabels = Arrays.copyOf(labels, labels.length);
+			mat.columnLabels = Arrays.copyOf(labels, labels.length);
+		}
+		return mat;
 	}
 
 	public double[] eigenValues(boolean nonZero){
@@ -724,7 +746,7 @@ public class ColtMatrix implements Matrix {
 		blas.dgemm(false, false, 1.0, aMat, bMat, 0.0, cMat);
 		ColtMatrix c = new ColtMatrix(this, cMat);
 		*/
-		DoubleMatrix2D cMat = DoubleFactory2D.sparse.make(nRows, nColumns);
+		DoubleMatrix2D cMat = DoubleFactory2D.sparse.make(nRows, b.nColumns());
 		data.zMult(b.getColtMatrix(), cMat);
 		ColtMatrix c = new ColtMatrix(this, cMat);
 		return c;
@@ -770,6 +792,22 @@ public class ColtMatrix implements Matrix {
 			sb.append("\n");
 		} 
 		return sb.toString();
+	}
+
+	public void writeMatrix(String fileName) {
+		String tmpDir = System.getProperty("java.io.tmpdir");
+		String filePath = tmpDir + File.separator + fileName;
+		try{
+			File file = new File(filePath);
+			if(!file.exists()) {
+				file.createNewFile();
+			}
+			PrintWriter writer = new PrintWriter(filePath, "UTF-8");
+			writer.write(printMatrix());
+			writer.close();
+		}catch(IOException e){
+			e.printStackTrace(System.out);
+		}
 	}
 
 	public SimpleMatrix getSimpleMatrix() {

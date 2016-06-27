@@ -7,6 +7,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 /**
@@ -178,6 +179,16 @@ public class CyColtMatrix extends ColtMatrix implements CyMatrix {
 		this.assymetricalEdge = assymetricalEdge;
 	}
 
+	public CyMatrix getDistanceMatrix(DistanceMetric metric) {
+		CyColtMatrix dist = new CyColtMatrix(network, nRows, nRows);
+		if (rowNodes != null) {
+			dist.rowNodes = Arrays.copyOf(rowNodes, nRows);
+			dist.columnNodes = Arrays.copyOf(rowNodes, nRows);
+		}
+		Matrix cMatrix = super.getDistanceMatrix(metric);
+		return dist.copy(cMatrix);
+	}
+
 	/**
 	 * Return a copy of this matrix with the data replaced by the
 	 * argument
@@ -192,7 +203,7 @@ public class CyColtMatrix extends ColtMatrix implements CyMatrix {
 		} else {
 			cMatrix = (ColtMatrix)matrix;
 		}
-		CyColtMatrix newMatrix = new CyColtMatrix(this.network, nRows, nColumns);
+		CyColtMatrix newMatrix = new CyColtMatrix(this.network, cMatrix.nRows, cMatrix.nColumns);
 		newMatrix.data = cMatrix.data;
 		newMatrix.transposed = cMatrix.transposed;
 		newMatrix.symmetric = cMatrix.symmetric;
@@ -205,9 +216,12 @@ public class CyColtMatrix extends ColtMatrix implements CyMatrix {
 		if (cMatrix.index != null)
 			newMatrix.index = Arrays.copyOf(cMatrix.index, cMatrix.index.length);
 		if (rowNodes != null)
-			newMatrix.rowNodes = Arrays.copyOf(rowNodes, rowNodes.length);
-		if (columnNodes != null)
-			newMatrix.columnNodes = Arrays.copyOf(columnNodes, columnNodes.length);
+			newMatrix.rowNodes = Arrays.copyOf(rowNodes, cMatrix.nRows);
+
+		// Careful!  Make sure to properly account for the transition from a symmetrix matrix to
+		// a vector
+		if (columnNodes != null && cMatrix.nColumns > 1)
+			newMatrix.columnNodes = Arrays.copyOf(columnNodes, cMatrix.nColumns);
 		return newMatrix;
 	}
 

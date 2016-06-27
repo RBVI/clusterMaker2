@@ -28,6 +28,9 @@ import java.util.List;
 import javax.swing.*;
 import org.jdesktop.swingx.JXCollapsiblePane;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
+
 /**
  *
  * @author root
@@ -42,12 +45,12 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	private static final int BORDER_GAP = 30;
 	private static final int GRAPH_HATCH_WIDTH = 10;
 	private int graph_point_width = 6;
-	private final double[][] scoresX;
-	private final double[][] scoresY;
+	private final CyMatrix scoresX;
+	private final CyMatrix scoresY;
 	private List<Point> graphPoints;
 	private final String lableX;
 	private final String lableY;
-	private static ComputationMatrix[] allComponents;
+	private static CyMatrix[] allComponents;
 	private static double[] variances;
 	private static String[] PCs;
 	private static final Color[] colors =
@@ -85,14 +88,14 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	private static int startingX, startingY, currentX, currentY, previousDX=0, previosDY=0;
 	private static boolean dragging = false;
 
-	public ScatterPlotPCA(double[][] scoresX, double[][] scoresY, String lableX, String lableY){
+	public ScatterPlotPCA(CyMatrix scoresX, CyMatrix scoresY, String lableX, String lableY){
 		this.scoresX = scoresX;
 		this.scoresY = scoresY;
 		this.lableX = lableX;
 		this.lableY = lableY;
 
-		double max = ComputationMatrix.getMax(scoresX);
-		double min = ComputationMatrix.getMin(scoresX);
+		double max = scoresX.getMaxValue();
+		double min = scoresX.getMinValue();
 		if(max > MAX_SCORE || min < MIN_SCORE){
 			if(max > Math.abs(min)){
 				MAX_SCORE = (int) max;
@@ -131,7 +134,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 			for(int i=0;i<graphPoints.size();i++){
 				Point p = graphPoints.get(i);
 				if(Math.abs(p.x - x) <= graph_point_width && Math.abs(p.y - y) <= graph_point_width){
-					System.out.println("i and j: " + Math.floor(i/scoresX.length) + " " + i%scoresX.length);
+					System.out.println("i and j: " + Math.floor(i/scoresX.nRows()) + " " + i%scoresX.nRows());
 					break;
 				}
 			}
@@ -232,10 +235,10 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	  int newY = getHeight()/2;
 
 	  graphPoints = new ArrayList<Point>();
-	  for(int i=0; i<scoresX.length;i++){
-		  for(int j=0;j<scoresX[0].length;j++){
-			  int x1 = (int) (scoresX[i][j] * xScale + newX);
-			  int y1 = (int) ((int) -1 * (scoresY[i][j] * yScale - newY));
+	  for(int i=0; i<scoresX.nRows();i++){
+		  for(int j=0;j<scoresX.nColumns();j++){
+			  int x1 = (int) (scoresX.getValue(i,j) * xScale + newX);
+			  int y1 = (int) ((int) -1 * (scoresY.getValue(i,j) * yScale - newY));
 			  graphPoints.add(new Point(x1, y1));
 		  }
 	  }
@@ -294,7 +297,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		return collapsiblePaneOptions;
 	}
 
-	public static JPanel createControlJPanel(ComputationMatrix[] components){
+	public static JPanel createControlJPanel(CyMatrix[] components){
 		allComponents = components;
 		JPanel control = new JPanel(new GridBagLayout());
 
@@ -383,8 +386,8 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 				}
 				//Execute when button is pressed
 				container.remove(0);
-				ScatterPlotPCA scatterPlot = new ScatterPlotPCA(allComponents[comboXAxis.getSelectedIndex()].toArray(),
-						allComponents[comboYAxis.getSelectedIndex()].toArray(), PCs[comboXAxis.getSelectedIndex()], PCs[comboYAxis.getSelectedIndex()]);
+				ScatterPlotPCA scatterPlot = new ScatterPlotPCA(allComponents[comboXAxis.getSelectedIndex()],
+						allComponents[comboYAxis.getSelectedIndex()], PCs[comboXAxis.getSelectedIndex()], PCs[comboYAxis.getSelectedIndex()]);
 				container.add(scatterPlot, 0);
 				container.updateUI();
 			}
@@ -398,7 +401,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		return control;
 	}
 
-	public static void createAndShowGui(ComputationMatrix[] components, double[] varianceArray) {
+	public static void createAndShowGui(CyMatrix[] components, double[] varianceArray) {
 
 		if(components == null){
 			return;
@@ -408,7 +411,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		variances = varianceArray;
 
 		ScatterPlotPCA scatterPlot = 
-						new ScatterPlotPCA(components[0].toArray(), components[1].toArray(), "PC 1", "PC 2");
+						new ScatterPlotPCA(components[0], components[1], "PC 1", "PC 2");
 
 		JFrame frame = new JFrame("Scatter Plot");
 

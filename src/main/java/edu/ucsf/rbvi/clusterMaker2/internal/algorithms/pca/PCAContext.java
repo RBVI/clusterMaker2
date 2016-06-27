@@ -22,9 +22,11 @@ import org.cytoscape.work.util.ListSingleSelection;
 public class PCAContext {
 	CyNetwork network;
 
+	/*
 	@Tunable(description="Distance Metric", gravity=1.0)
 	public ListSingleSelection<DistanceMetric> distanceMetric = 
 		new ListSingleSelection<DistanceMetric>(DistanceMetric.getDistanceMetricList());
+	*/
 
 	/*
 	@Tunable(description="Input Value", gravity=2.0)
@@ -53,7 +55,7 @@ public class PCAContext {
 	*/
 
 	@Tunable(description="Node attributes for PCA", groups="Source for Distance Matrix", 
-	         params="displayState=expanded",
+	         params="displayState=uncollapsed",
 	         tooltip="You must choose at least 2 node columns for an attribute PCA", gravity=9.0)
 	public ListMultipleSelection<String> nodeAttributeList = null;
 
