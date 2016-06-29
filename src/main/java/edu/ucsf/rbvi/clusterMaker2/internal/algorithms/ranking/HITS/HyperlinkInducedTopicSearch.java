@@ -118,7 +118,7 @@ public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank {
 
             for (NodeCluster cluster : clusters) {
                 if (cluster.getNodeScores().containsKey(node.getCyNode().getSUID())) {
-                    cluster.increaseRankScore(node.getPRScore());
+                    cluster.addScoreToAvg(node.getPRScore());
                 }
             }
         }
