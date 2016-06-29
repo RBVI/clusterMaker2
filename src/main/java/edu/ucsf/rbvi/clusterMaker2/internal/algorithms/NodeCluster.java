@@ -79,7 +79,9 @@ public class NodeCluster extends ArrayList<CyNode> {
     }
 
 	public void increaseRankScore(double increase) {
-		this.rankScore += increase;
+		if (increase > 0.0) {
+			rankScore += increase / nodeScores.size();
+		}
 	}
 
 	public String toString() {
@@ -95,12 +97,6 @@ public class NodeCluster extends ArrayList<CyNode> {
 		for (CyNode node : this) {
 			nodeScores.put(node.getSUID(), 0.0d);
 		}
-	}
-
-	public void initSWRWRScores() {
-		nodeScores = new HashMap<>();
-		double defaultScore = 1 / super.size();
-		super.forEach(node -> nodeScores.put(node.getSUID(), defaultScore));
 	}
 
 	public HashMap<Long, Double> getNodeScores() {
