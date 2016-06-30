@@ -106,7 +106,6 @@ public class PRWP extends AbstractTask implements Rank {
     private void insertScores(List<NodeCluster> clusters, PageRankWithPriors<PRNode, PREdge> pageRank) {
         for (PRNode node : graph.getVertices()) {
             node.setPRScore(pageRank.getVertexScore(node));
-            System.out.println(pageRank.getVertexScore(node));
 
             for (NodeCluster cluster : clusters) {
                 if (cluster.getNodeScores().containsKey(node.getCyNode().getSUID())) {
@@ -199,7 +198,6 @@ public class PRWP extends AbstractTask implements Rank {
             }
         }
 
-        System.out.println("Settings edge score to: " + totalEdgeScore);
         prEdge.setScore(totalEdgeScore);
     }
 

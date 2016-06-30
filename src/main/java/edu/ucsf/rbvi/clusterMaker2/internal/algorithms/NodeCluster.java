@@ -80,7 +80,8 @@ public class NodeCluster extends ArrayList<CyNode> {
 
 	public void addScoreToAvg(double increase) {
 		if (increase > 0.0) {
-			rankScore += increase / nodeScores.size();
+			double inc = increase / this.size();
+			rankScore += inc;
 		}
 	}
 
