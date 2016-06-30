@@ -71,13 +71,47 @@ public class SimpleMatrix implements Matrix {
 		symmetric = mat.symmetric;
 		minValue = mat.minValue;
 		maxValue = mat.maxValue;
-		rowLabels = Arrays.copyOf(rowLabels, rowLabels.length);
-		columnLabels = Arrays.copyOf(columnLabels, columnLabels.length);
+		rowLabels = Arrays.copyOf(mat.rowLabels, mat.rowLabels.length);
+		columnLabels = Arrays.copyOf(mat.columnLabels, mat.columnLabels.length);
 		for (int row = 0; row < nRows; row++) {
 			for (int column = 0; column < nColumns; column++) {
 				this.data[row][column] = inputData[row][column];
 			}
 		}
+	}
+
+	public void initialize(int rows, int columns, double[][] arrayData) {
+		nRows = rows;
+		nColumns = columns;
+		data = new Double[rows][columns];
+		if (arrayData != null) {
+			for (int row = 0; row < rows; row++) {
+				for (int col = 0; col < columns; col++) {
+					setValue(row, col, arrayData[row][col]);
+				}
+			}
+		}
+		transposed = false;
+		symmetric = false;
+		rowLabels = new String[nRows];
+		columnLabels = new String[nColumns];
+	}
+
+	public void initialize(int rows, int columns, Double[][] arrayData) {
+		nRows = rows;
+		nColumns = columns;
+		data = new Double[rows][columns];
+		if (arrayData != null) {
+			for (int row = 0; row < rows; row++) {
+				for (int col = 0; col < columns; col++) {
+					setValue(row, col, arrayData[row][col]);
+				}
+			}
+		}
+		transposed = false;
+		symmetric = false;
+		rowLabels = new String[nRows];
+		columnLabels = new String[nColumns];
 	}
 	
 	/**
@@ -654,6 +688,26 @@ public class SimpleMatrix implements Matrix {
 		updateMinMax();
 	}
 
+	public void standardizeRow(int row) {
+		double mean = rowMean(row);
+		double variance = rowVariance(row, mean);
+		double stdev = Math.sqrt(variance);
+		for (int column = 0; column < nColumns; column++) {
+			double cell = this.getValue(row, column);
+			this.setValue(row, column, (cell-mean)/stdev);
+		}
+	}
+
+	public void standardizeColumn(int column) {
+		double mean = columnMean(column);
+		double variance = columnVariance(column, mean);
+		double stdev = Math.sqrt(variance);
+		for (int row = 0; row < nRows; row++) {
+			double cell = this.getValue(row, column);
+			this.setValue(row, column, (cell-mean)/stdev);
+		}
+	}
+
 	public void centralizeColumns() {
 		for(int i=0;i<nColumns;i++){
 			// Replace with parallel function?
@@ -694,6 +748,76 @@ public class SimpleMatrix implements Matrix {
 		}
 	}
 
+	public double columnSum(int column) {
+		double sum = 0.0;
+		for(int j=0;j<nRows; j++){
+			double cell = this.getValue(j, column);
+			if (!Double.isNaN(cell))
+				sum += cell;
+		}
+		return sum;
+	}
+	
+	public double rowSum(int row) {
+		double sum = 0.0;
+		for(int j=0;j<nColumns; j++){
+			double cell = this.getValue(row, j);
+			if (!Double.isNaN(cell))
+				sum += cell;
+		}
+		return sum;
+	}
+
+	public double columnMean(int column) {
+		double mean = 0.0;
+		for(int j=0;j<nRows; j++){
+			double cell = this.getValue(j, column);
+			if (!Double.isNaN(cell))
+				mean += cell;
+		}
+		return mean/nRows;
+	}
+
+	public double rowMean(int row) {
+		double mean = 0.0;
+		for(int j=0;j<nColumns; j++){
+			double cell = this.getValue(row, j);
+			if (!Double.isNaN(cell))
+				mean += cell;
+		}
+		return mean/nColumns;
+	}
+	
+	public double columnVariance(int column) {
+		double mean = columnMean(column);
+		return columnVariance(column, mean);
+	}
+
+	public double columnVariance(int column, double mean) {
+		double variance = 0.0;
+		for(int j=0;j<nRows; j++){
+			double cell = this.getValue(j, column);
+			if (!Double.isNaN(cell))
+				variance += Math.pow((cell-mean),2);
+		}
+		return variance/nRows;
+	}
+	
+	public double rowVariance(int row) {
+		double mean = rowMean(row);
+		return rowVariance(row, mean);
+	}
+
+	public double rowVariance(int row, double mean) {
+		double variance = 0.0;
+		for(int j=0;j<nColumns; j++){
+			double cell = this.getValue(row, j);
+			if (!Double.isNaN(cell))
+				variance += Math.pow((cell-mean),2);
+		}
+		return variance/nColumns;
+	}
+
 	public DoubleMatrix2D getColtMatrix() {
 		DoubleMatrix2D mat = DoubleFactory2D.dense.make(nRows, nColumns);
 		mat.assign(toArray());
@@ -706,25 +830,13 @@ public class SimpleMatrix implements Matrix {
 
 	public Matrix covariance() {
 		DoubleMatrix2D matrix2D = DoubleStatistic.covariance(getColtMatrix());
-		SimpleMatrix mat = new SimpleMatrix(matrix2D.rows(), matrix2D.columns());
-		mat.symmetric = true;
-		mat.transposed = this.transposed;
-		double[][]inputData = matrix2D.toArray();
-		for (int row = 0; row < mat.nRows; row++) {
-			for (int column = 0; column < mat.nColumns; column++) {
-				mat.data[row][column] = inputData[row][column];
-			}
-		}
-		String[] labels;
-		if (this.transposed)
-			labels = rowLabels;
-		else
-			labels = columnLabels;
-		if (labels != null) {
-			mat.rowLabels = Arrays.copyOf(labels, labels.length);
-			mat.columnLabels = Arrays.copyOf(labels, labels.length);
-		}
-		return mat;
+		return copyDataFromMatrix(matrix2D);
+	}
+
+	public Matrix correlation() {
+		DoubleMatrix2D matrix2D = DoubleStatistic.covariance(getColtMatrix());
+		matrix2D = DoubleStatistic.correlation(matrix2D);
+		return copyDataFromMatrix(matrix2D);
 	}
 
 	public double[] eigenValues(boolean nonZero){
@@ -819,6 +931,28 @@ public class SimpleMatrix implements Matrix {
 		}catch(IOException e){
 			e.printStackTrace(System.out);
 		}
+	}
+
+	private Matrix copyDataFromMatrix(DoubleMatrix2D matrix2D) {
+		SimpleMatrix mat = new SimpleMatrix(matrix2D.rows(), matrix2D.columns());
+		mat.symmetric = true;
+		mat.transposed = this.transposed;
+		double[][]inputData = matrix2D.toArray();
+		for (int row = 0; row < mat.nRows; row++) {
+			for (int column = 0; column < mat.nColumns; column++) {
+				mat.data[row][column] = inputData[row][column];
+			}
+		}
+		String[] labels;
+		if (this.transposed)
+			labels = rowLabels;
+		else
+			labels = columnLabels;
+		if (labels != null) {
+			mat.rowLabels = Arrays.copyOf(labels, labels.length);
+			mat.columnLabels = Arrays.copyOf(labels, labels.length);
+		}
+		return mat;
 	}
 
 	private void gaussian(Double a[][], int idx[]) {

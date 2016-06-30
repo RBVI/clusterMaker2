@@ -59,6 +59,12 @@ public class CalculationMatrix implements CyMatrix {
 		}
 	
 	}
+
+	public void initialize(int rows, int columns, double[][] data) {
+	}
+
+	public void initialize(int rows, int columns, Double[][] data) {
+	}
 	
 
 	public double[][] getScores() {
@@ -659,11 +665,101 @@ public class CalculationMatrix implements CyMatrix {
 	}
 
 
+	public void standardizeRow(int row) {
+		double mean = rowMean(row);
+		double variance = rowVariance(row, mean);
+		double stdev = Math.sqrt(variance);
+		for (int column = 0; column < nColumns; column++) {
+			double cell = this.getValue(row, column);
+			this.setValue(row, column, (cell-mean)/stdev);
+		}
+	}
+
+	public void standardizeColumn(int column) {
+		double mean = columnMean(column);
+		double variance = columnVariance(column, mean);
+		double stdev = Math.sqrt(variance);
+		for (int row = 0; row < nRows; row++) {
+			double cell = this.getValue(row, column);
+			this.setValue(row, column, (cell-mean)/stdev);
+		}
+	}
+
 	public void centralizeColumns() {
 		// TODO Auto-generated method stub
 		
 	}
 
+
+	public double columnSum(int column) {
+		double sum = 0.0;
+		for(int j=0;j<nRows; j++){
+			double cell = this.getValue(j, column);
+			if (!Double.isNaN(cell))
+				sum += cell;
+		}
+		return sum;
+	}
+	
+	public double rowSum(int row) {
+		double sum = 0.0;
+		for(int j=0;j<nColumns; j++){
+			double cell = this.getValue(row, j);
+			if (!Double.isNaN(cell))
+				sum += cell;
+		}
+		return sum;
+	}
+
+	public double columnMean(int column) {
+		double mean = 0.0;
+		for(int j=0;j<nRows; j++){
+			double cell = this.getValue(j, column);
+			if (!Double.isNaN(cell))
+				mean += cell;
+		}
+		return mean/nRows;
+	}
+
+	public double rowMean(int row) {
+		double mean = 0.0;
+		for(int j=0;j<nColumns; j++){
+			double cell = this.getValue(row, j);
+			if (!Double.isNaN(cell))
+				mean += cell;
+		}
+		return mean/nColumns;
+	}
+	
+	public double columnVariance(int column) {
+		double mean = columnMean(column);
+		return columnVariance(column, mean);
+	}
+
+	public double columnVariance(int column, double mean) {
+		double variance = 0.0;
+		for(int j=0;j<nRows; j++){
+			double cell = this.getValue(j, column);
+			if (!Double.isNaN(cell))
+				variance += Math.pow((cell-mean),2);
+		}
+		return variance/nRows;
+	}
+	
+	public double rowVariance(int row) {
+		double mean = rowMean(row);
+		return rowVariance(row, mean);
+	}
+
+	public double rowVariance(int row, double mean) {
+		double variance = 0.0;
+		for(int j=0;j<nColumns; j++){
+			double cell = this.getValue(row, j);
+			if (!Double.isNaN(cell))
+				variance += Math.pow((cell-mean),2);
+		}
+		return variance/nColumns;
+	}
 
 	public int cardinality() {
 		// TODO Auto-generated method stub
@@ -678,6 +774,11 @@ public class CalculationMatrix implements CyMatrix {
 
 
 	public Matrix covariance() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Matrix correlation() {
 		// TODO Auto-generated method stub
 		return null;
 	}

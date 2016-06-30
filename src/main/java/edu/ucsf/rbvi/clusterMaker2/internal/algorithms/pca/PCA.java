@@ -46,6 +46,7 @@ public class PCA extends AbstractTask{
 	public String getName() {return NAME;}
 
 	public void run(TaskMonitor monitor){
+		monitor.setTitle("Principal Component Analysis");
 		monitor.setStatusMessage("Running Principal Component Analysis");
 		// String inputValue = context.getInputValue();
 		/*
@@ -73,7 +74,10 @@ public class PCA extends AbstractTask{
 					attrArray[att++] = "node."+attribute;
 			}
 
-			RunPCA runPCA = new RunPCA(network, networkView, context, monitor, attrArray);
+			String matrixType = context.matrixType.getSelectedValue();
+
+			RunPCA runPCA = new RunPCA(network, networkView, context, monitor, attrArray, 
+			                           matrixType, context.standardize);
 			runPCA.runOnNodeToAttributeMatrix();
 			/*
 			if(context.inputValue.getSelectedValue().equals("Distance Matrix") && 

@@ -28,6 +28,9 @@ import java.util.List;
 import javax.swing.*;
 import org.jdesktop.swingx.JXCollapsiblePane;
 
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
@@ -45,12 +48,14 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	private static final int BORDER_GAP = 30;
 	private static final int GRAPH_HATCH_WIDTH = 10;
 	private int graph_point_width = 6;
-	private final CyMatrix scoresX;
-	private final CyMatrix scoresY;
+
+	private final Matrix loadings;
+	private final CyMatrix[] scores;
+	private final int xIndex;
+	private final int yIndex;
+
 	private List<Point> graphPoints;
-	private final String lableX;
-	private final String lableY;
-	private static CyMatrix[] allComponents;
+	// private static CyMatrix[] allComponents;
 	private static double[] variances;
 	private static String[] PCs;
 	private static final Color[] colors =
@@ -88,23 +93,31 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	private static int startingX, startingY, currentX, currentY, previousDX=0, previosDY=0;
 	private static boolean dragging = false;
 
-	public ScatterPlotPCA(CyMatrix scoresX, CyMatrix scoresY, String lableX, String lableY){
-		this.scoresX = scoresX;
-		this.scoresY = scoresY;
-		this.lableX = lableX;
-		this.lableY = lableY;
+	public ScatterPlotPCA(CyMatrix[] scores, Matrix loadings, int x, int y) {
+		this.scores = scores;
+		this.loadings = loadings;
+		this.xIndex = x;
+		this.yIndex = y;
 
-		double max = scoresX.getMaxValue();
-		double min = scoresX.getMinValue();
+		// this.scoresX = scores[x];
+		// this.scoresY = scores[y];
+		// this.lableX = loadings.getColumnLabel(x);
+		// this.lableY = loadings.getColumnLabel(y);
+
+		double max = scores[xIndex].getMaxValue();
+		double min = scores[xIndex].getMinValue();
+		System.out.println("min,max = "+min+","+max);
 		if(max > MAX_SCORE || min < MIN_SCORE){
 			if(max > Math.abs(min)){
-				MAX_SCORE = (int) max;
-				MIN_SCORE = (int) ((int) -1 * max);
+				MAX_SCORE = (int) Math.ceil(max);
+				MIN_SCORE = (int) ((int) -1 * Math.ceil(max));
 			}else{
-				MAX_SCORE = (int) Math.abs(min);
-				MIN_SCORE = (int) ((int) -1 * Math.abs(min));
+				MAX_SCORE = (int) Math.ceil(Math.abs(min));
+				MIN_SCORE = (int) ((int) -1 * Math.ceil(Math.abs(min)));
 			}
 		}
+
+		System.out.println("min,max = "+MIN_SCORE+","+MAX_SCORE);
 
 		addMouseWheelListener(new MouseAdapter() {
 
@@ -134,7 +147,13 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 			for(int i=0;i<graphPoints.size();i++){
 				Point p = graphPoints.get(i);
 				if(Math.abs(p.x - x) <= graph_point_width && Math.abs(p.y - y) <= graph_point_width){
-					System.out.println("i and j: " + Math.floor(i/scoresX.nRows()) + " " + i%scoresX.nRows());
+					System.out.println("i and j: " + Math.floor(i/scores[xIndex].nRows()) + " " + 
+					                   i%scores[xIndex].nRows());
+					System.out.println("Node: "+scores[xIndex].getRowLabel(i)+" x="+
+					                   scores[xIndex].getValue(0,i)+", y="+scores[yIndex].getValue(0,i));
+					CyNetwork network = scores[xIndex].getNetwork();
+					CyNode node = scores[xIndex].getRowNode(i);
+					network.getRow(node).set(CyNetwork.SELECTED, true);
 					break;
 				}
 			}
@@ -182,6 +201,9 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	@Override
 	protected void paintComponent(Graphics g) {
 	  super.paintComponent(g);
+		String labelX = loadings.getColumnLabel(xIndex);
+		String labelY = loadings.getColumnLabel(yIndex);
+
 	  Graphics2D g2 = (Graphics2D)g;
 	  g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 	  AffineTransform at = new AffineTransform();
@@ -209,10 +231,13 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		 g2.drawLine(x0, y0, x1, y1);
 
 		 String number = "" + ( MAX_SCORE - i);
-		 g2.drawString(number, x1 - 2*GRAPH_HATCH_WIDTH, y1 + GRAPH_HATCH_WIDTH/2);
+		 if ((MAX_SCORE-i) < 0)
+		 	g2.drawString(number, x1 - 3*GRAPH_HATCH_WIDTH, y1 + GRAPH_HATCH_WIDTH/2);
+		 else
+		 	g2.drawString(number, x1 - 2*GRAPH_HATCH_WIDTH, y1 + GRAPH_HATCH_WIDTH/2);
 	  }
 	  g2.setFont(new Font("default", Font.BOLD, g2.getFont().getSize()));
-	  g2.drawString(lableY, getWidth()/2 - (lableY.length()/2)*5, getHeight() - BORDER_GAP/2);
+	  g2.drawString(labelY, getWidth()/2 - (labelY.length()/2)*5, getHeight() - BORDER_GAP/2);
 	  g2.setFont(new Font("default", Font.PLAIN, g2.getFont().getSize()));
 
 	  // and for x axis
@@ -228,17 +253,17 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 			g2.drawString(number, x1, y1 - 2*GRAPH_HATCH_WIDTH);
 	  }
 	  g2.setFont(new Font("default", Font.BOLD, g2.getFont().getSize()));
-	  g2.drawString(lableX, getWidth() - BORDER_GAP - (lableX.length()/2)*5, getHeight()/2 + BORDER_GAP);
+	  g2.drawString(labelX, getWidth() - BORDER_GAP - (labelX.length()/2)*5, getHeight()/2 + BORDER_GAP);
 	  g2.setFont(new Font("default", Font.PLAIN, g2.getFont().getSize()));
 
 	  int newX = getWidth()/2;
 	  int newY = getHeight()/2;
 
 	  graphPoints = new ArrayList<Point>();
-	  for(int i=0; i<scoresX.nRows();i++){
-		  for(int j=0;j<scoresX.nColumns();j++){
-			  int x1 = (int) (scoresX.getValue(i,j) * xScale + newX);
-			  int y1 = (int) ((int) -1 * (scoresY.getValue(i,j) * yScale - newY));
+	  for(int i=0; i<scores[xIndex].nRows();i++){
+		  for(int j=0;j<scores[xIndex].nColumns();j++){
+			  int x1 = (int) (scores[xIndex].getValue(i,j) * xScale + newX);
+			  int y1 = (int) (-1 * (scores[yIndex].getValue(i,j) * yScale - newY));
 			  graphPoints.add(new Point(x1, y1));
 		  }
 	  }
@@ -250,6 +275,16 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 			int ovalW = graph_point_width;
 			int ovalH = graph_point_width;
 			g2.fillOval(x, y, ovalW, ovalH);
+		}
+
+		// Draw loadings
+		for (int row = 0; row < loadings.nRows(); row++) {
+			int x1 = newX;
+			int y1 = newY;
+			int x2 = (int) (loadings.getValue(row, xIndex) * xScale * MAX_SCORE + newX);
+			int y2 = (int) (-1 * (loadings.getValue(row, yIndex) * yScale * MAX_SCORE - newY));
+			g2.setColor(Color.RED);
+		 	g2.drawLine(x1, y1, x2, y2);
 		}
 	}
 
@@ -297,8 +332,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		return collapsiblePaneOptions;
 	}
 
-	public static JPanel createControlJPanel(CyMatrix[] components){
-		allComponents = components;
+	public static JPanel createControlJPanel(final CyMatrix[] components, final Matrix loadings){
 		JPanel control = new JPanel(new GridBagLayout());
 
 		PCs = new String[components.length];
@@ -386,8 +420,11 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 				}
 				//Execute when button is pressed
 				container.remove(0);
-				ScatterPlotPCA scatterPlot = new ScatterPlotPCA(allComponents[comboXAxis.getSelectedIndex()],
-						allComponents[comboYAxis.getSelectedIndex()], PCs[comboXAxis.getSelectedIndex()], PCs[comboYAxis.getSelectedIndex()]);
+				ScatterPlotPCA scatterPlot = new ScatterPlotPCA(components, loadings, 
+				                                                comboXAxis.getSelectedIndex(), 
+																				                comboYAxis.getSelectedIndex());
+				//								allComponents[comboXAxis.getSelectedIndex()],
+				//		allComponents[comboYAxis.getSelectedIndex()], PCs[comboXAxis.getSelectedIndex()], PCs[comboYAxis.getSelectedIndex()]);
 				container.add(scatterPlot, 0);
 				container.updateUI();
 			}
@@ -401,7 +438,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		return control;
 	}
 
-	public static void createAndShowGui(CyMatrix[] components, double[] varianceArray) {
+	public static void createAndShowGui(CyMatrix[] components, Matrix loading, double[] varianceArray) {
 
 		if(components == null){
 			return;
@@ -411,7 +448,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		variances = varianceArray;
 
 		ScatterPlotPCA scatterPlot = 
-						new ScatterPlotPCA(components[0], components[1], "PC 1", "PC 2");
+		 				new ScatterPlotPCA(components, loading, 0, 1);
 
 		JFrame frame = new JFrame("Scatter Plot");
 
@@ -419,7 +456,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		container.removeAll();
 		previousDX = previosDY = 0;
 		container.add(scatterPlot);
-		container.add(createControlJPanel(components));
+		container.add(createControlJPanel(components, loading));
 
 		frame.getContentPane().add(container);
 		frame.pack();

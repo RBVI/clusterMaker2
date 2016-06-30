@@ -59,6 +59,16 @@ public class PCAContext {
 	         tooltip="You must choose at least 2 node columns for an attribute PCA", gravity=9.0)
 	public ListMultipleSelection<String> nodeAttributeList = null;
 
+	@Tunable(description="Type of matrix to use for PCA",
+	         tooltip="If all of the data is of the same type, use covariance, otherwise choose correlation",
+					 gravity=10.0)
+	public ListSingleSelection<String> matrixType = new ListSingleSelection<String>("covariance", "correlation");
+
+	@Tunable(description="Standardize data?",
+	         tooltip="This will standardize the data such that each column has 0 mean and stdev of 1",
+					 gravity=11.0)
+	public boolean standardize = false;
+
 	/*
 	@ContainsTunables
 	public EdgeAttributeHandler edgeAttributeHandler;
@@ -66,7 +76,7 @@ public class PCAContext {
 
 	@Tunable(description = "Create Result Panel with Principal Component selection option", 
 	         groups={"Result Options"}, gravity=83.0)
-	public boolean pcaResultPanel = true;
+	public boolean pcaResultPanel = false;
 
 	@Tunable(description = "Create PCA scatter plot with node selection option", 
 	         groups={"Result Options"}, gravity=84.0)

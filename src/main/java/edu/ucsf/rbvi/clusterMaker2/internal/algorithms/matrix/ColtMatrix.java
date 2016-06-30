@@ -15,6 +15,7 @@ import org.cytoscape.application.CyUserLog;
 import org.apache.log4j.Logger;
 
 import cern.colt.function.tdouble.IntIntDoubleFunction;
+import cern.colt.function.tdouble.DoubleFunction;
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleFactory2D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
@@ -84,8 +85,6 @@ public class ColtMatrix implements Matrix {
 		this();
 		transposed = mat.transposed;
 		symmetric = mat.symmetric;
-		minValue = mat.minValue;
-		maxValue = mat.maxValue;
 		if (mat.rowLabels != null)
 			rowLabels = Arrays.copyOf(mat.rowLabels, mat.rowLabels.length);
 		if (mat.columnLabels != null)
@@ -94,6 +93,7 @@ public class ColtMatrix implements Matrix {
 		this.data = data;
 		nRows = data.rows();
 		nColumns = data.columns();
+		updateMinMax();
 	}
 
 	public ColtMatrix(SimpleMatrix mat) {
@@ -107,6 +107,39 @@ public class ColtMatrix implements Matrix {
 		maxValue = mat.maxValue;
 		if (mat.index != null)
 			index = Arrays.copyOf(mat.index, mat.index.length);
+	}
+
+	public void initialize(int rows, int columns, double[][] arrayData) {
+		if (arrayData != null) {
+			data = DoubleFactory2D.sparse.make(arrayData);
+		} else {
+			data = DoubleFactory2D.sparse.make(rows, columns);
+		}
+		nRows = data.rows();
+		nColumns = data.columns();
+		transposed = false;
+		symmetric = false;
+		rowLabels = new String[nRows];
+		columnLabels = new String[nColumns];
+		updateMinMax();
+	}
+
+	public void initialize(int rows, int columns, Double[][] arrayData) {
+		data = DoubleFactory2D.sparse.make(rows, columns);
+		nRows = data.rows();
+		nColumns = data.columns();
+		if (arrayData != null) {
+			for (int row = 0; row < rows; row++) {
+				for (int col = 0; col < columns; col++) {
+					setValue(row, col, arrayData[row][col]);
+				}
+			}
+		}
+		transposed = false;
+		symmetric = false;
+		rowLabels = new String[nRows];
+		columnLabels = new String[nColumns];
+		updateMinMax();
 	}
 
 	/**
@@ -168,6 +201,7 @@ public class ColtMatrix implements Matrix {
 	public void setValue(int row, int column, double value) {
 		if (value < minValue) minValue = value;
 		if (value > maxValue) maxValue = value;
+
 		if (index != null) {
 			row = index[row];
 			column = index[column];
@@ -184,6 +218,9 @@ public class ColtMatrix implements Matrix {
 	 * @param value the value to set
 	 */
 	public void setValue(int row, int column, Double value) {
+		if (value < minValue) minValue = value;
+		if (value > maxValue) maxValue = value;
+
 		if (index != null) {
 			row = index[row];
 			column = index[column];
@@ -564,18 +601,44 @@ public class ColtMatrix implements Matrix {
 					setValue(col, row, (d-minValue)/span);
 			}
 		}
+		updateMinMax();
 	}
 
 	public void normalizeMatrix() {
 		data.normalize();
+		updateMinMax();
 	}
 
 	public void normalizeRow(int row) {
 		data.viewRow(row).normalize();
+		updateMinMax();
 	}
 
 	public void normalizeColumn(int column) {
 		data.viewColumn(column).normalize();
+		updateMinMax();
+	}
+
+	public void standardizeRow(int row) {
+		double mean = rowMean(row);
+		double variance = rowVariance(row, mean);
+		double stdev = Math.sqrt(variance);
+		for (int column = 0; column < nColumns; column++) {
+			double cell = this.getValue(row, column);
+			this.setValue(row, column, (cell-mean)/stdev);
+		}
+		updateMinMax();
+	}
+
+	public void standardizeColumn(int column) {
+		double mean = columnMean(column);
+		double variance = columnVariance(column, mean);
+		double stdev = Math.sqrt(variance);
+		for (int row = 0; row < nRows; row++) {
+			double cell = this.getValue(row, column);
+			this.setValue(row, column, (cell-mean)/stdev);
+		}
+		updateMinMax();
 	}
 
 	public void centralizeColumns() {
@@ -596,6 +659,7 @@ public class ColtMatrix implements Matrix {
 					this.setValue(i, j, 0.0d);
 			}
 		}
+		updateMinMax();
 	}
 
 	public void centralizeRows() {
@@ -616,6 +680,65 @@ public class ColtMatrix implements Matrix {
 					this.setValue(i, j, 0.0d);
 			}
 		}
+		updateMinMax();
+	}
+
+	public double columnSum(int column) {
+		return data.viewColumn(column).zSum();
+	}
+	
+	public double rowSum(int row) {
+		return data.viewRow(row).zSum();
+	}
+
+	public double columnMean(int column) {
+		double mean = 0.0;
+		for(int j=0;j<nRows; j++){
+			double cell = this.getValue(j, column);
+			if (!Double.isNaN(cell))
+				mean += cell;
+		}
+		return mean/nRows;
+	}
+
+	public double rowMean(int row) {
+		double mean = 0.0;
+		for(int j=0;j<nColumns; j++){
+			double cell = this.getValue(row, j);
+			if (!Double.isNaN(cell))
+				mean += cell;
+		}
+		return mean/nColumns;
+	}
+	
+	public double columnVariance(int column) {
+		double mean = columnMean(column);
+		return columnVariance(column, mean);
+	}
+
+	public double columnVariance(int column, double mean) {
+		double variance = 0.0;
+		for(int j=0;j<nRows; j++){
+			double cell = this.getValue(j, column);
+			if (!Double.isNaN(cell))
+				variance += Math.pow((cell-mean),2);
+		}
+		return variance/nRows;
+	}
+	
+	public double rowVariance(int row) {
+		double mean = rowMean(row);
+		return rowVariance(row, mean);
+	}
+
+	public double rowVariance(int row, double mean) {
+		double variance = 0.0;
+		for(int j=0;j<nColumns; j++){
+			double cell = this.getValue(row, j);
+			if (!Double.isNaN(cell))
+				variance += Math.pow((cell-mean),2);
+		}
+		return variance/nColumns;
 	}
 
 	// For some reason, the parallelcolt version of zMult doesn't
@@ -686,19 +809,13 @@ public class ColtMatrix implements Matrix {
 
 	public Matrix covariance() {
 		DoubleMatrix2D matrix2D = DoubleStatistic.covariance(data);
-		ColtMatrix mat = new ColtMatrix(matrix2D.rows(), matrix2D.columns());
-		mat.symmetric = true;
-		mat.data = matrix2D;
-		String[] labels;
-		if (this.transposed)
-			labels = rowLabels;
-		else
-			labels = columnLabels;
-		if (labels != null) {
-			mat.rowLabels = Arrays.copyOf(labels, labels.length);
-			mat.columnLabels = Arrays.copyOf(labels, labels.length);
-		}
-		return mat;
+		return copyDataFromMatrix(matrix2D);
+	}
+
+	public Matrix correlation() {
+		DoubleMatrix2D matrix2D = DoubleStatistic.covariance(data);
+		matrix2D = DoubleStatistic.correlation(matrix2D);
+		return copyDataFromMatrix(matrix2D);
 	}
 
 	public double[] eigenValues(boolean nonZero){
@@ -726,7 +843,9 @@ public class ColtMatrix implements Matrix {
 	public double[][] eigenVectors(){
 		if (decomp == null)
 			decomp = new DenseDoubleEigenvalueDecomposition(data);
-		return decomp.getV().toArray();
+
+		DoubleMatrix2D eigv = decomp.getV();
+		return eigv.toArray();
 	}
 
 	public DoubleMatrix2D getColtMatrix() {
@@ -824,6 +943,23 @@ public class ColtMatrix implements Matrix {
 		sm.maxValue = this.maxValue;
 		sm.index = Arrays.copyOf(this.index, this.index.length);
 		return sm;
+	}
+	
+	private Matrix copyDataFromMatrix(DoubleMatrix2D matrix2D) {
+		ColtMatrix mat = new ColtMatrix(matrix2D.rows(), matrix2D.columns());
+		mat.symmetric = true;
+		mat.data = matrix2D;
+		String[] labels;
+		if (this.transposed)
+			labels = rowLabels;
+		else
+			labels = columnLabels;
+		if (labels != null) {
+			mat.rowLabels = Arrays.copyOf(labels, labels.length);
+			mat.columnLabels = Arrays.copyOf(labels, labels.length);
+		}
+		mat.updateMinMax();
+		return mat;
 	}
 
 	private void updateMinMax() {
