@@ -5,6 +5,7 @@
  */
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -23,6 +24,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Path2D;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
@@ -90,7 +92,8 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	private static final JButton buttonPlot = new JButton("Plot");
 	private static final JButton buttonOptions = new JButton("Advance Options");
 
-	private static int startingX, startingY, currentX, currentY, previousDX=0, previosDY=0;
+	private static int startingX, startingY, currentX, currentY, previousDX=0, previousDY=0;
+	private static int currentCenterX=0, currentCenterY=0;
 	private static boolean dragging = false;
 
 	public ScatterPlotPCA(CyMatrix[] scores, Matrix loadings, int x, int y) {
@@ -125,7 +128,15 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 				public void mouseWheelMoved(MouseWheelEvent e) {
 					double delta = 0.05f * e.getPreciseWheelRotation();
 					scale += delta;
-					previousDX = previosDY = 0;
+
+					// Move the panel so our mouse is in the same
+					// place after the zoom
+					Point point = e.getPoint();
+					double dx = point.x*delta;
+					double dy = point.y*delta;
+					previousDX -= dx;
+					previousDY -= dy;
+
 					revalidate();
 					repaint();
 				}
@@ -180,7 +191,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	public void mouseReleased(MouseEvent event) {
 		dragging = false;
 		previousDX += currentX - startingX;
-		previosDY += currentY - startingY;
+		previousDY += currentY - startingY;
 	}
 
 	
@@ -210,8 +221,10 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	  if(dragging){
 			int currentDX = currentX - startingX;
 			int currentDY =  currentY - startingY;
-			at.setToTranslation(previousDX + currentDX, previosDY + currentDY);
-	  }
+			at.setToTranslation(previousDX + currentDX, previousDY + currentDY);
+	  } else {
+			at.setToTranslation(previousDX, previousDY);
+		}
 	  at.scale(scale, scale);
 	  g2.setTransform(at);
 
@@ -283,8 +296,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 			int y1 = newY;
 			int x2 = (int) (loadings.getValue(row, xIndex) * xScale * MAX_SCORE + newX);
 			int y2 = (int) (-1 * (loadings.getValue(row, yIndex) * yScale * MAX_SCORE - newY));
-			g2.setColor(Color.RED);
-		 	g2.drawLine(x1, y1, x2, y2);
+			drawArrow(g2, x1, y1, x2, y2, Color.RED);
 		}
 	}
 
@@ -418,13 +430,12 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 					  JOptionPane.showMessageDialog(null,textFieldPointSize.getText() + " is not a number","Error: Size of point",JOptionPane.ERROR_MESSAGE);
 					  return;
 				}
+
 				//Execute when button is pressed
 				container.remove(0);
 				ScatterPlotPCA scatterPlot = new ScatterPlotPCA(components, loadings, 
 				                                                comboXAxis.getSelectedIndex(), 
 																				                comboYAxis.getSelectedIndex());
-				//								allComponents[comboXAxis.getSelectedIndex()],
-				//		allComponents[comboYAxis.getSelectedIndex()], PCs[comboXAxis.getSelectedIndex()], PCs[comboYAxis.getSelectedIndex()]);
 				container.add(scatterPlot, 0);
 				container.updateUI();
 			}
@@ -436,6 +447,71 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 				BorderFactory.createEtchedBorder(), ""));
 
 		return control;
+	}
+
+	public void drawArrow(Graphics2D g2, int x1, int y1, int x2, int y2, Color color) {
+		/*
+		int dx = x2 - x1, dy = y2 - y1;
+		double D = Math.sqrt(dx*dx + dy*dy);
+		double d = 10, h = 5.0;
+		double xm = D - d, xn = xm, ym = h, yn = -h, x;
+		double sin = dy/D, cos = dx/D;
+
+		x = (xm)*cos - (ym)*sin + x1;
+		ym = (xm)*sin + (ym)*cos + y1;
+		xm = x;
+		x = (xn)*cos - (yn)*sin + x1;
+		yn = (xn)*sin + (yn)*cos + y1;
+		xn = x;
+
+		int[] xpoints = {x2, (int) xm, (int) xn};
+		int[] ypoints = {y2, (int) ym, (int) yn};
+
+	  g2.setColor(color);
+		g2.setStroke(new BasicStroke(2.0f));
+		g2.drawLine(x1, y1, x2, y2);
+		g2.setStroke(new BasicStroke(0.0f));
+		g2.fillPolygon(xpoints, ypoints, 3);
+		*/
+
+		// Draw our line
+		BasicStroke stroke = new BasicStroke(2.0f);
+	  g2.setColor(color);
+		g2.setStroke(stroke);
+		g2.drawLine(x1, y1, x2, y2);
+
+		// Set up the transform
+		AffineTransform oldTx = g2.getTransform();
+		AffineTransform tx = new AffineTransform(oldTx);
+		int dx = x2 - x1, dy = y2 - y1;
+		double angle = Math.atan2(dy, dx);
+		tx.translate(x2, y2);
+		// tx.rotate((angle-Math.PI/2d));
+		tx.rotate((angle));
+
+		// Draw the arrowhead
+		g2.setTransform(tx);
+		float arrowRatio = 0.5f;
+		float arrowLength = 10.0f;
+		float endX = 10.0f;
+		float veeX = endX - stroke.getLineWidth() * 0.5f / arrowRatio;
+		Path2D.Float path = new Path2D.Float();
+		float waisting = 0.5f;
+		
+		float waistX = endX - arrowLength * 0.5f;
+		// float waistX = endX + arrowLength;
+		// float waistX = endX;
+		float waistY = arrowRatio * arrowLength * 0.5f * waisting;
+		float arrowWidth = arrowRatio*arrowLength;
+		path.moveTo (veeX - arrowLength, -arrowWidth);
+		path.quadTo (waistX, -waistY, endX, 0.0f);
+		path.quadTo (waistX, waistY, veeX - arrowLength, arrowWidth );
+
+		path.lineTo (veeX - arrowLength * 0.75f, 0.0f );
+		path.lineTo (veeX - arrowLength, -arrowWidth);
+
+		g2.fill(path);
+		g2.setTransform(oldTx);
 	}
 
 	public static void createAndShowGui(CyMatrix[] components, Matrix loading, double[] varianceArray) {
@@ -454,7 +530,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 
 		container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 		container.removeAll();
-		previousDX = previosDY = 0;
+		previousDX = previousDY = 0;
 		container.add(scatterPlot);
 		container.add(createControlJPanel(components, loading));
 
