@@ -213,9 +213,12 @@ public class CySimpleMatrix extends SimpleMatrix implements CyMatrix {
 		newMatrix.maxValue = sMatrix.maxValue;
 		newMatrix.rowLabels = Arrays.copyOf(sMatrix.rowLabels, sMatrix.rowLabels.length);
 		newMatrix.columnLabels = Arrays.copyOf(sMatrix.columnLabels, sMatrix.columnLabels.length);
-		newMatrix.index = Arrays.copyOf(sMatrix.index, sMatrix.index.length);
-		newMatrix.rowNodes = Arrays.copyOf(rowNodes, rowNodes.length);
-		newMatrix.columnNodes = Arrays.copyOf(columnNodes, columnNodes.length);
+		if (sMatrix.index != null)
+			newMatrix.index = Arrays.copyOf(sMatrix.index, sMatrix.index.length);
+		if (rowNodes != null)
+			newMatrix.rowNodes = Arrays.copyOf(rowNodes, rowNodes.length);
+		if (columnNodes != null)
+			newMatrix.columnNodes = Arrays.copyOf(columnNodes, columnNodes.length);
 		return newMatrix;
 	}
 
