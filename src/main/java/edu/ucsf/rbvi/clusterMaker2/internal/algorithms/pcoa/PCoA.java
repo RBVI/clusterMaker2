@@ -15,13 +15,13 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLContext;
-
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.RunMCL;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
 
 public class PCoA extends AbstractNetworkClusterer{
-	RunPCoA runPCoA;
+	RunPCoA runpcoa;
 	public static String SHORTNAME = "pcoa";
 	public static String NAME = "Principal Coordinate Analysis";
 	public final static String GROUP_ATTRIBUTE = "__PCoA.SUID";
@@ -46,7 +46,7 @@ public class PCoA extends AbstractNetworkClusterer{
 	public String getName() { return NAME; }
 	
 	public void run(TaskMonitor monitor) {
-		monitor.setTitle("Running Principal Coordiante Analysis");
+		monitor.setTitle("Running Principal Coordinate Analysis");
 		this.monitor = monitor;
 		if (network == null)
 			network = clusterManager.getNetwork();
@@ -56,31 +56,42 @@ public class PCoA extends AbstractNetworkClusterer{
 		NodeCluster.init();
 
 		CyMatrix matrix = context.edgeAttributeHandler.getMatrix();
+		
 		if (matrix == null) {
 			monitor.showMessage(TaskMonitor.Level.ERROR,"Can't get distance matrix: no attribute value?");
 			return;
 		}
-
-	
+		
 
 		if (canceled) return;
 
 		//Cluster the nodes
-		runPCoA = new RunPCoA(matrix, context.selectedOnly, context.ignoreMissing, 
-		                     monitor);
-
-		runPCoA.setDebug(debug);
+		runpcoa = new RunPCoA(matrix,monitor);
+		runpcoa.run(matrix);
+		runpcoa.setDebug(false);
 
 		if (canceled) return;
-		
-		
+
+		monitor.showMessage(TaskMonitor.Level.INFO,"Clustering...");
+
+
+		monitor.showMessage(TaskMonitor.Level.INFO, 
+		                    "PCoA results:\n"+results);
+
+		if (context.vizProperties.showUI) {
+			monitor.showMessage(TaskMonitor.Level.INFO, 
+		                      "Creating network");
+			insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true,
+			                                               context.vizProperties.restoreEdges));
+		}
 	}
 
 	public void cancel() {
 		canceled = true;
-		runPCoA.cancel();
+		runpcoa.cancel();
 	}
 
 	@Override
 	public void setUIHelper(TunableUIHelper helper) {context.setUIHelper(helper); }
+	
 }

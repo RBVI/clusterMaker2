@@ -74,6 +74,7 @@ public class RunMCL {
 		monitor.showMessage(TaskMonitor.Level.INFO,"Threads = "+nThreads);
 		monitor.showMessage(TaskMonitor.Level.INFO,"Matrix info: = "+distanceMatrix.printMatrixInfo());
 		
+		
 	}
 	
 	public void cancel () { canceled = true; }
@@ -90,6 +91,8 @@ public class RunMCL {
 		double numClusters;
 
 		debugln("Initial matrix:");
+		
+		
 		matrix.printMatrixInfo();
 
 		// Normalize

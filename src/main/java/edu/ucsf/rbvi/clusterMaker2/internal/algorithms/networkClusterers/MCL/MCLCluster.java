@@ -63,10 +63,13 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 		NodeCluster.init();
 
 		CyMatrix matrix = context.edgeAttributeHandler.getMatrix();
+		
 		if (matrix == null) {
 			monitor.showMessage(TaskMonitor.Level.ERROR,"Can't get distance matrix: no attribute value?");
 			return;
 		}
+		
+		
 
 		// Update our tunable results
 		clusterAttributeName = context.getClusterAttribute();

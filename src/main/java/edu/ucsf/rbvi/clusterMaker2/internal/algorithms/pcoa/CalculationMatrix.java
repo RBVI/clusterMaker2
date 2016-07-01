@@ -16,7 +16,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
-public class CalculationMatrix implements CyMatrix {
+public class CalculationMatrix  {
 
 	double data[][];
 	int rows;
@@ -32,6 +32,12 @@ public class CalculationMatrix implements CyMatrix {
 	double scores[][];
 	private DoubleMatrix2D matrix;
 	private DenseDoubleEigenvalueDecomposition decomp = null;
+	
+	
+	public CalculationMatrix(CyMatrix matrix){
+		
+		matrix.initialize(nRows, columns, data);
+	}
 	
 	public CalculationMatrix(int rows,int columns,double inputdata[][],int diag,int scale,int neg){
 		this.matrix = new DenseDoubleMatrix2D(inputdata);

@@ -15,46 +15,50 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Dista
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.BestNeighbor.BestNeighborContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.NetworkVizProperties;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithmContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 public class PCoAContext {
 
-	CyNetwork network;
-
+CyNetwork network;
 	
-
-	@Tunable(description = "Only use selected nodes for PCoA", groups={"Data Input"}, gravity=7.0)
-	public boolean selectedOnly = false;
-
-	@Tunable(description="Ignore nodes with no data", groups={"Data Input"}, gravity=8.0)
-	public boolean ignoreMissing = true;
+	//Tunables
+	
+	@ContainsTunables
+	public EdgeAttributeHandler edgeAttributeHandler;
+	
 
 	@ContainsTunables
 	public NetworkVizProperties vizProperties = new NetworkVizProperties();
 
-	@ContainsTunables
-	public EdgeAttributeHandler edgeAttributeHandler;
-
 
 	public PCoAContext(){
-
+		
+	}
+	
+	public PCoAContext(PCoAContext origin) {
+		if (origin.edgeAttributeHandler != null)
+			edgeAttributeHandler = new EdgeAttributeHandler(origin.edgeAttributeHandler);
+		
 	}
 
-	public void setNetwork(CyNetwork network){
+	public void setNetwork(CyNetwork network) {
 		if (this.network != null && this.network.equals(network))
-			return;
+			return; // Nothing to see here....
 
 		this.network = network;
+
 		if (edgeAttributeHandler == null)
 			edgeAttributeHandler = new EdgeAttributeHandler(network);
 		else
 			edgeAttributeHandler.setNetwork(network);
-
 	}
-
 
 	public CyNetwork getNetwork() { return network; }
 
-	public void setUIHelper(TunableUIHelper helper) { edgeAttributeHandler.setUIHelper(helper); }
+
+	public void setUIHelper(TunableUIHelper helper) {
+		edgeAttributeHandler.setUIHelper(helper);
+	}
 }

@@ -1,5 +1,6 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,32 +32,25 @@ public class RunPCoA {
 	
 	private boolean canceled = false;
 	protected int clusterCount = 0;
+	
 	private CyMatrix distanceMatrix = null;
-	
-	
+	private CyMatrix matrix = null;
+	private List<CyNode> nodes = null;
 	private boolean debug = true;
-	private Matrix dismatrix=null;
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
 	
-	
-	
-	public RunPCoA(CyMatrix dMat, boolean selectonly, boolean ignore_missing, 
+	public RunPCoA(CyMatrix dMat, 
              TaskMonitor monitor )
 	{
 			
-		this.dismatrix=dMat.getDistanceMatrix(DistanceMetric.EUCLIDEAN);
+		this.distanceMatrix = dMat;
+		this.matrix = dMat.copy();
 		
-		//nodes = distanceMatrix.getRowNodes();
-		
-		for(int i=0;i<dismatrix.nRows();i++){
-			for(int j=0;j<dismatrix.nColumns();j++){
-				System.out.print(dismatrix.doubleValue(i, j)+" ");
-			}
-			System.out.println("");
-		}
-		
+		nodes = distanceMatrix.getRowNodes();
+	
 		monitor.showMessage(TaskMonitor.Level.INFO,"Threads = "+nThreads);
 		monitor.showMessage(TaskMonitor.Level.INFO,"Matrix info: = "+distanceMatrix.printMatrixInfo());
+		
 		
 	}
 	
@@ -64,44 +58,20 @@ public class RunPCoA {
 
 	public void setDebug(boolean debug) { this.debug = debug; }
 	
-	
-	
-	
-	/**
-	 * Debugging routine to print out information about a matrix
-	 *
-	 * @param matrix the matrix we're going to print out information about
-	 */
-	private void printMatrixInfo(DoubleMatrix2D matrix) {
-		debugln("Matrix("+matrix.rows()+", "+matrix.columns()+")");
-		if (matrix.getClass().getName().indexOf("Sparse") >= 0)
-			debugln(" matrix is sparse");
-		else
-			debugln(" matrix is dense");
-		debugln(" cardinality is "+matrix.cardinality());
+	public void run(CyMatrix matrix){
+		System.out.println("Calculating values");
+		double data[][]=matrix.toArray();
+		System.out.println("Lengt "+ data.length);
+		CalculationMatrix calc=new CalculationMatrix(matrix.nRows(), matrix.nColumns(), data, 0, 0, 0);
+		System.out.println("Checking CyMatrix symentrical "+matrix.isSymmetrical());
+		System.out.println("Checking symentrical "+calc.isSymmetrical());
+		
 	}
+	
 
-	/**
-	 * Debugging routine to print out information about a matrix
-	 *
-	 * @param matrix the matrix we're going to print out information about
-	 */
-	private void printMatrix(DoubleMatrix2D matrix) {
-		for (int row = 0; row < matrix.rows(); row++) {
-			debug(distanceMatrix.getRowLabel(row)+":\t"); //node.getIdentifier()
-			for (int col = 0; col < matrix.columns(); col++) {
-				debug(""+matrix.get(row,col)+"\t");
-			}
-			debugln();
-		}
-		debugln("Matrix("+matrix.rows()+", "+matrix.columns()+")");
-		if (matrix.getClass().getName().indexOf("Sparse") >= 0)
-			debugln(" matrix is sparse");
-		else
-			debugln(" matrix is dense");
-		debugln(" cardinality is "+matrix.cardinality());
-	}
-
+	private static DecimalFormat scFormat = new DecimalFormat("0.###E0");
+	private static DecimalFormat format = new DecimalFormat("0.###");
+	
 	private void debugln(String message) {
 		if (debug) System.out.println(message);
 	}
@@ -115,13 +85,7 @@ public class RunPCoA {
 	}
 
 	
-
 	
 	
-	
-
-	
-	
-	
-	}
+}
 
