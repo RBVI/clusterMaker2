@@ -114,7 +114,7 @@ public class RankingPanelTask extends AbstractTask implements ClusterViz, Cluste
         Color color5 = new Color(255, 153, 153);
 
         double belowAverage = NodeCluster.getAverageRankScore(clusters) / 2.0;
-        double overAverage = NodeCluster.getHighestRankScore(clusters) / 2.0;
+        double overAverage = NodeCluster.getMaxRankScore(clusters) / 2.0;
         BoundaryRangeValues<Paint> range1 = new BoundaryRangeValues<>(color1, color1, color2);
         BoundaryRangeValues<Paint> range2 = new BoundaryRangeValues<>(color3, color4, color5);
 

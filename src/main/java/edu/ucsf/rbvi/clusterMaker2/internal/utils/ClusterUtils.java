@@ -123,6 +123,8 @@ public class ClusterUtils {
             row.set(ClusterManager.RANKING_ATTRIBUTE, shortname);
         }
 
+        NodeCluster.normalizeScores(clusters);
+
         ClusterUtils.setNodeTableColumnValues(nodeTable, clusters, shortname);
         ClusterUtils.setEdgeTableColumnValues(edgeTable, edges, clusters, shortname);
     }
@@ -211,7 +213,6 @@ public class ClusterUtils {
             clusters.add(cluster);
         }
 
-        // Ascending sort
         ascendingSort(clusters);
         return clusters;
     }

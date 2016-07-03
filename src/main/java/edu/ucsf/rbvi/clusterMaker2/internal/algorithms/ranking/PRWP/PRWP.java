@@ -90,9 +90,11 @@ public class PRWP extends AbstractTask implements Rank {
         addEdges();
         taskMonitor.setProgress(0.7);
 
+        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Calculating PageRank scores");
         PageRankWithPriors<PRNode, PREdge> pageRank = performPageRank();
         taskMonitor.setProgress(0.8);
 
+        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Inserting scores into clusters");
         insertScores(clusters, pageRank);
         taskMonitor.setProgress(0.9);
 

@@ -106,14 +106,24 @@ public class NodeCluster extends ArrayList<CyNode> {
 
     public static void setClusterRanks(List<NodeCluster> list) {
         int rank = 1;
-        double previousScore = getHighestRankScore(list);
+        double previousScore = getMaxRankScore(list);
         for (NodeCluster cluster : list) {
-            if (previousScore < cluster.getRankScore()) {
+            if (previousScore > cluster.getRankScore()) {
                 rank++;
             }
             cluster.setRank(rank);
         }
     }
+
+	public static void normalizeScores(List<NodeCluster> clusters) {
+		double min = getMinRankScore(clusters);
+		double max = getMaxRankScore(clusters);
+
+		for (NodeCluster cluster : clusters) {
+			double normalizedScore = (cluster.getRankScore() - min) / (max - min);
+			cluster.setRankScore(normalizedScore);
+		}
+	}
 
 	public static Double getAverageRankScore(List<NodeCluster> list) {
 		return list.stream()
@@ -123,10 +133,23 @@ public class NodeCluster extends ArrayList<CyNode> {
 				.getAsDouble();
 	}
 
-	public static double getHighestRankScore(List<NodeCluster> clusters) {
-		return clusters.stream()
-                .mapToDouble(NodeCluster::getRankScore)
-                .reduce(0.0, (top, cur) -> cur > top ? cur : top);
+	// TODO: insert into thesis http://blog.takipi.com/benchmark-how-java-8-lambdas-and-streams-can-make-your-code-5-times-slower/
+	public static double getMinRankScore(List<NodeCluster> clusters) {
+		double min = Double.MAX_VALUE;
+		for (NodeCluster cluster : clusters) {
+			min = Double.min(min, cluster.getRankScore());
+		}
+
+		return min;
+	}
+
+	public static double getMaxRankScore(List<NodeCluster> clusters) {
+		double max = Double.MIN_VALUE;
+		for (NodeCluster cluster : clusters) {
+			max = Double.max(max, cluster.getRankScore());
+		}
+
+		return max;
 	}
 
 	public static List<Double> getScoreList(List<NodeCluster> list) {
