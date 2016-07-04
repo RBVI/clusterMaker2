@@ -38,9 +38,13 @@ CyNetwork network;
 	}
 	
 	public PCoAContext(PCoAContext origin) {
-		if (origin.edgeAttributeHandler != null)
+		if (origin.edgeAttributeHandler != null){
 			edgeAttributeHandler = new EdgeAttributeHandler(origin.edgeAttributeHandler);
+			edgeAttributeHandler.setUndirected(false);
+			edgeAttributeHandler.setAdjustLoops(false);
 		
+		}
+			
 	}
 
 	public void setNetwork(CyNetwork network) {
@@ -48,11 +52,18 @@ CyNetwork network;
 			return; // Nothing to see here....
 
 		this.network = network;
-
-		if (edgeAttributeHandler == null)
+		
+		if (edgeAttributeHandler == null){
+			
 			edgeAttributeHandler = new EdgeAttributeHandler(network);
-		else
+			edgeAttributeHandler.setUndirected(false);
+			edgeAttributeHandler.setAdjustLoops(false);
+			
+		}
+		else{
 			edgeAttributeHandler.setNetwork(network);
+		}
+			
 	}
 
 	public CyNetwork getNetwork() { return network; }

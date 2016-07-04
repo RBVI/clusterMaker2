@@ -53,7 +53,6 @@ public class PCoA extends AbstractNetworkClusterer{
 
 		context.setNetwork(network);
 
-		NodeCluster.init();
 
 		CyMatrix matrix = context.edgeAttributeHandler.getMatrix();
 		

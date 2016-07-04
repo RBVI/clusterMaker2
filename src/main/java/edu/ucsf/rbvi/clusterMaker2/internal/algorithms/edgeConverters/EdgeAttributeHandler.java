@@ -271,6 +271,14 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 		this.helper = helper;
 	}
 
+	public void setUndirected(boolean stat){
+		this.unDirected=stat;
+	}
+	
+	public void setAdjustLoops(boolean stat){
+		this.adjustLoops=stat;
+	}
+	
 	public boolean somethingChanged() {
 		if (attribute == null || arrayAttribute == null || edgeWeighter == null || edgeCutOff == null)
 			return true;

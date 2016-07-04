@@ -11,6 +11,7 @@ import com.itextpdf.text.pdf.PdfStructTreeController.returnType;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.decomposition.DenseDoubleEigenvalueDecomposition;
 import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.SimpleMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ComputationMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
@@ -30,13 +31,15 @@ public class CalculationMatrix  {
 	double eigenvectors[][];
 	double combine_array[][];
 	double scores[][];
+	CyMatrix distancematrix;
+	CyMatrix ones;
 	private DoubleMatrix2D matrix;
 	private DenseDoubleEigenvalueDecomposition decomp = null;
 	
 	
 	public CalculationMatrix(CyMatrix matrix){
+		this.distancematrix=matrix;
 		
-		matrix.initialize(nRows, columns, data);
 	}
 	
 	public CalculationMatrix(int rows,int columns,double inputdata[][],int diag,int scale,int neg){
@@ -55,14 +58,15 @@ public class CalculationMatrix  {
 			}
 		}
 		
-		if(isSymmetrical()){
-	
+		/*if(isSymmetrical()){
+	//System.out.println("Symmetrical is true");
 			getGowernsMatrix();
+		//	System.out.println("Calculated Gowerns matrix");		
 			eigenAnalysis();
 			getVarianceExplained();
 			negativeEigenAnalysis();
 			scaleEigenVectors();
-		}
+		}*/
 	
 	}
 
@@ -128,7 +132,10 @@ public class CalculationMatrix  {
 		return data[row][column];
 	}
 
-
+	public boolean isSymmetricalCyMatrix() {
+		return distancematrix.isSymmetrical();
+	}
+	
 	//to check matrix isSymmertical
 	public boolean isSymmetrical() {
 		for( int row=0; row < data.length; row++ ){
@@ -181,9 +188,12 @@ public class CalculationMatrix  {
         return temp;
     }
 	
+	
 	//calculate Gowern's matrix
 	public double[][] getGowernsMatrix(){
+		System.out.println("Started calculating gowerns matrix ");
 		//set ones matrix with row vector
+		
 		double ones[][]=new double[rows][rows];
 		for(int i=0;i<ones.length;i++){
 			for(int j=0;j<ones.length;j++){
@@ -208,18 +218,16 @@ public class CalculationMatrix  {
 				matrixA[i][j]=-0.5*Math.pow(data[i][j], 2);
 			}}
 		
-		//calculate matrixG
-		double transposeOnes[][]=transposeMatrix(ones);
-		
-		
-		double multimatrix[][]=multiplyByMatrix(ones, transposeOnes);
+		//calculate matrixG	
+		double multimatrix[][]=multiplyByMatrix(ones, transposeMatrix(ones));
 		double tempmatrix[][]=new double[rows][rows];
 		for(int i=0;i<rows;i++){
 			for(int j=0;j<rows;j++){
 				tempmatrix[i][j]=unitmatrix[i][j]-(multimatrix[i][j])/rows;
 			}}
-		multimatrix=multiplyByMatrix(tempmatrix, matrixA);
-		double matrixG[][]=multiplyByMatrix(multimatrix, tempmatrix);
+
+		double matrixG[][]=multiplyByMatrix(multiplyByMatrix(tempmatrix, matrixA), tempmatrix);
+		System.out.println("Finished calculating gowerns matrix ");
 	return matrixG;
 	}
 	

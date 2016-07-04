@@ -8,11 +8,14 @@ import org.junit.Test;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ComputationMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa.CalculationMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa.PCoAContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa.RunPCoA;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import junit.framework.Assert;
 
 public class CalculationMatrixTest {
 
+	public PCoAContext context = null;
 	double inputdata[][]={{0,3,4,5},{3,0,6,3},{4,6,0,1},{5,3,1,0}};
 	double single_line_data[]={2,4,57,76};
 	
@@ -125,14 +128,15 @@ public class CalculationMatrixTest {
 	}
 	@Test
 	public void test() {
-		double arr[][]=calcmatrix.getVarianceExplained();
+		gowersMatrixtest();
+		/*double arr[][]=calcmatrix.getVarianceExplained();
 		for(int i=0;i<arr.length;i++){
 			
 			for(int j=0;j<2;j++){
 				System.out.print(arr[i][j]+" ");
 			}
 			System.out.println("");
-		}
+		}*/
 		/*isSymmetricaltest();
 		matrixReversetest();
 		matrixMultiplytest();

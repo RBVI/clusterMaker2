@@ -61,11 +61,13 @@ public class RunPCoA {
 	public void run(CyMatrix matrix){
 		System.out.println("Calculating values");
 		double data[][]=matrix.toArray();
-		System.out.println("Lengt "+ data.length);
-		CalculationMatrix calc=new CalculationMatrix(matrix.nRows(), matrix.nColumns(), data, 0, 0, 0);
-		System.out.println("Checking CyMatrix symentrical "+matrix.isSymmetrical());
-		System.out.println("Checking symentrical "+calc.isSymmetrical());
+		System.out.println("Length "+ data.length);
 		
+		System.out.println("Checking CyMatrix symmetrical "+matrix.isSymmetrical());
+		CalculationMatrix calc=new CalculationMatrix(matrix.nRows(), matrix.nColumns(), data, 0, 0, 0);
+		System.out.println("Added data to the matrix ");
+		calc.eigenAnalysis();
+		System.out.println("Completed Eigen Analysis");
 	}
 	
 
@@ -84,8 +86,6 @@ public class RunPCoA {
 		if (debug) System.out.print(message);
 	}
 
-	
-	
 	
 }
 
