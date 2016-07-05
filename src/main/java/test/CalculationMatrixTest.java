@@ -76,7 +76,11 @@ public class CalculationMatrixTest {
 		double expect[]={
 				19.942260245679883,10.940200595315455,-6.882460840995355 ,0.0
 		};
-		assertArrayEquals(expect,(calcmatrix.eigenAnalysis()),0);
+		double result[]=calcmatrix.eigenAnalysis();
+		for(int i=0;i<result.length;i++){
+			System.out.print(result[i]+" ");
+		}
+		assertArrayEquals(expect,(result),0);
 	}
 	
 	@Test
@@ -86,7 +90,16 @@ public class CalculationMatrixTest {
 				{45.58416914714777,128.67692017081401 },
 				{-28.676920170814007,100.0 }
 		};
-		assertArrayEquals(null,expect,(calcmatrix.getVarianceExplained()));
+		double result[][]=calcmatrix.getVarianceExplained();
+		System.out.println("");
+		System.out.print("Variance explained");
+		for(int i=0;i<result.length;i++){
+			for(int j=0;j<2;j++){
+				System.out.print(result[i][j]+" ");
+			}
+			System.out.println("");
+		}
+		assertArrayEquals(null,expect,(result));
 	}
 	
 	@Test
@@ -128,7 +141,9 @@ public class CalculationMatrixTest {
 	}
 	@Test
 	public void test() {
-		gowersMatrixtest();
+		eigenAnalysistest();
+		getVarianceExplainedtest();
+		//gowersMatrixtest();
 		/*double arr[][]=calcmatrix.getVarianceExplained();
 		for(int i=0;i<arr.length;i++){
 			

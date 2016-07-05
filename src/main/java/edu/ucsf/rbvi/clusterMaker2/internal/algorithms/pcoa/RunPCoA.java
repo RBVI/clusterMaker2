@@ -68,6 +68,18 @@ public class RunPCoA {
 		System.out.println("Added data to the matrix ");
 		calc.eigenAnalysis();
 		System.out.println("Completed Eigen Analysis");
+		calc.getVarianceExplained();
+		System.out.println("Completed Variance Explained");
+		calc.negativeEigenAnalysis();
+		System.out.println("Completed Negative Eigen Analysis");
+		calc.scaleEigenVectors();
+		System.out.println("Completed Scale Eigen Vetors");
+		
+		System.out.println("Final Result");
+		double eigen_vals[]=calc.getEigen_values();
+		double scores[][]=calc.getScores();
+		double combne[][]=calc.getCombine_array();
+		
 	}
 	
 
