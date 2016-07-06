@@ -16,7 +16,9 @@ import org.apache.log4j.Logger;
 
 import cern.colt.function.tdouble.IntIntDoubleFunction;
 import cern.colt.function.tdouble.DoubleFunction;
+import cern.jet.math.tdouble.DoubleFunctions;
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
+import cern.colt.matrix.tdouble.DoubleFactory1D;
 import cern.colt.matrix.tdouble.DoubleFactory2D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.decomposition.DenseDoubleEigenvalueDecomposition;
@@ -869,6 +871,37 @@ public class ColtMatrix implements Matrix {
 		data.zMult(b.getColtMatrix(), cMat);
 		ColtMatrix c = new ColtMatrix(this, cMat);
 		return c;
+	}
+
+	public Matrix gowers() {
+		// Create the Identity matrix
+		DoubleMatrix2D I = DoubleFactory2D.sparse.identity(this.nRows());
+
+		// Create the ones matrix.  This is equivalent to 11'/n
+		DoubleMatrix2D one = DoubleFactory2D.dense.make(this.nRows(), this.nRows(), 1.0/this.nRows());
+
+		// Create the subtraction matrix (I-11'/n)
+		DoubleMatrix2D mat = I.assign(one, DoubleFunctions.minus);
+
+		// Create our data matrix
+		final DoubleMatrix2D A = DoubleFactory2D.sparse.make(this.nRows(), this.nRows());
+
+		data.forEachNonZero(
+			new IntIntDoubleFunction() {
+				public double apply(int row, int column, double value) {
+					A.setQuick(row, column, -Math.pow(value,2)/2.0);
+					return value;
+				}
+			}
+		);
+
+		ColtMatrix cMat = new ColtMatrix(this, mat);
+		ColtMatrix cA = new ColtMatrix(this, A);
+
+		// Finally, the Gower's matrix is mat*A*mat
+		
+		Matrix mat1 = cMat.multiplyMatrix(cA);
+		return mat1.multiplyMatrix(cMat);
 	}
 
 	/**

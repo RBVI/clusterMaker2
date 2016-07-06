@@ -53,7 +53,6 @@ public class PCoA extends AbstractNetworkClusterer{
 
 		context.setNetwork(network);
 
-
 		CyMatrix matrix = context.edgeAttributeHandler.getMatrix();
 		
 		if (matrix == null) {
@@ -64,9 +63,11 @@ public class PCoA extends AbstractNetworkClusterer{
 
 		if (canceled) return;
 
+		PCoAContext.NegEigenHandling neg = context.neg.getSelectedValue();
+
 		//Cluster the nodes
-		runpcoa = new RunPCoA(matrix,monitor);
-		runpcoa.run(matrix);
+		runpcoa = new RunPCoA(matrix,context.scale, neg.getValue(),monitor);
+		runpcoa.run();
 		runpcoa.setDebug(false);
 
 		if (canceled) return;

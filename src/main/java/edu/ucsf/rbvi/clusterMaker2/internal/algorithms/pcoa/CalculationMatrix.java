@@ -8,75 +8,40 @@ import org.cytoscape.model.CyNode;
 
 import com.itextpdf.text.pdf.PdfStructTreeController.returnType;
 
+import cern.colt.function.tdouble.IntIntDoubleFunction;
+import cern.colt.function.tdouble.DoubleFunction;
+import cern.jet.math.tdouble.DoubleFunctions;
+import cern.colt.matrix.tdouble.DoubleMatrix1D;
+import cern.colt.matrix.tdouble.DoubleFactory1D;
+import cern.colt.matrix.tdouble.DoubleFactory2D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.decomposition.DenseDoubleEigenvalueDecomposition;
 import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.SimpleMatrix;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ComputationMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.ColtMatrix;
+// import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.SimpleMatrix;
+// import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ComputationMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 public class CalculationMatrix  {
 
-	double data[][];
-	int rows;
-	int columns;
-	private int nRows;
-	private int nColumns;
 	int diag;//make diagnostic plots 
-	int scale;//scale eigenvectors (= scores) by their eigenvalue 
+	boolean scale;//scale eigenvectors (= scores) by their eigenvalue 
 	int neg;//discard (= 0), keep (= 1), or correct (= 2)  negative eigenvalues  
 	double eigen_values[];
-	double eigenvectors[][];
+	CyMatrix eigenVectors;
 	double combine_array[][];
 	double scores[][];
 	CyMatrix distancematrix;
-	CyMatrix ones;
-	private DoubleMatrix2D matrix;
-	private DenseDoubleEigenvalueDecomposition decomp = null;
 	
-	
-	public CalculationMatrix(CyMatrix matrix){
+	public CalculationMatrix(CyMatrix matrix, int diag, boolean scale, int neg){
+		this.diag = diag;
+		this.scale = scale;
+		this.neg = neg;
 		this.distancematrix=matrix;
-		
 	}
 	
-	public CalculationMatrix(int rows,int columns,double inputdata[][],int diag,int scale,int neg){
-		this.matrix = new DenseDoubleMatrix2D(inputdata);
-		nRows = matrix.rows();
-		nColumns = matrix.columns();
-		this.rows=rows;
-		this.columns=columns;
-		this.diag=diag;
-		this.scale=scale;
-		this.neg=neg;
-		data=new double[rows][columns];
-		for (int row = 0; row < rows; row++) {
-			for (int column = 0; column < columns; column++) {
-				this.data[row][column] = inputdata[row][column];
-			}
-		}
-		
-		/*if(isSymmetrical()){
-	//System.out.println("Symmetrical is true");
-			getGowernsMatrix();
-		//	System.out.println("Calculated Gowerns matrix");		
-			eigenAnalysis();
-			getVarianceExplained();
-			negativeEigenAnalysis();
-			scaleEigenVectors();
-		}*/
-	
-	}
-
-	public void initialize(int rows, int columns, double[][] data) {
-	}
-
-	public void initialize(int rows, int columns, Double[][] data) {
-	}
-	
-
 	public double[][] getScores() {
 		return scores;
 	}
@@ -118,66 +83,24 @@ public class CalculationMatrix  {
 
 
 	public double[][] getEigenvectors() {
-		return eigenvectors;
+		return eigenVectors.toArray();
 	}
 
-
-	public void setEigenvectors(double[][] eigenvectors) {
-		this.eigenvectors = eigenvectors;
-	}
-
-
-	public Double getValue(int row, int column) {
-		// TODO Auto-generated method stub
-		return data[row][column];
-	}
 
 	public boolean isSymmetricalCyMatrix() {
 		return distancematrix.isSymmetrical();
 	}
 	
-	//to check matrix isSymmertical
-	public boolean isSymmetrical() {
-		for( int row=0; row < data.length; row++ ){
-            for( int col=0; col < row; col++ ){
-            	
-                if( data[row][col] != data[col][row] ){
-                    return false;
-                }
-            }
-        }
-        return true;
-	}
-
 	//reverse matrix
 	public static double[] matrixReverse(double[] x) {
 
 	    double[] d = new double[x.length];
-
 
 	    for (int i = 0; i < x.length; i++) {
 	        d[i] = x[x.length - 1 -i];
 	    }
 	    return d;
 	}
-	
-	//matrix multiplication
-	public static double[][] multiplyByMatrix(double[][] m1, double[][] m2) {
-        int m1ColLength = m1[0].length; 
-        int m2RowLength = m2.length;    
-        if(m1ColLength != m2RowLength) return null; 
-        int mRRowLength = m1.length;    
-        int mRColLength = m2[0].length; 
-        double[][] mResult = new double[mRRowLength][mRColLength];
-        for(int i = 0; i < mRRowLength; i++) {         
-            for(int j = 0; j < mRColLength; j++) {     
-                for(int k = 0; k < m1ColLength; k++) { 
-                    mResult[i][j] += m1[i][k] * m2[k][j];
-                }
-            }
-        }
-        return mResult;
-    }
 	
 	//calculate transpose of a matrix
 	public  double[][] transposeMatrix(double matrix[][]){
@@ -187,8 +110,43 @@ public class CalculationMatrix  {
                 temp[j][i] = matrix[i][j];
         return temp;
     }
+
+
+	public Matrix getGowersMatrix() {
+		// Create the Identity matrix
+		DoubleMatrix2D I = DoubleFactory2D.sparse.identity(distancematrix.nRows());
+
+		// Create the ones matrix.  This is equivalent to 11'/n
+		DoubleMatrix2D one = DoubleFactory2D.dense.make(distancematrix.nRows(), distancematrix.nRows(), 1.0/distancematrix.nRows());
+
+		// Create the subtraction matrix (I-11'/n)
+		DoubleMatrix2D mat = I.assign(one, DoubleFunctions.minus);
+
+		// Create our data matrix
+		final DoubleMatrix2D A = DoubleFactory2D.sparse.make(distancematrix.nRows(), distancematrix.nRows());
+
+		DoubleMatrix2D data = distancematrix.getColtMatrix();
+
+		data.forEachNonZero(
+			new IntIntDoubleFunction() {
+				public double apply(int row, int column, double value) {
+					A.setQuick(row, column, -Math.pow(value,2)/2.0);
+					return value;
+				}
+			}
+		);
+
+		ColtMatrix cMat = new ColtMatrix((ColtMatrix)distancematrix, mat);
+		ColtMatrix cA = new ColtMatrix((ColtMatrix)distancematrix, A);
+
+		// Finally, the Gower's matrix is mat*A*mat
+		
+		Matrix mat1 = cMat.multiplyMatrix(cA);
+		Matrix G = mat1.multiplyMatrix(cMat);
+		return G;
+	}
 	
-	
+	/*
 	//calculate Gowern's matrix
 	public double[][] getGowernsMatrix(){
 		System.out.println("Started calculating gowerns matrix ");
@@ -230,14 +188,15 @@ public class CalculationMatrix  {
 		System.out.println("Finished calculating gowerns matrix ");
 	return matrixG;
 	}
+	*/
 	
 	
 	public double[] eigenAnalysis(){
-		this.matrix = new DenseDoubleMatrix2D(getGowernsMatrix());
-		double eigenvector[][]=eigenVectors();
-		double eigenvalues[]=eigenValues(true);	
+		Matrix G = getGowersMatrix();
+		double eigenvector[][]=G.eigenVectors();
+		double eigenvalues[]=G.eigenValues(true);	
 		double tolerance=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
-		
+
 		int idx_size=0;//for set idx length 
 		double tempeigen[]=new double[eigenvalues.length];
 		for(int i=0;i<eigenvalues.length;i++){
@@ -246,7 +205,7 @@ public class CalculationMatrix  {
 				idx_size++;
 			}
 		}
-		
+
 		//calculate idx value from eigen values
 		double idx[]=matrixReverse(tempeigen);
 		int count=1;
@@ -256,7 +215,7 @@ public class CalculationMatrix  {
 				idx[i]=count;
 			}
 			count++;
-		}	
+		}
 		//discard eigen values
 		double reverseeigen[]=new double[eigenvalues.length];
 		int j=0;
@@ -264,32 +223,35 @@ public class CalculationMatrix  {
 			reverseeigen[j]=eigenvalues[i];
 			j++;
 		}
-		 eigen_values=new double[idx.length];
+		eigen_values=new double[idx.length];
 		for(int i=0;i<reverseeigen.length;i++){
 			for(j=0;j<idx.length;j++){
-		if(i+1==idx[j]){
-			eigen_values[j]=reverseeigen[i];
-		}
-			}}
-		
-		
-		//discard eigen vectors
-		eigenvectors=new double[eigenvector.length][eigenvector.length];
-		for(int i=0;i<eigenvectors.length;i++){
-			for( j=0;j<eigenvectors.length;j++){
-				for(int k=0;k<idx.length;k++){
-					if(j+1==idx[k]){
-						eigenvectors[i][k]=eigenvector[i][j];
-						}}}
-		}
-		for(int i=0;i<eigenvectors.length;i++){
-			for( j=0;j<eigenvectors.length;j++){
-				if(eigenvectors[i][j]==0 && j!=eigenvectors.length-1){
-					double temp=eigenvectors[i][j];
-					eigenvectors[i][j]=eigenvectors[i][j+1];
-					eigenvectors[i][j+1]=temp;
+				if(i+1==idx[j]){
+					eigen_values[j]=reverseeigen[i];
 				}
-			}}
+			}
+		}
+
+		CyMatrix eigenVectors = distancematrix.copy();
+
+		for(int row=0;row<eigenVectors.nRows();row++){
+			for(int col=0;col<eigenVectors.nColumns();col++){
+				for(int k=0;k<idx.length;k++){
+					if(col+1==idx[k]){
+						eigenVectors.setValue(row, col, eigenvector[row][col]);
+					}
+				}
+			}
+		}
+		for(int row=0;row<eigenVectors.nRows();row++){
+			for(int col=0;col<eigenVectors.nColumns();col++){
+				if(eigenVectors.getValue(row,col)==0 && col!=eigenVectors.nRows()-1){
+					double temp=eigenVectors.getValue(row,col);
+					eigenVectors.setValue(row, col, eigenVectors.getValue(row,col+1));
+					eigenVectors.setValue(row, col+1, temp);
+				}
+			}
+		}
 		//calculate final length of eigen values
 		int length_count=0;
 		for(int i=0;i<eigen_values.length;i++){
@@ -302,22 +264,23 @@ public class CalculationMatrix  {
 					length_count+=1;//count to reduced eigen val length
 				}
 			}
-		
-		
+
+
 		//need n-1 axes for n objects
-	if(length_count>eigen_values.length-1){
-		for(int i=0;i<eigen_values.length;i++){
-			if(eigen_values[i]!=0 && length_count<i+length_count-1){
-				eigen_values[i]=0;
+		if(length_count>eigen_values.length-1){
+			for(int i=0;i<eigen_values.length;i++){
+				if(eigen_values[i]!=0 && length_count<i+length_count-1){
+					eigen_values[i]=0;
+				}
+			}
+			for(int row=0;row<eigenVectors.nRows();row++){
+				for(int col=0;col<eigenVectors.nColumns();col++){
+					if(eigenVectors.getValue(row, col)!=0 && length_count<col+length_count-1){
+						eigenVectors.setValue(row, col, 0);
+					}
+				}
 			}
 		}
-		for(int i=0;i<eigenvectors.length;i++){
-			for( j=0;j<eigenvectors.length;j++){
-			if(eigenvectors[i][j]!=0 && length_count<j+length_count-1){
-				eigenvectors[i][j]=0;
-			}
-		}}
-	}
 		return eigen_values;
 	}
 	
@@ -356,21 +319,22 @@ public class CalculationMatrix  {
 	}
 	
 	//calculate upper triangular matrix from vector
-	public double[] getUpperMatrixInVector(double symmetricmat[][]){
+	public double[] getUpperMatrixInVector(CyMatrix matrix){
 		
 		int length=0;//calculate size of upper trianguar matrix length
-		for (int j = 1; j < symmetricmat.length; j++) {
+		for (int j = 1; j < matrix.nRows(); j++) {
 			length+=j;
 		}
 		double uppertrimatrix[]=new double[length];
 		int p=0;
-		for (int i =0; i<symmetricmat.length; i++) {
-            for (int j=i ; j<symmetricmat.length ; j++) {
-             if(symmetricmat[i][j]!=0){
-            	 uppertrimatrix[p]=symmetricmat[i][j];
-            	 p++;
-             }}
-            }
+		for (int i =0; i<matrix.nRows(); i++) {
+			for (int j=i ; j<matrix.nRows() ; j++) {
+		 		if(matrix.getValue(i,j)!=0){
+			 		uppertrimatrix[p]=matrix.getValue(i,j);
+			 		p++;
+		 		}
+			}
+    }
 		return uppertrimatrix;
 	}
 	
@@ -409,26 +373,32 @@ public class CalculationMatrix  {
 		double columnmatrix[]=new double[2];//the size can be changed
 		double converedmatrix[][]=new double[2][2];//the size can be changed
 		if(negSum>0 && neg==2){//should include && correct value check matlab
-			
-			
-			for(int i=0;i<eigen_values.length;i++){
-			if(eigen_values[i]<temp_min){
-				temp_min=eigen_values[i];
-			}}
-			temp_min=Math.abs(temp_min);
-			 uppermatrixp=getUpperMatrixInVector(data);
-			 columnmatrix=new double[uppermatrixp.length];
-			 for(int i=0;i<uppermatrixp.length;i++){
-				 columnmatrix[i]=Math.sqrt((Math.pow(uppermatrixp[i],2)+2*temp_min));
-			 }
-			 converedmatrix=convertColumntoMatrix(columnmatrix);
-			 CalculationMatrix calc=new CalculationMatrix(converedmatrix.length, converedmatrix.length, converedmatrix,0,0,1);
-			 eigen_values=calc.getEigen_values();
-			 combine_array=calc.getCombine_array();
-			 scores=calc.getScores();
 
-			 
-		}else if(negSum>0 && neg<1){//discard negative eigen values
+			// XXX: What correction is this?  Looks kind of like Cailliez, but not quite.  Why not
+			// just use Lingoes correction: (D' = -0.5*D^2 - c1), which is probably much easier to compute, and we
+			// won't lose track of our labels
+			/*
+			for(int i=0;i<eigen_values.length;i++){
+				if(eigen_values[i]<temp_min){
+					temp_min=eigen_values[i];
+				}
+			}
+			temp_min=Math.abs(temp_min);
+			uppermatrixp=getUpperMatrixInVector(distancematrix);
+			columnmatrix=new double[uppermatrixp.length];
+			for(int i=0;i<uppermatrixp.length;i++){
+				columnmatrix[i]=Math.sqrt((Math.pow(uppermatrixp[i],2)+2*temp_min));
+			}
+
+			// TODO: How do we track the labels -- e.g. what nodes go with what eigenvectors??
+			converedmatrix=convertColumntoMatrix(columnmatrix);
+			CalculationMatrix calc=new CalculationMatrix(converedmatrix.length, converedmatrix.length, converedmatrix,0,0,1);
+			eigen_values=calc.getEigen_values();
+			combine_array=calc.getCombine_array();
+			scores=calc.getScores();
+		*/
+
+		} else if(negSum>0 && neg<1){//discard negative eigen values
 			
 			int count=0;
 			for(int i=0;i<eigen_values.length;i++){
@@ -438,10 +408,10 @@ public class CalculationMatrix  {
 					count+=1;
 				}
 			}
-			for(int i=0;i<eigenvectors.length;i++){
-				for(int j=0;j<eigenvectors.length;j++){
-					if(j+1==count){
-						eigenvectors[i][j]=0;
+			for(int row=0;row<eigenVectors.nRows();row++){
+				for(int col=0;col<eigenVectors.nColumns();col++){
+					if(col+1==count){
+						eigenVectors.setValue(row, col, 0);
 					}}}
 			
 			for(int i=0;i<combine_array.length;i++){
@@ -454,12 +424,11 @@ public class CalculationMatrix  {
 	}
 	
 	//scale eigen vectors
-	public double[][] scaleEigenVectors(){
+	public CyMatrix scaleEigenVectors(){
 		double temp_eigen[][]=new double[eigen_values.length][eigen_values.length];
-		double multi_matrix[][];
 		
-		if(scale<1){//default value
-			
+		if(scale){//default value
+			// Use Matrix for this?
 			for(int i=0;i<eigen_values.length;i++){
 				for(int j=0;j<eigen_values.length;j++){
 					if(j==0){
@@ -467,460 +436,23 @@ public class CalculationMatrix  {
 					}else{
 						temp_eigen[i][j]=0;
 					}
-					}}
-			
-			temp_eigen=transposeMatrix(temp_eigen);
-			multi_matrix=new double[eigenvectors.length][temp_eigen.length];
-			for(int i=0;i<eigen_values.length;i++){
-				for(int j=0;j<temp_eigen.length;j++){
-					multi_matrix[i][j]=temp_eigen[0][j];
 				}
 			}
-			scores=multiplyByMatrix(eigenvectors, multi_matrix);
-				scores=eigenvectors;
+			
+			temp_eigen=transposeMatrix(temp_eigen);
+			CyMatrix multi_matrix=eigenVectors.copy();
+			for(int i=0;i<eigen_values.length;i++){
+				for(int j=0;j<temp_eigen.length;j++){
+					multi_matrix.setValue(i, j, temp_eigen[0][j]);
+				}
 			}
-	return scores;
-	}
-
-
-	public int nRows() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-
-	public int nColumns() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-
-	public double doubleValue(int row, int column) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-
-	public void setValue(int row, int column, double value) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public void setValue(int row, int column, Double value) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public boolean hasValue(int row, int column) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-
-	public String[] getColumnLabels() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	public String getColumnLabel(int col) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	public void setColumnLabel(int col, String label) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public void setColumnLabels(List<String> labelList) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public String[] getRowLabels() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	public String getRowLabel(int row) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	public void setRowLabel(int row, String label) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public void setRowLabels(List<String> labelList) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public CyMatrix getDistanceMatrix(DistanceMetric metric) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public double[][] toArray() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	public double getMaxValue() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-
-	public double getMinValue() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-
-	public boolean isTransposed() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-
-	public void setTransposed(boolean transposed) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public void setSymmetrical(boolean symmetrical) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public void setMissingToZero() {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public void adjustDiagonals() {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public double[] getRank(int row) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	public void index() {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public Matrix submatrix(int[] index) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	public Matrix submatrix(int row, int col, int rows, int cols) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	public void invertMatrix() {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public void normalize() {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public void normalizeMatrix() {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public void normalizeRow(int row) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public void normalizeColumn(int column) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public void centralizeRows() {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public void standardizeRow(int row) {
-		double mean = rowMean(row);
-		double variance = rowVariance(row, mean);
-		double stdev = Math.sqrt(variance);
-		for (int column = 0; column < nColumns; column++) {
-			double cell = this.getValue(row, column);
-			this.setValue(row, column, (cell-mean)/stdev);
+			Matrix scorematrix = eigenVectors.multiplyMatrix(multi_matrix);
+			// Does this work or do we still mess up the correspondence between labels and values?
+			return eigenVectors.copy(scorematrix);
+		} else {
+			return eigenVectors;
+			// scores=eigenvectors;
 		}
 	}
 
-	public void standardizeColumn(int column) {
-		double mean = columnMean(column);
-		double variance = columnVariance(column, mean);
-		double stdev = Math.sqrt(variance);
-		for (int row = 0; row < nRows; row++) {
-			double cell = this.getValue(row, column);
-			this.setValue(row, column, (cell-mean)/stdev);
-		}
-	}
-
-	public void centralizeColumns() {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public double columnSum(int column) {
-		double sum = 0.0;
-		for(int j=0;j<nRows; j++){
-			double cell = this.getValue(j, column);
-			if (!Double.isNaN(cell))
-				sum += cell;
-		}
-		return sum;
-	}
-	
-	public double rowSum(int row) {
-		double sum = 0.0;
-		for(int j=0;j<nColumns; j++){
-			double cell = this.getValue(row, j);
-			if (!Double.isNaN(cell))
-				sum += cell;
-		}
-		return sum;
-	}
-
-	public double columnMean(int column) {
-		double mean = 0.0;
-		for(int j=0;j<nRows; j++){
-			double cell = this.getValue(j, column);
-			if (!Double.isNaN(cell))
-				mean += cell;
-		}
-		return mean/nRows;
-	}
-
-	public double rowMean(int row) {
-		double mean = 0.0;
-		for(int j=0;j<nColumns; j++){
-			double cell = this.getValue(row, j);
-			if (!Double.isNaN(cell))
-				mean += cell;
-		}
-		return mean/nColumns;
-	}
-	
-	public double columnVariance(int column) {
-		double mean = columnMean(column);
-		return columnVariance(column, mean);
-	}
-
-	public double columnVariance(int column, double mean) {
-		double variance = 0.0;
-		for(int j=0;j<nRows; j++){
-			double cell = this.getValue(j, column);
-			if (!Double.isNaN(cell))
-				variance += Math.pow((cell-mean),2);
-		}
-		return variance/nRows;
-	}
-	
-	public double rowVariance(int row) {
-		double mean = rowMean(row);
-		return rowVariance(row, mean);
-	}
-
-	public double rowVariance(int row, double mean) {
-		double variance = 0.0;
-		for(int j=0;j<nColumns; j++){
-			double cell = this.getValue(row, j);
-			if (!Double.isNaN(cell))
-				variance += Math.pow((cell-mean),2);
-		}
-		return variance/nColumns;
-	}
-
-	public int cardinality() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-
-	public Matrix multiplyMatrix(Matrix matrix) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	public Matrix covariance() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public Matrix correlation() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	public double[] eigenValues(boolean nonZero) {
-		 if (decomp == null)
-		decomp = new DenseDoubleEigenvalueDecomposition(matrix);
-
-	return decomp.getRealEigenvalues().toArray();
-		
-	}
-
-
-	public double[][] eigenVectors() {
-		if (decomp == null)
-			decomp = new DenseDoubleEigenvalueDecomposition(matrix);
-		return decomp.getV().toArray();
-		
-	}
-
-
-	public String printMatrixInfo() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	public String printMatrix() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	public DoubleMatrix2D getColtMatrix() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	public CyNetwork getNetwork() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	public void setRowNodes(CyNode[] rowNodes) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public void setRowNodes(List<CyNode> rowNodes) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public void setRowNode(int row, CyNode node) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public CyNode getRowNode(int row) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	public List<CyNode> getRowNodes() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	public void setColumnNodes(CyNode[] columnNodes) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public void setColumnNodes(List<CyNode> columnNodes) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public void setColumnNode(int column, CyNode node) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public CyNode getColumnNode(int column) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	public List<CyNode> getColumnNodes() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	public boolean isAssymetricalEdge() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-
-	public void setAssymetricalEdge(boolean assymetricalEdge) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	public CyMatrix copy() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	public CyMatrix copy(Matrix matrix) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void writeMatrix(String matrix) {}
 }

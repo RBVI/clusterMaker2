@@ -33,38 +33,39 @@ public class RunPCoA {
 	private boolean canceled = false;
 	protected int clusterCount = 0;
 	
+	private TaskMonitor monitor;
 	private CyMatrix distanceMatrix = null;
 	private CyMatrix matrix = null;
 	private List<CyNode> nodes = null;
 	private boolean debug = true;
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
+	private boolean scale;
+	private int neg;
 	
-	public RunPCoA(CyMatrix dMat, 
-             TaskMonitor monitor )
+	public RunPCoA(CyMatrix dMat, boolean scale, int neg, TaskMonitor monitor )
 	{
 			
 		this.distanceMatrix = dMat;
-		this.matrix = dMat.copy();
+		this.monitor = monitor;
+		this.scale = scale;
+		this.neg = neg;
 		
-		nodes = distanceMatrix.getRowNodes();
-	
 		monitor.showMessage(TaskMonitor.Level.INFO,"Threads = "+nThreads);
 		monitor.showMessage(TaskMonitor.Level.INFO,"Matrix info: = "+distanceMatrix.printMatrixInfo());
-		
-		
 	}
 	
 	public void cancel () { canceled = true; }
 
 	public void setDebug(boolean debug) { this.debug = debug; }
 	
-	public void run(CyMatrix matrix){
+	public void run(){
 		System.out.println("Calculating values");
-		double data[][]=matrix.toArray();
-		System.out.println("Length "+ data.length);
+		// double data[][]=matrix.toArray();
+		System.out.println("Length "+ distanceMatrix.nRows());
 		
 		System.out.println("Checking CyMatrix symmetrical "+matrix.isSymmetrical());
-		CalculationMatrix calc=new CalculationMatrix(matrix.nRows(), matrix.nColumns(), data, 0, 0, 0);
+		// TODO: make scale and neg tunables in PCoAContext
+		CalculationMatrix calc=new CalculationMatrix(matrix, 0, scale, neg);
 		System.out.println("Added data to the matrix ");
 		calc.eigenAnalysis();
 		System.out.println("Completed Eigen Analysis");

@@ -11,13 +11,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -25,6 +20,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
@@ -55,57 +51,21 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	private final CyMatrix[] scores;
 	private final int xIndex;
 	private final int yIndex;
+	private final Color pointColor;
+	private final int pointWidth;
 
 	private List<Point> graphPoints;
-	// private static CyMatrix[] allComponents;
-	private static double[] variances;
-	private static String[] PCs;
-	private static final Color[] colors =
-		{Color.black, Color.blue, Color.cyan, Color.darkGray,
-		 Color.gray, Color.green,
-		 Color.yellow, Color.lightGray,
-		 Color.magenta, Color.orange, Color.pink,
-		 Color.red, Color.white };
 
-	private static final String[] colorNames =
-		{ "Black", "Blue", "Cyan", "Dark Gray",
-		  "Gray", "Green",
-			"Yellow", "Light Gray",
-			"Magneta", "Orange", "Pink",
-			"Red", "White" };
+	private int startingX, startingY, currentX, currentY, previousDX=0, previousDY=0;
+	private boolean dragging = false;
 
-	private static final JPanel container = new JPanel();
-	private static final JPanel panelXAxis = new JPanel();
-	private static final JPanel panelYAxis = new JPanel();
-	private static final JPanel panelButtons = new JPanel();
-	private static final JLabel labelXAxis = new JLabel("X - Axis: ");
-	private static final JLabel labelYAxis = new JLabel("Y - Axis: ");
-	private static final JLabel labelColor = new JLabel("Color of points: ");
-	private static final JLabel labelPointSize = new JLabel("Size of points: ");
-	private static final JTextField textFieldPointSize = new JTextField(6);
-	private static final JXCollapsiblePane collapsiblePaneOptions = new JXCollapsiblePane();
-	private static JLabel labelXVariance;
-	private static JLabel labelYVariance;
-	private static JComboBox<String> comboXAxis;
-	private static JComboBox<String> comboYAxis;
-	private static JComboBox<String> comboColors;
-	private static final JButton buttonPlot = new JButton("Plot");
-	private static final JButton buttonOptions = new JButton("Advance Options");
-
-	private static int startingX, startingY, currentX, currentY, previousDX=0, previousDY=0;
-	private static int currentCenterX=0, currentCenterY=0;
-	private static boolean dragging = false;
-
-	public ScatterPlotPCA(CyMatrix[] scores, Matrix loadings, int x, int y) {
+	public ScatterPlotPCA(CyMatrix[] scores, Matrix loadings, int x, int y, Color pointColor, int pointWidth) {
 		this.scores = scores;
 		this.loadings = loadings;
 		this.xIndex = x;
 		this.yIndex = y;
-
-		// this.scoresX = scores[x];
-		// this.scoresY = scores[y];
-		// this.lableX = loadings.getColumnLabel(x);
-		// this.lableY = loadings.getColumnLabel(y);
+		this.pointColor = pointColor;
+		this.pointWidth = pointWidth;
 
 		double max = scores[xIndex].getMaxValue();
 		double min = scores[xIndex].getMinValue();
@@ -146,7 +106,11 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		addMouseListener(this);
 
 		addMouseMotionListener(this);
+
 	}
+
+	@Override
+	public Dimension getPreferredSize() { return new Dimension(PREF_W, PREF_H); }
 
 	
 	public void mouseClicked(MouseEvent event) {
@@ -280,8 +244,8 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 			  graphPoints.add(new Point(x1, y1));
 		  }
 	  }
-	  g2.setColor(colors[comboColors.getSelectedIndex()]);
-	  graph_point_width = Integer.parseInt(textFieldPointSize.getText());
+	  g2.setColor(pointColor);
+	  graph_point_width = pointWidth;
 		for (Point graphPoint : graphPoints) {
 			int x = graphPoint.x - graph_point_width / 2;
 			int y = graphPoint.y - graph_point_width / 2;
@@ -298,155 +262,6 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 			int y2 = (int) (-1 * (loadings.getValue(row, yIndex) * yScale * MAX_SCORE - newY));
 			drawArrow(g2, x1, y1, x2, y2, Color.RED);
 		}
-	}
-
-	@Override
-	public Dimension getPreferredSize() {
-		Dimension size = new Dimension(PREF_W, PREF_H);
-		//size.width = Math.round(size.width * scale);
-		//size.height = Math.round(size.height * scale);
-		return size;
-	}
-
-	public static JXCollapsiblePane createAdvanceOptionPane(){
-		JPanel control = new JPanel();
-
-		comboColors = new JComboBox(colorNames);
-		comboColors.setSelectedIndex(1);
-
-		GridBagConstraints constraints = new GridBagConstraints();
-		constraints.anchor = GridBagConstraints.WEST;
-		constraints.insets = new Insets(10, 10, 10, 10);
-
-		// add components to the panel
-		constraints.gridx = 0;
-		constraints.gridy = 0;	
-		control.add(labelPointSize, constraints);
-
-		constraints.gridx = 1;
-		control.add(textFieldPointSize, constraints);
-		
-		constraints.gridx = 0;
-		constraints.gridy = 1;	
-		control.add(labelColor, constraints);
-		
-		constraints.gridx = 1;
-		control.add(comboColors, constraints);
-
-		// set border for the panel
-		control.setBorder(BorderFactory.createTitledBorder(
-				BorderFactory.createEtchedBorder(), "Advanced Options"));
-
-		collapsiblePaneOptions.removeAll();
-		collapsiblePaneOptions.add("Center", control);
-		collapsiblePaneOptions.setCollapsed(!collapsiblePaneOptions.isCollapsed());
-
-		return collapsiblePaneOptions;
-	}
-
-	public static JPanel createControlJPanel(final CyMatrix[] components, final Matrix loadings){
-		JPanel control = new JPanel(new GridBagLayout());
-
-		PCs = new String[components.length];
-		for(int i=0;i<PCs.length;i++)
-			PCs[i] = "PC " + (i+1);
-
-		comboXAxis = new JComboBox(PCs);
-		comboYAxis = new JComboBox(PCs);
-		comboYAxis.setSelectedIndex(1);
-		textFieldPointSize.setText("6");
-		labelXVariance = new JLabel(String.valueOf(variances[0]) + "% variance");
-		labelYVariance = new JLabel(String.valueOf(variances[1]) + "% variance");
-
-		panelXAxis.setLayout(new BoxLayout(panelXAxis, BoxLayout.X_AXIS));
-		panelXAxis.removeAll();
-		panelXAxis.add(comboXAxis);
-		panelXAxis.add(Box.createRigidArea(new Dimension(5,0)));
-		panelXAxis.add(labelXVariance);
-
-		panelYAxis.setLayout(new BoxLayout(panelYAxis, BoxLayout.X_AXIS));
-		panelYAxis.removeAll();
-		panelYAxis.add(comboYAxis);
-		panelYAxis.add(Box.createRigidArea(new Dimension(5,0)));
-		panelYAxis.add(labelYVariance);
-
-		if(buttonOptions.getActionListeners().length == 0){
-			buttonOptions.addActionListener(collapsiblePaneOptions.getActionMap().get("toggle"));
-		}
-		panelButtons.setLayout(new BoxLayout(panelButtons, BoxLayout.X_AXIS));
-		panelButtons.add(buttonOptions);
-		panelButtons.add(buttonPlot);
-
-		GridBagConstraints constraints = new GridBagConstraints();
-		constraints.anchor = GridBagConstraints.WEST;
-		constraints.insets = new Insets(10, 10, 10, 10);
-
-		// add components to the panel
-		constraints.gridx = 0;
-		constraints.gridy = 0;
-		control.add(labelXAxis, constraints);
-
-		constraints.gridx = 1;
-		control.add(panelXAxis, constraints);
-
-		constraints.gridx = 0;
-		constraints.gridy = 1;
-		control.add(labelYAxis, constraints);
-
-		constraints.gridx = 1;
-		control.add(panelYAxis, constraints);
-
-		constraints.gridx = 0;
-		constraints.gridy = 2;
-		constraints.gridwidth = 2;
-		constraints.anchor = GridBagConstraints.CENTER;
-		control.add(createAdvanceOptionPane(), constraints);
-
-		constraints.gridx = 0;
-		constraints.gridy = 3;
-		constraints.gridwidth = 2;
-		constraints.anchor = GridBagConstraints.CENTER;
-		control.add(panelButtons, constraints);
-
-		comboXAxis.addActionListener (new ActionListener () {
-			public void actionPerformed(ActionEvent e) {
-				labelXVariance.setText(variances[comboXAxis.getSelectedIndex()] + "% variance");
-			}
-		});
-
-		comboYAxis.addActionListener (new ActionListener () {
-			public void actionPerformed(ActionEvent e) {
-				labelYVariance.setText(variances[comboYAxis.getSelectedIndex()] + "% variance");
-			}
-		});
-
-		buttonPlot.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e)
-			{
-				try{
-					Integer.parseInt(textFieldPointSize.getText());
-				}catch (NumberFormatException er) {
-					  JOptionPane.showMessageDialog(null,textFieldPointSize.getText() + " is not a number","Error: Size of point",JOptionPane.ERROR_MESSAGE);
-					  return;
-				}
-
-				//Execute when button is pressed
-				container.remove(0);
-				ScatterPlotPCA scatterPlot = new ScatterPlotPCA(components, loadings, 
-				                                                comboXAxis.getSelectedIndex(), 
-																				                comboYAxis.getSelectedIndex());
-				container.add(scatterPlot, 0);
-				container.updateUI();
-			}
-
-		});
-
-		// set border for the panel
-		control.setBorder(BorderFactory.createTitledBorder(
-				BorderFactory.createEtchedBorder(), ""));
-
-		return control;
 	}
 
 	public void drawArrow(Graphics2D g2, int x1, int y1, int x2, int y2, Color color) {
@@ -514,29 +329,4 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		g2.setTransform(oldTx);
 	}
 
-	public static void createAndShowGui(CyMatrix[] components, Matrix loading, double[] varianceArray) {
-
-		if(components == null){
-			return;
-		}else if(components.length < 2){
-			return;
-		}
-		variances = varianceArray;
-
-		ScatterPlotPCA scatterPlot = 
-		 				new ScatterPlotPCA(components, loading, 0, 1);
-
-		JFrame frame = new JFrame("Scatter Plot");
-
-		container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-		container.removeAll();
-		previousDX = previousDY = 0;
-		container.add(scatterPlot);
-		container.add(createControlJPanel(components, loading));
-
-		frame.getContentPane().add(container);
-		frame.pack();
-		frame.setLocationByPlatform(true);
-		frame.setVisible(true);
-	}
 }

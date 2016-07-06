@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import javax.swing.SwingUtilities;
 
 
 // import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
@@ -71,18 +72,22 @@ public class RunPCA {
 		// ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
 
 		System.out.println("Computing principle components");
-		Matrix loadingMatrix = new ColtMatrix();
-		CyMatrix[] components = computePCs(matrix, loadingMatrix);
+		final Matrix loadingMatrix = new ColtMatrix();
+		final CyMatrix[] components = computePCs(matrix, loadingMatrix);
 
-		double[] variance = computeVariance(eigenValues);
+		final double[] variance = computeVariance(eigenValues);
 
 		if(context.pcaResultPanel)
 			ResultPanelPCA.createAndShowGui(components, network, networkView, 
 			                                matrix.getRowNodes(), variance);
 
-		if(context.pcaPlot)
-			ScatterPlotPCA.createAndShowGui(components, loadingMatrix, variance);
-
+		if(context.pcaPlot) {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					ScatterPlotDialog dialog = new ScatterPlotDialog(components, loadingMatrix, variance);
+				}
+			});
+		}
 	}
 
 	public CyMatrix[] computePCs(CyMatrix matrix, Matrix loadingMatrix){
@@ -193,6 +198,7 @@ public class RunPCA {
 				System.out.print(""+eigenVectors[row][column]+"\t");
 				loading.setValue(row, newCol, 
 				                 eigenVectors[row][column]*Math.sqrt(Math.abs(eigenValues[column])));
+				// loading.setValue(row, newCol, eigenVectors[row][column]*eigenValues[column]);
 			}
 		}
 		System.out.println("\n");

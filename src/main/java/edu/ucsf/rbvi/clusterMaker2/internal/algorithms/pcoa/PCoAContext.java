@@ -20,14 +20,35 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithmContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 public class PCoAContext {
+	enum NegEigenHandling {
+		DISCARD("Discard", 0),
+		KEEP("Keep", 1),
+		CORRECT("Correct", 2);
 
-CyNetwork network;
+		String name;
+		int value;
+		NegEigenHandling(String name, int value) {
+			this.name = name;
+			this.value = value;
+		}
+
+		public String toString() { return name; }
+		public int getValue() { return value; }
+	}
+
+	CyNetwork network;
 	
 	//Tunables
-	
+
 	@ContainsTunables
 	public EdgeAttributeHandler edgeAttributeHandler;
-	
+
+	@Tunable (description="Scale eigenvectors?", groups={"PCoA Advanced Options"})
+	public boolean scale = true;
+
+	@Tunable (description="Negative eigenvalue handling", groups={"PCoA Advanced Options"})
+	public ListSingleSelection<NegEigenHandling> neg = 
+		new ListSingleSelection<NegEigenHandling>(NegEigenHandling.DISCARD, NegEigenHandling.KEEP, NegEigenHandling.CORRECT);
 
 	@ContainsTunables
 	public NetworkVizProperties vizProperties = new NetworkVizProperties();
