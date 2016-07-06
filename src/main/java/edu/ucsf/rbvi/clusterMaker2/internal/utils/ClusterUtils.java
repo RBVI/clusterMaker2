@@ -131,10 +131,10 @@ public class ClusterUtils {
 
     private static void setRankScore(String attribute, CyRow row, NodeCluster cluster) {
         try {
-            cluster.setRankScore(cluster.getRankScore() + row.get(attribute, Double.class, 0.0));
+            cluster.addScoreToAvg(cluster.getRankScore() + row.get(attribute, Double.class, 0.0));
         } catch (ClassCastException cce) {
             try {
-                cluster.setRankScore(cluster.getRankScore() + row.get(attribute, Integer.class, 0));
+                cluster.addScoreToAvg(cluster.getRankScore() + row.get(attribute, Integer.class, 0));
             } catch (Exception e) { // Not a number type!
                 e.printStackTrace();
             }
@@ -144,12 +144,13 @@ public class ClusterUtils {
     private static void setRankScoreMultiplicative(String edgeAttr, CyRow source, NodeCluster cluster) {
         try {
             if (cluster.getRankScore() == 0.0) {
-                cluster.setRankScore(1.0);
+                cluster.addScoreToAvg(1.0);
             }
-            cluster.setRankScore(cluster.getRankScore() * (source.get(edgeAttr, Double.class, 0.0) + 1.0)); // assumes values between 0.0 and 1.0
+            cluster.addScoreToAvg(cluster.getRankScore() * (source.get(edgeAttr, Double.class, 0.0) + 1.0)); // assumes
+            // values between 0.0 and 1.0
         } catch (ClassCastException cce) { //
             try {
-                cluster.setRankScore(cluster.getRankScore() * (source.get(edgeAttr, Integer.class, 0) + 1));
+                cluster.addScoreToAvg(cluster.getRankScore() * (source.get(edgeAttr, Integer.class, 0) + 1));
             } catch (Exception e) { // Not a number type!
                 e.printStackTrace();
             }

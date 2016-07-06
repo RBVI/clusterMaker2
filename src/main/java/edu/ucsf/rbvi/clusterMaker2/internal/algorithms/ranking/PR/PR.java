@@ -40,7 +40,6 @@ public class PR extends AbstractTask implements Rank {
     private List<CyEdge> edgeList;
     private CyTable nodeTable;
     private CyTable edgeTable;
-    private List<String> nodeAttributes;
     private List<String> edgeAttributes;
 
     public PR(PRContext context, ClusterManager manager) {
@@ -90,9 +89,11 @@ public class PR extends AbstractTask implements Rank {
         addEdges();
         taskMonitor.setProgress(0.7);
 
+        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Calculating PageRank scores");
         PageRank<PRNode, PREdge> pageRank = performPageRank();
         taskMonitor.setProgress(0.8);
 
+        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Inserting scores into clusters");
         insertScores(clusters, pageRank);
         taskMonitor.setProgress(0.9);
 
@@ -106,7 +107,6 @@ public class PR extends AbstractTask implements Rank {
     private void insertScores(List<NodeCluster> clusters, PageRank<PRNode, PREdge> pageRank) {
         for (PRNode node : graph.getVertices()) {
             node.setPRScore(pageRank.getVertexScore(node));
-            System.out.println(pageRank.getVertexScore(node));
 
             for (NodeCluster cluster : clusters) {
                 if (cluster.getNodeScores().containsKey(node.getCyNode().getSUID())) {
@@ -174,7 +174,6 @@ public class PR extends AbstractTask implements Rank {
             }
         }
 
-        System.out.println("Settings edge score to: " + totalEdgeScore);
         prEdge.setScore(totalEdgeScore);
     }
 
