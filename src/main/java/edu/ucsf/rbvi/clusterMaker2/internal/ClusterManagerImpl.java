@@ -51,7 +51,8 @@ public class ClusterManagerImpl implements ClusterManager {
 	double networkClusterIndex = 50.0;
 	double attributeClusterIndex = 1.0;
 	double filterIndex = 100.0;
-	double pcaIndex = 150.0;
+        double pcaIndex = 150.0;
+        double pcoaIndex = 200.0;
 	double vizClusterIndex = 1.0;
 	double rankingIndex = 1.0;
 	Map<CyNetwork, List<ResultsPanel>> resultsPanelMap;
@@ -117,6 +118,11 @@ public class ClusterManagerImpl implements ClusterManager {
 				break;
 
 			case PCA:
+				pcaIndex += 1.0;
+				props.setProperty(MENU_GRAVITY, ""+pcaIndex);
+				break;
+				
+			case PCOA:
 				pcaIndex += 1.0;
 				props.setProperty(MENU_GRAVITY, ""+pcaIndex);
 				break;

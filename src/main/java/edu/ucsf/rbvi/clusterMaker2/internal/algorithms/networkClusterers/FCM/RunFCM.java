@@ -71,6 +71,7 @@ public class RunFCM {
 		this.membershipThreshold = membershipThreshold;
 		// System.out.println("c= "+number_clusters+" ,iterations: "+number_iterations);
 
+		
 		if (maxThreads > 0)
 			nThreads = maxThreads;
 		else

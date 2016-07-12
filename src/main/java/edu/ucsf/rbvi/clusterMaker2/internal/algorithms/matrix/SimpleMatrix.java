@@ -1,5 +1,8 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
 
@@ -11,11 +14,15 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 import cern.colt.matrix.tdouble.DoubleFactory2D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
+import cern.colt.matrix.tdouble.algo.decomposition.DenseDoubleEigenvalueDecomposition;
+import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
+import cern.colt.matrix.tdouble.algo.DoubleStatistic;
 import cern.colt.matrix.tdouble.algo.SmpDoubleBlas;
 
 public class SimpleMatrix implements Matrix {
 	protected Double[][] data;
 	protected SmpDoubleBlas blas;
+	private DenseDoubleEigenvalueDecomposition decomp = null;
 	protected int[] index;
 	protected int nRows;
 	protected int nColumns;
@@ -25,6 +32,7 @@ public class SimpleMatrix implements Matrix {
 	protected double minValue = Double.MAX_VALUE;
 	protected boolean symmetric = false;
 	protected boolean transposed = false;
+	private static double EPSILON=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
 	final Logger logger = Logger.getLogger(CyUserLog.NAME);
 
 	public SimpleMatrix() {
@@ -63,13 +71,47 @@ public class SimpleMatrix implements Matrix {
 		symmetric = mat.symmetric;
 		minValue = mat.minValue;
 		maxValue = mat.maxValue;
-		rowLabels = Arrays.copyOf(rowLabels, rowLabels.length);
-		columnLabels = Arrays.copyOf(columnLabels, columnLabels.length);
+		rowLabels = Arrays.copyOf(mat.rowLabels, mat.rowLabels.length);
+		columnLabels = Arrays.copyOf(mat.columnLabels, mat.columnLabels.length);
 		for (int row = 0; row < nRows; row++) {
 			for (int column = 0; column < nColumns; column++) {
 				this.data[row][column] = inputData[row][column];
 			}
 		}
+	}
+
+	public void initialize(int rows, int columns, double[][] arrayData) {
+		nRows = rows;
+		nColumns = columns;
+		data = new Double[rows][columns];
+		if (arrayData != null) {
+			for (int row = 0; row < rows; row++) {
+				for (int col = 0; col < columns; col++) {
+					setValue(row, col, arrayData[row][col]);
+				}
+			}
+		}
+		transposed = false;
+		symmetric = false;
+		rowLabels = new String[nRows];
+		columnLabels = new String[nColumns];
+	}
+
+	public void initialize(int rows, int columns, Double[][] arrayData) {
+		nRows = rows;
+		nColumns = columns;
+		data = new Double[rows][columns];
+		if (arrayData != null) {
+			for (int row = 0; row < rows; row++) {
+				for (int col = 0; col < columns; col++) {
+					setValue(row, col, arrayData[row][col]);
+				}
+			}
+		}
+		transposed = false;
+		symmetric = false;
+		rowLabels = new String[nRows];
+		columnLabels = new String[nColumns];
 	}
 	
 	/**
@@ -646,10 +688,183 @@ public class SimpleMatrix implements Matrix {
 		updateMinMax();
 	}
 
+	public void standardizeRow(int row) {
+		double mean = rowMean(row);
+		double variance = rowVariance(row, mean);
+		double stdev = Math.sqrt(variance);
+		for (int column = 0; column < nColumns; column++) {
+			double cell = this.getValue(row, column);
+			this.setValue(row, column, (cell-mean)/stdev);
+		}
+	}
+
+	public void standardizeColumn(int column) {
+		double mean = columnMean(column);
+		double variance = columnVariance(column, mean);
+		double stdev = Math.sqrt(variance);
+		for (int row = 0; row < nRows; row++) {
+			double cell = this.getValue(row, column);
+			this.setValue(row, column, (cell-mean)/stdev);
+		}
+	}
+
+	public void centralizeColumns() {
+		for(int i=0;i<nColumns;i++){
+			// Replace with parallel function?
+			double mean = 0.0;
+			for(int j=0;j<nRows; j++){
+				double cell = this.getValue(j, i);
+				if (!Double.isNaN(cell))
+					mean += cell;
+			}
+			mean /= nRows;
+			for(int j=0;j<nRows;j++){
+				double cell = this.getValue(j, i);
+				if (!Double.isNaN(cell))
+					this.setValue(j, i, cell - mean);
+				else
+					this.setValue(i, j, 0.0d);
+			}
+		}
+	}
+
+	public void centralizeRows() {
+		for(int i=0;i<nRows;i++){
+			// Replace with parallel function?
+			double mean = 0.0;
+			for(int j=0;j<nColumns; j++){
+				double cell = this.getValue(i, j);
+				if (!Double.isNaN(cell))
+					mean += cell;
+			}
+			mean /= nColumns;
+			for(int j=0;j<nColumns;j++){
+				double cell = this.getValue(i, j);
+				if (!Double.isNaN(cell))
+					this.setValue(i, j, cell - mean);
+				else
+					this.setValue(i, j, 0.0d);
+			}
+		}
+	}
+
+	public double columnSum(int column) {
+		double sum = 0.0;
+		for(int j=0;j<nRows; j++){
+			double cell = this.getValue(j, column);
+			if (!Double.isNaN(cell))
+				sum += cell;
+		}
+		return sum;
+	}
+	
+	public double rowSum(int row) {
+		double sum = 0.0;
+		for(int j=0;j<nColumns; j++){
+			double cell = this.getValue(row, j);
+			if (!Double.isNaN(cell))
+				sum += cell;
+		}
+		return sum;
+	}
+
+	public double columnMean(int column) {
+		double mean = 0.0;
+		for(int j=0;j<nRows; j++){
+			double cell = this.getValue(j, column);
+			if (!Double.isNaN(cell))
+				mean += cell;
+		}
+		return mean/nRows;
+	}
+
+	public double rowMean(int row) {
+		double mean = 0.0;
+		for(int j=0;j<nColumns; j++){
+			double cell = this.getValue(row, j);
+			if (!Double.isNaN(cell))
+				mean += cell;
+		}
+		return mean/nColumns;
+	}
+	
+	public double columnVariance(int column) {
+		double mean = columnMean(column);
+		return columnVariance(column, mean);
+	}
+
+	public double columnVariance(int column, double mean) {
+		double variance = 0.0;
+		for(int j=0;j<nRows; j++){
+			double cell = this.getValue(j, column);
+			if (!Double.isNaN(cell))
+				variance += Math.pow((cell-mean),2);
+		}
+		return variance/nRows;
+	}
+	
+	public double rowVariance(int row) {
+		double mean = rowMean(row);
+		return rowVariance(row, mean);
+	}
+
+	public double rowVariance(int row, double mean) {
+		double variance = 0.0;
+		for(int j=0;j<nColumns; j++){
+			double cell = this.getValue(row, j);
+			if (!Double.isNaN(cell))
+				variance += Math.pow((cell-mean),2);
+		}
+		return variance/nColumns;
+	}
+
 	public DoubleMatrix2D getColtMatrix() {
 		DoubleMatrix2D mat = DoubleFactory2D.dense.make(nRows, nColumns);
 		mat.assign(toArray());
 		return mat;
+	}
+
+	public Matrix multiplyMatrix(Matrix b) {
+		return mult(b);
+	}
+
+	public Matrix covariance() {
+		DoubleMatrix2D matrix2D = DoubleStatistic.covariance(getColtMatrix());
+		return copyDataFromMatrix(matrix2D);
+	}
+
+	public Matrix correlation() {
+		DoubleMatrix2D matrix2D = DoubleStatistic.covariance(getColtMatrix());
+		matrix2D = DoubleStatistic.correlation(matrix2D);
+		return copyDataFromMatrix(matrix2D);
+	}
+
+	public double[] eigenValues(boolean nonZero){
+		if (decomp == null)
+			decomp = new DenseDoubleEigenvalueDecomposition(getColtMatrix());
+
+		double[] allValues = decomp.getRealEigenvalues().toArray();
+		if (!nonZero)
+			return allValues;
+
+		int size = 0;
+		for (double d: allValues) {
+			if (Math.abs(d) > EPSILON)size++;
+		}
+		double [] nonZ = new double[size];
+		int index = 0;
+		for (double d: allValues) {
+			if (Math.abs(d) > EPSILON)
+				nonZ[index++] = d;
+		}
+
+		return nonZ;
+	}
+
+	public double[][] eigenVectors(){
+		if (decomp == null)
+			decomp = new DenseDoubleEigenvalueDecomposition(getColtMatrix());
+		return decomp.getV().toArray();
 	}
 
 	public Matrix mult(Matrix b) {
@@ -701,6 +916,43 @@ public class SimpleMatrix implements Matrix {
 			sb.append("\n");
 		} 
 		return sb.toString();
+	}
+	
+	public void writeMatrix(String fileName) {
+		String tmpDir = System.getProperty("java.io.tmpdir");
+		try{
+			File file = new File(tmpDir + fileName);
+			if(!file.exists()) {
+				file.createNewFile();
+			}
+			PrintWriter writer = new PrintWriter(tmpDir + fileName, "UTF-8");
+			writer.write(printMatrix());
+			writer.close();
+		}catch(IOException e){
+			e.printStackTrace(System.out);
+		}
+	}
+
+	private Matrix copyDataFromMatrix(DoubleMatrix2D matrix2D) {
+		SimpleMatrix mat = new SimpleMatrix(matrix2D.rows(), matrix2D.columns());
+		mat.symmetric = true;
+		mat.transposed = this.transposed;
+		double[][]inputData = matrix2D.toArray();
+		for (int row = 0; row < mat.nRows; row++) {
+			for (int column = 0; column < mat.nColumns; column++) {
+				mat.data[row][column] = inputData[row][column];
+			}
+		}
+		String[] labels;
+		if (this.transposed)
+			labels = rowLabels;
+		else
+			labels = columnLabels;
+		if (labels != null) {
+			mat.rowLabels = Arrays.copyOf(labels, labels.length);
+			mat.columnLabels = Arrays.copyOf(labels, labels.length);
+		}
+		return mat;
 	}
 
 	private void gaussian(Double a[][], int idx[]) {

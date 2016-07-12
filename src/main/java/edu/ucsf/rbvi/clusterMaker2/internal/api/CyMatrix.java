@@ -108,9 +108,29 @@ public interface CyMatrix extends Matrix {
 	public void setAssymetricalEdge(boolean assymetricalEdge);
 
 	/**
+	 * Return the distance between rows based on the metric. Note
+	 * that this overrides the getDistanceMatrix method in Matrix,
+	 * which is intentional so we can get the full CyMatrix (including
+	 * nodes) and not just the data matrix
+	 *
+	 * @param metric the metric to use to calculate the distances
+	 * @return a new CyMatrix of the distances between the rows
+	 */
+	public CyMatrix getDistanceMatrix(DistanceMetric metric);
+
+	/**
 	 * Return a copy of this matrix
 	 *
 	 * @return deep copy of the matrix
 	 */
 	public CyMatrix copy();
+
+	/**
+	 * Return a copy of this matrix, but replace the data with a different
+	 * Matrix
+	 *
+	 * @param matrix the data matrix to insert
+	 * @return new CyMatrix with new underlying data
+	 */
+	public CyMatrix copy(Matrix matrix);
 }

@@ -9,6 +9,7 @@ public class Clustering {
 	public int numClusters = -1;
 
 	public Clustering(int size,double clusteringThresh)
+	
 	{
 		clusters = new Vector(size);
 		

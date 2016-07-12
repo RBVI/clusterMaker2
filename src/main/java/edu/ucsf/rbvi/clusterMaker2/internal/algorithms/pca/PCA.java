@@ -46,12 +46,15 @@ public class PCA extends AbstractTask{
 	public String getName() {return NAME;}
 
 	public void run(TaskMonitor monitor){
+		monitor.setTitle("Principal Component Analysis");
 		monitor.setStatusMessage("Running Principal Component Analysis");
-		String inputValue = context.getInputValue();
+		// String inputValue = context.getInputValue();
+		/*
 		if (inputValue.equals("Edge Value")) {
 			RunPCA runPCA = new RunPCA(network, networkView, context, monitor, null);
 			runPCA.runOnEdgeValues();
 		} else {
+		*/
 			List<String> dataAttributes = context.getNodeAttributeList();
 
 			if (dataAttributes == null || dataAttributes.isEmpty() ) {
@@ -71,7 +74,12 @@ public class PCA extends AbstractTask{
 					attrArray[att++] = "node."+attribute;
 			}
 
-			RunPCA runPCA = new RunPCA(network, networkView, context, monitor, attrArray);
+			String matrixType = context.matrixType.getSelectedValue();
+
+			RunPCA runPCA = new RunPCA(network, networkView, context, monitor, attrArray, 
+			                           matrixType, context.standardize);
+			runPCA.runOnNodeToAttributeMatrix();
+			/*
 			if(context.inputValue.getSelectedValue().equals("Distance Matrix") && 
 				context.pcaType.getSelectedValue().equals("PCA of input weight between nodes")){
 				System.out.println("Calling runOnNodeToNodeDistanceMatrix");
@@ -85,5 +93,6 @@ public class PCA extends AbstractTask{
 				runPCA.runOnEdgeValues();
 			}
 		}
+			*/
 	}
 }

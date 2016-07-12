@@ -18,6 +18,24 @@ import cern.colt.matrix.tdouble.DoubleMatrix2D;
  * 		o The matrix is separately indexed
  */
 public interface Matrix {
+
+	/**
+	 * Initialize the matrix data
+	 *
+	 * @param rows the number of rows
+	 * @param columns the number of columns
+	 * @param data a (possibly null) matrix of data
+	 */
+	public void initialize(int rows, int columns, double[][] data);
+
+	/**
+	 * Initialize the matrix data
+	 *
+	 * @param rows the number of rows
+	 * @param columns the number of columns
+	 * @param data a (possibly null) matrix of data
+	 */
+	public void initialize(int rows, int columns, Double[][] data);
 	
 	/**
 	 * Return the number of rows in this matrix.
@@ -276,11 +294,127 @@ public interface Matrix {
 	public void normalizeColumn(int column);
 
 	/**
+	 * Standardize the data in a row
+	 *
+	 * @param row the row to standardize
+	 */
+	public void standardizeRow(int row);
+
+	/**
+	 * Standardize the data in a column
+	 *
+	 * @param column the column to standardize
+	 */
+	public void standardizeColumn(int column);
+
+	/**
+	 * Normalize a matrix column in place (all rows in the column sum to 1.0)
+	 *
+	 * @param column the column to normalize
+
+	/**
+	 * Centralize the rows of a matrix around the mean of the row
+	 *
+	 */
+	public void centralizeRows();
+
+	/**
+	 * Centralize the column of a matrix around the mean of the column
+	 *
+	 */
+	public void centralizeColumns();
+
+	/**
+	 * Return the sum of a row
+	 *
+	 * @param row the row to get the sum of
+	 * @return the sum
+	 */
+	public double rowSum(int row);
+
+	/**
+	 * Return the sum of a column
+	 *
+	 * @param column the column to get the sum of
+	 * @return the sum
+	 */
+	public double columnSum(int row);
+
+	/**
+	 * Return the variance of a row
+	 *
+	 * @param row the row to get the variance of
+	 * @return the variance
+	 */
+	public double rowVariance(int row);
+
+	/**
+	 * Return the variance of a column
+	 *
+	 * @param column the column to get the variance of
+	 * @return the variance
+	 */
+	public double columnVariance(int row);
+
+	/**
+	 * Return the mean of a row
+	 *
+	 * @param row the row to get the mean of
+	 * @return the mean
+	 */
+	public double rowMean(int row);
+
+	/**
+	 * Return the mean of a column
+	 *
+	 * @param column the column to get the mean of
+	 * @return the mean
+	 */
+	public double columnMean(int column);
+
+	/**
 	 * Return the cardinality (number of non-null values) of this matrix
 	 *
 	 * @return cardinality
 	 */
 	public int cardinality();
+
+	/**
+	 * Multiply two matrices together
+	 *
+	 * @param matrix the matrix to multiple with our matrix
+	 * @return the multiplied matrix
+	 */
+	public Matrix multiplyMatrix(Matrix matrix);
+
+	/**
+	 * Return the covariance of a matrix
+	 *
+	 * @return the covariance of the matrix
+	 */
+	public Matrix covariance();
+
+	/**
+	 * Return the correlation of a matrix
+	 *
+	 * @return the correlation of the matrix
+	 */
+	public Matrix correlation();
+
+	/**
+	 * Return the eigenvalues of a matrix
+	 *
+	 * @param nonZero if true, only return the non-zero eigenvalues
+	 * @return the eigenvalues of the matrix
+	 */
+	public double[] eigenValues(boolean nonZero);
+
+	/**
+	 * Return the eigenvectors of a matrix
+	 *
+	 * @return the eigenvectors of the matrix
+	 */
+	public double[][] eigenVectors();
 
 	/**
 	 * Return some information about the matrix
@@ -295,6 +429,13 @@ public interface Matrix {
 	 * @return string representation of the matrix
 	 */
 	public String printMatrix();
+
+	/**
+	 * Write the matrix out in a reasonable format
+	 *
+	 * @param filename the name of the output file
+	 */
+	public void writeMatrix(String filename);
 
 	/**
 	 * Temporary solution to providing access to Colt Matrices.  Eventually,

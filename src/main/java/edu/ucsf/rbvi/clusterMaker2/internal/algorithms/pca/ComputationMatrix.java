@@ -5,8 +5,6 @@
  */
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
-
 import cern.colt.function.tdouble.DoubleDoubleFunction;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
@@ -19,6 +17,8 @@ import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.math.MathContext;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
+
 /**
  *
  * @author root
@@ -30,10 +30,16 @@ public class ComputationMatrix {
 	private DenseDoubleEigenvalueDecomposition decomp = null;
 	static public double MISSING_DATA = Double.NaN;
 
-	public ComputationMatrix(double[][] values) {
-		this.matrix = new DenseDoubleMatrix2D(values);
+	public ComputationMatrix(double[][] inputData) {
+		this.matrix = new DenseDoubleMatrix2D(inputData);
 		nRows = matrix.rows();
 		nColumns = matrix.columns();
+	}
+
+	public ComputationMatrix(Matrix matrix) {
+		this.matrix = matrix.getColtMatrix();
+		nRows = this.matrix.rows();
+		nColumns = this.matrix.columns();
 	}
 
 	public ComputationMatrix(DoubleMatrix2D matrix) {
@@ -144,6 +150,13 @@ public class ComputationMatrix {
 			nonZero[i] = allValues[i];
 
 		return nonZero;
+	}
+	
+	public double[] eigenValuesAll(){
+		if (decomp == null)
+			decomp = new DenseDoubleEigenvalueDecomposition(matrix);
+
+		return decomp.getRealEigenvalues().toArray();
 	}
 
 	public double[][] eigenVectors(){

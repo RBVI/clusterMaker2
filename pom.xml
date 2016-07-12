@@ -199,13 +199,18 @@
 			<artifactId>swingx</artifactId>
 			<version>0.9.2</version>
 		</dependency>
+    <!--dependency>
+      <groupId>org.jfree</groupId>
+      <artifactId>jfreechart</artifactId>
+      <version>1.0.19</version>
+      <optional>true</optional>
+		</dependency-->
 		<dependency>
 			<groupId>org.ops4j.pax.logging</groupId>
 			<artifactId>pax-logging-api</artifactId>
 			<version>1.5.2</version>
 			<scope>provided</scope>
 		</dependency>
-		<!-- TODO: convert these three packages below to OSGi-bundles -->
         <dependency>
             <groupId>net.sf.jung</groupId>
             <artifactId>jung-graph-impl</artifactId>

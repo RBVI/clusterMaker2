@@ -63,10 +63,13 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 		NodeCluster.init();
 
 		CyMatrix matrix = context.edgeAttributeHandler.getMatrix();
+		
 		if (matrix == null) {
 			monitor.showMessage(TaskMonitor.Level.ERROR,"Can't get distance matrix: no attribute value?");
 			return;
 		}
+		
+		
 
 		// Update our tunable results
 		clusterAttributeName = context.getClusterAttribute();
@@ -78,7 +81,7 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 		runMCL = new RunMCL(matrix, context.inflation_parameter, context.iterations, 
 		                    context.clusteringThresh, context.maxResidual, context.maxThreads, monitor);
 
-		runMCL.setDebug(debug);
+		runMCL.setDebug(false);
 
 		if (canceled) return;
 

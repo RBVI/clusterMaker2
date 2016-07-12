@@ -7,6 +7,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 /**
@@ -15,8 +16,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
  */
 public class CyColtMatrix extends ColtMatrix implements CyMatrix {
 	protected CyNetwork network;
-	protected CyNode[] rowNodes;
-	protected CyNode[] columnNodes;
+	protected CyNode[] rowNodes = null;
+	protected CyNode[] columnNodes = null;
 	protected boolean assymetricalEdge = false;
 
 	public CyColtMatrix(CyNetwork network) {
@@ -32,15 +33,19 @@ public class CyColtMatrix extends ColtMatrix implements CyMatrix {
 	public CyColtMatrix(CyColtMatrix matrix) {
 		super((ColtMatrix)matrix);
 		network = matrix.network;
-		rowNodes = Arrays.copyOf(rowNodes, rowNodes.length);
-		columnNodes = Arrays.copyOf(columnNodes, columnNodes.length);
+		if (matrix.rowNodes != null)
+			rowNodes = Arrays.copyOf(matrix.rowNodes, matrix.rowNodes.length);
+		if (matrix.columnNodes != null)
+			columnNodes = Arrays.copyOf(matrix.columnNodes, matrix.columnNodes.length);
 	}
 
 	public CyColtMatrix(CySimpleMatrix matrix) {
 		super((SimpleMatrix)matrix);
 		network = matrix.network;
-		rowNodes = Arrays.copyOf(rowNodes, rowNodes.length);
-		columnNodes = Arrays.copyOf(columnNodes, columnNodes.length);
+		if (matrix.rowNodes != null)
+			rowNodes = Arrays.copyOf(matrix.rowNodes, matrix.rowNodes.length);
+		if (matrix.columnNodes != null)
+			columnNodes = Arrays.copyOf(matrix.columnNodes, matrix.columnNodes.length);
 	}
 
 	/**
@@ -77,6 +82,9 @@ public class CyColtMatrix extends ColtMatrix implements CyMatrix {
 	 * @param node the node for that row
 	 */
 	public void setRowNode(int row, CyNode node) {
+		if (rowNodes == null) {
+			rowNodes = new CyNode[nRows()];
+		}
 		rowNodes[row] = node;
 	}
 
@@ -126,6 +134,9 @@ public class CyColtMatrix extends ColtMatrix implements CyMatrix {
 	 * @param node the node for that column
 	 */
 	public void setColumnNode(int column, CyNode node) {
+		if (columnNodes == null) {
+			columnNodes = new CyNode[nColumns()];
+		}
 		columnNodes[column] = node;
 	}
 
@@ -166,6 +177,52 @@ public class CyColtMatrix extends ColtMatrix implements CyMatrix {
 	 */
 	public void setAssymetricalEdge(boolean assymetricalEdge) {
 		this.assymetricalEdge = assymetricalEdge;
+	}
+
+	public CyMatrix getDistanceMatrix(DistanceMetric metric) {
+		CyColtMatrix dist = new CyColtMatrix(network, nRows, nRows);
+		if (rowNodes != null) {
+			dist.rowNodes = Arrays.copyOf(rowNodes, nRows);
+			dist.columnNodes = Arrays.copyOf(rowNodes, nRows);
+		}
+		Matrix cMatrix = super.getDistanceMatrix(metric);
+		return dist.copy(cMatrix);
+	}
+
+	/**
+	 * Return a copy of this matrix with the data replaced by the
+	 * argument
+	 *
+	 * @param matrix the data matrix to insert
+	 * @return new CyMatrix with new underlying data
+	 */
+	public CyMatrix copy(Matrix matrix) {
+		ColtMatrix cMatrix;
+		if (matrix instanceof SimpleMatrix) {
+			cMatrix = new ColtMatrix((SimpleMatrix)matrix);
+		} else {
+			cMatrix = (ColtMatrix)matrix;
+		}
+		CyColtMatrix newMatrix = new CyColtMatrix(this.network, cMatrix.nRows, cMatrix.nColumns);
+		newMatrix.data = cMatrix.data;
+		newMatrix.transposed = cMatrix.transposed;
+		newMatrix.symmetric = cMatrix.symmetric;
+		newMatrix.minValue = cMatrix.minValue;
+		newMatrix.maxValue = cMatrix.maxValue;
+		if (cMatrix.rowLabels != null)
+			newMatrix.rowLabels = Arrays.copyOf(cMatrix.rowLabels, cMatrix.rowLabels.length);
+		if (cMatrix.columnLabels != null)
+			newMatrix.columnLabels = Arrays.copyOf(cMatrix.columnLabels, cMatrix.columnLabels.length);
+		if (cMatrix.index != null)
+			newMatrix.index = Arrays.copyOf(cMatrix.index, cMatrix.index.length);
+		if (rowNodes != null)
+			newMatrix.rowNodes = Arrays.copyOf(rowNodes, cMatrix.nRows);
+
+		// Careful!  Make sure to properly account for the transition from a symmetrix matrix to
+		// a vector
+		if (columnNodes != null && cMatrix.nColumns > 1)
+			newMatrix.columnNodes = Arrays.copyOf(columnNodes, cMatrix.nColumns);
+		return newMatrix;
 	}
 
 	/**
