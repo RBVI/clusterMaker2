@@ -29,7 +29,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.*;
 import org.jdesktop.swingx.JXCollapsiblePane;
 
@@ -44,7 +46,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
  * @author root
  */
 @SuppressWarnings("serial")
-public class ScatterPlotDialog extends JDialog implements ComponentListener {
+public class ScatterPlotDialog extends JDialog {
 
 	private static DecimalFormat format = new DecimalFormat("0.##");
 
@@ -56,25 +58,25 @@ public class ScatterPlotDialog extends JDialog implements ComponentListener {
 	private Color pointColor = Color.BLUE;
 
 	private JPanel container;
-	private static final JPanel panelXAxis = new JPanel();
-	private static final JPanel panelYAxis = new JPanel();
-	private static final JPanel panelButtons = new JPanel();
-	private static final JLabel labelXAxis = new JLabel("X - Axis: ");
-	private static final JLabel labelYAxis = new JLabel("Y - Axis: ");
-	private static final JLabel labelPointSize = new JLabel("Size of points: ");
-	private static final JTextField textFieldPointSize = new JTextField(6);
-	private static final JXCollapsiblePane collapsiblePaneOptions = new JXCollapsiblePane();
-	private static JLabel labelXVariance;
-	private static JLabel labelYVariance;
-	private static JComboBox<String> comboXAxis;
-	private static JComboBox<String> comboYAxis;
-	private static final JButton buttonPlot = new JButton("Plot");
-	private static final JButton buttonOptions = new JButton("Advance Options");
+	private JPanel panelXAxis;
+	private JPanel panelYAxis;
+	private JPanel panelButtons;
+	private JLabel labelXAxis;
+	private JLabel labelYAxis;
+	private JLabel labelPointSize;
+	private JTextField textFieldPointSize;
+	private JXCollapsiblePane collapsiblePaneOptions;
+	private JPanel legendPanel;
+	private JLabel labelXVariance;
+	private JLabel labelYVariance;
+	private JComboBox<String> comboXAxis;
+	private JComboBox<String> comboYAxis;
+	private JButton buttonPlot;
+	private JButton buttonOptions;
+	private JButton buttonLegend;
+	private Map<String, Color> loadingsColorMap;
 
-	private static int startingX, startingY, currentX, currentY, previousDX=0, previousDY=0;
-	private static int currentCenterX=0, currentCenterY=0;
-	private static boolean dragging = false;
-
+	// For inner classes
 	private final ScatterPlotDialog thisDialog;
 
 	public ScatterPlotDialog(CyMatrix[] components, Matrix loading, double[] varianceArray) {
@@ -84,6 +86,8 @@ public class ScatterPlotDialog extends JDialog implements ComponentListener {
 		this.scores = components;
 		this.loadings = loading;
 		this.variances = varianceArray;
+		loadingsColorMap = new HashMap<String, Color>();
+		initializeColors();
 
 		thisDialog = this;
 
@@ -103,11 +107,24 @@ public class ScatterPlotDialog extends JDialog implements ComponentListener {
 	}
 
 	private void createUI() {
+		panelXAxis = new JPanel();
+		panelYAxis = new JPanel();
+		panelButtons = new JPanel();
+		labelXAxis = new JLabel("X - Axis: ");
+		labelYAxis = new JLabel("Y - Axis: ");
+		labelPointSize = new JLabel("Size of points: ");
+		textFieldPointSize = new JTextField(6);
+		collapsiblePaneOptions = new JXCollapsiblePane();
+		// collapsiblePaneLegend = new JXCollapsiblePane();
+		buttonPlot = new JButton("Plot");
+		buttonOptions = new JButton("Advanced");
+		buttonLegend = new JButton("Arrow Legend");
+
 		container.setLayout(new GridBagLayout());
 		container.removeAll();
 
 		ScatterPlotPCA scatterPlot = 
-		 				new ScatterPlotPCA(scores, loadings, 0, 1, pointColor, 6);
+		 				new ScatterPlotPCA(scores, loadings, 0, 1, pointColor, 6, loadingsColorMap);
 
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.anchor = GridBagConstraints.NORTHWEST;
@@ -121,24 +138,91 @@ public class ScatterPlotDialog extends JDialog implements ComponentListener {
 
 		container.add(scatterPlot, constraints);
 
+		constraints.gridx = 1;
+		constraints.fill = GridBagConstraints.NONE;
+		constraints.anchor = GridBagConstraints.NORTHEAST;
+		legendPanel = createLegendPane();
+		container.add(legendPanel, constraints);
+
 		constraints.gridx = 0;
 		constraints.gridy = 1;
+		constraints.gridwidth = 2;
 		constraints.anchor = GridBagConstraints.SOUTHWEST;
 		constraints.fill = GridBagConstraints.HORIZONTAL;
 		container.add(createControlJPanel(scores, loadings), constraints);
 		container.setBorder(BorderFactory.createEtchedBorder());
 
-		container.addComponentListener(this);
 	}
 
 
+	public JPanel createLegendPane(){
+		JPanel legend = new JPanel(new GridBagLayout());
+		GridBagConstraints constraints = new GridBagConstraints();
+		constraints.insets = new Insets(0, 0, 0, 0);
+		constraints.anchor = GridBagConstraints.WEST;
+		constraints.gridx = 0;
+		constraints.gridy = 0;	
+		constraints.fill = GridBagConstraints.NONE;	
+
+		// set border for the panel
+		legend.setBorder(BorderFactory.createTitledBorder(
+				BorderFactory.createEtchedBorder(), "Legend"));
+
+		for (int row=0; row < loadings.nRows(); row++) {
+			String label = loadings.getRowLabel(row);
+			Color color = Color.RED;
+			if (loadingsColorMap.containsKey(label))
+				color = loadingsColorMap.get(label);
+			JButton lButton = new JButton(label);
+			lButton.setForeground(color);
+			lButton.setActionCommand(label);
+			lButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					String label = e.getActionCommand();
+					Color clr = JColorChooser.showDialog(thisDialog, "Choose color for "+label+" arrow", thisDialog.getBackground());
+					if (clr != null) {
+						loadingsColorMap.put(label, clr);
+						repaintScatterPlot();
+						((JButton)e.getSource()).setForeground(clr);
+					}
+				}
+			});
+			legend.add(lButton, constraints);
+			constraints.gridy += 1;
+		}
+
+		return legend;
+	}
+
+	public void toggleLegendPane() {
+		if (container.isAncestorOf(legendPanel)) {
+			container.remove(1);
+			container.doLayout();
+		} else {
+			GridBagConstraints constraints = new GridBagConstraints();
+			constraints.insets = new Insets(5, 5, 5, 5);
+
+			constraints.weightx = 0;
+			constraints.weighty = 0;
+			constraints.gridx = 1;
+			constraints.fill = GridBagConstraints.NONE;
+			constraints.anchor = GridBagConstraints.NORTHEAST;
+			legendPanel = createLegendPane();
+			container.add(legendPanel, constraints, 1);
+			container.doLayout();
+			container.repaint();
+		}
+	}
+
 	public JXCollapsiblePane createAdvanceOptionPane(){
-		JPanel control = new JPanel();
+		JPanel control = new JPanel(new GridBagLayout());
 
 		JButton colorButton = new JButton("Point Color");
 		colorButton.addActionListener (new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
-				pointColor = JColorChooser.showDialog(thisDialog, "Choose color of points", thisDialog.getBackground());
+				Color clr = JColorChooser.showDialog(thisDialog, "Choose color of points", thisDialog.getBackground());
+				if (clr != null)
+					pointColor = clr;
 			}
 		});
 
@@ -176,8 +260,8 @@ public class ScatterPlotDialog extends JDialog implements ComponentListener {
 		for(int i=0;i<PCs.length;i++)
 			PCs[i] = "PC " + (i+1);
 
-		comboXAxis = new JComboBox(PCs);
-		comboYAxis = new JComboBox(PCs);
+		comboXAxis = new JComboBox<String>(PCs);
+		comboYAxis = new JComboBox<String>(PCs);
 		comboYAxis.setSelectedIndex(1);
 		textFieldPointSize.setText("6");
 		labelXVariance = new JLabel(format.format(variances[0]) + "% variance");
@@ -198,9 +282,18 @@ public class ScatterPlotDialog extends JDialog implements ComponentListener {
 		if(buttonOptions.getActionListeners().length == 0){
 			buttonOptions.addActionListener(collapsiblePaneOptions.getActionMap().get("toggle"));
 		}
+
+		if(buttonLegend.getActionListeners().length == 0){
+			buttonLegend.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					toggleLegendPane();
+				}
+			});
+		}
 		panelButtons.setLayout(new BoxLayout(panelButtons, BoxLayout.X_AXIS));
 		panelButtons.add(buttonOptions);
 		panelButtons.add(buttonPlot);
+		panelButtons.add(buttonLegend);
 
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.anchor = GridBagConstraints.WEST;
@@ -222,7 +315,7 @@ public class ScatterPlotDialog extends JDialog implements ComponentListener {
 		control.add(panelYAxis, constraints);
 
 		constraints.gridx = 0;
-		constraints.gridy = 1;
+		constraints.gridy = 2;
 		constraints.gridwidth = 2;
 		constraints.anchor = GridBagConstraints.CENTER;
 		control.add(createAdvanceOptionPane(), constraints);
@@ -261,24 +354,14 @@ public class ScatterPlotDialog extends JDialog implements ComponentListener {
 		return control;
 	}
 
-	public void componentHidden(ComponentEvent e) {
-	}
-
-	public void componentMoved(ComponentEvent e) {
-	}
-
-	public void componentResized(ComponentEvent e) {
-	}
-
-	public void componentShown(ComponentEvent e) {
-	}
-
 	public void repaintScatterPlot() {
 		int pointSize = 6;
 		try{
 			pointSize = Integer.parseInt(textFieldPointSize.getText());
 		}catch (NumberFormatException er) {
-			  JOptionPane.showMessageDialog(null,textFieldPointSize.getText() + " is not a number","Error: Size of point",JOptionPane.ERROR_MESSAGE);
+			  JOptionPane.showMessageDialog(null,
+												textFieldPointSize.getText() + 
+												" is not a number","Error: Size of point",JOptionPane.ERROR_MESSAGE);
 			  return;
 		}
 
@@ -290,7 +373,7 @@ public class ScatterPlotDialog extends JDialog implements ComponentListener {
 		ScatterPlotPCA scatterPlot = new ScatterPlotPCA(scores, loadings, 
 		                                                comboXAxis.getSelectedIndex(), 
 																		                comboYAxis.getSelectedIndex(),
-																										pointColor, pointSize);
+																										pointColor, pointSize, loadingsColorMap);
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.anchor = GridBagConstraints.NORTHWEST;
 		constraints.insets = new Insets(5, 5, 5, 5);
@@ -301,7 +384,18 @@ public class ScatterPlotDialog extends JDialog implements ComponentListener {
 		constraints.weighty = 1.0;
 		constraints.fill = GridBagConstraints.BOTH;
 		container.add(scatterPlot, constraints, 0);
-		container.addComponentListener(thisDialog);
 		container.updateUI();
+	}
+
+	private void initializeColors() {
+		float hue = 0f;
+		float saturation = .8f;
+		float brightness = .8f;
+		for (int row=0; row < loadings.nRows(); row++) {
+			String label = loadings.getRowLabel(row);
+			hue += .65f;
+			int clr = Color.HSBtoRGB(hue, saturation, brightness);
+			loadingsColorMap.put(label, new Color(clr));
+		}
 	}
 }

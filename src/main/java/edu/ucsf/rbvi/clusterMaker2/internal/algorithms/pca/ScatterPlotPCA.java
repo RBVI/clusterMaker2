@@ -9,8 +9,10 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
@@ -20,9 +22,11 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
+import java.awt.geom.Rectangle2D;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import javax.swing.*;
 import org.jdesktop.swingx.JXCollapsiblePane;
 
@@ -43,8 +47,9 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	private static int MIN_SCORE = -1;
 	private static final int PREF_W = 500;
 	private static final int PREF_H = 500;
-	private static final int BORDER_GAP = 30;
-	private static final int GRAPH_HATCH_WIDTH = 10;
+	private static final int BORDER_GAP = 10;
+	private static final int LABEL_GAP = 40;
+	private static final int GRAPH_HATCH_WIDTH = 2;
 	private int graph_point_width = 6;
 
 	private final Matrix loadings;
@@ -55,17 +60,21 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	private final int pointWidth;
 
 	private List<Point> graphPoints;
+	private Map<String, Color> colorMap;
 
 	private int startingX, startingY, currentX, currentY, previousDX=0, previousDY=0;
 	private boolean dragging = false;
 
-	public ScatterPlotPCA(CyMatrix[] scores, Matrix loadings, int x, int y, Color pointColor, int pointWidth) {
+	public ScatterPlotPCA(CyMatrix[] scores, Matrix loadings, 
+	                      int x, int y, Color pointColor, int pointWidth,
+				                Map<String, Color> colorMap) {
 		this.scores = scores;
 		this.loadings = loadings;
 		this.xIndex = x;
 		this.yIndex = y;
 		this.pointColor = pointColor;
 		this.pointWidth = pointWidth;
+		this.colorMap = colorMap;
 
 		double max = scores[xIndex].getMaxValue();
 		double min = scores[xIndex].getMinValue();
@@ -166,8 +175,6 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		if (dragging) {
 			repaint();
 		}
-
-
 	}
 
 	public void mouseMoved(MouseEvent me){
@@ -178,6 +185,9 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	  super.paintComponent(g);
 		String labelX = loadings.getColumnLabel(xIndex);
 		String labelY = loadings.getColumnLabel(yIndex);
+
+		int plotWidth = getWidth()-(BORDER_GAP*2)-LABEL_GAP;
+		int plotHeight = getHeight()-(BORDER_GAP*2)-LABEL_GAP;
 
 	  Graphics2D g2 = (Graphics2D)g;
 	  g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -192,60 +202,103 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	  at.scale(scale, scale);
 	  g2.setTransform(at);
 
-	  double xScale = ((double) getWidth() - 2 * BORDER_GAP) / (MAX_SCORE - MIN_SCORE);
-	  double yScale = ((double) getHeight() - 2 * BORDER_GAP) / (MAX_SCORE - MIN_SCORE);
+	  double xScale = ((double) plotWidth) / (MAX_SCORE - MIN_SCORE);
+	  double yScale = ((double) plotHeight) / (MAX_SCORE - MIN_SCORE);
 
-	  // create x and y axes
-	  g2.drawLine(BORDER_GAP, getHeight()/2, getWidth() - BORDER_GAP, getHeight()/2);
-	  g2.drawLine(getWidth()/2, BORDER_GAP, getWidth()/2, getHeight() - BORDER_GAP);
+		int scaleFontSize = 8;
+		int labelFontSize = 12;
+		int fontChange = MAX_SCORE/10;
+		if (fontChange > 1) {
+			scaleFontSize = scaleFontSize-fontChange*1;
+		}
 
-	  // create hatch marks for y axis.
-	  for (int i = 0; i <= MAX_SCORE - MIN_SCORE; i++) {
-		 int x0 = getWidth()/2;
-		 int x1 = GRAPH_HATCH_WIDTH + getWidth()/2;
-		 int y0 = (int) (BORDER_GAP + i * yScale);
-		 int y1 = y0;
-		 g2.drawLine(x0, y0, x1, y1);
+		Font scaleFont = new Font("default", Font.PLAIN, scaleFontSize);
+		Font labelFont = new Font("default", Font.PLAIN, labelFontSize);
 
-		 String number = "" + ( MAX_SCORE - i);
-		 if ((MAX_SCORE-i) < 0)
-		 	g2.drawString(number, x1 - 3*GRAPH_HATCH_WIDTH, y1 + GRAPH_HATCH_WIDTH/2);
-		 else
-		 	g2.drawString(number, x1 - 2*GRAPH_HATCH_WIDTH, y1 + GRAPH_HATCH_WIDTH/2);
-	  }
-	  g2.setFont(new Font("default", Font.BOLD, g2.getFont().getSize()));
-	  g2.drawString(labelY, getWidth()/2 - (labelY.length()/2)*5, getHeight() - BORDER_GAP/2);
-	  g2.setFont(new Font("default", Font.PLAIN, g2.getFont().getSize()));
+		g2.setFont(scaleFont);
+		// create hatch marks for y axis.
+		for (int i = 0; i <= MAX_SCORE - MIN_SCORE; i++) {
+			g2.setColor(Color.WHITE);
 
-	  // and for x axis
-	  for (int i = 0; i <= MAX_SCORE - MIN_SCORE; i++) {
-		 int x0 = (int) (BORDER_GAP + i * xScale);
-		 int x1 = x0;
-		 int y0 = getHeight()/2;
-		 int y1 = y0 + GRAPH_HATCH_WIDTH;
-		 g2.drawLine(x0, y0, x1, y1);
+			int x0 = BORDER_GAP+LABEL_GAP;
+			int x1 = x0+plotWidth;
+			int y0 = (int) (BORDER_GAP + i * yScale);
+			int y1 = y0;
+			g2.drawLine(x0, y0, x1, y1);
 
-		 String number = "" + -1 * ( MAX_SCORE - i);
-		 if(!number.equals("0"))
-			g2.drawString(number, x1, y1 - 2*GRAPH_HATCH_WIDTH);
-	  }
-	  g2.setFont(new Font("default", Font.BOLD, g2.getFont().getSize()));
-	  g2.drawString(labelX, getWidth() - BORDER_GAP - (labelX.length()/2)*5, getHeight()/2 + BORDER_GAP);
-	  g2.setFont(new Font("default", Font.PLAIN, g2.getFont().getSize()));
+			// Get the label
+			g2.setColor(Color.BLACK);
+			String number = "" + ( MAX_SCORE - i);
 
-	  int newX = getWidth()/2;
-	  int newY = getHeight()/2;
+			// Figure out the string width
+			FontMetrics fm = g2.getFontMetrics();
+			int stringWidth = fm.stringWidth(number);
+			int stringHeight = fm.getHeight();
 
-	  graphPoints = new ArrayList<Point>();
-	  for(int i=0; i<scores[xIndex].nRows();i++){
-		  for(int j=0;j<scores[xIndex].nColumns();j++){
-			  int x1 = (int) (scores[xIndex].getValue(i,j) * xScale + newX);
-			  int y1 = (int) (-1 * (scores[yIndex].getValue(i,j) * yScale - newY));
-			  graphPoints.add(new Point(x1, y1));
-		  }
-	  }
-	  g2.setColor(pointColor);
-	  graph_point_width = pointWidth;
+			g2.drawString(number, x0 - stringWidth - GRAPH_HATCH_WIDTH, 
+			              y1+(int)((stringHeight-GRAPH_HATCH_WIDTH)/2.0));
+		}
+
+		// and for x axis
+		g2.setFont(scaleFont);
+		for (int i = 0; i <= MAX_SCORE - MIN_SCORE; i++) {
+			g2.setColor(Color.WHITE);
+			int x0 = (int) (LABEL_GAP+BORDER_GAP + i * xScale);
+			int x1 = x0;
+			int y0 = BORDER_GAP;
+			int y1 = BORDER_GAP+plotHeight;
+			g2.drawLine(x0, y0, x1, y1);
+
+			// Get the label
+			String number = "" + -1 * ( MAX_SCORE - i);
+
+			// Figure out the string width
+			FontMetrics fm = g2.getFontMetrics();
+			int stringWidth = fm.stringWidth(number);
+			int stringHeight = fm.getHeight();
+
+			g2.setColor(Color.BLACK);
+			g2.drawString(number, x1-(int)(stringWidth/2.0), y1+stringHeight);
+		}
+
+		g2.setFont(labelFont);
+		FontMetrics fm = g2.getFontMetrics();
+		int stringWidth = fm.stringWidth(labelX);
+		g2.drawString(labelX, 
+		              BORDER_GAP+LABEL_GAP+plotWidth/2 - (int)(stringWidth/2.0), 
+	                plotHeight + BORDER_GAP + (int)((LABEL_GAP+fm.getHeight())/2.0));
+
+		AffineTransform savedTF = g2.getTransform();
+		AffineTransform af = (AffineTransform)savedTF.clone();
+
+		int xStart = BORDER_GAP+(int)(LABEL_GAP/2.0)-(int)(stringWidth/2.0);
+		int yStart = (int)(plotHeight/2.0+BORDER_GAP+fm.getHeight()/2.0);
+		af.rotate(-1.57, xStart, yStart);
+		g2.setTransform(af);
+		g2.drawString(labelY, xStart, yStart+fm.getHeight()/2);
+		g2.setTransform(savedTF);
+
+		Rectangle2D plot = new Rectangle2D.Float(BORDER_GAP+LABEL_GAP, BORDER_GAP, 
+		                                         plotWidth, plotHeight);
+		g2.draw(plot);
+		g2.drawLine(BORDER_GAP+LABEL_GAP, BORDER_GAP+plotHeight/2,
+		            BORDER_GAP+LABEL_GAP+plotWidth, BORDER_GAP+plotHeight/2);
+		g2.drawLine(LABEL_GAP+BORDER_GAP+plotWidth/2, BORDER_GAP,
+								LABEL_GAP+BORDER_GAP+plotWidth/2, BORDER_GAP+plotHeight);
+
+		int newX = (int)(plotWidth/2.0)+LABEL_GAP+BORDER_GAP;
+		int newY = (int)(plotHeight/2.0)+BORDER_GAP;
+
+		graphPoints = new ArrayList<Point>();
+		for(int i=0; i<scores[xIndex].nRows();i++){
+			for(int j=0;j<scores[xIndex].nColumns();j++){
+				int x1 = (int) (scores[xIndex].getValue(i,j) * xScale + newX);
+				int y1 = (int) (-1 * (scores[yIndex].getValue(i,j) * yScale - newY));
+				graphPoints.add(new Point(x1, y1));
+			}
+		}
+		g2.setColor(pointColor);
+		graph_point_width = pointWidth;
 		for (Point graphPoint : graphPoints) {
 			int x = graphPoint.x - graph_point_width / 2;
 			int y = graphPoint.y - graph_point_width / 2;
@@ -260,35 +313,15 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 			int y1 = newY;
 			int x2 = (int) (loadings.getValue(row, xIndex) * xScale * MAX_SCORE + newX);
 			int y2 = (int) (-1 * (loadings.getValue(row, yIndex) * yScale * MAX_SCORE - newY));
-			drawArrow(g2, x1, y1, x2, y2, Color.RED);
+			String label = loadings.getRowLabel(row);
+			if (colorMap.containsKey(label))
+				drawArrow(g2, x1, y1, x2, y2, colorMap.get(label));
+			else
+				drawArrow(g2, x1, y1, x2, y2, Color.RED);
 		}
 	}
 
 	public void drawArrow(Graphics2D g2, int x1, int y1, int x2, int y2, Color color) {
-		/*
-		int dx = x2 - x1, dy = y2 - y1;
-		double D = Math.sqrt(dx*dx + dy*dy);
-		double d = 10, h = 5.0;
-		double xm = D - d, xn = xm, ym = h, yn = -h, x;
-		double sin = dy/D, cos = dx/D;
-
-		x = (xm)*cos - (ym)*sin + x1;
-		ym = (xm)*sin + (ym)*cos + y1;
-		xm = x;
-		x = (xn)*cos - (yn)*sin + x1;
-		yn = (xn)*sin + (yn)*cos + y1;
-		xn = x;
-
-		int[] xpoints = {x2, (int) xm, (int) xn};
-		int[] ypoints = {y2, (int) ym, (int) yn};
-
-	  g2.setColor(color);
-		g2.setStroke(new BasicStroke(2.0f));
-		g2.drawLine(x1, y1, x2, y2);
-		g2.setStroke(new BasicStroke(0.0f));
-		g2.fillPolygon(xpoints, ypoints, 3);
-		*/
-
 		// Draw our line
 		BasicStroke stroke = new BasicStroke(2.0f);
 	  g2.setColor(color);
@@ -312,7 +345,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		float veeX = endX - stroke.getLineWidth() * 0.5f / arrowRatio;
 		Path2D.Float path = new Path2D.Float();
 		float waisting = 0.5f;
-		
+
 		float waistX = endX - arrowLength * 0.5f;
 		// float waistX = endX + arrowLength;
 		// float waistX = endX;
