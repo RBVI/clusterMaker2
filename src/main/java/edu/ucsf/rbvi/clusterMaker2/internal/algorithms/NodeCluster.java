@@ -133,7 +133,6 @@ public class NodeCluster extends ArrayList<CyNode> {
 				.getAsDouble();
 	}
 
-	// TODO: insert into thesis http://blog.takipi.com/benchmark-how-java-8-lambdas-and-streams-can-make-your-code-5-times-slower/
 	public static double getMinRankScore(List<NodeCluster> clusters) {
 		double min = Double.MAX_VALUE;
 		for (NodeCluster cluster : clusters) {
