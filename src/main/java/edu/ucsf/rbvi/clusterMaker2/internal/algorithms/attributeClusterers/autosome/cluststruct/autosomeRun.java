@@ -13,8 +13,6 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.auto
 
 import java.util.*;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.autosome.launch.*;
-
 public class autosomeRun {
 
     

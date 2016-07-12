@@ -1,11 +1,7 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AP;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,14 +15,10 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 
 
-import cern.colt.function.tdouble.IntIntDoubleFunction;
-import cern.colt.matrix.tdouble.DoubleFactory2D;
-import cern.colt.matrix.tdouble.DoubleFactory1D;
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 
 public class RunAP {
-
 	private double lambda; /*lambda value from 0 to 1 dampens messages passed to avoid numberical oscillation*/
 	private double pref; //preference parameter determines cluster density. Larger Parameter equals more Clusters. If < 0, automatically set to avg edge_weight threshold
 	private int number_iterations; //number of inflation/expansion cycles
@@ -51,7 +43,7 @@ public class RunAP {
 	              TaskMonitor monitor, boolean debug)
 	{
 		this.distanceMatrix = dMat;
-	       
+
 		this.lambda = lambdaParameter;
 		this.pref = preferenceParameter;
 		this.debug = debug;

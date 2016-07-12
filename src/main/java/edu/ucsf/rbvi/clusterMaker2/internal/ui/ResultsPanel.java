@@ -16,7 +16,6 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_B
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_HEIGHT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SHAPE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SIZE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
@@ -32,7 +31,6 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.text.NumberFormat;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +65,6 @@ import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.SavePolicy;
@@ -77,15 +74,8 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
-import org.cytoscape.view.presentation.property.values.NodeShape;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.TaskMonitor;
@@ -144,7 +134,6 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	 * 
 	 * @param clusters Found clusters from the algorithm used
 	 * @param network Network were these clusters were found
-	 * @param resultId Title of this result as determined by MCODESCoreAndFindAction
 	 */
 	public ResultsPanel(final List<NodeCluster> clusters,
 							 final AbstractClusterResults clusterResults,
@@ -166,7 +155,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		networkViewFactory = clusterManager.getService(CyNetworkViewFactory.class);
 		visualMappingMgr = clusterManager.getService(VisualMappingManager.class);
 		renderingEngineFactory = clusterManager.getService(RenderingEngineFactory.class);
-		clusterType = network.getRow(network).get("__clusterType", String.class);
+		clusterType = network.getRow(network).get(ClusterManager.CLUSTER_TYPE_ATTRIBUTE, String.class);
 		//System.out.println("RP: after setting variables and fields");
 		
 		this.clusterBrowserPanel = new ClusterBrowserPanel(this);
@@ -197,8 +186,8 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	}
 	
 
-	private static StringBuffer getClusterScore(final NodeCluster cluster) {
-		StringBuffer details = new StringBuffer();
+	private static StringBuilder getClusterScore(final NodeCluster cluster) {
+		StringBuilder details = new StringBuilder();
 
 		details.append("Score: ");
 		NumberFormat nf = NumberFormat.getInstance();
@@ -214,7 +203,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	 */
 	private class ClusterBrowserPanel extends JPanel implements ListSelectionListener {
 
-		private final ResultsPanel.ClusterBrowserTableModel browserModel;
+		private final RankingBrowserPanelModel browserModel;
 		private final JTable table;
 		private final ResultsPanel resultsPanel;
 
@@ -241,7 +230,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 			
 			//System.out.println("CBP: after setLayout n setBorder");
 			// main data table
-			browserModel = new ResultsPanel.ClusterBrowserTableModel();
+			browserModel = new RankingBrowserPanelModel();
 			//System.out.println("CBP: after creating browser model");
 
 			table = new JTable(browserModel);
@@ -291,7 +280,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		}
 
 		public void update(final NodeCluster cluster, final int row) {
-			final StringBuffer score = getClusterScore(cluster);
+			final StringBuilder score = getClusterScore(cluster);
 			table.setValueAt(score, row, 1);
 		}
 
@@ -330,12 +319,12 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	/**
 	 * Handles the data to be displayed in the cluster browser table
 	 */
-	private class ClusterBrowserTableModel extends AbstractTableModel {
+	private class RankingBrowserPanelModel extends AbstractTableModel {
 
 		private final String[] columnNames = { "Network", "Score" };
 		private final Object[][] data; // the actual table data
 
-		public ClusterBrowserTableModel() {
+		public RankingBrowserPanelModel() {
 			//System.out.println("CBTM: inside constructor");
 			exploreContent = new JPanel[clusters.size()];
 			data = new Object[clusters.size()][columnNames.length];
@@ -345,7 +334,7 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 				//System.out.println("CBTM: cluster num: "+ i);
 				final NodeCluster c = clusters.get(i);
 				//c.setRank(i);
-				StringBuffer details = getClusterScore(c);
+				StringBuilder details = getClusterScore(c);
 				data[i][1] = new StringBuffer(details);
 
 				SpringEmbeddedLayouter layouter = new SpringEmbeddedLayouter();
@@ -395,7 +384,6 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 	 * @param width   Width that the resulting image should be
 	 * @param layouter Reference to the layout algorithm
 	 * @param layoutNecessary Determinant of cluster size growth or shrinkage, the former requires layout
-	 * @param loader Graphic loader displaying progress and process
 	 * @return The resulting image
 	 */
 	public Image createClusterImage(final NodeCluster cluster,
