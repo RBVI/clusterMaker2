@@ -12,7 +12,7 @@
 	</properties>
 
 	<groupId>edu.ucsf.rbvi</groupId>
-	<artifactId>ranklust</artifactId>
+	<artifactId>clusterMaker2</artifactId>
 	<packaging>bundle</packaging>
 	<name>${bundle.symbolicName}</name>
 
