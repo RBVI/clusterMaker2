@@ -139,6 +139,8 @@ public class ScatterPlotDialog extends JDialog {
 		container.add(scatterPlot, constraints);
 
 		constraints.gridx = 1;
+		constraints.weightx = 0;
+		constraints.weighty = 0;
 		constraints.fill = GridBagConstraints.NONE;
 		constraints.anchor = GridBagConstraints.NORTHEAST;
 		legendPanel = createLegendPane();

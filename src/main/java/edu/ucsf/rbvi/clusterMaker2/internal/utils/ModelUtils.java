@@ -33,7 +33,9 @@ public class ModelUtils {
 		List<CyEdge> edgeList = new ArrayList<CyEdge>();
 		for (int rowIndex = 0; rowIndex < nodes.size(); rowIndex++) {
 			for (int colIndex = rowIndex; colIndex < nodes.size(); colIndex++) {
-				List<CyEdge> connectingEdges = network.getConnectingEdgeList(nodes.get(rowIndex), nodes.get(colIndex), CyEdge.Type.ANY);
+				List<CyEdge> connectingEdges = 
+								network.getConnectingEdgeList(nodes.get(rowIndex), 
+								                              nodes.get(colIndex), CyEdge.Type.ANY);
 				if (connectingEdges != null) edgeList.addAll(connectingEdges);
 			}
 		}
@@ -307,4 +309,23 @@ public class ModelUtils {
 			}
 		}
 	}
+
+	public static void clearSelected(CyNetwork network, Class<? extends CyIdentifiable> clzz) {
+		if (CyNode.class.isAssignableFrom(clzz)) {
+			for (CyNode id: CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true))
+				setSelected(network, id, false);
+		} else if (CyEdge.class.isAssignableFrom(clzz)) {
+			for (CyEdge id: CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true))
+				setSelected(network, id, false);
+		}
+	}
+
+	public static boolean isSelected(CyNetwork network, CyIdentifiable ident) {
+		return network.getRow(ident).get(CyNetwork.SELECTED, Boolean.class);
+	}
+
+	public static void setSelected(CyNetwork network, CyIdentifiable ident, boolean sel) {
+		network.getRow(ident).set(CyNetwork.SELECTED, sel);
+	}
+
 }

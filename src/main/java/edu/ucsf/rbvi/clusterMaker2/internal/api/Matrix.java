@@ -402,6 +402,22 @@ public interface Matrix {
 	public Matrix correlation();
 
 	/**
+	 * Threshold the matrix.  This will remove all of the
+	 * values less than a default threshold to increase the sparsity
+	 * of the matrix (decrease the cardinality).
+	 */
+	public void threshold();
+
+	/**
+	 * Threshold the matrix.  This will remove all of the
+	 * very, very small values to increase the sparsity
+	 * of the matrix (decrease the cardinality).
+	 *
+	 * @param threshold the actual threshold to use
+	 */
+	public void threshold(double thresh);
+
+	/**
 	 * Return the eigenvalues of a matrix
 	 *
 	 * @param nonZero if true, only return the non-zero eigenvalues

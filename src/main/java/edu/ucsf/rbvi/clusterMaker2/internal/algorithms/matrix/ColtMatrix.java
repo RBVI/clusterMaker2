@@ -455,6 +455,22 @@ public class ColtMatrix implements Matrix {
 		}
 	}
 
+	public void threshold() {
+		threshold(EPSILON);
+	}
+
+	public void threshold(final double thresh) {
+		data.forEachNonZero(
+			new IntIntDoubleFunction() {
+				public double apply(int row, int column, double value) {
+					if (value <= thresh)
+						setValue(row, column, 0.0);
+					return value;
+				}
+			}
+		);
+	}
+
 	/**
 	 * Return the rank order of the columns in a row
 	 *

@@ -15,12 +15,14 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 import java.text.DecimalFormat;
@@ -35,6 +37,7 @@ import org.cytoscape.model.CyNode;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 /**
  *
@@ -49,6 +52,8 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	private static final int PREF_H = 500;
 	private static final int BORDER_GAP = 10;
 	private static final int LABEL_GAP = 40;
+	private static final int XSTART = BORDER_GAP+LABEL_GAP;
+	private static final int YSTART = BORDER_GAP;
 	private static final int GRAPH_HATCH_WIDTH = 2;
 	private int graph_point_width = 6;
 
@@ -62,8 +67,13 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	private List<Point> graphPoints;
 	private Map<String, Color> colorMap;
 
+	private final Font scaleFont;
+	private final Font labelFont;
+
+	// Mouse management
 	private int startingX, startingY, currentX, currentY, previousDX=0, previousDY=0;
 	private boolean dragging = false;
+	private boolean shift = false;
 
 	public ScatterPlotPCA(CyMatrix[] scores, Matrix loadings, 
 	                      int x, int y, Color pointColor, int pointWidth,
@@ -75,10 +85,11 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		this.pointColor = pointColor;
 		this.pointWidth = pointWidth;
 		this.colorMap = colorMap;
+		this.graphPoints = new ArrayList<Point>();
 
 		double max = scores[xIndex].getMaxValue();
 		double min = scores[xIndex].getMinValue();
-		System.out.println("min,max = "+min+","+max);
+		// System.out.println("min,max = "+min+","+max);
 		if(max > MAX_SCORE || min < MIN_SCORE){
 			if(max > Math.abs(min)){
 				MAX_SCORE = (int) Math.ceil(max);
@@ -89,7 +100,15 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 			}
 		}
 
-		System.out.println("min,max = "+MIN_SCORE+","+MAX_SCORE);
+		int scaleFontSize = 8;
+		int labelFontSize = 12;
+		int fontChange = MAX_SCORE/10;
+		if (fontChange > 1) {
+			scaleFontSize = scaleFontSize-fontChange*1;
+		}
+
+		scaleFont = new Font("sans-serif", Font.PLAIN, scaleFontSize);
+		labelFont = new Font("sans-serif", Font.BOLD, labelFontSize);
 
 		addMouseWheelListener(new MouseAdapter() {
 
@@ -121,27 +140,55 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	@Override
 	public Dimension getPreferredSize() { return new Dimension(PREF_W, PREF_H); }
 
-	
 	public void mouseClicked(MouseEvent event) {
-		int x = event.getPoint().x;
-		int y = event.getPoint().y;
-		System.out.println("getPoint: " + event.getPoint().x + " " + event.getPoint().y);
-		System.out.println("getXYOnScreen: " + event.getXOnScreen() + " " + event.getYOnScreen());
+		// Is it the correct button?
+		if (event.getButton() != MouseEvent.BUTTON1)
+			return;
+
+		// Shift key down?
+		shift = false;
+		if ((event.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) == MouseEvent.SHIFT_DOWN_MASK)
+			shift = true;
+
+		int x = (int)((event.getPoint().x-previousDX)/scale);
+		int y = (int)((event.getPoint().y-previousDY)/scale);
+		int pointWidth = (int)(graph_point_width*scale);
+
+		// System.out.println("getPoint: " + event.getPoint().x + " " + event.getPoint().y);
+		// System.out.println("getXYOnScreen: " + event.getXOnScreen() + " " + event.getYOnScreen());
 		if(!graphPoints.isEmpty()){
+			boolean found = false;
+			CyNetwork network = scores[xIndex].getNetwork();
 			for(int i=0;i<graphPoints.size();i++){
 				Point p = graphPoints.get(i);
-				if(Math.abs(p.x - x) <= graph_point_width && Math.abs(p.y - y) <= graph_point_width){
+				if(Math.abs(p.x - x) <= pointWidth && Math.abs(p.y - y) <= pointWidth){
+					/*
 					System.out.println("i and j: " + Math.floor(i/scores[xIndex].nRows()) + " " + 
 					                   i%scores[xIndex].nRows());
 					System.out.println("Node: "+scores[xIndex].getRowLabel(i)+" x="+
 					                   scores[xIndex].getValue(0,i)+", y="+scores[yIndex].getValue(0,i));
-					CyNetwork network = scores[xIndex].getNetwork();
+					*/
 					CyNode node = scores[xIndex].getRowNode(i);
-					network.getRow(node).set(CyNetwork.SELECTED, true);
+
+					if (!shift) {
+						ModelUtils.clearSelected(network, CyNode.class);
+					}
+
+					if (shift && ModelUtils.isSelected(network, node)) {
+						ModelUtils.setSelected(network, node, false);
+					} else {
+						ModelUtils.setSelected(network, node, true);
+					}
+					found = true;
 					break;
 				}
 			}
+			if (!found) {
+				ModelUtils.clearSelected(network, CyNode.class);
+			}
 		}
+		shift = false;
+		repaint();
 	}
 
 	
@@ -157,11 +204,28 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		Point point = event.getPoint();
 		startingX = point.x;
 		startingY = point.y;
+
+		// Shift key down?
+		shift = false;
+		if ((event.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) == MouseEvent.SHIFT_DOWN_MASK)
+			shift = true;
+
 		dragging = true;
 	}
 
 	
 	public void mouseReleased(MouseEvent event) {
+		Point p = event.getPoint();
+		currentX = p.x;
+		currentY = p.y;
+
+		if (shift) {
+			// Find all of the points in the rectangle and select them
+			shift = false;
+			dragging = false;
+			repaint();
+			return;
+		}
 		dragging = false;
 		previousDX += currentX - startingX;
 		previousDY += currentY - startingY;
@@ -172,12 +236,32 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		Point p = event.getPoint();
 		currentX = p.x;
 		currentY = p.y;
-		if (dragging) {
-			repaint();
+		if (shift) {
+			selectRange(startingX, startingY, currentX, currentY);
 		}
+		repaint();
 	}
 
 	public void mouseMoved(MouseEvent me){
+	}
+
+	private void selectRange(int x1, int y1, int x2, int y2) {
+		CyNetwork network = scores[xIndex].getNetwork();
+		ModelUtils.clearSelected(network, CyNode.class);
+		x1 = (int)((x1-previousDX)/scale);
+		y1 = (int)((y1-previousDY)/scale);
+		x2 = (int)((x2-previousDX)/scale);
+		y2 = (int)((y2-previousDY)/scale);
+
+		if(!graphPoints.isEmpty()){
+			for(int i=0;i<graphPoints.size();i++){
+				Point p = graphPoints.get(i);
+				if(p.x >= x1 && p.x <= x2 && p.y >= y1 && p.y <= y2) {
+					CyNode node = scores[xIndex].getRowNode(i);
+					ModelUtils.setSelected(network, node, true);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -192,7 +276,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	  Graphics2D g2 = (Graphics2D)g;
 	  g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 	  AffineTransform at = new AffineTransform();
-	  if(dragging){
+	  if(dragging && !shift){
 			int currentDX = currentX - startingX;
 			int currentDY =  currentY - startingY;
 			at.setToTranslation(previousDX + currentDX, previousDY + currentDY);
@@ -202,26 +286,87 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	  at.scale(scale, scale);
 	  g2.setTransform(at);
 
+		drawAxes(g2, plotWidth, plotHeight, labelX, labelY);
+
 	  double xScale = ((double) plotWidth) / (MAX_SCORE - MIN_SCORE);
 	  double yScale = ((double) plotHeight) / (MAX_SCORE - MIN_SCORE);
 
-		int scaleFontSize = 8;
-		int labelFontSize = 12;
-		int fontChange = MAX_SCORE/10;
-		if (fontChange > 1) {
-			scaleFontSize = scaleFontSize-fontChange*1;
+		int newX = (int)(plotWidth/2.0)+LABEL_GAP+BORDER_GAP;
+		int newY = (int)(plotHeight/2.0)+BORDER_GAP;
+
+		// Draw the points
+		graph_point_width = pointWidth;
+		CyNetwork network = scores[xIndex].getNetwork();
+		graphPoints.clear();
+		for(int i=0; i<scores[xIndex].nRows();i++){
+			CyNode node = scores[xIndex].getRowNode(i);
+			for(int j=0;j<scores[xIndex].nColumns();j++){
+				boolean selected = ModelUtils.isSelected(network, node);
+				int x1 = (int) (scores[xIndex].getValue(i,j) * xScale + newX);
+				int y1 = (int) (-1 * (scores[yIndex].getValue(i,j) * yScale - newY));
+				drawPoint(g2, x1, y1, pointColor, selected);
+				graphPoints.add(new Point(x1, y1));
+			}
 		}
 
-		Font scaleFont = new Font("default", Font.PLAIN, scaleFontSize);
-		Font labelFont = new Font("default", Font.PLAIN, labelFontSize);
+		// Draw loadings
+		for (int row = 0; row < loadings.nRows(); row++) {
+			int x1 = newX;
+			int y1 = newY;
+			int x2 = (int) (loadings.getValue(row, xIndex) * xScale * MAX_SCORE + newX);
+			int y2 = (int) (-1 * (loadings.getValue(row, yIndex) * yScale * MAX_SCORE - newY));
+			String label = loadings.getRowLabel(row);
+			if (colorMap.containsKey(label))
+				drawArrow(g2, x1, y1, x2, y2, colorMap.get(label));
+			else
+				drawArrow(g2, x1, y1, x2, y2, Color.RED);
+		}
+
+		// Finally, draw our selection rectangle if we're supposed to
+		if (dragging && shift) {
+			g2.setTransform(new AffineTransform());
+			BasicStroke stroke = new BasicStroke(0.5f);
+			g2.setStroke(stroke);
+			g2.setColor(Color.BLACK);
+			g2.drawRect(startingX, startingY, 
+			            Math.abs(currentX-startingX), Math.abs(currentY-startingY));
+		}
+	}
+
+	public void drawPoint(Graphics2D g2, int x1, int y1, Color color, boolean selected) {
+		int x = x1 - graph_point_width / 2;
+		int y = y1 - graph_point_width / 2;
+		int ovalW = graph_point_width;
+		int ovalH = graph_point_width;
+		Shape s = new Ellipse2D.Float(x, y, ovalW, ovalH);
+		float strokeWidth;
+		if (graph_point_width < 6)
+			strokeWidth = 1.0f;
+		else
+			strokeWidth = graph_point_width/3.0f;
+		BasicStroke stroke = new BasicStroke(strokeWidth);
+		g2.setStroke(stroke);
+		if (selected) {
+			g2.setColor(Color.YELLOW);
+		} else {
+			g2.setColor(color);
+		}
+		g2.draw(s);
+		g2.setColor(color);
+		g2.fill(s);
+	}
+
+	public void drawAxes(Graphics2D g2, int width, int height, String labelX, String labelY) {
+	  double xScale = ((double) width) / (MAX_SCORE - MIN_SCORE);
+	  double yScale = ((double) height) / (MAX_SCORE - MIN_SCORE);
 
 		g2.setFont(scaleFont);
 		// create hatch marks for y axis.
 		for (int i = 0; i <= MAX_SCORE - MIN_SCORE; i++) {
 			g2.setColor(Color.WHITE);
 
-			int x0 = BORDER_GAP+LABEL_GAP;
-			int x1 = x0+plotWidth;
+			int x0 = XSTART;
+			int x1 = x0+width;
 			int y0 = (int) (BORDER_GAP + i * yScale);
 			int y1 = y0;
 			g2.drawLine(x0, y0, x1, y1);
@@ -243,10 +388,10 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		g2.setFont(scaleFont);
 		for (int i = 0; i <= MAX_SCORE - MIN_SCORE; i++) {
 			g2.setColor(Color.WHITE);
-			int x0 = (int) (LABEL_GAP+BORDER_GAP + i * xScale);
+			int x0 = (int) (XSTART + i * xScale);
 			int x1 = x0;
 			int y0 = BORDER_GAP;
-			int y1 = BORDER_GAP+plotHeight;
+			int y1 = BORDER_GAP+height;
 			g2.drawLine(x0, y0, x1, y1);
 
 			// Get the label
@@ -265,60 +410,26 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		FontMetrics fm = g2.getFontMetrics();
 		int stringWidth = fm.stringWidth(labelX);
 		g2.drawString(labelX, 
-		              BORDER_GAP+LABEL_GAP+plotWidth/2 - (int)(stringWidth/2.0), 
-	                plotHeight + BORDER_GAP + (int)((LABEL_GAP+fm.getHeight())/2.0));
+		              XSTART+width/2 - (int)(stringWidth/2.0), 
+	                height + BORDER_GAP + (int)((LABEL_GAP+fm.getHeight())/2.0));
 
 		AffineTransform savedTF = g2.getTransform();
 		AffineTransform af = (AffineTransform)savedTF.clone();
 
 		int xStart = BORDER_GAP+(int)(LABEL_GAP/2.0)-(int)(stringWidth/2.0);
-		int yStart = (int)(plotHeight/2.0+BORDER_GAP+fm.getHeight()/2.0);
+		int yStart = (int)(height/2.0+BORDER_GAP+fm.getHeight()/2.0);
 		af.rotate(-1.57, xStart, yStart);
 		g2.setTransform(af);
 		g2.drawString(labelY, xStart, yStart+fm.getHeight()/2);
 		g2.setTransform(savedTF);
 
-		Rectangle2D plot = new Rectangle2D.Float(BORDER_GAP+LABEL_GAP, BORDER_GAP, 
-		                                         plotWidth, plotHeight);
+		Rectangle2D plot = new Rectangle2D.Float(XSTART, BORDER_GAP, 
+		                                         width, height);
 		g2.draw(plot);
-		g2.drawLine(BORDER_GAP+LABEL_GAP, BORDER_GAP+plotHeight/2,
-		            BORDER_GAP+LABEL_GAP+plotWidth, BORDER_GAP+plotHeight/2);
-		g2.drawLine(LABEL_GAP+BORDER_GAP+plotWidth/2, BORDER_GAP,
-								LABEL_GAP+BORDER_GAP+plotWidth/2, BORDER_GAP+plotHeight);
-
-		int newX = (int)(plotWidth/2.0)+LABEL_GAP+BORDER_GAP;
-		int newY = (int)(plotHeight/2.0)+BORDER_GAP;
-
-		graphPoints = new ArrayList<Point>();
-		for(int i=0; i<scores[xIndex].nRows();i++){
-			for(int j=0;j<scores[xIndex].nColumns();j++){
-				int x1 = (int) (scores[xIndex].getValue(i,j) * xScale + newX);
-				int y1 = (int) (-1 * (scores[yIndex].getValue(i,j) * yScale - newY));
-				graphPoints.add(new Point(x1, y1));
-			}
-		}
-		g2.setColor(pointColor);
-		graph_point_width = pointWidth;
-		for (Point graphPoint : graphPoints) {
-			int x = graphPoint.x - graph_point_width / 2;
-			int y = graphPoint.y - graph_point_width / 2;
-			int ovalW = graph_point_width;
-			int ovalH = graph_point_width;
-			g2.fillOval(x, y, ovalW, ovalH);
-		}
-
-		// Draw loadings
-		for (int row = 0; row < loadings.nRows(); row++) {
-			int x1 = newX;
-			int y1 = newY;
-			int x2 = (int) (loadings.getValue(row, xIndex) * xScale * MAX_SCORE + newX);
-			int y2 = (int) (-1 * (loadings.getValue(row, yIndex) * yScale * MAX_SCORE - newY));
-			String label = loadings.getRowLabel(row);
-			if (colorMap.containsKey(label))
-				drawArrow(g2, x1, y1, x2, y2, colorMap.get(label));
-			else
-				drawArrow(g2, x1, y1, x2, y2, Color.RED);
-		}
+		g2.drawLine(XSTART, BORDER_GAP+height/2,
+		            XSTART+width, BORDER_GAP+height/2);
+		g2.drawLine(XSTART+width/2, BORDER_GAP,
+								XSTART+width/2, BORDER_GAP+height);
 	}
 
 	public void drawArrow(Graphics2D g2, int x1, int y1, int x2, int y2, Color color) {

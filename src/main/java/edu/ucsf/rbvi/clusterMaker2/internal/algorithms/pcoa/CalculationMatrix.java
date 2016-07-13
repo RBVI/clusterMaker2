@@ -34,6 +34,7 @@ public class CalculationMatrix  {
 	double combine_array[][];
 	double scores[][];
 	CyMatrix distancematrix;
+	private static double EPSILON=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
 	
 	public CalculationMatrix(CyMatrix matrix, int diag, boolean scale, int neg){
 		this.diag = diag;
@@ -130,7 +131,9 @@ public class CalculationMatrix  {
 		data.forEachNonZero(
 			new IntIntDoubleFunction() {
 				public double apply(int row, int column, double value) {
-					A.setQuick(row, column, -Math.pow(value,2)/2.0);
+					double v = -Math.pow(value,2)/2.0;
+					if (v > EPSILON)
+						A.setQuick(row, column, v);
 					return value;
 				}
 			}
@@ -140,9 +143,10 @@ public class CalculationMatrix  {
 		ColtMatrix cA = new ColtMatrix((ColtMatrix)distancematrix, A);
 
 		// Finally, the Gower's matrix is mat*A*mat
-		
 		Matrix mat1 = cMat.multiplyMatrix(cA);
+		mat1.threshold();
 		Matrix G = mat1.multiplyMatrix(cMat);
+		G.threshold();
 		return G;
 	}
 	
