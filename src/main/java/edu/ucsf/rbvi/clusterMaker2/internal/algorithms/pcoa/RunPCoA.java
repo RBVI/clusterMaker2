@@ -62,10 +62,10 @@ public class RunPCoA {
 		System.out.println("Calculating values");
 		// double data[][]=matrix.toArray();
 		System.out.println("Length "+ distanceMatrix.nRows());
+		distanceMatrix.writeMatrix("distanceMatrix.out");
 		
-		System.out.println("Checking CyMatrix symmetrical "+matrix.isSymmetrical());
-		// TODO: make scale and neg tunables in PCoAContext
-		CalculationMatrix calc=new CalculationMatrix(matrix, 0, scale, neg);
+		System.out.println("Checking CyMatrix symmetrical "+distanceMatrix.isSymmetrical());
+		CalculationMatrix calc=new CalculationMatrix(distanceMatrix, 0, scale, neg);
 		System.out.println("Added data to the matrix ");
 		calc.eigenAnalysis();
 		System.out.println("Completed Eigen Analysis");
@@ -75,18 +75,17 @@ public class RunPCoA {
 		System.out.println("Completed Negative Eigen Analysis");
 		calc.scaleEigenVectors();
 		System.out.println("Completed Scale Eigen Vetors");
-		
+
 		System.out.println("Final Result");
 		double eigen_vals[]=calc.getEigen_values();
 		double scores[][]=calc.getScores();
 		double combne[][]=calc.getCombine_array();
-		
+
 	}
-	
 
 	private static DecimalFormat scFormat = new DecimalFormat("0.###E0");
 	private static DecimalFormat format = new DecimalFormat("0.###");
-	
+
 	private void debugln(String message) {
 		if (debug) System.out.println(message);
 	}

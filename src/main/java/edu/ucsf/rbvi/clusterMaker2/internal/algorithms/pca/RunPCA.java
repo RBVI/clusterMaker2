@@ -50,12 +50,14 @@ public class RunPCA {
 		this.weightAttributes = weightAttributes;
 		this.matrixType = matrixType;
 		this.standardize = standardize;
+		/*
 		System.out.println("WeightAttributes:");
 		if (weightAttributes == null) {
 			System.out.println("   -- none --");
 		} else {
 			for (String weight: weightAttributes) { System.out.println("    "+weight); }
 		}
+		*/
 		this.eigenValues = null;
 		this.eigenVectors = null;
 	}
@@ -63,7 +65,7 @@ public class RunPCA {
 	// this method assumes that eigen values returned by DenseDoubleEigenvalueDecomposition class
 	// are sorted in increasing order
 	public void runOnNodeToAttributeMatrix(){
-		System.out.println("runOnNodeToAttributeMatrix");
+		// System.out.println("runOnNodeToAttributeMatrix");
 		CyMatrix matrix = CyMatrixFactory.makeLargeMatrix(network, weightAttributes, context.selectedOnly, 
 		                                                  context.ignoreMissing, false, false);
 		// distanceMatrix = matrix.getDistanceMatrix(context.distanceMetric.getSelectedValue());
@@ -71,7 +73,7 @@ public class RunPCA {
 		// System.out.println("Creating computationMatrix");
 		// ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
 
-		System.out.println("Computing principle components");
+		// System.out.println("Computing principle components");
 		final Matrix loadingMatrix = new ColtMatrix();
 		final CyMatrix[] components = computePCs(matrix, loadingMatrix);
 
@@ -91,7 +93,7 @@ public class RunPCA {
 	}
 
 	public CyMatrix[] computePCs(CyMatrix matrix, Matrix loadingMatrix){
-		matrix.writeMatrix("output.txt");
+		// matrix.writeMatrix("output.txt");
 
 		Matrix C;
 		if (standardize) {
@@ -99,24 +101,24 @@ public class RunPCA {
 				matrix.standardizeColumn(column);
 			}
 		}
-		System.out.println("centralizing columns");
+		// System.out.println("centralizing columns");
 		matrix.centralizeColumns();
-		matrix.writeMatrix("centralized.txt");
+		// matrix.writeMatrix("centralized.txt");
 
 		if (matrixType.equals("correlation")) {
-			System.out.println("Creating correlation matrix");
+			// System.out.println("Creating correlation matrix");
 			C = matrix.correlation();
-			C.writeMatrix("correlation.txt");
+			// C.writeMatrix("correlation.txt");
 		} else {
 			// Covariance
-			System.out.println("Creating covariance matrix");
+			// System.out.println("Creating covariance matrix");
 			C = matrix.covariance();
-			C.writeMatrix("covariance.txt");
+			// C.writeMatrix("covariance.txt");
 		}
 
-		System.out.println("Finding eigenValues");
+		// System.out.println("Finding eigenValues");
 		eigenValues = C.eigenValues(true);
-		System.out.println("Finding eigenVectors");
+		// System.out.println("Finding eigenVectors");
 		eigenVectors = C.eigenVectors();
 
 		monitor.showMessage(TaskMonitor.Level.INFO, "Found "+eigenValues.length+" EigenValues");
@@ -125,12 +127,14 @@ public class RunPCA {
 		// Calculate the loading matrix
 		calculateLoadingMatrix(matrix, loadingMatrix, eigenVectors, eigenValues);
 
+		/*
 		loadingMatrix.writeMatrix("loadingMatrix.txt");
 
 		System.out.println("EigenValues: ");
 		for (double v: eigenValues) {
 			System.out.println("     "+v);
 		}
+		*/
 
 		CyMatrix[] components = new CyMatrix[eigenValues.length];
 
@@ -140,15 +144,15 @@ public class RunPCA {
 			for(int i=0;i<eigenVectors.length;i++){
 				result.setValue(i,0,eigenVectors[i][j]);
 			}
-			System.out.println("matrix: "+matrix.printMatrixInfo());
-			System.out.println("vector: "+result.printMatrixInfo());
+			// System.out.println("matrix: "+matrix.printMatrixInfo());
+			// System.out.println("vector: "+result.printMatrixInfo());
 
 			Matrix mat = matrix.multiplyMatrix(result);
-			System.out.println("After vector multiply: "+mat.printMatrixInfo());
+			// System.out.println("After vector multiply: "+mat.printMatrixInfo());
 			components[k] = matrix.copy(mat);
 			components[k].printMatrixInfo();
 			components[k].writeMatrix("component_"+k+".txt");
-			System.out.println("Component matrix "+k+" has "+components[k].getRowNodes().size()+" nodes");
+			// System.out.println("Component matrix "+k+" has "+components[k].getRowNodes().size()+" nodes");
 		}
 
 		return components;
@@ -191,17 +195,17 @@ public class RunPCA {
 		int columns = eigenVectors[0].length;
 		loading.initialize(rows, columns, new double[rows][columns]);
 
-		System.out.print("Eigenvectors:");
+		// System.out.print("Eigenvectors:");
 		for (int row = 0; row < rows; row++) {
-			System.out.print("\n"+matrix.getColumnLabel(row)+"\t");
+			// System.out.print("\n"+matrix.getColumnLabel(row)+"\t");
 			for (int column = columns-1, newCol=0; column >= 0; column--,newCol++) {
-				System.out.print(""+eigenVectors[row][column]+"\t");
+				// System.out.print(""+eigenVectors[row][column]+"\t");
 				loading.setValue(row, newCol, 
 				                 eigenVectors[row][column]*Math.sqrt(Math.abs(eigenValues[column])));
 				// loading.setValue(row, newCol, eigenVectors[row][column]*eigenValues[column]);
 			}
 		}
-		System.out.println("\n");
+		// System.out.println("\n");
 
 		loading.setRowLabels(Arrays.asList(matrix.getColumnLabels()));
 		for (int column = 0; column < columns; column++) {

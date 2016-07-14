@@ -837,8 +837,9 @@ public class ColtMatrix implements Matrix {
 	}
 
 	public double[] eigenValues(boolean nonZero){
-		if (decomp == null)
+		if (decomp == null) {
 			decomp = new DenseDoubleEigenvalueDecomposition(data);
+		}
 
 		double[] allValues = decomp.getRealEigenvalues().toArray();
 		if (!nonZero)
@@ -863,6 +864,7 @@ public class ColtMatrix implements Matrix {
 			decomp = new DenseDoubleEigenvalueDecomposition(data);
 
 		DoubleMatrix2D eigv = decomp.getV();
+		System.out.println("Found "+eigv.columns()+" eigenvectors");
 		return eigv.toArray();
 	}
 
