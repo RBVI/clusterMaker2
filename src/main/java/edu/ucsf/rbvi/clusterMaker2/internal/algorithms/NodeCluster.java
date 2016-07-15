@@ -1,15 +1,6 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -17,6 +8,8 @@ import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
+
+import java.util.*;
 
 
 /**
@@ -27,10 +20,13 @@ import org.cytoscape.view.model.CyNetworkView;
  */
 public class NodeCluster extends ArrayList<CyNode> {
 	int clusterNumber = 0;
+    private int rank = 0;
+    private double rankScore = 0;
 	static int clusterCount = 0;
 	static boolean hasScore = false;
 	protected double score = 0.0;
-	
+	private HashMap<Long, Double> nodeScores;
+
 	private CyNetworkView view; // keeps track of layout so that layout process doesn't have to be repeated unnecessarily
 	private boolean disposed;
 
@@ -59,23 +55,100 @@ public class NodeCluster extends ArrayList<CyNode> {
 
 	public int getClusterNumber() { return clusterNumber; }
 
-	public void setClusterNumber(int clusterNumber) { 
-		this.clusterNumber = clusterNumber; 
+	public void setClusterNumber(int clusterNumber) {
+		this.clusterNumber = clusterNumber;
 	}
 
-	public void setClusterScore(double score) { 
-		this.score = score; 
+	public void setClusterScore(double score) {
+		this.score = score;
 		hasScore = true;
 	}
 
 	public double getClusterScore() { return score; }
 
+    public int getRank() { return rank; }
+
+    public void setRank(int rank) {
+        this.rank = rank;
+    }
+
+    public double getRankScore() { return rankScore; }
+
+    public void setRankScore(double rankScore) {
+        this.rankScore = rankScore;
+    }
+
+	public void addScoreToAvg(double increase) {
+		if (increase > 0.0) {
+			double inc = increase / this.size();
+			rankScore += inc;
+		}
+	}
 
 	public String toString() {
 		String str = "("+clusterNumber+": ";
-		for (Object i: this) 
+		for (Object i: this)
 			str += i.toString();
 		return str+")";
+	}
+
+	public void initNodeScores() {
+		nodeScores = new HashMap<>();
+
+		for (CyNode node : this) {
+			nodeScores.put(node.getSUID(), 0.0d);
+		}
+	}
+
+	public HashMap<Long, Double> getNodeScores() {
+		return nodeScores;
+	}
+
+    public static void setClusterRanks(List<NodeCluster> list) {
+        int rank = 1;
+        double previousScore = getMaxRankScore(list);
+        for (NodeCluster cluster : list) {
+            if (previousScore > cluster.getRankScore()) {
+                rank++;
+            }
+            cluster.setRank(rank);
+        }
+    }
+
+	public static void normalizeScores(List<NodeCluster> clusters) {
+		double min = getMinRankScore(clusters);
+		double max = getMaxRankScore(clusters);
+
+		for (NodeCluster cluster : clusters) {
+			double normalizedScore = (cluster.getRankScore() - min) / (max - min);
+			cluster.setRankScore(normalizedScore);
+		}
+	}
+
+	public static Double getAverageRankScore(List<NodeCluster> list) {
+		return list.stream()
+				.mapToDouble(NodeCluster::getRankScore)
+				.filter(score -> score != 0.0)
+				.average()
+				.getAsDouble();
+	}
+
+	public static double getMinRankScore(List<NodeCluster> clusters) {
+		double min = Double.MAX_VALUE;
+		for (NodeCluster cluster : clusters) {
+			min = Double.min(min, cluster.getRankScore());
+		}
+
+		return min;
+	}
+
+	public static double getMaxRankScore(List<NodeCluster> clusters) {
+		double max = Double.MIN_VALUE;
+		for (NodeCluster cluster : clusters) {
+			max = Double.max(max, cluster.getRankScore());
+		}
+
+		return max;
 	}
 
 	public static List<Double> getScoreList(List<NodeCluster> list) {
@@ -127,22 +200,22 @@ public class NodeCluster extends ArrayList<CyNode> {
 			return 0;
 		}
 	}
-	
+
 	public boolean isFuzzy(){
 		return false;
 	}
-	
-	
+
+
 	/* Method to get the subnetwork formed by the nodes in the cluster
-	 * 
+	 *
 	 * @param net parent network
 	 * @param nodes
 	 */
 	public CySubNetwork getSubNetwork(final CyNetwork net,final CyRootNetwork root, final SavePolicy policy){
-		
+
 		//final CyRootNetwork root = rootNetworkMgr.getRootNetwork(net);
 		final Set<CyEdge> edges = new HashSet<CyEdge>();
-		
+
 		for (CyNode n : this) {
 			Set<CyEdge> adjacentEdges = new HashSet<CyEdge>(net.getAdjacentEdgeList(n, CyEdge.Type.ANY));
 
@@ -169,13 +242,13 @@ public class NodeCluster extends ArrayList<CyNode> {
 		snSet.add(subNet);
 		*/
 		return subNet;
-		
+
 	}
-	
+
 	public synchronized CyNetworkView getView() {
 		return view;
 	}
-	
+
 	public synchronized void setView(final CyNetworkView view) {
 		throwExceptionIfDisposed();
 
@@ -184,12 +257,12 @@ public class NodeCluster extends ArrayList<CyNode> {
 
 		this.view = view;
 	}
-	
+
 	private void throwExceptionIfDisposed() {
 		if (isDisposed())
 			throw new RuntimeException("NodeCluster has been disposed and cannot be used anymore: ");
 	}
-	
+
 	public synchronized boolean isDisposed() {
 		return disposed;
 	}

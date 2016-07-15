@@ -2,18 +2,45 @@ package edu.ucsf.rbvi.clusterMaker2.internal;
 
 
 // Java imports
-import static org.cytoscape.work.ServiceProperties.COMMAND;
-import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
-import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
-import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
-
-import java.util.Properties;
-
-// Cytoscape imports
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.ChengChurch.ChengChurchTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DBSCAN.DBSCANTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.autosome.AutoSOMETaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.featureVector.FeatureVectorTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.fft.FFTTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hierarchical.HierarchicalTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hopach.HopachPAMTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmeans.KMeansTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmedoid.KMedoidTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.pam.PAMTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.BestNeighbor.BestNeighborFilterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.CuttingEdge.CuttingEdgeFilterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.Density.DensityFilterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.FilterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.HairCut.HairCutFilterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AP.APClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.ConnectedComponents.ConnectedComponentsTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM.FCMClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Fuzzifier.FuzzifierTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.GLay.GLayClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCODE.MCODEClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.NetworkClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.SCPS.SCPSClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.TransClustClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.PCAMenuTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.PCATaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.HITS.HITSTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.MAA.MAATaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.MAM.MAMTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PR.PRTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PRWP.PRWPTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa.PCoATaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterVizFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.RankFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.commands.CommandTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.*;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.group.CyGroupFactory;
@@ -26,51 +53,12 @@ import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BiMine.BiMineTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.BicFinder.BicFinderTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.ChengChurch.ChengChurchTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DBSCAN.DBSCANTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.autosome.AutoSOMETaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.featureVector.FeatureVectorTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.fft.FFTTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hierarchical.HierarchicalTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.hopach.HopachPAMTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmeans.KMeansTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmedoid.KMedoidTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.pam.PAMTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.FilterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.BestNeighbor.BestNeighborFilterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.CuttingEdge.CuttingEdgeFilterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.Density.DensityFilterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.HairCut.HairCutFilterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.NetworkClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AP.APClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.ConnectedComponents.ConnectedComponentsTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM.FCMClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Fuzzifier.FuzzifierTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.GLay.GLayClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCODE.MCODEClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.SCPS.SCPSClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.TransClustClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.PCAMenuTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.PCATaskFactory;
+import java.util.Properties;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa.PCoATaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterVizFactory;
+import static org.cytoscape.work.ServiceProperties.*;
+
+// Cytoscape imports
 // Algorithms
-import edu.ucsf.rbvi.clusterMaker2.internal.commands.CommandTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.BiclusterViewTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.CreateResultsPanelTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.DestroyResultsPanelTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.HeatMapViewTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.KnnViewTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.LinkSelectionTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkViewFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.TreeViewTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.ui.UnlinkSelectionTaskFactory;
 // import edu.ucsf.rbvi.clusterMaker2.internal.ui.UITaskFactory;
 // clusterMaker imports
 
@@ -102,45 +90,46 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerServiceListener(bc, clusterManager, "addClusterAlgorithm", "removeClusterAlgorithm", ClusterTaskFactory.class);
 		registerServiceListener(bc, clusterManager, "addClusterVisualizer", "removeClusterVisualizer", ClusterVizFactory.class);
+		registerServiceListener(bc, clusterManager, "addRankingAlgorithm", "removeRankingAlgorithm", RankFactory.class);
 
 		// Register each of our algorithms
 		// Attribute clusterers
-		registerService(bc, new AttributeClusterTaskFactory(clusterManager), 
+		registerService(bc, new AttributeClusterTaskFactory(clusterManager),
 		                ClusterTaskFactory.class, new Properties());
-		registerService(bc, new AutoSOMETaskFactory(clusterManager, true), 
+		registerService(bc, new AutoSOMETaskFactory(clusterManager, true),
 		                ClusterTaskFactory.class, new Properties());
-		registerService(bc, new FeatureVectorTaskFactory(clusterManager), 
+		registerService(bc, new FeatureVectorTaskFactory(clusterManager),
 		                ClusterTaskFactory.class, new Properties());
-		registerService(bc, new HierarchicalTaskFactory(clusterManager), 
+		registerService(bc, new HierarchicalTaskFactory(clusterManager),
 		                ClusterTaskFactory.class, new Properties());
-		registerService(bc, new KMeansTaskFactory(clusterManager), 
+		registerService(bc, new KMeansTaskFactory(clusterManager),
 		                ClusterTaskFactory.class, new Properties());
-		registerService(bc, new KMedoidTaskFactory(clusterManager), 
+		registerService(bc, new KMedoidTaskFactory(clusterManager),
 		                ClusterTaskFactory.class, new Properties());
-		registerService(bc, new HopachPAMTaskFactory(clusterManager), 
+		registerService(bc, new HopachPAMTaskFactory(clusterManager),
                 ClusterTaskFactory.class, new Properties());
-		registerService(bc, new PAMTaskFactory(clusterManager), 
+		registerService(bc, new PAMTaskFactory(clusterManager),
                 ClusterTaskFactory.class, new Properties());
-		registerService(bc, new FFTTaskFactory(clusterManager), 
+		registerService(bc, new FFTTaskFactory(clusterManager),
                 ClusterTaskFactory.class, new Properties());
-		registerService(bc, new DBSCANTaskFactory(clusterManager), 
+		registerService(bc, new DBSCANTaskFactory(clusterManager),
                ClusterTaskFactory.class, new Properties());
-		/* 
+		/*
 		 * Hold off on these until we get improve the performance sufficiently
 		 * to allow them to be useful
 		 */
-		//registerService(bc, new BicFinderTaskFactory(clusterManager), 
+		//registerService(bc, new BicFinderTaskFactory(clusterManager),
     //           ClusterTaskFactory.class, new Properties());
-		// registerService(bc, new BiMineTaskFactory(clusterManager), 
+		// registerService(bc, new BiMineTaskFactory(clusterManager),
     //             ClusterTaskFactory.class, new Properties());
-		registerService(bc, new ChengChurchTaskFactory(clusterManager), 
+		registerService(bc, new ChengChurchTaskFactory(clusterManager),
                 ClusterTaskFactory.class, new Properties());
 
 		// Network clusterers
-		registerService(bc, new NetworkClusterTaskFactory(clusterManager), 
+		registerService(bc, new NetworkClusterTaskFactory(clusterManager),
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new APClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
-		registerService(bc, new AutoSOMETaskFactory(clusterManager, false), 
+		registerService(bc, new AutoSOMETaskFactory(clusterManager, false),
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new FuzzifierTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new GLayClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
@@ -149,8 +138,15 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new MCLClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new MCODEClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new SCPSClusterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
-		registerService(bc, new TransClustClusterTaskFactory(clusterManager), 
-		                ClusterTaskFactory.class, new Properties());                
+		registerService(bc, new TransClustClusterTaskFactory(clusterManager),
+		                ClusterTaskFactory.class, new Properties());
+
+		// Cluster ranking
+		registerService(bc, new MAATaskFactory(clusterManager), RankFactory.class, new Properties());
+		registerService(bc, new MAMTaskFactory(clusterManager), RankFactory.class, new Properties());
+		registerService(bc, new PRWPTaskFactory(clusterManager), RankFactory.class, new Properties());
+		registerService(bc, new PRTaskFactory(clusterManager), RankFactory.class, new Properties());
+		registerService(bc, new HITSTaskFactory(clusterManager), RankFactory.class, new Properties());
 
 		// Filters
 		registerService(bc, new FilterTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
@@ -162,23 +158,27 @@ public class CyActivator extends AbstractCyActivator {
 		// registerService(bc, new UITaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 
 		// Visualizations
-		registerService(bc, new NewNetworkViewFactory(clusterManager, false), ClusterVizFactory.class, 
+		registerService(bc, new NewNetworkViewFactory(clusterManager, false), ClusterVizFactory.class,
 		                new Properties());
-		registerService(bc, new NewNetworkViewFactory(clusterManager, true), ClusterVizFactory.class, 
+		registerService(bc, new NewNetworkViewFactory(clusterManager, true), ClusterVizFactory.class,
 		                new Properties());
-		registerService(bc, new HeatMapViewTaskFactory(clusterManager), ClusterVizFactory.class, 
+		registerService(bc, new HeatMapViewTaskFactory(clusterManager), ClusterVizFactory.class,
 		                new Properties());
-		registerService(bc, new KnnViewTaskFactory(clusterManager), ClusterVizFactory.class, 
+		registerService(bc, new KnnViewTaskFactory(clusterManager), ClusterVizFactory.class,
 		                new Properties());
-		registerService(bc, new BiclusterViewTaskFactory(clusterManager), ClusterVizFactory.class, 
+		registerService(bc, new BiclusterViewTaskFactory(clusterManager), ClusterVizFactory.class,
 		                new Properties());
-		registerService(bc, new TreeViewTaskFactory(clusterManager), ClusterVizFactory.class, 
+		registerService(bc, new TreeViewTaskFactory(clusterManager), ClusterVizFactory.class,
 		                new Properties());
-		registerService(bc, new CreateResultsPanelTaskFactory(clusterManager,true), ClusterVizFactory.class, 
+		registerService(bc, new CreateResultsPanelTaskFactory(clusterManager,true), ClusterVizFactory.class,
                 new Properties());
-		registerService(bc, new DestroyResultsPanelTaskFactory(clusterManager,true), ClusterVizFactory.class, 
+		registerService(bc, new CreateRankingPanelTaskFactory(clusterManager, true), ClusterVizFactory.class,
+				new Properties());
+		registerService(bc, new DestroyResultsPanelTaskFactory(clusterManager,true), ClusterVizFactory.class,
                 new Properties());
- 
+		registerService(bc, new DestroyRankingPanelTaskFactory(clusterManager, true), ClusterVizFactory.class,
+				new Properties());
+
 		// Principal Component Analysis
 		registerService(bc, new PCAMenuTaskFactory(), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new PCATaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
@@ -190,30 +190,30 @@ public class CyActivator extends AbstractCyActivator {
 		// Link Network Selections
 		LinkSelectionTaskFactory linkTaskFactory = new LinkSelectionTaskFactory(clusterManager);
 		Properties linkSelectionProps = new Properties();
-    linkSelectionProps.setProperty(INSERT_SEPARATOR_BEFORE, "true");
-    linkSelectionProps.setProperty(PREFERRED_MENU, "Apps.clusterMaker Visualizations");
-    linkSelectionProps.setProperty(TITLE, "Link selection across networks");
-    linkSelectionProps.setProperty(COMMAND, "linkSelection");
-    linkSelectionProps.setProperty(COMMAND_NAMESPACE, "clusterviz");
-    linkSelectionProps.setProperty(ENABLE_FOR, "networkAndView");
-    linkSelectionProps.setProperty(IN_MENU_BAR, "true");
-    linkSelectionProps.setProperty(MENU_GRAVITY, "100.0");
+		linkSelectionProps.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+		linkSelectionProps.setProperty(PREFERRED_MENU, "Apps.clusterMaker Visualizations");
+		linkSelectionProps.setProperty(TITLE, "Link selection across networks");
+		linkSelectionProps.setProperty(COMMAND, "linkSelection");
+		linkSelectionProps.setProperty(COMMAND_NAMESPACE, "clusterviz");
+		linkSelectionProps.setProperty(ENABLE_FOR, "networkAndView");
+		linkSelectionProps.setProperty(IN_MENU_BAR, "true");
+		linkSelectionProps.setProperty(MENU_GRAVITY, "100.0");
 		registerService(bc, linkTaskFactory, NetworkTaskFactory.class, linkSelectionProps);
 
 		// UnLink Network Selections
 		UnlinkSelectionTaskFactory unlinkTaskFactory = new UnlinkSelectionTaskFactory(clusterManager);
 		Properties unlinkSelectionProps = new Properties();
-    unlinkSelectionProps.setProperty(PREFERRED_MENU, "Apps.clusterMaker Visualizations");
-    unlinkSelectionProps.setProperty(TITLE, "Unlink selection across networks");
-    unlinkSelectionProps.setProperty(COMMAND, "unlinkSelection");
-    unlinkSelectionProps.setProperty(COMMAND_NAMESPACE, "clusterviz");
-    unlinkSelectionProps.setProperty(ENABLE_FOR, "networkAndView");
-    unlinkSelectionProps.setProperty(IN_MENU_BAR, "true");
-    unlinkSelectionProps.setProperty(MENU_GRAVITY, "100.0");
+		unlinkSelectionProps.setProperty(PREFERRED_MENU, "Apps.clusterMaker Visualizations");
+		unlinkSelectionProps.setProperty(TITLE, "Unlink selection across networks");
+		unlinkSelectionProps.setProperty(COMMAND, "unlinkSelection");
+		unlinkSelectionProps.setProperty(COMMAND_NAMESPACE, "clusterviz");
+		unlinkSelectionProps.setProperty(ENABLE_FOR, "networkAndView");
+		unlinkSelectionProps.setProperty(IN_MENU_BAR, "true");
+		unlinkSelectionProps.setProperty(MENU_GRAVITY, "100.0");
 		registerService(bc, unlinkTaskFactory, NetworkTaskFactory.class, unlinkSelectionProps);
 
 		// Commands
-		// These task factories provide useful commands that only make sense in the context of REST or 
+		// These task factories provide useful commands that only make sense in the context of REST or
 		// the command interface
 		{
 			TaskFactory commandTaskFactory = new CommandTaskFactory(clusterManager, "hascluster");
@@ -228,7 +228,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "cluster");
 			props.setProperty(COMMAND, CommandTaskFactory.GETNETWORKCLUSTER);
-  		props.setProperty(TITLE, 
+  		props.setProperty(TITLE,
 				"Get a cluster of the requested type and the requested clustertype (node or attribute)");
 			registerService(bc, commandTaskFactory, TaskFactory.class, props);
 		}

@@ -48,8 +48,9 @@ public class GetNetworkClusterTask extends AbstractTask implements ObservableTas
 		ClusterTaskFactory algTF = clusterManager.getAlgorithm(algorithm);
 		if (algTF == null) {
 			monitor.showMessage(TaskMonitor.Level.ERROR, "Can't find algorithm: '"+algorithm+"'");
+			return;
 		}
-	
+
 		if (!algTF.getTypeList().contains(ClusterTaskFactory.ClusterType.NETWORK) &&
         !algTF.getTypeList().contains(ClusterTaskFactory.ClusterType.FILTER)) {
 			monitor.showMessage(TaskMonitor.Level.ERROR, "Algorithm: '"+algorithm+"' is not a network clusterer");

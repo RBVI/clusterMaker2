@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.api.*;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.RankingPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
@@ -21,7 +23,6 @@ import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
@@ -30,13 +31,8 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskFactory;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterVizFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.NetworkSelectionLinker;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.ResultsPanel;
 
@@ -48,6 +44,7 @@ public class ClusterManagerImpl implements ClusterManager {
 	CyGroupManager groupMgr;
 	Map<String, ClusterTaskFactory> algMap;
 	Map<String, ClusterVizFactory> vizMap;
+	Map<String, RankFactory> rankMap;
 	CyTableFactory tableFactory;
 	CyTableManager tableManager;
 	Map<CyRootNetwork, NetworkSelectionLinker> linkedNetworks;
@@ -57,7 +54,9 @@ public class ClusterManagerImpl implements ClusterManager {
         double pcaIndex = 150.0;
         double pcoaIndex = 200.0;
 	double vizClusterIndex = 1.0;
+	double rankingIndex = 1.0;
 	Map<CyNetwork, List<ResultsPanel>> resultsPanelMap;
+	Map<CyNetwork, List<RankingPanel>> rankingPanelMap;
 
 	public ClusterManagerImpl(CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar,
  	                          CyGroupFactory groupFactory, CyGroupManager groupMgr, 
@@ -68,7 +67,9 @@ public class ClusterManagerImpl implements ClusterManager {
 		this.groupMgr = groupMgr;
 		this.algMap = new HashMap<String, ClusterTaskFactory>();
 		this.vizMap = new HashMap<String, ClusterVizFactory>();
+		this.rankMap = new HashMap<String, RankFactory>();
 		this.resultsPanelMap = new HashMap<CyNetwork, List<ResultsPanel>>();
+		this.rankingPanelMap = new HashMap<CyNetwork, List<RankingPanel>>();
 		this.tableFactory = tableFactory;
 		this.tableManager = tableManager;
 		this.linkedNetworks = new HashMap<CyRootNetwork, NetworkSelectionLinker>();
@@ -79,10 +80,7 @@ public class ClusterManagerImpl implements ClusterManager {
 	}
 
 	public ClusterTaskFactory getAlgorithm(String name) {
-		if (algMap.containsKey(name)) {
-		 	return algMap.get(name);
-		}
-		return null;
+        return algMap.get(name);
 	}
 
 	public void addClusterAlgorithm(ClusterTaskFactory alg, Map props) {
@@ -155,6 +153,7 @@ public class ClusterManagerImpl implements ClusterManager {
 		return null;
 	}
 
+	// Find out a way to avoid this duplication??? ref method addRanking
 	public void addVisualizer(ClusterVizFactory viz) {
 		vizMap.put(viz.getName(), viz);
 
@@ -182,6 +181,37 @@ public class ClusterManagerImpl implements ClusterManager {
 	public void removeClusterVisualizer(ClusterVizFactory viz, Map props) {
 		removeVisualizer(viz);
 		serviceRegistrar.unregisterService(viz, TaskFactory.class);
+	}
+
+	// Check why we take this road
+	public void addRankingAlgorithm(RankFactory ranking, Map props) {
+		addRanking(ranking);
+	}
+
+	// Check why we take this road
+	public void removeRankingAlgorithm(RankFactory ranking, Map props) {
+		removeRanking(ranking);
+		serviceRegistrar.unregisterService(ranking, TaskFactory.class);
+	}
+
+	// Find out a way to avoid this duplication???
+	public void addRanking(RankFactory rankFactory) {
+		rankMap.put(rankFactory.getName(), rankFactory);
+
+		Properties props = new Properties();
+		props.setProperty(COMMAND, rankFactory.getName());
+		props.setProperty(COMMAND_NAMESPACE, "rankingcluster");
+		props.setProperty(IN_MENU_BAR, "true");
+		props.setProperty(PREFERRED_MENU, "Apps.clusterMaker Ranking");
+		props.setProperty(TITLE, rankFactory.getName());
+		rankingIndex += 1.0;
+		props.setProperty(MENU_GRAVITY, ""+rankingIndex);
+		serviceRegistrar.registerService(rankFactory, TaskFactory.class, props);
+	}
+
+	public void removeRanking(RankFactory rankFactory) {
+		rankMap.remove(rankFactory.getName());
+        serviceRegistrar.unregisterService(rankFactory, TaskFactory.class);
 	}
 
 	public CyNetwork getNetwork() {
@@ -230,15 +260,40 @@ public class ClusterManagerImpl implements ClusterManager {
 		groupMgr.destroyGroup(group);
 	}
 
+	public List<RankingPanel> getRankingResults(CyNetwork network) {
+		return rankingPanelMap.get(network);
+	}
+
+	public void addRankingPanel(CyNetwork network, RankingPanel rankingPanel) {
+		if (!rankingPanelMap.containsKey(network)) {
+			rankingPanelMap.put(network, new ArrayList<>());
+		}
+		rankingPanelMap.get(network).add(rankingPanel);
+	}
+
+	public void removeRankingPanel(CyNetwork network, RankingPanel rankingPanel) {
+        if (!rankingPanelMap.containsKey(network)) {
+			return;
+		}
+
+		List<RankingPanel> panels = rankingPanelMap.get(network);
+		panels.remove(rankingPanel);
+
+		if (panels.size() == 0) {
+			rankingPanelMap.remove(network);
+		}
+	}
+
 	public List<ResultsPanel> getResultsPanels(CyNetwork network){
 		if (resultsPanelMap.containsKey(network))
 			return resultsPanelMap.get(network);
 		return null;
 		
 	}
+
 	public void addResultsPanel(CyNetwork network, ResultsPanel resultsPanel){
 		if (!resultsPanelMap.containsKey(network))
-			resultsPanelMap.put(network, new ArrayList<ResultsPanel>());
+			resultsPanelMap.put(network, new ArrayList<>());
 		resultsPanelMap.get(network).add(resultsPanel);
 	}
 

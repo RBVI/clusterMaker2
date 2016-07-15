@@ -1,4 +1,4 @@
-package test;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa;
 
 import static org.junit.Assert.*;
 

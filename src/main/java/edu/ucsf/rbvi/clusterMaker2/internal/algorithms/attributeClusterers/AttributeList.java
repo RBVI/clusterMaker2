@@ -86,14 +86,14 @@ public class AttributeList {
 		List<String> attrs = nodeAttributeList.getSelectedValues();
 		if (attrs == null || attrs.isEmpty()) return null;
 		if ((attrs.size() == 1) &&
-		    (attrs.get(0).equals("--None--"))) return null;
+		    (attrs.get(0).equals(ModelUtils.NONEATTRIBUTE))) return null;
 		return attrs;
 	}
 
 	public String getEdgeAttribute() {
 		if (edgeAttributeList == null) return null;
 		String attr = edgeAttributeList.getSelectedValue();
-		if (attr == null || attr.equals("--None--")) return null;
+		if (attr == null || attr.equals(ModelUtils.NONEATTRIBUTE)) return null;
 		return attr;
 	}
 }
