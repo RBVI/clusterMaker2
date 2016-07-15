@@ -165,33 +165,54 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 		this.matrix = null;
 	}
 
+	/**
+	 * We get here under the following circumstances:
+	 *   1) The cutoff has changed.
+	 *   2) The source for the array data has changed.
+	 *   3) The selectedOnly flag has changed.
+	 *   4) The edge weight conversion has changed.
+	 * If we got here for reason 2,3, or 4, we need to rebuild our
+	 * slider and reset everything.  If we got here for reason one, we
+	 * just need to rebuild the matrix.
+	 */
 	public BoundedDouble updateBounds() {
-		double cutOff = 0.0;
-		double max = 100.0;
-		double min = 0.0;
-
 		if (attribute == null || attribute.getSelectedValue().equals("--None--")) {
 			// System.out.println("Setting bounds to: "+min+","+max);
-			edgeCutOff.setBounds(min, max);
+			edgeCutOff.setBounds(0.0, 100.0);
 			return edgeCutOff;
 		}
 
+		// Nothing has changed (how did we get here?)
 		if (!somethingChanged())
 			return edgeCutOff;
+
+		// If we've only updated the cutoff, don't change
+		// anything else
+		boolean cutoffOnly = cutoffOnly();
+
+		double base = edgeCutOff.getValue();
+		if (!cutoffOnly) {
+			base = Double.MIN_VALUE;
+		}
 
 		// System.out.println("Getting distance matrix");
 		// this.matrix = new DistanceMatrix(network, attribute.getSelectedValue(), 
 		//                                  selectedOnly, edgeWeighter.getSelectedValue());
 		this.matrix = CyMatrixFactory.makeLargeMatrix(network, attribute.getSelectedValue(), 
 		                                              selectedOnly, edgeWeighter.getSelectedValue(),
-																									undirectedEdges, edgeCutOff.getValue());
-		max = matrix.getMaxValue();
-		min = matrix.getMinValue();
+																									undirectedEdges, base);
+		if (cutoffOnly)
+			return edgeCutOff;
 
-		// System.out.println("Setting cutoff to: "+cutOff);
-		if (max != edgeCutOff.getUpperBound() || min != edgeCutOff.getLowerBound()) {
-			// System.out.println("Changing bounds to: "+min+","+max);
+		// So, something besides just the cutoff changed, so we need
+		// to rebuild the slider, etc.
+		double max = matrix.getMaxValue();
+		double min = matrix.getMinValue();
+
+		if ((max != edgeCutOff.getUpperBound()) || 
+		    (min != edgeCutOff.getLowerBound()) && (max > min)) {
 			edgeCutOff.setBounds(min, max);
+			edgeCutOff.setValue(min);
 		}
 
 		arrayAttribute = attribute.getSelectedValue();
@@ -201,7 +222,6 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 		unDirected = undirectedEdges;
 		adjLoops = adjustLoops;
 
-		// System.out.println("Setting bounds to: "+min+"-"+max+" and cutOff to "+cutOff);
 		return edgeCutOff;
 	}
 
@@ -291,5 +311,17 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 		if (unDirected != undirectedEdges) return true;
 		if (adjLoops != adjustLoops) return true;
 		return false;
+	}
+
+	public boolean cutoffOnly() {
+		if (attribute == null || arrayAttribute == null || edgeWeighter == null || edgeCutOff == null)
+			return false;
+		if (!arrayAttribute.equals(attribute.getSelectedValue()))
+			return false;
+		if (selOnly != selectedOnly) return false;
+		if (converter != edgeWeighter.getSelectedValue()) return false;
+		if (unDirected != undirectedEdges) return false;
+		if (adjLoops != adjustLoops) return false;
+		return true;
 	}
 }

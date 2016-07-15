@@ -455,6 +455,22 @@ public class ColtMatrix implements Matrix {
 		}
 	}
 
+	public void threshold() {
+		threshold(EPSILON);
+	}
+
+	public void threshold(final double thresh) {
+		data.forEachNonZero(
+			new IntIntDoubleFunction() {
+				public double apply(int row, int column, double value) {
+					if (value <= thresh)
+						setValue(row, column, 0.0);
+					return value;
+				}
+			}
+		);
+	}
+
 	/**
 	 * Return the rank order of the columns in a row
 	 *
@@ -821,8 +837,9 @@ public class ColtMatrix implements Matrix {
 	}
 
 	public double[] eigenValues(boolean nonZero){
-		if (decomp == null)
+		if (decomp == null) {
 			decomp = new DenseDoubleEigenvalueDecomposition(data);
+		}
 
 		double[] allValues = decomp.getRealEigenvalues().toArray();
 		if (!nonZero)
@@ -847,6 +864,7 @@ public class ColtMatrix implements Matrix {
 			decomp = new DenseDoubleEigenvalueDecomposition(data);
 
 		DoubleMatrix2D eigv = decomp.getV();
+		System.out.println("Found "+eigv.columns()+" eigenvectors");
 		return eigv.toArray();
 	}
 

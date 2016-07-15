@@ -2,6 +2,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa;
 
 import java.util.List;
 import java.util.TreeMap;
+import java.text.DecimalFormat;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -34,7 +35,11 @@ public class CalculationMatrix  {
 	double combine_array[][];
 	double scores[][];
 	CyMatrix distancematrix;
+
 	double tolerance=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
+
+	private static double EPSILON=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
+
 	
 	public CalculationMatrix(CyMatrix matrix, int diag, boolean scale, int neg){
 		this.diag = diag;
@@ -125,13 +130,20 @@ public class CalculationMatrix  {
 
 		// Create our data matrix
 		final DoubleMatrix2D A = DoubleFactory2D.sparse.make(distancematrix.nRows(), distancematrix.nRows());
+		for (int row = 0; row < distancematrix.nRows(); row++) {
+			for (int col = 0; col < distancematrix.nColumns(); col++) {
+				System.out.print(distancematrix.getValue(row, col)+",");
+			}
+		}
 
 		DoubleMatrix2D data = distancematrix.getColtMatrix();
 
 		data.forEachNonZero(
 			new IntIntDoubleFunction() {
 				public double apply(int row, int column, double value) {
-					A.setQuick(row, column, -Math.pow(value,2)/2.0);
+					double v = -Math.pow(value,2)/2.0;
+					if (Math.abs(v) > EPSILON)
+						A.setQuick(row, column, v);
 					return value;
 				}
 			}
@@ -141,14 +153,18 @@ public class CalculationMatrix  {
 		ColtMatrix cA = new ColtMatrix((ColtMatrix)distancematrix, A);
 
 		// Finally, the Gower's matrix is mat*A*mat
+
 		
 		Matrix mat1 = (cMat.multiplyMatrix(cA));
 		//System.out.println("Completed Gowers Matrix");
+
+		//Matrix mat1 = cMat.multiplyMatrix(cA);
+
 		Matrix G = mat1.multiplyMatrix(cMat);
 		System.out.println("Completed Gowers Matrix");
 		return G;
 	}
-	
+
 	/*
 	//calculate Gowern's matrix
 	public double[][] getGowernsMatrix(){
@@ -195,10 +211,25 @@ public class CalculationMatrix  {
 	
 	
 	public double[] eigenAnalysis(){
+		System.out.println("Getting Gowers Matrix");
 		Matrix G = getGowersMatrix();
+		System.out.println("Done Getting Gowers Matrix");
+		G.writeMatrix("Gowers.out");
+		/*
 		double eigenvector[][]=G.eigenVectors();
 		double eigenvalues[]=G.eigenValues(true);	
+		*/
+		double eigenvector[][]=G.eigenVectors();
+		double eigenvalues[]=G.eigenValues(true);	
+
 		
+
+		double tolerance=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
+		System.out.println("Eigenvalues: ");
+		for (double d: eigenvalues) {
+			System.out.println("  "+d);
+		}
+
 
 		int idx_size=0;//for set idx length 
 		double tempeigen[]=new double[eigenvalues.length];
@@ -235,7 +266,7 @@ public class CalculationMatrix  {
 			}
 		}
 
-		CyMatrix eigenVectors = distancematrix.copy();
+		eigenVectors = distancematrix.copy();
 
 		for(int row=0;row<eigenVectors.nRows();row++){
 			for(int col=0;col<eigenVectors.nColumns();col++){
@@ -458,4 +489,27 @@ public class CalculationMatrix  {
 		}
 	}
 
+	private static DecimalFormat scFormat = new DecimalFormat("0.###E0");
+	private static DecimalFormat format = new DecimalFormat("0.###");
+	String printMatrix(DoubleMatrix2D mat) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("matrix("+mat.rows()+", "+mat.columns()+")\n");
+		if (mat.getClass().getName().indexOf("Sparse") >= 0)
+			sb.append(" matrix is sparse\n");
+		else
+			sb.append(" matrix is dense\n");
+		sb.append(" cardinality is "+mat.cardinality()+"\n\t");
+
+		for (int row = 0; row < mat.rows(); row++) {
+			for (int col = 0; col < mat.columns(); col++) {
+				double value = mat.getQuick(row, col);
+				if (value < 0.001)
+					sb.append(""+scFormat.format(value)+"\t");
+				else
+					sb.append(""+format.format(value)+"\t");
+			} 
+			sb.append("\n");
+		} 
+		return sb.toString();
+	}
 }

@@ -417,6 +417,19 @@ public class SimpleMatrix implements Matrix {
 		}
 	}
 
+	public void threshold() {
+		threshold(EPSILON);
+	}
+
+	public void threshold(double thresh) {
+		for (int row = 0; row < nRows; row++) {
+			for (int col = colStart(row); col < nColumns; col++) {
+				if (getValue(row, col) <= thresh)
+					setValue(row, col, 0.0);
+			}
+		}
+	}
+
 	/**
 	 * Return the rank order of the columns in a row
 	 *
