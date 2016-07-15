@@ -63,9 +63,9 @@ public class RunPCoA {
 		// double data[][]=matrix.toArray();
 		System.out.println("Length "+ distanceMatrix.nRows());
 		
-		System.out.println("Checking CyMatrix symmetrical "+matrix.isSymmetrical());
+		System.out.println("Checking CyMatrix symmetrical "+distanceMatrix.isSymmetrical());
 		// TODO: make scale and neg tunables in PCoAContext
-		CalculationMatrix calc=new CalculationMatrix(matrix, 0, scale, neg);
+		CalculationMatrix calc=new CalculationMatrix(distanceMatrix, 0, scale, neg);
 		System.out.println("Added data to the matrix ");
 		calc.eigenAnalysis();
 		System.out.println("Completed Eigen Analysis");

@@ -34,6 +34,7 @@ public class CalculationMatrix  {
 	double combine_array[][];
 	double scores[][];
 	CyMatrix distancematrix;
+	double tolerance=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
 	
 	public CalculationMatrix(CyMatrix matrix, int diag, boolean scale, int neg){
 		this.diag = diag;
@@ -141,8 +142,10 @@ public class CalculationMatrix  {
 
 		// Finally, the Gower's matrix is mat*A*mat
 		
-		Matrix mat1 = cMat.multiplyMatrix(cA);
+		Matrix mat1 = (cMat.multiplyMatrix(cA));
+		//System.out.println("Completed Gowers Matrix");
 		Matrix G = mat1.multiplyMatrix(cMat);
+		System.out.println("Completed Gowers Matrix");
 		return G;
 	}
 	
@@ -195,7 +198,7 @@ public class CalculationMatrix  {
 		Matrix G = getGowersMatrix();
 		double eigenvector[][]=G.eigenVectors();
 		double eigenvalues[]=G.eigenValues(true);	
-		double tolerance=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
+		
 
 		int idx_size=0;//for set idx length 
 		double tempeigen[]=new double[eigenvalues.length];
