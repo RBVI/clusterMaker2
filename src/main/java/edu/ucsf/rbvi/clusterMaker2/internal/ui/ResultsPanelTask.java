@@ -23,7 +23,6 @@ import org.cytoscape.work.Tunable;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
@@ -112,13 +111,19 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 		}
 
 		//calculating the scores for each cluster
-		clusterResults =  new AbstractClusterResults(network,clusterList, scores, null);
-		List<Double> modularityList = clusterResults.getModularityList();
-		if (scores != null)
+		clusterResults = new AbstractClusterResults(network,clusterList, scores, null);
+		List<Double> modularityList;
+
+		if (scores == null) {
+            modularityList = clusterResults.getModularityList();
+        } else {
 			modularityList = scores;
+        }
+
 		for(int i = 0; i < clusters.size() ;i++){
 			clusters.get(i).setClusterScore(modularityList.get(i));
 		}
+
 		return clusters;
 
 	}

@@ -14,12 +14,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 public class GLayClusterTaskFactory extends AbstractClusterTaskFactory {
-	ClusterManager clusterManager;
 	GLayContext context = null;
 	
 	public GLayClusterTaskFactory(ClusterManager clusterManager) {
+		super(clusterManager);
 		context = new GLayContext();
-		this.clusterManager = clusterManager;
 	}
 	
 	public String getShortName() {return GLayCluster.SHORTNAME;};
@@ -28,10 +27,6 @@ public class GLayClusterTaskFactory extends AbstractClusterTaskFactory {
 	public ClusterViz getVisualizer() {
 		// return new NewNetworkView(true);
 		return null;
-	}
-
-	public boolean isReady() {
-		return true;
 	}
 
 	public List<ClusterType> getTypeList() {

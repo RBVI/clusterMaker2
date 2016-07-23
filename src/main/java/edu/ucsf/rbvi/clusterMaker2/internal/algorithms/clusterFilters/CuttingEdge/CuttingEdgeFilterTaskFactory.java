@@ -13,12 +13,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 public class CuttingEdgeFilterTaskFactory extends AbstractClusterTaskFactory {
-	ClusterManager clusterManager;
 	CuttingEdgeContext context = null;
 	
 	public CuttingEdgeFilterTaskFactory(ClusterManager clusterManager) {
+		super(clusterManager);
 		context = new CuttingEdgeContext();
-		this.clusterManager = clusterManager;
 	}
 	
 	public String getShortName() {return CuttingEdgeFilter.SHORTNAME;};
@@ -27,10 +26,6 @@ public class CuttingEdgeFilterTaskFactory extends AbstractClusterTaskFactory {
 	public ClusterViz getVisualizer() {
 		// return new NewNetworkView(true);
 		return null;
-	}
-
-	public boolean isReady() {
-		return true;
 	}
 
 	public List<ClusterType> getTypeList() {

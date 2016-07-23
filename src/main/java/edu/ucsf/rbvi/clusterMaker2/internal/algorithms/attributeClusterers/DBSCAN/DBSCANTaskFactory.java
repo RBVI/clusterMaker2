@@ -12,12 +12,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 
 public class DBSCANTaskFactory extends AbstractClusterTaskFactory {
-	ClusterManager clusterManager;
 	DBSCANContext context = null;
 	
 	public DBSCANTaskFactory(ClusterManager clusterManager) {
+		super(clusterManager);
 		context = new DBSCANContext();
-		this.clusterManager = clusterManager;
 	}
 	
 	public String getShortName() {return DBSCAN.SHORTNAME;};
@@ -26,10 +25,6 @@ public class DBSCANTaskFactory extends AbstractClusterTaskFactory {
 	public ClusterViz getVisualizer() {
 		// return new NewNetworkView(true);
 		return null;
-	}
-
-	public boolean isReady() {
-		return true;
 	}
 
 	public List<ClusterType> getTypeList() {

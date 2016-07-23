@@ -14,12 +14,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 public class KMedoidTaskFactory extends AbstractClusterTaskFactory {
-	ClusterManager clusterManager;
 	KMedoidContext context = null;
 	
 	public KMedoidTaskFactory(ClusterManager clusterManager) {
+		super(clusterManager);
 		context = new KMedoidContext();
-		this.clusterManager = clusterManager;
 	}
 	
 	public String getShortName() {return KMedoidCluster.SHORTNAME;};
@@ -28,10 +27,6 @@ public class KMedoidTaskFactory extends AbstractClusterTaskFactory {
 	public ClusterViz getVisualizer() {
 		// return new NewNetworkView(true);
 		return null;
-	}
-
-	public boolean isReady() {
-		return true;
 	}
 
 	public List<ClusterType> getTypeList() {

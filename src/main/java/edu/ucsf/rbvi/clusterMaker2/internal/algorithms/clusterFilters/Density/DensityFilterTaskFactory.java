@@ -14,12 +14,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 public class DensityFilterTaskFactory extends AbstractClusterTaskFactory {
-	ClusterManager clusterManager;
 	DensityContext context = null;
 	
 	public DensityFilterTaskFactory(ClusterManager clusterManager) {
+		super(clusterManager);
 		context = new DensityContext();
-		this.clusterManager = clusterManager;
 	}
 	
 	public String getShortName() {return DensityFilter.SHORTNAME;};
@@ -28,10 +27,6 @@ public class DensityFilterTaskFactory extends AbstractClusterTaskFactory {
 	public ClusterViz getVisualizer() {
 		// return new NewNetworkView(true);
 		return null;
-	}
-
-	public boolean isReady() {
-		return true;
 	}
 
 	public List<ClusterType> getTypeList() {

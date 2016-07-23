@@ -14,12 +14,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 public class FeatureVectorTaskFactory extends AbstractClusterTaskFactory {
-	ClusterManager clusterManager;
 	FeatureVectorContext context = null;
 	
 	public FeatureVectorTaskFactory(ClusterManager clusterManager) {
+		super(clusterManager);
 		context = new FeatureVectorContext();
-		this.clusterManager = clusterManager;
 	}
 	
 	public String getShortName() {return FeatureVectorCluster.SHORTNAME;};
@@ -28,10 +27,6 @@ public class FeatureVectorTaskFactory extends AbstractClusterTaskFactory {
 	public ClusterViz getVisualizer() {
 		// return new NewNetworkView(true);
 		return null;
-	}
-
-	public boolean isReady() {
-		return true;
 	}
 
 	public List<ClusterType> getTypeList() {

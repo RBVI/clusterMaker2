@@ -10,7 +10,18 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 
 public abstract class AbstractClusterTaskFactory implements ClusterTaskFactory {
+	protected ClusterManager clusterManager;
+
+	public AbstractClusterTaskFactory(ClusterManager manager) {
+		this.clusterManager = manager;
+	}
 	
+	public boolean isReady() {
+		if (clusterManager.getNetwork() == null)
+			return false;
+		return true;
+	}
+
 	public boolean isAvailable(CyNetwork network) {
 		if (network == null) 
 			return false;

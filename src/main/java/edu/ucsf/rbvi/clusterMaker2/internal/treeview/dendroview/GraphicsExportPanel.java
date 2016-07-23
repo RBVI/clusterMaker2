@@ -60,12 +60,11 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import com.itextpdf.awt.DefaultFontMapper;
 import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
-import com.itextpdf.awt.DefaultFontMapper;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.ConfigNode;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.DataModel;

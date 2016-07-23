@@ -9,17 +9,14 @@ import org.cytoscape.work.TaskIterator;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 public class APClusterTaskFactory extends AbstractClusterTaskFactory {
-	ClusterManager clusterManager;
 	APContext context = null;
 	
 	public APClusterTaskFactory(ClusterManager clusterManager) {
+		super(clusterManager);
 		this.context = new APContext();
-		this.clusterManager = clusterManager;
 	}
 	
 	public String getShortName() {return APCluster.SHORTNAME;};
@@ -28,10 +25,6 @@ public class APClusterTaskFactory extends AbstractClusterTaskFactory {
 	public ClusterViz getVisualizer() {
 		// return new NewNetworkView(true);
 		return null;
-	}
-
-	public boolean isReady() {
-		return true;
 	}
 
 	public List<ClusterType> getTypeList() { 

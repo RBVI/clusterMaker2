@@ -33,31 +33,18 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 import org.cytoscape.group.CyGroup;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.TunableHandler;
-import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.swing.RequestsUIHelper;
-import org.cytoscape.work.swing.TunableUIHelper;
 
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterAlgorithm;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.FuzzyNodeCluster;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 /**
@@ -65,156 +52,155 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
  * clusterMaker.  Fundamentally, an attribute clusterer is an algorithm which functions to
  * partition nodes or node attributes based on properties of the attributes.
  */
-public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorithm 
-                                                 implements RequestsUIHelper {
-	// Common instance variables
-	protected DistanceMetric distanceMetric = DistanceMetric.EUCLIDEAN;
-	protected List<String>attrList;
-	
-	public AbstractAttributeClusterer(ClusterManager clusterManager) {
-		super(clusterManager);
-	}
+public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorithm
+        implements RequestsUIHelper {
+    // Common instance variables
+    protected DistanceMetric distanceMetric = DistanceMetric.EUCLIDEAN;
+    protected List<String>attrList;
 
-	protected void updateKEstimates(CyNetwork network) {
-	}
+    public AbstractAttributeClusterer(ClusterManager clusterManager) {
+        super(clusterManager);
+    }
 
-	/**
- 	 * This method resets (clears) all of the existing network attributes.
- 	 */
-	@SuppressWarnings("unchecked")
-	protected void resetAttributes(CyNetwork network, String group_attr) {
+    protected void updateKEstimates(CyNetwork network) {
+    }
 
-		// Remove the attributes that are lingering
-		if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE))
-			ModelUtils.deleteAttributeLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE);
-		if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE))
-			ModelUtils.deleteAttributeLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE);
-		if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE))
-			ModelUtils.deleteAttributeLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE);
-		if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE))
-			ModelUtils.deleteAttributeLocal(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE);
-		if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.CLUSTER_EDGE_ATTRIBUTE))
-			ModelUtils.deleteAttributeLocal(network, network, ClusterManager.CLUSTER_EDGE_ATTRIBUTE);
-		if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE))
-			ModelUtils.deleteAttributeLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE);
-		if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE))
-			ModelUtils.deleteAttributeLocal(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE);
+    /**
+     * This method resets (clears) all of the existing network attributes.
+     */
+    @SuppressWarnings("unchecked")
+    protected void resetAttributes(CyNetwork network, String group_attr) {
 
-		// See if we have any old groups in this network
-		if (ModelUtils.hasAttributeLocal(network, network, group_attr)) {
-			List<String>clList = network.getRow(network).getList(group_attr, String.class);
-			ModelUtils.deleteAttributeLocal(network, network, group_attr);
-		}
-	}
+        // Remove the attributes that are lingering
+        if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE))
+            ModelUtils.deleteAttributeLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE);
+        if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE))
+            ModelUtils.deleteAttributeLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE);
+        if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE))
+            ModelUtils.deleteAttributeLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE);
+        if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE))
+            ModelUtils.deleteAttributeLocal(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE);
+        if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.CLUSTER_EDGE_ATTRIBUTE))
+            ModelUtils.deleteAttributeLocal(network, network, ClusterManager.CLUSTER_EDGE_ATTRIBUTE);
+        if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE))
+            ModelUtils.deleteAttributeLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE);
+        if (ModelUtils.hasAttributeLocal(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE))
+            ModelUtils.deleteAttributeLocal(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE);
 
-	protected void updateAttributes(CyNetwork network, String cluster_type, Integer[] rowOrder, 
-	                                String weightAttributes[], List<String> attrList, 
-		                              CyMatrix matrix) {
+        // See if we have any old groups in this network
+        if (ModelUtils.hasAttributeLocal(network, network, group_attr)) {
+            List<String>clList = network.getRow(network).getList(group_attr, String.class);
+            ModelUtils.deleteAttributeLocal(network, network, group_attr);
+        }
+    }
 
-		if (cancelled) return;
+    protected void updateAttributes(CyNetwork network, String cluster_type, Integer[] rowOrder,
+                                    String weightAttributes[], List<String> attrList,
+                                    CyMatrix matrix) {
 
-		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, 
-		                             cluster_type, String.class, null);
+        if (cancelled) return;
 
-		if (matrix.isTransposed()) {
-			ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE, 
-		                               attrList, List.class, String.class);
-		} else {
-			//System.out.println("attrList's size: " + attrList.size());
-			ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE, 
-			                             attrList, List.class, String.class);
-			if (matrix.isSymmetrical() || matrix.isAssymetricalEdge()) {
-				ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_EDGE_ATTRIBUTE, 
-			                               weightAttributes[0], String.class, null);
-			} else if (matrix.isSymmetrical()) {
-				ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE, 
-			                               attrList, List.class, String.class);
-			}
-		}
+        ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE,
+                cluster_type, String.class, null);
 
-		String[] rowArray = matrix.getRowLabels();
-		ArrayList<String> orderList = new ArrayList<String>();
+        if (matrix.isTransposed()) {
+            ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE,
+                    attrList, List.class, String.class);
+        } else {
+            //System.out.println("attrList's size: " + attrList.size());
+            ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE,
+                    attrList, List.class, String.class);
+            if (matrix.isSymmetrical() || matrix.isAssymetricalEdge()) {
+                ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_EDGE_ATTRIBUTE,
+                        weightAttributes[0], String.class, null);
+            } else if (matrix.isSymmetrical()) {
+                ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE,
+                        attrList, List.class, String.class);
+            }
+        }
 
-		String[] columnArray = matrix.getColumnLabels();
-		ArrayList<String>columnList = new ArrayList<String>(columnArray.length);
+        String[] rowArray = matrix.getRowLabels();
+        ArrayList<String> orderList = new ArrayList<String>();
 
-		for (int i = 0; i < rowOrder.length; i++) {
-			orderList.add(rowArray[rowOrder[i]]);
-			if (matrix.isSymmetrical())
-				columnList.add(rowArray[rowOrder[i]]);
-		}
+        String[] columnArray = matrix.getColumnLabels();
+        ArrayList<String>columnList = new ArrayList<String>(columnArray.length);
 
-		if (!matrix.isSymmetrical()) {
-			for (int col = 0; col < columnArray.length; col++) {
-				columnList.add(columnArray[col]);
-			}
-		}
+        for (int i = 0; i < rowOrder.length; i++) {
+            orderList.add(rowArray[rowOrder[i]]);
+            if (matrix.isSymmetrical())
+                columnList.add(rowArray[rowOrder[i]]);
+        }
 
-		if (matrix.isTransposed()) {
-			// We did an Array cluster -- output the calculated array order
-			// and the actual node order
-			// netAttr.setListAttribute(netID, ClusterManager.ARRAY_ORDER_ATTRIBUTE, orderList);
-			ModelUtils.createAndSetLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
-			                             orderList, List.class, String.class);
+        if (!matrix.isSymmetrical()) {
+            for (int col = 0; col < columnArray.length; col++) {
+                columnList.add(columnArray[col]);
+            }
+        }
 
-			// Don't override the columnlist if a node order already exists
-			if (!ModelUtils.hasAttributeLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE))
-				ModelUtils.createAndSetLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE, 
-			                               columnList, List.class, String.class);
-		} else {
-			ModelUtils.createAndSetLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE, 
-			                             orderList, List.class, String.class);
-			// Don't override the columnlist if a node order already exists
-			if (!ModelUtils.hasAttributeLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE))
-				ModelUtils.createAndSetLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
-			                               columnList, List.class, String.class);
-		}
+        if (matrix.isTransposed()) {
+            // We did an Array cluster -- output the calculated array order
+            // and the actual node order
+            // netAttr.setListAttribute(netID, ClusterManager.ARRAY_ORDER_ATTRIBUTE, orderList);
+            ModelUtils.createAndSetLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE,
+                    orderList, List.class, String.class);
 
-	}
+            // Don't override the columnlist if a node order already exists
+            if (!ModelUtils.hasAttributeLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE))
+                ModelUtils.createAndSetLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE,
+                        columnList, List.class, String.class);
+        } else {
+            ModelUtils.createAndSetLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE,
+                    orderList, List.class, String.class);
+            // Don't override the columnlist if a node order already exists
+            if (!ModelUtils.hasAttributeLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE))
+                ModelUtils.createAndSetLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE,
+                        columnList, List.class, String.class);
+        }
 
-	protected void updateParams(CyNetwork network, List<String> params) {
-		if (cancelled) return;
+    }
 
-		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, 
-		                             params, List.class, String.class);
-	}
-	
-	 /**
-		 * This protected method is called to create all of our groups (if desired).
-		 * It is used by all of the k-clustering algorithms.
-		 *
-		 * @param nClusters the number of clusters we created
-		 * @param cluster the list of values and the assigned clusters
-		 */
+    protected void updateParams(CyNetwork network, List<String> params) {
+        if (cancelled) return;
 
-	  protected void createGroups(CyNetwork net,CyMatrix matrix,int nClusters, int[] clusters, String algorithm) {
-	    if (matrix.isTransposed()) {
-	      return;
-	    }
+        ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE,
+                params, List.class, String.class);
+    }
 
-	    network = net;
-	    if (monitor != null)
-	      monitor.setStatusMessage("Creating groups");
+    /**
+     * This protected method is called to create all of our groups (if desired).
+     * It is used by all of the k-clustering algorithms.
+     *
+     * @param nClusters the number of clusters we created
+     * @param cluster the list of values and the assigned clusters
+     */
 
-	    attrList = new ArrayList<String>(matrix.nRows());
-	    // Create the attribute list
-	    for (int cluster = 0; cluster < nClusters; cluster++) {
-	      List<CyNode> memberList = new ArrayList<CyNode>();
-	      for (int i = 0; i < matrix.nRows(); i++) {
-	        if (clusters[i] == cluster) {
-						// System.out.println("Setting cluster # for node "+matrix.getRowLabel(i)+"("+i+") to "+cluster);
-	          attrList.add(matrix.getRowLabel(i)+"\t"+cluster);
-	          memberList.add(matrix.getRowNode(i));
-						ModelUtils.createAndSetLocal(network, matrix.getRowNode(i), algorithm+" Cluster", 
-						                             new Integer(cluster), Integer.class, null);
-	        }
-	      }
-				if (createGroups) {
-					// System.out.println("Creating group: Cluster_"+cluster+" with "+memberList.size()+" nodes");
-					CyGroup group = clusterManager.createGroup(network, "Cluster_"+cluster, memberList, null, true);
-				}
-	    }
-	  }
-	  
-	  public List<String> getAttributeList() { return attrList; }
+    protected void createGroups(CyNetwork net,CyMatrix matrix,int nClusters, int[] clusters, String algorithm) {
+        if (matrix.isTransposed()) {
+            return;
+        }
+
+        network = net;
+        if (monitor != null)
+            monitor.setStatusMessage("Creating groups");
+
+        attrList = new ArrayList<String>(matrix.nRows());
+        // Create the attribute list
+        for (int cluster = 0; cluster < nClusters; cluster++) {
+            List<CyNode> memberList = new ArrayList<CyNode>();
+            for (int i = 0; i < matrix.nRows(); i++) {
+                if (clusters[i] == cluster) {
+                    // System.out.println("Setting cluster # for node "+matrix.getRowLabel(i)+"("+i+") to "+cluster);
+                    attrList.add(matrix.getRowLabel(i)+"\t"+cluster);
+                    memberList.add(matrix.getRowNode(i));
+                    ModelUtils.createAndSetLocal(network, matrix.getRowNode(i), algorithm+" Cluster", cluster, Integer.class, null);
+                }
+            }
+            if (createGroups) {
+                // System.out.println("Creating group: Cluster_"+cluster+" with "+memberList.size()+" nodes");
+                CyGroup group = clusterManager.createGroup(network, "Cluster_"+cluster, memberList, null, true);
+            }
+        }
+    }
+
+    public List<String> getAttributeList() { return attrList; }
 }
