@@ -34,9 +34,9 @@ public class HITSTaskFactory implements RankFactory {
         return new TaskIterator(new HyperlinkInducedTopicSearch(context, manager));
     }
 
-    @Override
-    public boolean isReady() {
-        return true;
-    }
+		public boolean isReady() {
+			if (manager.getNetwork() == null) return false;
+			return true;
+		}
 }
 

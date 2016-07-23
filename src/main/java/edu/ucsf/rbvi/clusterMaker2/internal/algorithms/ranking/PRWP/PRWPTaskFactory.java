@@ -34,8 +34,8 @@ public class PRWPTaskFactory implements RankFactory{
         return new TaskIterator(new PRWP(context, manager));
     }
 
-    @Override
-    public boolean isReady() {
-        return true;
-    }
+		public boolean isReady() {
+			if (manager.getNetwork() == null) return false;
+			return true;
+		}
 }

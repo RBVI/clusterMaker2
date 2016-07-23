@@ -14,12 +14,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 public class PCoATaskFactory extends AbstractClusterTaskFactory{
 
-	ClusterManager clusterManager;
 	PCoAContext context = null;
 
 	public PCoATaskFactory(ClusterManager clusterManager){
+		super(clusterManager);
 		context = new PCoAContext();
-		this.clusterManager = clusterManager;
 	}
 
 	public String getShortName() {return PCoA.SHORTNAME;};
@@ -28,10 +27,6 @@ public class PCoATaskFactory extends AbstractClusterTaskFactory{
 	public ClusterViz getVisualizer() {
 		// return new NewNetworkView(true);
 		return null;
-	}
-
-	public boolean isReady() {
-		return true;
 	}
 
 	public List<ClusterTaskFactory.ClusterType> getTypeList() { 

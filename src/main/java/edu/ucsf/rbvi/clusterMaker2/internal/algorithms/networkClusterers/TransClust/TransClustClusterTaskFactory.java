@@ -14,12 +14,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 public class TransClustClusterTaskFactory extends AbstractClusterTaskFactory {
-	ClusterManager clusterManager;
 	TransClusterContext context = null;
 	
 	public TransClustClusterTaskFactory(ClusterManager clusterManager) {
+		super(clusterManager);
 		context = new TransClusterContext();
-		this.clusterManager = clusterManager;
 	}
 	
 	public String getShortName() {return TransClustCluster.SHORTNAME;};
@@ -28,10 +27,6 @@ public class TransClustClusterTaskFactory extends AbstractClusterTaskFactory {
 	public ClusterViz getVisualizer() {
 		// return new NewNetworkView(true);
 		return null;
-	}
-
-	public boolean isReady() {
-		return true;
 	}
 
 	public List<ClusterType> getTypeList() {

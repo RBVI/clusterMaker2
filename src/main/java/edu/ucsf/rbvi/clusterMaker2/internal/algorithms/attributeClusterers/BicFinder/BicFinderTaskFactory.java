@@ -10,13 +10,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 public class BicFinderTaskFactory extends AbstractClusterTaskFactory {
-
-	ClusterManager clusterManager;
 	BicFinderContext context = null;
 	
 	public BicFinderTaskFactory(ClusterManager clusterManager) {
+		super(clusterManager);
 		context = new BicFinderContext();
-		this.clusterManager = clusterManager;
 	}
 	
 	public String getShortName() {return BicFinder.SHORTNAME;};
@@ -25,10 +23,6 @@ public class BicFinderTaskFactory extends AbstractClusterTaskFactory {
 	public ClusterViz getVisualizer() {
 		// return new NewNetworkView(true);
 		return null;
-	}
-
-	public boolean isReady() {
-		return true;
 	}
 
 	public List<ClusterType> getTypeList() {

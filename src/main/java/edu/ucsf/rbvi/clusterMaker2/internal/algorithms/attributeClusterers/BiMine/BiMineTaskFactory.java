@@ -10,13 +10,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 public class BiMineTaskFactory extends AbstractClusterTaskFactory {
-
-	ClusterManager clusterManager;
 	BiMineContext context = null;
 	
 	public BiMineTaskFactory(ClusterManager clusterManager) {
+		super(clusterManager);
 		context = new BiMineContext();
-		this.clusterManager = clusterManager;
 	}
 	
 	public String getShortName() {return BiMine.SHORTNAME;};
@@ -25,10 +23,6 @@ public class BiMineTaskFactory extends AbstractClusterTaskFactory {
 	public ClusterViz getVisualizer() {
 		// return new NewNetworkView(true);
 		return null;
-	}
-
-	public boolean isReady() {
-		return true;
 	}
 
 	public List<ClusterType> getTypeList() {

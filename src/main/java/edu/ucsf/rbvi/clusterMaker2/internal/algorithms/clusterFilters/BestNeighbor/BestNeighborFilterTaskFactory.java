@@ -14,12 +14,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 public class BestNeighborFilterTaskFactory extends AbstractClusterTaskFactory {
-	ClusterManager clusterManager;
 	BestNeighborContext context = null;
 	
 	public BestNeighborFilterTaskFactory(ClusterManager clusterManager) {
+		super(clusterManager);
 		context = new BestNeighborContext();
-		this.clusterManager = clusterManager;
 	}
 	
 	public String getShortName() {return BestNeighborFilter.SHORTNAME;};
@@ -28,10 +27,6 @@ public class BestNeighborFilterTaskFactory extends AbstractClusterTaskFactory {
 	public ClusterViz getVisualizer() {
 		// return new NewNetworkView(true);
 		return null;
-	}
-
-	public boolean isReady() {
-		return true;
 	}
 
 	public List<ClusterType> getTypeList() {

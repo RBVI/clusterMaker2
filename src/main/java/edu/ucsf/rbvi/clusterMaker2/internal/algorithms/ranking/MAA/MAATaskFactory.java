@@ -30,7 +30,8 @@ public class MAATaskFactory implements RankFactory {
         return new TaskIterator(new MultipleAttributeAddition(context, manager));
     }
 
-    public boolean isReady() {
-        return true;
-    }
+		public boolean isReady() {
+			if (manager.getNetwork() == null) return false;
+			return true;
+		}
 }

@@ -13,12 +13,11 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 public class SCPSClusterTaskFactory extends AbstractClusterTaskFactory {
-	ClusterManager clusterManager;
 	SCPSContext context = null;
 	
 	public SCPSClusterTaskFactory(ClusterManager clusterManager) {
+		super(clusterManager);
 		context = new SCPSContext();
-		this.clusterManager = clusterManager;
 	}
 	
 	public String getShortName() {return SCPSCluster.SHORTNAME;};
@@ -27,10 +26,6 @@ public class SCPSClusterTaskFactory extends AbstractClusterTaskFactory {
 	public ClusterViz getVisualizer() {
 		// return new NewNetworkView(true);
 		return null;
-	}
-
-	public boolean isReady() {
-		return true;
 	}
 
 	public List<ClusterType> getTypeList() {

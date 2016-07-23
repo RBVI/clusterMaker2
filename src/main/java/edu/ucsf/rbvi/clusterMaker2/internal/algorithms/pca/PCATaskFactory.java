@@ -19,12 +19,11 @@ import org.cytoscape.work.TaskIterator;
  * @author root
  */
 public class PCATaskFactory extends AbstractClusterTaskFactory{
-	ClusterManager clusterManager;
 	PCAContext context = null;
 
 	public PCATaskFactory(ClusterManager clusterManager){
+		super(clusterManager);
 		context = new PCAContext();
-		this.clusterManager = clusterManager;
 	}
 
 	public String getShortName() {return PCA.SHORTNAME;};
@@ -33,10 +32,6 @@ public class PCATaskFactory extends AbstractClusterTaskFactory{
 	public ClusterViz getVisualizer() {
 		// return new NewNetworkView(true);
 		return null;
-	}
-
-	public boolean isReady() {
-		return true;
 	}
 
 	public List<ClusterTaskFactory.ClusterType> getTypeList() { 

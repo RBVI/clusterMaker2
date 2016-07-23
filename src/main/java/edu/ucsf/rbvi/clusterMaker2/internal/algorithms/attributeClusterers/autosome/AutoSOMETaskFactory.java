@@ -14,13 +14,12 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 public class AutoSOMETaskFactory extends AbstractClusterTaskFactory {
-	ClusterManager clusterManager;
 	AutoSOMEContext context = null;
 	boolean heatmap = true;
 	
 	public AutoSOMETaskFactory(ClusterManager clusterManager, boolean heatmap) {
+		super(clusterManager);
 		context = new AutoSOMEContext();
-		this.clusterManager = clusterManager;
 		this.heatmap = heatmap;
 	}
 	
@@ -41,10 +40,6 @@ public class AutoSOMETaskFactory extends AbstractClusterTaskFactory {
 	public ClusterViz getVisualizer() {
 		// return new NewNetworkView(true);
 		return null;
-	}
-
-	public boolean isReady() {
-		return true;
 	}
 
 	public List<ClusterType> getTypeList() {

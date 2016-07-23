@@ -180,7 +180,7 @@ public class CyActivator extends AbstractCyActivator {
 				new Properties());
 
 		// Principal Component Analysis
-		registerService(bc, new PCAMenuTaskFactory(), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new PCAMenuTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new PCATaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 
 		//Principal Coordinate Analysis
