@@ -130,6 +130,14 @@ public class CalculationMatrixTest {
 	}
 	
 	@Test
+	public void computevariancetest() {
+		double evals[]={34,54,21};
+		double expect[][]={{31.1927,31.1927},
+				   {49.5413,80.7339},
+				   {19.2661,100.0000}};
+		double actuals[]=CalculationMatrix.computeVariance(evals);
+	}
+	@Test
 	public void scaleEigenVectorstest() {
 		double expect[][]={
 				{0.39521395928926467,-0.49999999999999994,-0.34615296149811603,0.0}, 

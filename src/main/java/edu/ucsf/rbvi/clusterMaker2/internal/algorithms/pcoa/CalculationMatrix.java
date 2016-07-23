@@ -1,5 +1,6 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
 import java.text.DecimalFormat;
@@ -19,6 +20,7 @@ import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.decomposition.DenseDoubleEigenvalueDecomposition;
 import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.ColtMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
 // import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.SimpleMatrix;
 // import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ComputationMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
@@ -31,12 +33,13 @@ public class CalculationMatrix  {
 	boolean scale;//scale eigenvectors (= scores) by their eigenvalue 
 	int neg;//discard (= 0), keep (= 1), or correct (= 2)  negative eigenvalues  
 	double eigen_values[];
+	double eigen_vectors[][];
 	CyMatrix eigenVectors;
 	double combine_array[][];
 	double scores[][];
 	CyMatrix distancematrix;
 
-	double tolerance=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
+	//double tolerance=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
 
 	private static double EPSILON=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
 
@@ -121,7 +124,7 @@ public class CalculationMatrix  {
 	public Matrix getGowersMatrix() {
 		// Create the Identity matrix
 		DoubleMatrix2D I = DoubleFactory2D.sparse.identity(distancematrix.nRows());
-
+distancematrix.writeMatrix("distancematrix.txt");
 		// Create the ones matrix.  This is equivalent to 11'/n
 		DoubleMatrix2D one = DoubleFactory2D.dense.make(distancematrix.nRows(), distancematrix.nRows(), 1.0/distancematrix.nRows());
 
@@ -130,11 +133,11 @@ public class CalculationMatrix  {
 
 		// Create our data matrix
 		final DoubleMatrix2D A = DoubleFactory2D.sparse.make(distancematrix.nRows(), distancematrix.nRows());
-		for (int row = 0; row < distancematrix.nRows(); row++) {
+		/*for (int row = 0; row < distancematrix.nRows(); row++) {
 			for (int col = 0; col < distancematrix.nColumns(); col++) {
 				System.out.print(distancematrix.getValue(row, col)+",");
 			}
-		}
+		}*/
 
 		DoubleMatrix2D data = distancematrix.getColtMatrix();
 
@@ -155,10 +158,10 @@ public class CalculationMatrix  {
 		// Finally, the Gower's matrix is mat*A*mat
 
 		
-		Matrix mat1 = (cMat.multiplyMatrix(cA));
+		
 		//System.out.println("Completed Gowers Matrix");
 
-		//Matrix mat1 = cMat.multiplyMatrix(cA);
+		Matrix mat1 = cMat.multiplyMatrix(cA);
 
 		Matrix G = mat1.multiplyMatrix(cMat);
 		System.out.println("Completed Gowers Matrix");
@@ -214,34 +217,32 @@ public class CalculationMatrix  {
 		System.out.println("Getting Gowers Matrix");
 		Matrix G = getGowersMatrix();
 		System.out.println("Done Getting Gowers Matrix");
-		G.writeMatrix("Gowers.out");
+		G.writeMatrix("Gowers.txt");
 		/*
 		double eigenvector[][]=G.eigenVectors();
 		double eigenvalues[]=G.eigenValues(true);	
 		*/
-		double eigenvector[][]=G.eigenVectors();
-		double eigenvalues[]=G.eigenValues(true);	
+		eigen_vectors=G.eigenVectors();
+		 eigen_values=G.eigenValues(true);	
 
 		
-
-		double tolerance=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
+		//double tolerance=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
 		System.out.println("Eigenvalues: ");
-		for (double d: eigenvalues) {
+		for (double d: eigen_values) {
 			System.out.println("  "+d);
 		}
 
-
-		int idx_size=0;//for set idx length 
+		/*int idx_size=0;//for set idx length 
 		double tempeigen[]=new double[eigenvalues.length];
 		for(int i=0;i<eigenvalues.length;i++){
-			if(Math.abs(eigenvalues[i])>tolerance){
+			if(Math.abs(eigenvalues[i])>EPSILON){
 				tempeigen[i]=1;
 				idx_size++;
-			}
-		}
+			}}*/
 
+		
 		//calculate idx value from eigen values
-		double idx[]=matrixReverse(tempeigen);
+		/*double idx[]=matrixReverse(tempeigen);
 		int count=1;
 		//double idx[]=new double[idx_size];
 		for(int i=0;i<idx.length;i++){
@@ -249,15 +250,17 @@ public class CalculationMatrix  {
 				idx[i]=count;
 			}
 			count++;
-		}
+		}*/
+		
+		
 		//discard eigen values
-		double reverseeigen[]=new double[eigenvalues.length];
+		/*double reverseeigen[]=new double[eigenvalues.length];
 		int j=0;
 		for(int i=eigenvalues.length-1;i>=0;i--){
 			reverseeigen[j]=eigenvalues[i];
 			j++;
-		}
-		eigen_values=new double[idx.length];
+		}*/
+		/*eigen_values=new double[idx.length];
 		for(int i=0;i<reverseeigen.length;i++){
 			for(j=0;j<idx.length;j++){
 				if(i+1==idx[j]){
@@ -277,6 +280,7 @@ public class CalculationMatrix  {
 				}
 			}
 		}
+		
 		for(int row=0;row<eigenVectors.nRows();row++){
 			for(int col=0;col<eigenVectors.nColumns();col++){
 				if(eigenVectors.getValue(row,col)==0 && col!=eigenVectors.nRows()-1){
@@ -314,43 +318,56 @@ public class CalculationMatrix  {
 					}
 				}
 			}
-		}
+		}*/
 		return eigen_values;
 	}
 	
-	//get Variance explained
-	public double[][] getVarianceExplained(){
-		double eigen_values_sum=0;
-		int length=0;//length for cum_sum and var_explain
-		for(int i=0;i<eigen_values.length;i++){
-			if(eigen_values[i]!=0){
-				eigen_values_sum+=eigen_values[i];
-				length+=1;
+	public CyMatrix[] getCooridinates(CyMatrix matrix){
+		CyMatrix[] components = new CyMatrix[eigen_values.length];
+
+		for(int j=eigen_values.length-1, k=0;j>=0;j--,k++){
+			// double[] w = new double[vectors.length];
+			CyMatrix result = CyMatrixFactory.makeLargeMatrix(matrix.getNetwork(), eigen_values.length,eigen_values.length);
+			for(int i=0;i<eigen_vectors.length;i++){
+				result.setValue(i,0,eigen_vectors[i][j]);
 			}
+			// System.out.println("matrix: "+matrix.printMatrixInfo());
+			// System.out.println("vector: "+result.printMatrixInfo());
+
+			Matrix mat = matrix.multiplyMatrix(result);
+			// System.out.println("After vector multiply: "+mat.printMatrixInfo());
+			components[k] = matrix.copy(mat);
+			components[k].printMatrixInfo();
+			components[k].writeMatrix("component_"+k+".txt");
+			// System.out.println("Component matrix "+k+" has "+components[k].getRowNodes().size()+" nodes");
 		}
-		//calculate varianceExplained
-		double var_explain[]=new double[length];
-		for(int i=0;i<length;i++){
-			var_explain[i]=(eigen_values[i]*100)/eigen_values_sum;
-		}
-		
-		//calculate cumulativeSum
-		double cumsum[]=new double[length];
-		double sum_temp=0;
-		for(int i=0;i<length;i++){
-			cumsum[i]=sum_temp+var_explain[i];
-			sum_temp=cumsum[i];
-		}
-		
-		//combine two arrays
-		combine_array=new double[length][2];//for all this will set a n by 2 matrix
-		int j=0;
-		for(int i=0;i<length;i++){
-			combine_array[i][j]=var_explain[i];
-			combine_array[i][j+1]=cumsum[i];
-		}
-		return combine_array;
+
+		return components;
 	}
+	private void calculateLoadingMatrix(CyMatrix matrix, Matrix loading, 
+            double[][] eigenVectors, double[] eigenValues) {
+			int rows = eigenVectors.length;
+			int columns = eigenVectors[0].length;
+			loading.initialize(rows, columns, new double[rows][columns]);
+
+			// System.out.print("Eigenvectors:");
+			for (int row = 0; row < rows; row++) {
+				// 	System.out.print("\n"+matrix.getColumnLabel(row)+"\t");
+				for (int column = columns-1, newCol=0; column >= 0; column--,newCol++) {
+					// 	System.out.print(""+eigenVectors[row][column]+"\t");
+					loading.setValue(row, newCol, 
+							eigenVectors[row][column]*Math.sqrt(Math.abs(eigenValues[column])));
+					// loading.setValue(row, newCol, eigenVectors[row][column]*eigenValues[column]);
+				}
+			}
+			// 	System.out.println("\n");
+
+			loading.setRowLabels(Arrays.asList(matrix.getColumnLabels()));
+			for (int column = 0; column < columns; column++) {
+				loading.setColumnLabel(column, "PC "+(column+1));
+			}
+}
+	
 	
 	//calculate upper triangular matrix from vector
 	public double[] getUpperMatrixInVector(CyMatrix matrix){
@@ -372,6 +389,20 @@ public class CalculationMatrix  {
 		return uppertrimatrix;
 	}
 	
+	//calculate variance explained
+	public static double[] computeVariance(double[] values){
+		double[] explainedVariance = new double[values.length];
+		double total = 0.0;
+		for (int i = 0; i < values.length; i++)
+			total += values[i];
+
+		for (int i = 0, j=values.length-1; j >= 0; j--,i++) {
+			explainedVariance[i] = (values[j] / total) * 100;
+		}
+
+		return explainedVariance;
+	}
+
 	//convert column To Matrix 
 	public double[][] convertColumntoMatrix(double columnmatrix[]){
 		double matrix[][]=new double[eigen_values.length][eigen_values.length];

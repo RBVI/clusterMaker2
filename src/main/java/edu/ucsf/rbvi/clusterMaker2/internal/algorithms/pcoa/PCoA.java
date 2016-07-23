@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -25,6 +26,7 @@ public class PCoA extends AbstractNetworkClusterer{
 	public static String SHORTNAME = "pcoa";
 	public static String NAME = "Principal Coordinate Analysis";
 	public final static String GROUP_ATTRIBUTE = "__PCoA.SUID";
+	private CyNetworkView networkView;
 
 	@Tunable(description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
@@ -35,8 +37,9 @@ public class PCoA extends AbstractNetworkClusterer{
 	public PCoA(PCoAContext context, ClusterManager manager) {
 		super(manager);
 		this.context = context;
+		this.networkView = clusterManager.getNetworkView();
 		if (network == null)
-			network = clusterManager.getNetwork();
+				network = clusterManager.getNetwork();
 		context.setNetwork(network);
 	}
 
@@ -66,14 +69,11 @@ public class PCoA extends AbstractNetworkClusterer{
 		PCoAContext.NegEigenHandling neg = context.neg.getSelectedValue();
 
 		//Cluster the nodes
-		runpcoa = new RunPCoA(matrix,context.scale, neg.getValue(),monitor);
+		runpcoa = new RunPCoA(matrix,network,networkView,context,context.scale, neg.getValue(),monitor);
 		runpcoa.run();
 		runpcoa.setDebug(false);
 
 		if (canceled) return;
-
-		monitor.showMessage(TaskMonitor.Level.INFO,"Clustering...");
-
 
 		monitor.showMessage(TaskMonitor.Level.INFO, 
 		                    "PCoA results:\n"+results);

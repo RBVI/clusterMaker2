@@ -42,6 +42,7 @@ public class PCoAContext {
 
 	@ContainsTunables
 	public EdgeAttributeHandler edgeAttributeHandler;
+	
 
 	@Tunable (description="Scale eigenvectors?", groups={"PCoA Advanced Options"})
 	public boolean scale = true;
@@ -52,7 +53,10 @@ public class PCoAContext {
 
 	@ContainsTunables
 	public NetworkVizProperties vizProperties = new NetworkVizProperties();
-
+	
+	@Tunable(description = "Create Result Panel with Principal Coordinate selection option", 
+	         groups={"Result Options"}, gravity=600.0)
+	public boolean pcoaResultPanel = false;
 
 	public PCoAContext(){
 		
