@@ -69,7 +69,7 @@ public class PCoA extends AbstractNetworkClusterer{
 		PCoAContext.NegEigenHandling neg = context.neg.getSelectedValue();
 
 		//Cluster the nodes
-		runpcoa = new RunPCoA(matrix,network,networkView,context,context.scale, neg.getValue(),monitor);
+		runpcoa = new RunPCoA(matrix,network,networkView,context, neg.getValue(),monitor);
 		runpcoa.run();
 		runpcoa.setDebug(false);
 

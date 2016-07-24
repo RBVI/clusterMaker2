@@ -44,9 +44,6 @@ public class PCoAContext {
 	public EdgeAttributeHandler edgeAttributeHandler;
 	
 
-	@Tunable (description="Scale eigenvectors?", groups={"PCoA Advanced Options"})
-	public boolean scale = true;
-
 	@Tunable (description="Negative eigenvalue handling", groups={"PCoA Advanced Options"})
 	public ListSingleSelection<NegEigenHandling> neg = 
 		new ListSingleSelection<NegEigenHandling>(NegEigenHandling.DISCARD, NegEigenHandling.KEEP, NegEigenHandling.CORRECT);

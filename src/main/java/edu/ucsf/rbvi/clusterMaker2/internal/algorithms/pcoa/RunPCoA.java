@@ -38,21 +38,18 @@ public class RunPCoA {
 	private TaskMonitor monitor;
 	private PCoAContext context;
 	private CyMatrix distanceMatrix = null;
-	private CyMatrix matrix = null;
 	private CyNetwork network;
 	private CyNetworkView networkView; 
 	private List<CyNode> nodes = null;
 	private boolean debug = true;
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
-	private boolean scale;
 	private int neg;
 	
-	public RunPCoA(CyMatrix dMat,CyNetwork network, CyNetworkView networkView ,PCoAContext context,boolean scale, int neg, TaskMonitor monitor )
+	public RunPCoA(CyMatrix dMat,CyNetwork network, CyNetworkView networkView ,PCoAContext context, int neg, TaskMonitor monitor )
 	{
 			
 		this.distanceMatrix = dMat;
 		this.monitor = monitor;
-		this.scale = scale;
 		this.neg = neg;
 		this.context=context;
 		this.network=network;
@@ -73,28 +70,20 @@ public class RunPCoA {
 		
 		System.out.println("Checking CyMatrix symmetrical "+distanceMatrix.isSymmetrical());
 
-		// TODO: make scale and neg tunables in PCoAContext
-
-		 
-                
-
-		CalculationMatrix calc=new CalculationMatrix(distanceMatrix, 0, scale, neg);
+		CalculationMatrix calc=new CalculationMatrix(distanceMatrix, 0, neg);
 		System.out.println("Added data to the matrix ");
 		double eigenValues[]=calc.eigenAnalysis();
 		System.out.println("Completed Eigen Analysis");
 		double variance[]=calc.computeVariance(eigenValues);
 		System.out.println("Completed Variance Calculation");
+		if(neg==2){//corect negative eigen values
+			calc.correctEigenValues();
+		}
 		CyMatrix components[]=calc.getCooridinates(distanceMatrix);
 		System.out.println("Completed Coordinates Calculation");
 		if(context.pcoaResultPanel)
-			ResultPanelPCA.createAndShowGui(components, network, networkView, 
-			                                matrix.getRowNodes(), variance);
-		//System.out.println("Completed Variance Explained");
-		//calc.negativeEigenAnalysis();
-		//System.out.println("Completed Negative Eigen Analysis");
-		//calc.scaleEigenVectors();
-		//System.out.println("Completed Scale Eigen Vetors");
-
+			ResultPanelPCoA.createAndShowGui(components, network, networkView, 
+			                                distanceMatrix.getRowNodes(), variance);		
 	}
 
 	private void debugln(String message) {

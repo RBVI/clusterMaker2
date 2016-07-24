@@ -44,9 +44,8 @@ public class CalculationMatrix  {
 	private static double EPSILON=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
 
 	
-	public CalculationMatrix(CyMatrix matrix, int diag, boolean scale, int neg){
+	public CalculationMatrix(CyMatrix matrix, int diag, int neg){
 		this.diag = diag;
-		this.scale = scale;
 		this.neg = neg;
 		this.distancematrix=matrix;
 	}
@@ -327,16 +326,17 @@ distancematrix.writeMatrix("distancematrix.txt");
 
 		for(int j=eigen_values.length-1, k=0;j>=0;j--,k++){
 			// double[] w = new double[vectors.length];
-			CyMatrix result = CyMatrixFactory.makeLargeMatrix(matrix.getNetwork(), eigen_values.length,eigen_values.length);
+			CyMatrix result = CyMatrixFactory.makeLargeMatrix(matrix.getNetwork(), eigen_values.length,1);
 			for(int i=0;i<eigen_vectors.length;i++){
 				result.setValue(i,0,eigen_vectors[i][j]);
 			}
 			// System.out.println("matrix: "+matrix.printMatrixInfo());
 			// System.out.println("vector: "+result.printMatrixInfo());
-
-			Matrix mat = matrix.multiplyMatrix(result);
+			System.out.println("Matrix rows "+matrix.nRows()+" Matrix columns "+matrix.nColumns());
+			System.out.println("Result rows "+result.nRows()+" Result columns "+result.nColumns());
+			//Matrix mat = matrix.multiplyMatrix(result);
 			// System.out.println("After vector multiply: "+mat.printMatrixInfo());
-			components[k] = matrix.copy(mat);
+			components[k] = matrix.copy(result);
 			components[k].printMatrixInfo();
 			components[k].writeMatrix("component_"+k+".txt");
 			// System.out.println("Component matrix "+k+" has "+components[k].getRowNodes().size()+" nodes");
@@ -389,6 +389,12 @@ distancematrix.writeMatrix("distancematrix.txt");
 		return uppertrimatrix;
 	}
 	
+	public void correctEigenValues(){
+		for (int i=0;i<eigen_values.length;i++) {
+			eigen_values[i]=Math.abs(eigen_values[i]);
+		}
+	}
+		
 	//calculate variance explained
 	public static double[] computeVariance(double[] values){
 		double[] explainedVariance = new double[values.length];
@@ -487,6 +493,7 @@ distancematrix.writeMatrix("distancematrix.txt");
 		}
 		return combine_array;
 	}
+	
 	
 	//scale eigen vectors
 	public CyMatrix scaleEigenVectors(){
