@@ -8,9 +8,17 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+
+import cern.colt.matrix.tdouble.DoubleMatrix2D;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 
-public class MatrixtSNE {
+
+public class MatrixtSNE implements CyMatrix {
 	Random rnd = new Random();
 	static DecimalFormat mydecimalFormat = new DecimalFormat("00.###E0");
 	private static ForkJoinPool pool = new ForkJoinPool();
@@ -1397,6 +1405,444 @@ public class MatrixtSNE {
 			result[i] = ds[i];
 		}
 		return result;
+	}
+
+	@Override
+	public void initialize(int rows, int columns, double[][] data) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void initialize(int rows, int columns, Double[][] data) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public int nRows() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int nColumns() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public Double getValue(int row, int column) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public double doubleValue(int row, int column) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void setValue(int row, int column, double value) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setValue(int row, int column, Double value) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean hasValue(int row, int column) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public String[] getColumnLabels() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getColumnLabel(int col) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setColumnLabel(int col, String label) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setColumnLabels(List<String> labelList) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String[] getRowLabels() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getRowLabel(int row) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setRowLabel(int row, String label) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setRowLabels(List<String> labelList) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public double[][] toArray() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public double getMaxValue() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double getMinValue() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public boolean isTransposed() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setTransposed(boolean transposed) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean isSymmetrical() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setSymmetrical(boolean symmetrical) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setMissingToZero() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void adjustDiagonals() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public double[] getRank(int row) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void index() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Matrix submatrix(int[] index) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Matrix submatrix(int row, int col, int rows, int cols) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void invertMatrix() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void normalize() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void normalizeMatrix() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void normalizeRow(int row) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void normalizeColumn(int column) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void standardizeRow(int row) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void standardizeColumn(int column) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void centralizeRows() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void centralizeColumns() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public double rowSum(int row) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double columnSum(int row) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double rowVariance(int row) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double columnVariance(int row) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double rowMean(int row) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double columnMean(int column) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int cardinality() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public Matrix multiplyMatrix(Matrix matrix) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Matrix covariance() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Matrix correlation() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void threshold() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void threshold(double thresh) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public double[] eigenValues(boolean nonZero) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public double[][] eigenVectors() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String printMatrixInfo() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String printMatrix() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void writeMatrix(String filename) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public DoubleMatrix2D getColtMatrix() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CyNetwork getNetwork() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setRowNodes(CyNode[] rowNodes) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setRowNodes(List<CyNode> rowNodes) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setRowNode(int row, CyNode node) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public CyNode getRowNode(int row) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<CyNode> getRowNodes() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setColumnNodes(CyNode[] columnNodes) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setColumnNodes(List<CyNode> columnNodes) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setColumnNode(int column, CyNode node) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public CyNode getColumnNode(int column) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<CyNode> getColumnNodes() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean isAssymetricalEdge() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setAssymetricalEdge(boolean assymetricalEdge) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public CyMatrix getDistanceMatrix(DistanceMetric metric) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CyMatrix copy() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CyMatrix copy(Matrix matrix) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -90,7 +90,6 @@ public class PCoAContext {
 
 	public CyNetwork getNetwork() { return network; }
 
-
 	public void setUIHelper(TunableUIHelper helper) {
 		edgeAttributeHandler.setUIHelper(helper);
 	}

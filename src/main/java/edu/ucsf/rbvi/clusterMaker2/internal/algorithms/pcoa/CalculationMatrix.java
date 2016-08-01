@@ -200,8 +200,8 @@ distancematrix.writeMatrix("distancematrix.txt");
 			}
 			// System.out.println("matrix: "+matrix.printMatrixInfo());
 			// System.out.println("vector: "+result.printMatrixInfo());
-			System.out.println("Matrix rows "+matrix.nRows()+" Matrix columns "+matrix.nColumns());
-			System.out.println("Result rows "+result.nRows()+" Result columns "+result.nColumns());
+			System.out.println("Matrix rows "+matrix.printMatrixInfo());
+			System.out.println("Result rows "+result.printMatrixInfo());
 			//Matrix mat = matrix.multiplyMatrix(result);
 			// System.out.println("After vector multiply: "+mat.printMatrixInfo());
 			components[k] = matrix.copy(result);

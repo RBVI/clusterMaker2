@@ -16,7 +16,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 
 public class tSNE extends AbstractNetworkClusterer{
 
-	
+	RuntSNE runtsne;
 	public static String SHORTNAME = "tsne";
 	public static String NAME = "t-Distributed Stochastic Neighbor";
 	public final static String GROUP_ATTRIBUTE = "__tSNE.SUID";
@@ -43,7 +43,8 @@ public class tSNE extends AbstractNetworkClusterer{
 	public String getName() { return NAME; }
 	
 	public void run(TaskMonitor monitor) {
-		monitor.setTitle("Running Principal Coordinate Analysis");
+		monitor.setTitle("t-Distributed Stochastic Neighbour");
+		monitor.setStatusMessage("Running t-Distributed Stochastic Neighbour");
 		this.monitor = monitor;
 		if (network == null)
 			network = clusterManager.getNetwork();
@@ -58,9 +59,9 @@ public class tSNE extends AbstractNetworkClusterer{
 		}
 		
 
-		//Cluster the nodes
-	//	runpcoa = new RunPCoA(matrix,network,networkView,context, neg.getValue(),monitor);
-		//runpcoa.run();
+		
+		runtsne = new RuntSNE(network, networkView, context, monitor,matrix);
+		runtsne.run();
 		//runpcoa.setDebug(false);
 
 		

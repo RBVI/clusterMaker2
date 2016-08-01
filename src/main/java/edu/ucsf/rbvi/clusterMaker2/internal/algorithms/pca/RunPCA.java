@@ -140,12 +140,12 @@ public class RunPCA {
 
 		for(int j=eigenValues.length-1, k=0;j>=0;j--,k++){
 			// double[] w = new double[vectors.length];
-			CyMatrix result = CyMatrixFactory.makeLargeMatrix(matrix.getNetwork(), eigenValues.length, 1);
+			CyMatrix result = CyMatrixFactory.makeLargeMatrix(matrix.getNetwork(), eigenValues.length, 1);//vector
 			for(int i=0;i<eigenVectors.length;i++){
 				result.setValue(i,0,eigenVectors[i][j]);
 			}
-			// System.out.println("matrix: "+matrix.printMatrixInfo());
-			// System.out.println("vector: "+result.printMatrixInfo());
+			 System.out.println("matrix: "+matrix.printMatrixInfo());
+			 System.out.println("vector: "+result.printMatrixInfo());
 
 			Matrix mat = matrix.multiplyMatrix(result);
 			// System.out.println("After vector multiply: "+mat.printMatrixInfo());
