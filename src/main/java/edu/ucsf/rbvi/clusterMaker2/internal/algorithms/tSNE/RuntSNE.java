@@ -70,7 +70,6 @@ public class RuntSNE {
 		no_of_iterations=context.num_of_iterations;
 		initial_dimensions=context.int_dims;
 		perplexity=context.perplixity;
-		mode=context.mode.getSelectedValue();
 		
 	TSneInterface tsne=new tSNECalculation();
 	

@@ -16,9 +16,6 @@ CyNetwork network;
 @ContainsTunables
 public EdgeAttributeHandler edgeAttributeHandler;
 	
-@Tunable(description="Mode", groups={"t-SNE Advanced Settings"}, gravity=65)
-public ListSingleSelection<String>mode = new ListSingleSelection<String>("Simple tSNE", "Fast tSNE");
-	
 @Tunable(description="Initial Dimensions", groups={"t-SNE Advanced Settings"}, gravity=66)
 public int int_dims;
 

@@ -29,7 +29,7 @@ public class tSNETaskFactory extends AbstractClusterTaskFactory{
 	}
 
 	public List<ClusterTaskFactory.ClusterType> getTypeList() { 
-		return Collections.singletonList(ClusterTaskFactory.ClusterType.tSNE); 
+		return Collections.singletonList(ClusterTaskFactory.ClusterType.PCA); 
 	}
 
 	public TaskIterator createTaskIterator() {
