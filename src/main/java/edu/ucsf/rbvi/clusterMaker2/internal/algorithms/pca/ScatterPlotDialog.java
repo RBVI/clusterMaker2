@@ -40,6 +40,7 @@ import org.cytoscape.model.CyNode;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
 
 /**
  *
@@ -79,15 +80,26 @@ public class ScatterPlotDialog extends JDialog {
 	// For inner classes
 	private final ScatterPlotDialog thisDialog;
 
+	private boolean useLoadings;
+
 	public ScatterPlotDialog(CyMatrix[] components, Matrix loading, double[] varianceArray) {
 		super();
 		setTitle("PCA ScatterPlot");
 
 		this.scores = components;
-		this.loadings = loading;
-		this.variances = varianceArray;
 		loadingsColorMap = new HashMap<String, Color>();
-		initializeColors();
+		if (loading != null) {
+			this.loadings = loading;
+			useLoadings = true;
+			initializeColors();
+		} else {
+			useLoadings = false;
+			this.loadings = CyMatrixFactory.makeSmallMatrix(components[0].getNetwork(), 1, components.length);
+			for (int col=0; col < components.length; col++) {
+				loadings.setColumnLabel(col, "PC "+(col+1));
+			}
+		}
+		this.variances = varianceArray;
 
 		thisDialog = this;
 
@@ -118,13 +130,14 @@ public class ScatterPlotDialog extends JDialog {
 		// collapsiblePaneLegend = new JXCollapsiblePane();
 		buttonPlot = new JButton("Plot");
 		buttonOptions = new JButton("Advanced");
-		buttonLegend = new JButton("Arrow Legend");
+		if (loadings != null)
+			buttonLegend = new JButton("Arrow Legend");
 
 		container.setLayout(new GridBagLayout());
 		container.removeAll();
 
 		ScatterPlotPCA scatterPlot = 
-		 				new ScatterPlotPCA(scores, loadings, 0, 1, pointColor, 6, loadingsColorMap);
+		 				new ScatterPlotPCA(scores, loadings, 0, 1, pointColor, 6, loadingsColorMap, useLoadings);
 
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.anchor = GridBagConstraints.NORTHWEST;
@@ -138,13 +151,15 @@ public class ScatterPlotDialog extends JDialog {
 
 		container.add(scatterPlot, constraints);
 
-		constraints.gridx = 1;
-		constraints.weightx = 0;
-		constraints.weighty = 0;
-		constraints.fill = GridBagConstraints.NONE;
-		constraints.anchor = GridBagConstraints.NORTHEAST;
-		legendPanel = createLegendPane();
-		container.add(legendPanel, constraints);
+		if (useLoadings) {
+			constraints.gridx = 1;
+			constraints.weightx = 0;
+			constraints.weighty = 0;
+			constraints.fill = GridBagConstraints.NONE;
+			constraints.anchor = GridBagConstraints.NORTHEAST;
+			legendPanel = createLegendPane();
+			container.add(legendPanel, constraints);
+		}
 
 		constraints.gridx = 0;
 		constraints.gridy = 1;
@@ -152,6 +167,7 @@ public class ScatterPlotDialog extends JDialog {
 		constraints.anchor = GridBagConstraints.SOUTHWEST;
 		constraints.fill = GridBagConstraints.HORIZONTAL;
 		container.add(createControlJPanel(scores, loadings), constraints);
+
 		container.setBorder(BorderFactory.createEtchedBorder());
 
 	}
@@ -285,17 +301,20 @@ public class ScatterPlotDialog extends JDialog {
 			buttonOptions.addActionListener(collapsiblePaneOptions.getActionMap().get("toggle"));
 		}
 
-		if(buttonLegend.getActionListeners().length == 0){
-			buttonLegend.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					toggleLegendPane();
-				}
-			});
+		if (useLoadings) {
+			if(buttonLegend.getActionListeners().length == 0){
+				buttonLegend.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						toggleLegendPane();
+					}
+				});
+			}
 		}
 		panelButtons.setLayout(new BoxLayout(panelButtons, BoxLayout.X_AXIS));
 		panelButtons.add(buttonOptions);
 		panelButtons.add(buttonPlot);
-		panelButtons.add(buttonLegend);
+		if (useLoadings)
+			panelButtons.add(buttonLegend);
 
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.anchor = GridBagConstraints.WEST;
@@ -375,7 +394,8 @@ public class ScatterPlotDialog extends JDialog {
 		ScatterPlotPCA scatterPlot = new ScatterPlotPCA(scores, loadings, 
 		                                                comboXAxis.getSelectedIndex(), 
 																		                comboYAxis.getSelectedIndex(),
-																										pointColor, pointSize, loadingsColorMap);
+																										pointColor, pointSize, loadingsColorMap,
+																										useLoadings);
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.anchor = GridBagConstraints.NORTHWEST;
 		constraints.insets = new Insets(5, 5, 5, 5);

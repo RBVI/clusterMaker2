@@ -75,11 +75,14 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	private boolean dragging = false;
 	private boolean shift = false;
 
+	private boolean useLoadings;
+
 	public ScatterPlotPCA(CyMatrix[] scores, Matrix loadings, 
 	                      int x, int y, Color pointColor, int pointWidth,
-				                Map<String, Color> colorMap) {
+				                Map<String, Color> colorMap, boolean useLoadings) {
 		this.scores = scores;
 		this.loadings = loadings;
+		this.useLoadings = useLoadings;
 		this.xIndex = x;
 		this.yIndex = y;
 		this.pointColor = pointColor;
@@ -309,17 +312,19 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 			}
 		}
 
-		// Draw loadings
-		for (int row = 0; row < loadings.nRows(); row++) {
-			int x1 = newX;
-			int y1 = newY;
-			int x2 = (int) (loadings.getValue(row, xIndex) * xScale * MAX_SCORE + newX);
-			int y2 = (int) (-1 * (loadings.getValue(row, yIndex) * yScale * MAX_SCORE - newY));
-			String label = loadings.getRowLabel(row);
-			if (colorMap.containsKey(label))
-				drawArrow(g2, x1, y1, x2, y2, colorMap.get(label));
-			else
-				drawArrow(g2, x1, y1, x2, y2, Color.RED);
+		if (useLoadings) {
+			// Draw loadings
+			for (int row = 0; row < loadings.nRows(); row++) {
+				int x1 = newX;
+				int y1 = newY;
+				int x2 = (int) (loadings.getValue(row, xIndex) * xScale * MAX_SCORE + newX);
+				int y2 = (int) (-1 * (loadings.getValue(row, yIndex) * yScale * MAX_SCORE - newY));
+				String label = loadings.getRowLabel(row);
+				if (colorMap.containsKey(label))
+					drawArrow(g2, x1, y1, x2, y2, colorMap.get(label));
+				else
+					drawArrow(g2, x1, y1, x2, y2, Color.RED);
+			}
 		}
 
 		// Finally, draw our selection rectangle if we're supposed to
