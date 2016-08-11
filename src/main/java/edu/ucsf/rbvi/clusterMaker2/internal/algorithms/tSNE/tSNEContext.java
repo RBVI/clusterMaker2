@@ -5,7 +5,10 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.TunableUIHelper;
 import org.cytoscape.work.util.ListSingleSelection;
+
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeList;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 
 public class tSNEContext {
 
@@ -15,6 +18,13 @@ CyNetwork network;
 
 @ContainsTunables
 public EdgeAttributeHandler edgeAttributeHandler;
+
+@Tunable(description="Distance Metric", gravity=10)
+public ListSingleSelection<DistanceMetric> metric = 
+	new ListSingleSelection<DistanceMetric>(DistanceMetric.values());
+
+@ContainsTunables
+public AttributeList attributeList = null;
 	
 @Tunable(description="Initial Dimensions", groups={"t-SNE Advanced Settings"}, gravity=66)
 public int int_dims;
@@ -27,7 +37,7 @@ public int num_of_iterations;
 
 
 public tSNEContext(){
-	
+	metric.setSelectedValue(DistanceMetric.EUCLIDEAN);
 }
 
 public tSNEContext(tSNEContext origin) {

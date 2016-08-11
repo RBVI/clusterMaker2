@@ -1,7 +1,8 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.MatrixtSNE;
-
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.MatrixtSNE.abs;
 import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.MatrixtSNE.addColumnVector;
@@ -37,15 +38,16 @@ public class tSNECalculation implements TSneInterface{
 
 	MatrixtSNE mo = new MatrixtSNE();
 
-	public double [][] tsne(double[][] X, int k, int initial_dims, double perplexity) {
+	public Matrix tsne(CyMatrix X, int k, int initial_dims, double perplexity) {
 		return tsne(X,k,initial_dims, perplexity, 2000, true);
 	}
 
-	public double [][] tsne(double[][] X, int k, int initial_dims, double perplexity, int maxIterations) {
+	public Matrix tsne(CyMatrix X, int k, int initial_dims, double perplexity, int maxIterations) {
 		return tsne(X,k,initial_dims, perplexity, maxIterations, true);
 	}
 
-	public double [][] tsne(double[][] X, int no_dims, int initial_dims, double perplexity, int max_iter, boolean use_pca) {
+	public Matrix tsne(CyMatrix matrix, int no_dims, int initial_dims, double perplexity, int max_iter, boolean use_pca) {
+		double X[][]=matrix.toArray();
 		String IMPLEMENTATION_NAME = this.getClass().getSimpleName();
 		System.out.println("X:Shape is = " + X.length + " x " + X[0].length);
 		System.out.println("Running " + IMPLEMENTATION_NAME + ".");
@@ -125,8 +127,9 @@ public class tSNECalculation implements TSneInterface{
 				P = scalarDivide(P , 4);
 		}
 
+		Matrix mat=MatrixtSNE.arrayToCyMatrix(Y);
 		// Return solution
-		return Y;
+		return mat;
 	}
 
 	public R Hbeta (double [][] D, double beta){

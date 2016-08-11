@@ -1384,6 +1384,16 @@ public class MatrixtSNE implements CyMatrix {
 		}
 		return xs;
 	}
+	
+	public static Matrix arrayToCyMatrix(double[][] array){
+		Matrix matrix=new ColtMatrix(array.length, array[0].length);
+		
+		for (int row = 0; row < array.length; row++) {
+			for (int col = 0; col < array[0].length; col++) {
+			matrix.setValue(row, col, array[row][col]);
+			}}
+		return matrix;
+	}
 
 	public static double[][] addIntercept(double[][] xs) {
 		double [][] result = new double [xs.length][xs[0].length+1];

@@ -180,10 +180,10 @@ distancematrix.writeMatrix("distancematrix.txt");
 
 		
 		//double tolerance=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
-		System.out.println("Eigenvalues: ");
+		/*System.out.println("Eigenvalues: ");
 		for (double d: eigen_values) {
 			System.out.println("  "+d);
-		}
+		}*/
 
 		
 		return eigen_values;
@@ -202,7 +202,7 @@ distancematrix.writeMatrix("distancematrix.txt");
 			// System.out.println("vector: "+result.printMatrixInfo());
 			System.out.println("Matrix rows "+matrix.printMatrixInfo());
 			System.out.println("Result rows "+result.printMatrixInfo());
-			//Matrix mat = matrix.multiplyMatrix(result);
+			Matrix mat = matrix.multiplyMatrix(result);
 			// System.out.println("After vector multiply: "+mat.printMatrixInfo());
 			components[k] = matrix.copy(result);
 			components[k].printMatrixInfo();

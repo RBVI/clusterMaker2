@@ -1,5 +1,6 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa;
 
+import java.awt.Color;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,10 +12,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import javax.swing.JFrame;
+
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
+import org.math.plot.FrameView;
+import org.math.plot.Plot2DPanel;
+import org.math.plot.plots.ScatterPlot;
 import org.netlib.util.doubleW;
 
 import cern.colt.function.tdouble.IntIntDoubleFunction;
@@ -68,7 +74,7 @@ public class RunPCoA {
 		// double data[][]=matrix.toArray();
 		System.out.println("Length "+ distanceMatrix.nRows());
 		
-		System.out.println("Checking CyMatrix symmetrical "+distanceMatrix.isSymmetrical());
+		//System.out.println("Checking CyMatrix symmetrical "+distanceMatrix.isSymmetrical());
 
 		CalculationMatrix calc=new CalculationMatrix(distanceMatrix, 0, neg);
 		System.out.println("Added data to the matrix ");
@@ -81,9 +87,11 @@ public class RunPCoA {
 		}
 		CyMatrix components[]=calc.getCooridinates(distanceMatrix);
 		System.out.println("Completed Coordinates Calculation");
-		if(context.pcoaResultPanel)
-			ResultPanelPCoA.createAndShowGui(components, network, networkView, 
-			                                distanceMatrix.getRowNodes(), variance);		
+		if(context.pcoaResultPanel){
+			
+		}
+			
+			/*ResultPanelPCoA.createAndShowGui(components, network, networkView, distanceMatrix.getRowNodes(), variance);*/		
 	}
 
 	private void debugln(String message) {

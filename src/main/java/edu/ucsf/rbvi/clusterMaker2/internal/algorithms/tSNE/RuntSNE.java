@@ -73,16 +73,16 @@ public class RuntSNE {
 		
 	TSneInterface tsne=new tSNECalculation();
 	
-	double Y[][]=tsne.tsne(edgematrix.toArray(), 2, initial_dimensions, perplexity, no_of_iterations, true);
+	Matrix Y=tsne.tsne(edgematrix, 2, initial_dimensions, perplexity, no_of_iterations, true);
 	 Plot2DPanel plot = new Plot2DPanel();
      
-	 ScatterPlot setosaPlot = new ScatterPlot("setosa", Color.BLUE, Y);
+	 ScatterPlot setosaPlot = new ScatterPlot("setosa", Color.BLUE, Y.toArray());
      plot.plotCanvas.setNotable(true);
      plot.plotCanvas.setNoteCoords(true);
      plot.plotCanvas.addPlot(setosaPlot);
              
      FrameView plotframe = new FrameView(plot);
-     plotframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+     plotframe.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
      plotframe.setVisible(true);
 		
 	}
