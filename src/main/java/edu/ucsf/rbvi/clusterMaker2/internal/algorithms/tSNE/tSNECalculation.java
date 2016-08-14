@@ -3,6 +3,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.MatrixtSNE;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
+import edu.ufl.cise.colamd.tdouble.Colamd_Col;
 
 import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.MatrixtSNE.abs;
 import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.MatrixtSNE.addColumnVector;
@@ -34,6 +35,8 @@ import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.MatrixtSNE.
 import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.MatrixtSNE.sum;
 import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.MatrixtSNE.tile;
 import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.MatrixtSNE.times;
+
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.ColtMatrix;
 public class tSNECalculation implements TSneInterface{
 
 	MatrixtSNE mo = new MatrixtSNE();
@@ -46,56 +49,52 @@ public class tSNECalculation implements TSneInterface{
 		return tsne(X,k,initial_dims, perplexity, maxIterations, true);
 	}
 
-	public Matrix tsne(CyMatrix matrix, int no_dims, int initial_dims, double perplexity, int max_iter, boolean use_pca) {
-		double X[][]=matrix.toArray();
+	public Matrix tsne(Matrix matrix, int no_dims, int initial_dims, double perplexity, int max_iter, boolean use_pca) {
+		//double X[][]=matrix.toArray();
 		String IMPLEMENTATION_NAME = this.getClass().getSimpleName();
-		System.out.println("X:Shape is = " + X.length + " x " + X[0].length);
+		System.out.println("X:Shape is = " + matrix.nRows() + " x " + matrix.nColumns());
 		System.out.println("Running " + IMPLEMENTATION_NAME + ".");
-		
-		if(use_pca && X[0].length > initial_dims && initial_dims > 0) {
+		if(use_pca && matrix.nColumns() > initial_dims && initial_dims > 0) {
+			System.out.println("Using pca");
 			PrincipalComponentAnalysis pca = new PrincipalComponentAnalysis();
-			X = pca.pca(X, initial_dims);
-			System.out.println("X:Shape after PCA is = " + X.length + " x " + X[0].length);
+			double trmpmatrix[][] = pca.pca(matrix.toArray(), initial_dims);
+			matrix=MatrixtSNE.arrayToCyMatrix(trmpmatrix);
+			System.out.println("X:Shape after PCA is = " + matrix.nRows() + " x " + matrix.nColumns());
 		}
 		
-		int n = X.length;
+		int n = matrix.nRows();
 		double momentum = .5;
 		double initial_momentum = 0.5;
 		double final_momentum   = 0.8;
 		int eta                 = 500;
 		double min_gain         = 0.01;
-		double [][] Y           = rnorm(n,no_dims);
-		double [][] dY          = fillMatrix(n,no_dims,0.0);
-		double [][] iY          = fillMatrix(n,no_dims,0.0);
-		double [][] gains       = fillMatrix(n,no_dims,1.0);
+		Matrix Y           = rnorm(n,no_dims);//double [][] Y           = rnorm(n,no_dims);
+		Matrix dY          = fillMatrix(n,no_dims, 0.0);		//double [][] dY          = fillMatrix(n,no_dims,0.0);
+		Matrix iY          = fillMatrix(n,no_dims,0.0);
+		Matrix gains       = fillMatrix(n,no_dims,1.0);
 		
 		
 		// Compute P-values
-		double [][] P = x2p(X, 1e-5, perplexity).P;
+		Matrix P = x2p(matrix, 1e-5, perplexity).P;
 		P = plus(P , mo.transpose(P));
 		P = scalarDivide(P,sum(P));
 		P = scalarMult(P , 4);					// early exaggeration
 		P = maximum(P, 1e-12);
 
-		System.out.println("Y:Shape is = " + Y.length + " x " + Y[0].length);
+		System.out.println("Y:Shape is = " + Y.nRows() + " x " + Y.nColumns());
 		
 		// Run iterations
 		for (int iter = 0; iter < max_iter; iter++) {
 			// Compute pairwise affinities
-			double [][] sum_Y = mo.transpose(sum(square(Y), 1));
-			double [][] num = scalarInverse(scalarPlus(addRowVector(mo.transpose(addRowVector(scalarMult(
-					times(Y, mo.transpose(Y)),
-					-2),
-					sum_Y)),
-					sum_Y),
-					1));
+			Matrix sum_Y = mo.transpose(sum(square(Y), 1));
+			Matrix num = scalarInverse(scalarPlus(addRowVector(mo.transpose(addRowVector(scalarMult(times(Y, mo.transpose(Y)),-2),sum_Y)),sum_Y),1));
 			assignAtIndex(num, range(n), range(n), 0);
-			double [][] Q = scalarDivide(num , sum(num));
+			Matrix Q = scalarDivide(num , sum(num));
 
 			Q = maximum(Q, 1e-12);
 
 			// Compute gradient
-			double[][] L = mo.scalarMultiply(mo.minus(P , Q), num);
+			Matrix L = mo.scalarMultiply(mo.minus(P , Q), num);
 		    dY = scalarMult(times(mo.minus(diag(sum(L, 1)),L) , Y), 4);
 			
 			// Perform the update
@@ -114,7 +113,7 @@ public class tSNECalculation implements TSneInterface{
 
 			// Compute current value of cost function
 			if ((iter % 100 == 0))   {
-				double [][] logdivide = log(scalarDivide(P , Q));
+				Matrix logdivide = log(scalarDivide(P , Q));
 				logdivide = replaceNaN(logdivide,0);
 				double C = sum(mo.scalarMultiply(P , logdivide));
 				System.out.println("Iteration " + (iter + 1) + ": error is " + C);
@@ -127,13 +126,13 @@ public class tSNECalculation implements TSneInterface{
 				P = scalarDivide(P , 4);
 		}
 
-		Matrix mat=MatrixtSNE.arrayToCyMatrix(Y);
+		//Matrix mat=MatrixtSNE.arrayToCyMatrix(Y);
 		// Return solution
-		return mat;
+		return Y;
 	}
 
-	public R Hbeta (double [][] D, double beta){
-		double [][] P = exp(scalarMult(scalarMult(D,beta),-1));
+	public R Hbeta (Matrix D, double beta){
+		Matrix P = exp(scalarMult(scalarMult(D,beta),-1));
 		double sumP = sum(P);   // sumP confirmed scalar
 		double H = Math.log(sumP) + beta * sum(mo.scalarMultiply(D,P)) / sumP;
 		P = scalarDivide(P,sumP);
@@ -143,15 +142,15 @@ public class tSNECalculation implements TSneInterface{
 		return r;
 	}
 
-	public R x2p(double [][] X,double tol, double perplexity){
-		int n               = X.length;
-		double [][] sum_X   = sum(square(X), 1);
-		double [][] times   = scalarMult(times(X, mo.transpose(X)), -2);
-		double [][] prodSum = addColumnVector(mo.transpose(times), sum_X);
-		double [][] D       = addRowVector(prodSum, mo.transpose(sum_X));
+	public R x2p(Matrix X,double tol, double perplexity){
+		int n               = X.nRows();
+		Matrix sum_X   = sum(square(X), 1);
+		Matrix times   = scalarMult(times(X, mo.transpose(X)), -2);
+		Matrix prodSum = addColumnVector(mo.transpose(times), sum_X);
+		Matrix D       = addRowVector(prodSum, mo.transpose(sum_X));
 		// D seems correct at this point compared to Python version
-		double [][] P       = fillMatrix(n,n,0.0);
-		double [] beta      = fillMatrix(n,n,1.0)[0];
+		Matrix P       = fillMatrix(n,n,0.0);
+		double beta[]      = fillMatrix(n,n,1.0).toArray()[0];
 		double logU         = Math.log(perplexity);
 		System.out.println("Starting x2p...");
 		for (int i = 0; i < n; i++) {
@@ -159,11 +158,13 @@ public class tSNECalculation implements TSneInterface{
 				System.out.println("Computing P-values for point " + i + " of " + n + "...");
 			double betamin = Double.NEGATIVE_INFINITY;
 			double betamax = Double.POSITIVE_INFINITY;
-			double [][] Di = getValuesFromRow(D, i,concatenate(range(0,i),range(i+1,n)));
+			Matrix Di = getValuesFromRow(D, i,concatenate(range(0,i),range(i+1,n)));
 
+			//R hbeta = Hbeta(Di, beta[i]);
+			//double tempbeta[][]=beta.toArray();
 			R hbeta = Hbeta(Di, beta[i]);
 			double H = hbeta.H;
-			double [][] thisP = hbeta.P;
+			Matrix thisP = hbeta.P;
 
 			// Evaluate whether the perplexity is within tolerance
 			double Hdiff = H - logU;
@@ -189,7 +190,7 @@ public class tSNECalculation implements TSneInterface{
 				Hdiff = H - logU;
 				tries = tries + 1;
 			}
-			assignValuesToRow(P, i,concatenate(range(0,i),range(i+1,n)),thisP[0]);
+			assignValuesToRow(P, i,concatenate(range(0,i),range(i+1,n)),thisP.toArray()[0]);
 		}
 
 		R r = new R();

@@ -86,6 +86,7 @@ public class RunPCA {
 		if(context.pcaPlot) {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
+					System.out.println("Scatter plot dialog call");
 					ScatterPlotDialog dialog = new ScatterPlotDialog(components, loadingMatrix, variance);
 				}
 			});

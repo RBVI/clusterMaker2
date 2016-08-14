@@ -54,6 +54,11 @@ public class PCoAContext {
 	@Tunable(description = "Create Result Panel with Principal Coordinate selection option", 
 	         groups={"Result Options"}, gravity=600.0)
 	public boolean pcoaResultPanel = false;
+	
+	@Tunable(description = "Create PCoA scatter plot with node selection option", 
+	         groups={"Result Options"}, gravity=84.0)
+	public boolean pcoaPlot = false;
+
 
 	public PCoAContext(){
 		
