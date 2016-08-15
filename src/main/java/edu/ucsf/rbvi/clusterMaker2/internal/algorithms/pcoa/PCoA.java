@@ -78,12 +78,6 @@ public class PCoA extends AbstractNetworkClusterer{
 		monitor.showMessage(TaskMonitor.Level.INFO, 
 		                    "PCoA results:\n"+results);
 
-		if (context.vizProperties.showUI) {
-			monitor.showMessage(TaskMonitor.Level.INFO, 
-		                      "Creating network");
-			insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true,
-			                                               context.vizProperties.restoreEdges));
-		}
 	}
 
 	public void cancel() {

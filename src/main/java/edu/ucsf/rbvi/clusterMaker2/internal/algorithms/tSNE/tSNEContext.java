@@ -35,6 +35,10 @@ public double perplixity;
 @Tunable(description="Number of Iterations", groups={"t-SNE Advanced Settings"}, gravity=68)
 public int num_of_iterations;
 
+@Tunable(description = "Create t-SNE scatter plot", 
+groups={"Result Options"}, gravity=84.0)
+public boolean tsnePlot = false;
+
 
 public tSNEContext(){
 	metric.setSelectedValue(DistanceMetric.EUCLIDEAN);

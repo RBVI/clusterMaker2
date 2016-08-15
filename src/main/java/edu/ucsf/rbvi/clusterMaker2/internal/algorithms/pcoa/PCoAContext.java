@@ -48,13 +48,13 @@ public class PCoAContext {
 	public ListSingleSelection<NegEigenHandling> neg = 
 		new ListSingleSelection<NegEigenHandling>(NegEigenHandling.DISCARD, NegEigenHandling.KEEP, NegEigenHandling.CORRECT);
 
-	@ContainsTunables
-	public NetworkVizProperties vizProperties = new NetworkVizProperties();
-	
 	@Tunable(description = "Create Result Panel with Principal Coordinate selection option", 
 	         groups={"Result Options"}, gravity=600.0)
 	public boolean pcoaResultPanel = false;
 
+	@Tunable(description = "Create PCoA scatter plot with node selection option", 
+	         groups={"Result Options"}, gravity=84.0)
+	public boolean pcoaPlot = false;
 	public PCoAContext(){
 		
 	}

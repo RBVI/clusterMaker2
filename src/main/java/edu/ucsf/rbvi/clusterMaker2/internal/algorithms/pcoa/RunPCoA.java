@@ -13,6 +13,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -31,6 +32,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ComputationMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ResultPanelPCA;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ScatterPlotDialog;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
@@ -88,22 +90,16 @@ public class RunPCoA {
 		CyMatrix components[]=calc.getCooridinates(distanceMatrix);
 		System.out.println("Completed Coordinates Calculation");
 		if(context.pcoaResultPanel){
-			
+			ResultPanelPCoA.createAndShowGui(components, network, networkView, distanceMatrix.getRowNodes(), variance);
 		}
-			
-			/*ResultPanelPCoA.createAndShowGui(components, network, networkView, distanceMatrix.getRowNodes(), variance);*/		
-	}
-
-	private void debugln(String message) {
-		if (debug) System.out.println(message);
-	}
-
-	private void debugln() {
-		if (debug) System.out.println();
-	}
-
-	private void debug(String message) {
-		if (debug) System.out.print(message);
+		
+		if(context.pcoaPlot) {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					ScatterPlotDialog dialog = new ScatterPlotDialog(components, null, variance);
+				}
+			});
+		}			
 	}
 
 	
