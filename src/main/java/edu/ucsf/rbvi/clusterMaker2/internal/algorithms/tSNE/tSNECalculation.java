@@ -3,6 +3,8 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE;
 
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
+import edu.ufl.cise.colamd.tdouble.Colamd_Col;
+
 
 import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.abs;
 import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.addColumnVector;
@@ -34,6 +36,9 @@ import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMa
 import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.sum;
 import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.tile;
 import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.times;
+
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.ColtMatrix;
+
 public class tSNECalculation implements TSneInterface{
 
 	CalculationMatrix mo = new CalculationMatrix();
@@ -47,15 +52,21 @@ public class tSNECalculation implements TSneInterface{
 	}
 
 	public Matrix tsne(Matrix matrix, int no_dims, int initial_dims, double perplexity, int max_iter, boolean use_pca) {
+
 		double X[][]=matrix.toArray();
+
 		String IMPLEMENTATION_NAME = this.getClass().getSimpleName();
-		System.out.println("X:Shape is = " + X.length + " x " + X[0].length);
+		System.out.println("X:Shape is = " + matrix.nRows() + " x " + matrix.nColumns());
 		System.out.println("Running " + IMPLEMENTATION_NAME + ".");
 		if(use_pca && matrix.nColumns() > initial_dims && initial_dims > 0) {
 			System.out.println("Using pca");
 			PrincipalComponentAnalysis pca = new PrincipalComponentAnalysis();
 			double trmpmatrix[][] = pca.pca(matrix.toArray(), initial_dims);
+
 			matrix= CalculationMatrix.arrayToCyMatrix(trmpmatrix);
+
+			matrix=CalculationMatrix.arrayToCyMatrix(trmpmatrix);
+
 			System.out.println("X:Shape after PCA is = " + matrix.nRows() + " x " + matrix.nColumns());
 		}
 		
@@ -65,9 +76,9 @@ public class tSNECalculation implements TSneInterface{
 		double final_momentum   = 0.8;
 		int eta                 = 500;
 		double min_gain         = 0.01;
+
 		Matrix Y           = rnorm(n,no_dims);
-		
-		Matrix dY          = fillMatrix(n,no_dims,0.0);
+		Matrix dY          = fillMatrix(n,no_dims, 0.0);
 		Matrix iY          = fillMatrix(n,no_dims,0.0);
 		Matrix gains       = fillMatrix(n,no_dims,1.0);
 
@@ -90,6 +101,7 @@ public class tSNECalculation implements TSneInterface{
 					sum_Y)),
 					sum_Y),
 					1));
+
 			assignAtIndex(num, range(n), range(n), 0);
 			Matrix Q = scalarDivide(num , sum(num));
 
@@ -128,6 +140,7 @@ public class tSNECalculation implements TSneInterface{
 				P = scalarDivide(P , 4);
 		}
 
+		//Matrix mat=MatrixtSNE.arrayToCyMatrix(Y);
 		// Return solution
 		return Y;
 	}
@@ -149,10 +162,12 @@ public class tSNECalculation implements TSneInterface{
 		Matrix times   = scalarMult(times(X, mo.transpose(X)), -2);
 		Matrix prodSum = addColumnVector(mo.transpose(times), sum_X);
 		Matrix D       = addRowVector(prodSum, mo.transpose(sum_X));
+
 		
 		// D seems correct at this point compared to Python version
 		Matrix P       = fillMatrix(n,n,0.0);
 		double [] beta      = fillMatrix(n,n,1.0).toArray()[0];
+
 		double logU         = Math.log(perplexity);
 		System.out.println("Starting x2p...");
 		for (int i = 0; i < n; i++) {
@@ -161,6 +176,7 @@ public class tSNECalculation implements TSneInterface{
 			double betamin = Double.NEGATIVE_INFINITY;
 			double betamax = Double.POSITIVE_INFINITY;
 			Matrix Di = getValuesFromRow(D, i,concatenate(range(0,i),range(i+1,n)));
+
 
 			R hbeta = Hbeta(Di, beta[i]);
 			double H = hbeta.H;

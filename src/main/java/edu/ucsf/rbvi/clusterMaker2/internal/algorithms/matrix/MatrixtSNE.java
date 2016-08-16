@@ -196,7 +196,7 @@ public class MatrixtSNE implements CyMatrix {
 	}
 
 	
-	public static double [][] centerAndScaleGlobal(double [][] matrix) {
+	/*public static double [][] centerAndScaleGlobal(double [][] matrix) {
 		double [][] res = new double[matrix.length][matrix[0].length]; 
 		double mean = mean(matrix);
 		double std = stdev(matrix);
@@ -207,7 +207,7 @@ public class MatrixtSNE implements CyMatrix {
 		}
 		
 		return res;
-	}
+	}*/
 	
 	
 	public static double [][] centerAndScale(double [][] matrix) {
@@ -268,22 +268,24 @@ public class MatrixtSNE implements CyMatrix {
 	}
 
 	
-	public double[][] transpose(double[][] matrix) {
-		return transpose(matrix, 1000);
+	public Matrix transpose(Matrix matrix) {
+		 return transpose(matrix, 1000);
 	}
 	
 	
 	
-	public double[][] transpose(double[][] matrix, int ll) {
-		int cols = matrix[0].length;
-		int rows = matrix.length;
-		double[][] transpose = new double[cols][rows];
+	public Matrix transpose(Matrix matrix, int ll) {
+		int cols = matrix.nColumns();
+		int rows = matrix.nRows();
+		//double[][] transpose = new double[cols][rows];
+		Matrix transpose=new ColtMatrix(cols,rows);
 		if(rows < 100 ) {
 			for (int i = 0; i < cols; i++)
 				for (int j = 0; j < rows; j++)
-					transpose[i][j] = matrix[j][i];
+					transpose.setValue(i, j, matrix.getValue(j, i));
+					//transpose[i][j] = matrix[j][i];
 		} else {
-			MatrixTransposer process = new MatrixTransposer(matrix, transpose,0,rows,ll);                
+			MatrixTransposer process = new MatrixTransposer(matrix.toArray(), transpose.toArray(),0,rows,ll);                
 			pool.invoke(process);
 		}
 		return transpose;
@@ -340,11 +342,13 @@ public class MatrixtSNE implements CyMatrix {
 	}
 
 	
-	public static double [][] exp(double [][] m1) {
-		double[][] matrix = new double[m1.length][m1[0].length];
-		for (int i = 0; i < matrix.length; i++) {
-			for (int j = 0; j < matrix[0].length; j++) {
-				matrix[i][j] = Math.exp(m1[i][j]);
+	public static Matrix exp(Matrix m1) {
+		//double[][] matrix = new double[m1.length][m1[0].length];
+		Matrix matrix=new ColtMatrix(m1.nRows(),m1.nColumns());
+		for (int i = 0; i < matrix.nRows(); i++) {
+			for (int j = 0; j < matrix.nColumns(); j++) {
+				//matrix[i][j] = Math.exp(m1.getValue(i, j));
+				matrix.setValue(i, j, Math.exp(m1.getValue(i, j)));
 			}
 		}
 		return matrix;
@@ -368,11 +372,13 @@ public class MatrixtSNE implements CyMatrix {
 	}
 
 	
-	public static double [][] log(double [][] m1) {
-		double[][] matrix = new double[m1.length][m1[0].length];
-		for (int i = 0; i < matrix.length; i++) {
-			for (int j = 0; j < matrix[0].length; j++) {
-				matrix[i][j] = Math.log(m1[i][j]);
+	public static Matrix log(Matrix m1) {
+		//double[][] matrix = new double[m1.length][m1[0].length];
+		Matrix matrix=new ColtMatrix(m1.nRows(),m1.nColumns());
+		for (int i = 0; i < matrix.nRows(); i++) {
+			for (int j = 0; j < matrix.nColumns(); j++) {
+				matrix.setValue(i, j, Math.log(m1.getValue(i, j)));
+				//matrix[i][j] = Math.log(m1[i][j]);
 			}
 		}
 		return matrix;
@@ -412,11 +418,14 @@ public class MatrixtSNE implements CyMatrix {
 	}
 
 	
-	public static double [][] scalarInverse(double [][] m1) {
-		double[][] matrix = new double[m1.length][m1[0].length];
-		for (int i = 0; i < matrix.length; i++) {
-			for (int j = 0; j < matrix[0].length; j++) {
-				matrix[i][j] = 1/m1[i][j];
+	public static Matrix scalarInverse(Matrix m1) {
+		//double[][] matrix = new double[m1.length][m1[0].length];
+		Matrix matrix=new ColtMatrix(m1.nRows(),m1.nColumns());
+		//matrix.invertMatrix();
+		for (int i = 0; i < matrix.nRows(); i++) {
+			for (int j = 0; j < matrix.nColumns(); j++) {
+				//matrix[i][j] = 1/m1[i][j];
+				matrix.setValue(i, j, (1/m1.getValue(i, j)));
 			}
 		}
 		return matrix;
@@ -432,14 +441,18 @@ public class MatrixtSNE implements CyMatrix {
 	}
 
 	
-	public static double[][] rnorm(int m, int n) {
-		double[][] array = new double[m][n];
+	public static Matrix rnorm(int m, int n) {
+		//double[][] array = new double[m][n];
+		Matrix matrix=new ColtMatrix(m, n);
 		for (int i = 0; i < m; i++) {
-			for (int j = 0; j < array[i].length; j++) {				
-				array[i][j] = rnorm(0.0,1.0);
+			//for (int j = 0; j < array[i].length; j++) {				
+			for (int j = 0; j < matrix.nColumns(); j++) {
+				//array[i][j] = rnorm(0.0,1.0);
+				double value = rnorm(0.0,1.0);
+				matrix.setValue(i, j, value);
 			}
 		}
-		return array;
+		return matrix;
 	}
 	
 	public static double [] rnorm(int n, double [] mus, double [] sigmas) {
@@ -507,11 +520,11 @@ public class MatrixtSNE implements CyMatrix {
 	}
 
 	
-	public static boolean [][] biggerThan(double [][] matrix, double value) {
-		boolean [][] equals = new boolean[matrix.length][matrix[0].length];
-		for (int i = 0; i < matrix.length; i++) {
-			for (int j = 0; j < matrix[0].length; j++) {
-				equals[i][j] = Double.compare(matrix[i][j], value) == 1;
+	public static boolean [][] biggerThan(Matrix matrix, double value) {
+		boolean [][] equals = new boolean[matrix.nRows()][matrix.nColumns()];
+		for (int i = 0; i < matrix.nRows(); i++) {
+			for (int j = 0; j < matrix.nColumns(); j++) {
+				equals[i][j] = Double.compare(matrix.getValue(i, j), value) == 1;
 			}
 		}
 		return equals;
@@ -529,11 +542,13 @@ public class MatrixtSNE implements CyMatrix {
 	}
 
 	
-	public static double [][] abs(boolean [][] booleans) {
-		double [][] absolutes = new double[booleans.length][booleans[0].length];
+	public static Matrix abs(boolean [][] booleans) {
+		//double [][] absolutes = new double[booleans.length][booleans[0].length];
+		Matrix absolutes = new ColtMatrix(booleans.length,booleans[0].length);
 		for (int i = 0; i < booleans.length; i++) {
 			for (int j = 0; j < booleans[0].length; j++) {
-				absolutes[i][j] = booleans[i][j] ? 1 : 0;
+				absolutes.setValue(i, j, (booleans[i][j] ? 1 : 0));
+				//absolutes[i][j] = booleans[i][j] ? 1 : 0;
 			}
 		}
 		return absolutes;
@@ -568,40 +583,50 @@ public class MatrixtSNE implements CyMatrix {
 		return signs;
 	}
 
-	public static double mean(double [][] matrix) {
-		return mean(matrix,2)[0][0];
+	public static double mean(Matrix matrix) {
+		return mean(matrix,2).toArray()[0][0];
 	}
 	
 	
-	public static double [][] mean(double [][] matrix, int axis) {
+	public static Matrix mean(Matrix matrix, int axis) {
 	
-		double [][] result;
+		//double [][] result;
+		Matrix result;
+		double zerovalue=0;
 		if( axis == 0) {
-			result = new double[1][matrix[0].length];
-			for (int j = 0; j < matrix[0].length; j++) {
+			//result = new double[1][matrix[0].length];
+			result = new ColtMatrix(1,matrix.nColumns());
+			for (int j = 0; j < matrix.nColumns(); j++) {
 				double colsum = 0.0;
-				for (int i = 0; i < matrix.length; i++) {
-					colsum += matrix[i][j];
+				for (int i = 0; i < matrix.nRows(); i++) {
+					colsum += matrix.getValue(i, j);
 				}
-				result[0][j] = colsum / matrix.length;
+				result.setValue(0, j, (colsum/matrix.nRows()));
+				//result[0][j] = colsum / matrix.length;
 			}
 		}   else if (axis == 1) {
-			result = new double[matrix.length][1];
-			for (int i = 0; i < matrix.length; i++) {
+			//result = new double[matrix.length][1];
+			result = new ColtMatrix(matrix.nRows(),1);
+			for (int i = 0; i < matrix.nRows(); i++) {
 				double rowsum = 0.0;
-				for (int j = 0; j < matrix[0].length; j++) {
-					rowsum += matrix[i][j];
+				for (int j = 0; j < matrix.nColumns(); j++) {
+					rowsum += matrix.getValue(i, j);
 				}
-				result[i][0] = rowsum / matrix[0].length;
+				result.setValue(i, 0, (rowsum / matrix.nColumns()));
+				//result[i][0] = rowsum / matrix.nColumns();
 			}
 		}   else if (axis == 2) {
-			result = new double[1][1];
-			for (int j = 0; j < matrix[0].length; j++) {
-				for (int i = 0; i < matrix.length; i++) {
-					result[0][0] += matrix[i][j];
+			//result = new double[1][1];
+			result=new ColtMatrix(1,1);
+			for (int j = 0; j < matrix.nColumns(); j++) {
+				for (int i = 0; i < matrix.nRows(); i++) {					
+					//result[0][0] += matrix[i][j];
+					zerovalue+=matrix.getValue(i, j);
 				}
 			}
-			result[0][0] /=  (matrix[0].length *  matrix.length);
+			zerovalue/=(matrix.nColumns()*matrix.nRows());
+			result.setValue(0, 0, zerovalue);
+			//result[0][0] /=  (matrix[0].length *  matrix.length);
 		}else {
 			throw  new IllegalArgumentException("Axes other than 0,1,2 is unsupported");
 		}
@@ -609,27 +634,34 @@ public class MatrixtSNE implements CyMatrix {
 	}
 
 	
-	public static double [][] sum(double [][] matrix, int axis) {
+	public static Matrix sum(Matrix matrix, int axis) {
 		// Axis = 0 => sum columns
 		// Axis = 1 => sum rows
-		double [][] result;
+		//double [][] result;
+		Matrix result;
 		if( axis == 0) {
-			result = new double[1][matrix[0].length];
-			for (int j = 0; j < matrix[0].length; j++) {
+			//result = new double[1][matrix[0].length];
+			result = new ColtMatrix(1,matrix.nColumns());
+			for (int j = 0; j < matrix.nColumns(); j++) {
 				double rowsum = 0.0;
-				for (int i = 0; i < matrix.length; i++) {
-					rowsum += matrix[i][j];
+				for (int i = 0; i < matrix.nRows(); i++) {
+					//rowsum += matrix[i][j];
+					rowsum += matrix.getValue(i, j);
 				}
-				result[0][j] = rowsum;
+				//result[0][j] = rowsum;
+				result.setValue(0, j, rowsum);
 			}
 		}   else if (axis == 1) {
-			result = new double[matrix.length][1];
-			for (int i = 0; i < matrix.length; i++) {
+			//result = new double[matrix.length][1];
+			result=new ColtMatrix(matrix.nRows(), 1);
+			for (int i = 0; i < matrix.nRows(); i++) {
 				double colsum = 0.0;
-				for (int j = 0; j < matrix[0].length; j++) {
-					colsum += matrix[i][j];
+				for (int j = 0; j < matrix.nColumns(); j++) {
+					//colsum += matrix[i][j];
+					colsum += matrix.getValue(i, j);
 				}
-				result[i][0] = colsum;
+				//result[i][0] = colsum;
+				result.setValue(i, 0, colsum);
 			}
 		}   else {
 			throw  new IllegalArgumentException("Axes other than 0,1 is unsupported");
@@ -710,11 +742,11 @@ public class MatrixtSNE implements CyMatrix {
 
 
 	
-	public static double sum(double [][] matrix) {
+	public static double sum(Matrix matrix) {
 		double sum = 0.0;
-		for (int i = 0; i < matrix.length; i++) {
-			for (int j = 0; j < matrix[0].length; j++) {
-				sum+=matrix[i][j];
+		for (int i = 0; i < matrix.nRows(); i++) {
+			for (int j = 0; j < matrix.nColumns(); j++) {
+				sum+=matrix.getValue(i, j);
 			}
 		}
 		return sum;
@@ -729,41 +761,47 @@ public class MatrixtSNE implements CyMatrix {
 	}
 
 	
-	public static double [][] maximum(double [][] matrix, double maxval) {
-		double [][] maxed = new double[matrix.length][matrix[0].length];
-		for (int i = 0; i < matrix.length; i++) {
-			for (int j = 0; j < matrix[0].length; j++) {
-				maxed[i][j] = matrix[i][j] > maxval ? matrix[i][j] : maxval;
+	public static Matrix maximum(Matrix matrix, double maxval) {
+		//double [][] maxed = new double[matrix.length][matrix[0].length];
+		Matrix maxed=new ColtMatrix(matrix.nRows(),matrix.nColumns());
+		for (int i = 0; i < matrix.nRows(); i++) {
+			for (int j = 0; j < matrix.nColumns(); j++) {
+				//maxed[i][j] = matrix[i][j] > maxval ? matrix[i][j] : maxval;
+				maxed.setValue(i, j, (matrix.getValue(i, j) > maxval ? matrix.getValue(i, j):maxval));
 			}
 		}
 		return maxed;
 	}
 
 	
-	public static void assignAllLessThan(double[][] matrix, double lessthan, double assign) {
-		for (int i = 0; i < matrix.length; i++) {
-			for (int j = 0; j < matrix[0].length; j++) {
-				if( matrix[i][j] < lessthan) {
-					matrix[i][j] = assign;
+	public static void assignAllLessThan(Matrix matrix, double lessthan, double assign) {
+		for (int i = 0; i < matrix.nRows(); i++) {
+			for (int j = 0; j < matrix.nColumns(); j++) {
+				if( matrix.getValue(i, j) < lessthan) {
+					matrix.setValue(i, j, assign);
+					//matrix[i][j] = assign;
 				}
 			}
 		}
 	}
 
 	
-	public static double [][] square(double [][] matrix) {
+	public static Matrix square(Matrix matrix) {
 		return scalarPow(matrix,2);
 	}
 
 	
-	public static double [][] replaceNaN(double [][] matrix, double repl) {
-		double [][] result = new double[matrix.length][matrix[0].length];
-		for (int i = 0; i < matrix.length; i++) {
-			for (int j = 0; j < matrix[0].length; j++) {
-				if(Double.isNaN(matrix[i][j])) {
-					result[i][j] = repl;
+	public static Matrix replaceNaN(Matrix matrix, double repl) {
+		//double [][] result = new double[matrix.length][matrix[0].length];
+		Matrix result=new ColtMatrix(matrix.nRows(),matrix.nColumns());
+		for (int i = 0; i < matrix.nRows(); i++) {
+			for (int j = 0; j < matrix.nColumns(); j++) {
+				if(Double.isNaN(matrix.getValue(i, j))) {
+					result.setValue(i, j, repl);
+					//result[i][j] = repl;
 				} else {
-					result[i][j] = matrix[i][j];
+					result.setValue(i, j, matrix.getValue(i, j));
+					//result[i][j] = matrix[i][j];
 				}
 			}
 		}
@@ -786,31 +824,39 @@ public class MatrixtSNE implements CyMatrix {
 	}
 
 	
-	public static double [][] scalarPow(double [][] matrix, double power) {
-		double [][] result = new double[matrix.length][matrix[0].length];
-		for (int i = 0; i < matrix.length; i++) {
-			for (int j = 0; j < matrix[0].length; j++) {
-				result[i][j] += Math.pow(matrix[i][j],power);
+	public static Matrix scalarPow(Matrix matrix, double power) {
+		//double [][] result = new double[matrix.length][matrix[0].length];
+		double value=0;
+		Matrix result=new ColtMatrix(matrix.nRows(), matrix.nColumns());
+		for (int i = 0; i < matrix.nRows(); i++) {
+			for (int j = 0; j < matrix.nColumns(); j++) {
+				//result[i][j] += Math.pow(matrix[i][j],power);
+				value+=Math.pow(matrix.getValue(i, j), power);
+				result.setValue(i, j, value);
 			}
 		}
 		return result;
 	}
 
-	public static double [][] addColumnVector(double [][] matrix, double [][] colvector) {
-		double [][] result = new double[matrix.length][matrix[0].length];
-		for (int i = 0; i < matrix.length; i++) {
-			for (int j = 0; j < matrix[0].length; j++) {
-				result[i][j] = matrix[i][j] + colvector[i][0];
+	public static Matrix addColumnVector(Matrix matrix, Matrix colvector) {
+		//double [][] result = new double[matrix.length][matrix[0].length];
+		Matrix result=new ColtMatrix(matrix.nRows(),matrix.nColumns());
+		for (int i = 0; i < matrix.nRows(); i++) {
+			for (int j = 0; j < matrix.nColumns(); j++) {
+				//result[i][j] = matrix[i][j] + colvector[i][0];
+				result.setValue(i, j, (matrix.getValue(i, j)+colvector.getValue(i, 0)));
 			}
 		}
 		return result;
 	}
 
-	public static double [][] addRowVector(double [][] matrix, double [][] rowvector) {
-		double [][] result = new double[matrix.length][matrix[0].length];
-		for (int i = 0; i < matrix.length; i++) {
-			for (int j = 0; j < matrix[0].length; j++) {
-				result[i][j] = matrix[i][j] + rowvector[0][j];
+	public static Matrix addRowVector(Matrix matrix, Matrix rowvector) {
+		//double [][] result = new double[matrix.length][matrix[0].length];
+		Matrix result=new ColtMatrix(matrix.nRows(),matrix.nColumns());
+		for (int i = 0; i < matrix.nRows(); i++) {
+			for (int j = 0; j < matrix.nColumns(); j++) {
+				//result[i][j] = matrix[i][j] + rowvector[0][j];
+				result.setValue(i, j, (matrix.getValue(i, j)+rowvector.getValue(0, j)));
 			}
 		}
 		return result;
@@ -837,13 +883,15 @@ public class MatrixtSNE implements CyMatrix {
 	}
 
 
-	public static double [][] tile(double [][] matrix, int rowtimes, int coltimes) {
-		double [][] result = new double[matrix.length*rowtimes][matrix[0].length*coltimes];
+	public static Matrix tile(Matrix matrix, int rowtimes, int coltimes) {
+		//double [][] result = new double[matrix.length*rowtimes][matrix[0].length*coltimes];
+		Matrix result=new ColtMatrix(matrix.nRows()*rowtimes,matrix.nColumns()*coltimes);
 		for (int i = 0, resultrow = 0; i < rowtimes; i++) {
-			for (int j = 0; j < matrix.length; j++) {
+			for (int j = 0; j < matrix.nRows(); j++) {
 				for (int k = 0, resultcol = 0; k < coltimes; k++) {
-					for (int l = 0; l < matrix[0].length; l++) {
-						result[resultrow][resultcol++] = matrix[j][l];
+					for (int l = 0; l < matrix.nColumns(); l++) {
+						result.setValue(resultrow, resultcol++, matrix.getValue(j, l));
+						//result[resultrow][resultcol++] = matrix[j][l];
 					}
 				}
 				resultrow++;
@@ -939,38 +987,41 @@ public class MatrixtSNE implements CyMatrix {
 		return result;
 	}
 
-	public double [][] scalarMultiply(double [][] m1,double [][] m2) {
+	public Matrix scalarMultiply(Matrix m1,Matrix m2) {
 		return parScalarMultiply(m1, m2);
 	}
 	
 	
-	public static double [][] sMultiply(double [][] v1,double [][] v2) {
-		if( v1.length != v2.length || v1[0].length != v2[0].length ) {
+	public static Matrix sMultiply(Matrix v1,Matrix v2) {
+		if( v1.nRows() != v2.nRows() || v1.nColumns() != v2.nColumns() ) {
 			throw new IllegalArgumentException("a and b has to be of equal dimensions");
 		}
-		double [][] result = new double[v1.length][v1[0].length];
-		for (int i = 0; i < v1.length; i++) {
-			for (int j = 0; j < v1[0].length; j++) {
-				result[i][j] = v1[i][j] * v2[i][j];
+		//double [][] result = new double[v1.length][v1[0].length];
+		Matrix result = new ColtMatrix(v1.nRows(),v1.nColumns());
+		for (int i = 0; i < v1.nRows(); i++) {
+			for (int j = 0; j < v1.nColumns(); j++) {
+				result.setValue(i, j, (v1.getValue(i, j)*v2.getValue(i, j)));
+				//result[i][j] = v1[i][j] * v2[i][j];
 			}
 		}
 		return result;
 	}
 	
-	public double[][] parScalarMultiply(double [][] m1,double [][] m2) {
+	public Matrix parScalarMultiply(Matrix m1,Matrix m2) {
 		int ll = 600;
-		double [][] result = new double[m1.length][m1[0].length];
-
-		MatrixOperator process = new MatrixOperator(m1,m2,result, multiplyop, 0, m1.length,ll);                
+		//double [][] result = new double[m1.length][m1[0].length];
+		Matrix result=new ColtMatrix(m1.nRows(),m1.nColumns());
+		MatrixOperator process = new MatrixOperator(m1.toArray(),m2.toArray(),result.toArray(), multiplyop, 0, m1.nRows(),ll);                
 		pool.invoke(process);
 		return result;
 	}
 
-	public double[][] parScalarMinus(double [][] m1,double [][] m2) {
+	public Matrix parScalarMinus(Matrix m1,Matrix m2) {
 		int ll = 600;
-		double [][] result = new double[m1.length][m1[0].length];
+		//double [][] result = new double[m1.length][m1[0].length];
+		Matrix result = new ColtMatrix(m1.nRows(),m1.nColumns());
 		
-		MatrixOperator process = new MatrixOperator(m1,m2,result, minusop, 0, m1.length,ll);                
+		MatrixOperator process = new MatrixOperator(m1.toArray(),m2.toArray(),result.toArray(), minusop, 0, m1.nRows(),ll);                
 		pool.invoke(process);
 		return result;
 	}
@@ -1040,30 +1091,34 @@ public class MatrixtSNE implements CyMatrix {
 	}
 
 
-	public static void assignAtIndex(double[][] num, int[] range, int[] range1, double value) {
+	public static void assignAtIndex(Matrix num, int[] range, int[] range1, double value) {
 		for (int j = 0; j < range.length; j++) {
-			num[range[j]][range1[j]] = value;
+			//num[range[j]][range1[j]] = value;
+			num.setValue(range[j], range1[j], value);
 		}
 	}
 
-	public static double [][] getValuesFromRow(double[][] matrix, int row, int[] indicies) {
-		double [][] values = new double[1][indicies.length];
+	public static Matrix getValuesFromRow(Matrix matrix, int row, int[] indicies) {
+		//double [][] values = new double[1][indicies.length];
+		Matrix values=new ColtMatrix(1,indicies.length);
 		for (int j = 0; j < indicies.length; j++) {
-			values[0][j] = matrix[row][indicies[j]];
+			//values[0][j] = matrix[row][indicies[j]];
+			values.setValue(0, j, matrix.getValue(row, indicies[j]));
 		}
 		return values;
 	}
 
-	public static void assignValuesToRow(double[][] matrix, int row, int[] indicies, double [] values) {
+	public static void assignValuesToRow(Matrix matrix, int row, int[] indicies, double [] values) {
 		if( indicies.length != values.length ) {
 			throw new IllegalArgumentException("Length of indicies and values have to be equal");
 		}
 		for (int j = 0; j < indicies.length; j++) {
-			matrix[row][indicies[j]] = values[j];
+			matrix.setValue(row, indicies[j], values[j]);
+			//matrix[row][indicies[j]] = values[j];
 		}
 	}
 
-	public static double stdev(double [][] matrix) {
+	/*public static double stdev(double [][] matrix) {
 		double m = mean(matrix);
 
         double total = 0;
@@ -1078,7 +1133,7 @@ public class MatrixtSNE implements CyMatrix {
         }
 
         return Math.sqrt(total / (N-1));	
-	}
+	}*/
 	
 	public static double[] colStddev(double[][] v) {
 		double[] var = variance(v);
@@ -1136,28 +1191,38 @@ public class MatrixtSNE implements CyMatrix {
 		return matrix;
 	}
 
-	public static double[][] fillMatrix(int rows, int cols, double fillvalue) {
-		double[][] matrix = new double[rows][cols];
-		for (int i = 0; i < matrix.length; i++)
-			for (int j = 0; j < matrix[i].length; j++)
-				matrix[i][j] = fillvalue;
+	public static Matrix fillMatrix(int rows, int cols, double fillvalue) {
+		//double[][] matrix = new double[rows][cols];
+		Matrix matrix=new ColtMatrix(rows, cols);
+		//for (int i = 0; i < matrix.length; i++)
+			for (int i = 0; i < matrix.nRows(); i++)
+			for (int j = 0; j < matrix.nColumns(); j++){
+				matrix.setValue(i, j, fillvalue);
+			}
+				//matrix[i][j] = fillvalue;
 		return matrix;
 	}
 
-	public static double[][] plus(double[][] m1, double[][] m2) {
-		double[][] matrix = new double[m1.length][m1[0].length];
-		for (int i = 0; i < m1.length; i++)
-			for (int j = 0; j < m1[0].length; j++)
-				matrix[i][j] = m1[i][j] + m2[i][j];
+	public static Matrix plus(Matrix m1, Matrix m2) {
+		Matrix matrix = new ColtMatrix(m1.nRows(),m1.nColumns());
+		int i, j = 0;
+		double value=0;
+		for ( i = 0; i < m1.nRows(); i++)
+			for ( j = 0; j < m1.nColumns(); j++){
+				 value= m1.getValue(i, j) + m2.getValue(i, j);
+					matrix.setValue(i, j, value);
+			}
 		return matrix;
 	}
 
 
-	public static double[][] scalarPlus(double[][] m1, double m2) {
-		double[][] matrix = new double[m1.length][m1[0].length];
-		for (int i = 0; i < m1.length; i++)
-			for (int j = 0; j < m1[0].length; j++)
-				matrix[i][j] = m1[i][j] + m2;
+	public static Matrix scalarPlus(Matrix m1, double m2) {
+		//double[][] matrix = new double[m1.length][m1[0].length];
+		Matrix matrix=new ColtMatrix(m1.nRows(),m1.nColumns());
+		for (int i = 0; i < m1.nRows(); i++)
+			for (int j = 0; j < m1.nColumns(); j++)
+				matrix.setValue(i, j, (m1.getValue(i, j)+m2));
+				//matrix[i][j] = m1[i][j] + m2;
 		return matrix;
 	}
 
@@ -1169,7 +1234,7 @@ public class MatrixtSNE implements CyMatrix {
 		return matrix;
 	}
 
-	public double[][] minus(double[][] m1, double[][] m2) {
+	public Matrix minus(Matrix m1, Matrix m2) {
 		return parScalarMinus(m1, m2);
 	}
 
@@ -1183,11 +1248,13 @@ public class MatrixtSNE implements CyMatrix {
 	}
 
 	
-	public static double[][] scalarDivide(double[][] numerator, double denom) {
-		double[][] matrix = new double[numerator.length][numerator[0].length];
-		for (int i = 0; i < numerator.length; i++)
-			for (int j = 0; j < numerator[i].length; j++)
-				matrix[i][j] = numerator[i][j] / denom;
+	public static Matrix scalarDivide(Matrix numerator, double denom) {
+		Matrix matrix = new ColtMatrix(numerator.nRows(),numerator.nColumns());
+		for (int i = 0; i < numerator.nRows(); i++)
+			for (int j = 0; j < numerator.nColumns(); j++)
+				matrix.setValue(i, j, (numerator.getValue(i, j)/denom));
+				//matrix[i][j] = numerator[i][j] / denom;
+				
 		return matrix;
 	}
 
@@ -1216,27 +1283,34 @@ public class MatrixtSNE implements CyMatrix {
 	}
 
 	
-	public static double[][] scalarDivide(double[][] numerator, double[][] denom) {
-		double[][] matrix = new double[numerator.length][numerator[0].length];
-		for (int i = 0; i < numerator.length; i++)
-			for (int j = 0; j < numerator[i].length; j++)
-				matrix[i][j] = numerator[i][j] / denom[i][j];
+	public static Matrix scalarDivide(Matrix numerator, Matrix denom) {
+		//double[][] matrix = new double[numerator.length][numerator[0].length];
+		Matrix matrix=new ColtMatrix(numerator.nRows(),numerator.nColumns());
+		for (int i = 0; i < numerator.nRows(); i++)
+			for (int j = 0; j < numerator.nColumns(); j++)//numerator[i].length
+				matrix.setValue(i, j, (numerator.getValue(i, j)/denom.getValue(i, j)));
+				//matrix[i][j] = numerator[i][j] / denom[i][j];
 		return matrix;
 	}
 	
 	
-	public static double[][] scalarMult(double[][] m1, double mul) {
-		double[][] matrix = new double[m1.length][m1[0].length];
-		for (int i = 0; i < m1.length; i++)
-			for (int j = 0; j < m1[i].length; j++)
-				matrix[i][j] = m1[i][j] * mul;
-		return matrix;
-	}
-	
-	
-	public static double[][] times(double[][] m1, double[][] m2) {
+	public static Matrix scalarMult(Matrix m1, double mul) {
+		//double[][] matrix = new double[m1.length][m1[0].length];
+		Matrix matrix=new ColtMatrix(m1.nRows(),m1.nColumns());
+		for (int i = 0; i < m1.nRows(); i++)
+			for (int j = 0; j < m1.nColumns(); j++)
+				matrix.setValue(i, j, matrix.getValue(i, j)*mul);
 		
-		 int m1ColLength = m1[0].length; 
+				//matrix[i][j] = m1[i][j] * mul;
+				
+		return matrix;
+	}
+	
+	
+	public static Matrix times(Matrix m1, Matrix m2) {
+		
+		return m1.multiplyMatrix(m2);
+		 /*int m1ColLength = m1[0].length; 
 	        int m2RowLength = m2.length;    
 	        if(m1ColLength != m2RowLength) return null; 
 	        int mRRowLength = m1.length;    
@@ -1249,7 +1323,7 @@ public class MatrixtSNE implements CyMatrix {
 	                }
 	            }
 	        }
-	        return mResult;
+	        return mResult;*/
 	}
 
 	public static double [] scalarMultiply(double[] m1, double mul) {
@@ -1266,17 +1340,20 @@ public class MatrixtSNE implements CyMatrix {
 		return matrix;
 	}
 
-	public static double[][] diag(double[][] ds) {
-		boolean isLong = ds.length > ds[0].length;
-		int dim = Math.max(ds.length,ds[0].length);
-		double [][] result = new double [dim][dim];
-		for (int i = 0; i < result.length; i++) {
-			for (int j = 0; j < result.length; j++) {
+	public static Matrix diag(Matrix ds) {
+		boolean isLong = ds.nRows() > ds.nColumns();
+		int dim = Math.max(ds.nRows(),ds.nColumns());
+		//double [][] result = new double [dim][dim];
+		Matrix result = new ColtMatrix(dim,dim);
+		for (int i = 0; i < result.nRows(); i++) {
+			for (int j = 0; j < result.nColumns(); j++) {
 				if(i==j) {
 					if(isLong)
-						result[i][j] = ds[i][0];
+						result.setValue(i, j, ds.getValue(i, 0));
+						//result[i][j] = ds[i][0];
 					else
-						result[i][j] = ds[0][i];
+						result.setValue(i, j, ds.getValue(0, i));
+						//result[i][j] = ds[0][i];
 				}
 			}
 		}
@@ -1856,3 +1933,4 @@ public class MatrixtSNE implements CyMatrix {
 	}
 
 }
+

@@ -1,24 +1,7 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE;
 
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.addColumnVector;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.addRowVector;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.assignValuesToRow;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.concatenate;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.exp;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.fillMatrix;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.getValuesFromRow;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.mean;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.range;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.scalarDivide;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.scalarInverse;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.scalarMult;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.sqrt;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.square;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.sum;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.times;
 
 import java.awt.Color;
-import java.util.Arrays;
 
 import javax.swing.JFrame;
 
@@ -26,17 +9,13 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ScatterPlotDialog;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.TSneInterface.R;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 import org.math.plot.FrameView;
 import org.math.plot.Plot2DPanel;
 import org.math.plot.plots.ScatterPlot;
-import org.math.plot.PlotPanel;
+
 
 public class RuntSNE {
 
@@ -52,7 +31,7 @@ public class RuntSNE {
 	protected double eigenValues[];
 	protected double eigenVectors[][];
 	
-	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
+	
 
 	
 	public RuntSNE(CyNetwork network, CyNetworkView networkView, 

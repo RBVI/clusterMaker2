@@ -194,9 +194,9 @@ distancematrix.writeMatrix("distancematrix.txt");
 
 		for(int j=eigen_values.length-1, k=0;j>=0;j--,k++){
 			// double[] w = new double[vectors.length];
-			CyMatrix result = CyMatrixFactory.makeLargeMatrix(matrix.getNetwork(), eigen_values.length,1);
+			CyMatrix result = CyMatrixFactory.makeLargeMatrix(matrix.getNetwork(), matrix.nRows(),1);
 			for(int i=0;i<eigen_vectors.length;i++){
-				result.setValue(i,0,eigen_vectors[i][j]);
+				result.setValue(i,j,eigen_vectors[i][j]);
 			}
 			// System.out.println("matrix: "+matrix.printMatrixInfo());
 			// System.out.println("vector: "+result.printMatrixInfo());

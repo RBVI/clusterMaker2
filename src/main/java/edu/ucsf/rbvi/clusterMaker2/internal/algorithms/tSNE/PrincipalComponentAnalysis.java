@@ -1,5 +1,7 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE;
 
+
+
 import org.ejml.data.DenseMatrix64F;
 import org.ejml.factory.DecompositionFactory;
 import org.ejml.interfaces.decomposition.SingularValueDecomposition;
@@ -34,6 +36,7 @@ public class PrincipalComponentAnalysis {
         numComponents = -1;
     }
 
+    
     public void addSample( double[] sampleData ) {
         if( A.getNumCols() != sampleData.length )
             throw new IllegalArgumentException("Unexpected sample size");
@@ -46,7 +49,7 @@ public class PrincipalComponentAnalysis {
         sampleIndex++;
     }
 
-    
+   
     public void computeBasis( int numComponents ) {
         if( numComponents > A.getNumCols() )
             throw new IllegalArgumentException("More components requested that the data's length.");
@@ -90,7 +93,7 @@ public class PrincipalComponentAnalysis {
         V_t.reshape(numComponents,mean.length,true);
     }
 
-   
+    
     public double[] getBasisVector( int which ) {
         if( which < 0 || which >= numComponents )
             throw new IllegalArgumentException("Invalid component");
@@ -117,7 +120,7 @@ public class PrincipalComponentAnalysis {
         return r.data;
     }
 
-    
+   
     public double[] eigenToSampleSpace( double[] eigenData ) {
         if( eigenData.length != numComponents )
             throw new IllegalArgumentException("Unexpected sample length");
@@ -134,7 +137,7 @@ public class PrincipalComponentAnalysis {
     }
 
 
-   
+    
     public double errorMembership( double[] sampleA ) {
         double[] eig = sampleToEigenSpace(sampleA);
         double[] reproj = eigenToSampleSpace(eig);

@@ -91,15 +91,20 @@ public class RunPCoA {
 		System.out.println("Completed Coordinates Calculation");
 		if(context.pcoaResultPanel){
 			ResultPanelPCoA.createAndShowGui(components, network, networkView, distanceMatrix.getRowNodes(), variance);
-		}
-		
-		if(context.pcoaPlot) {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					ScatterPlotDialog dialog = new ScatterPlotDialog(components, null, variance);
-				}
-			});
+
 		}			
+	}
+
+	private void debugln(String message) {
+		if (debug) System.out.println(message);
+	}
+
+	private void debugln() {
+		if (debug) System.out.println();
+	}
+
+	private void debug(String message) {
+		if (debug) System.out.print(message);
 	}
 
 	
