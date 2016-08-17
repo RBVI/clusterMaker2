@@ -10,6 +10,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Attri
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 
+
+
 public class tSNEContext {
 	enum GetVisulaisation {
 		NODES("Selected Nodes", 0),
@@ -66,9 +68,9 @@ public ListSingleSelection<GetVisulaisation> neg =
 	new ListSingleSelection<GetVisulaisation>(GetVisulaisation.NODES, GetVisulaisation.EDGES);
 
 
-@Tunable(description = "Create t-SNE scatter plot", 
+/*@Tunable(description = "Create t-SNE scatter plot", 
 groups={"Result Options"}, gravity=84.0)
-public boolean tsnePlot = false;
+public boolean tsnePlot = false;*/
 
 
 public tSNEContext(){

@@ -55,7 +55,7 @@ public class RuntSNE {
 	
 	Matrix Y=tsne.tsne(edgematrix, 2, initial_dimensions, perplexity, no_of_iterations, true);
 	
-	if(context.tsnePlot){
+	
 		
 		Plot2DPanel plot = new Plot2DPanel();
 	     
@@ -67,7 +67,7 @@ public class RuntSNE {
 	     FrameView plotframe = new FrameView(plot);
 	     plotframe.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 	     plotframe.setVisible(true);
-	}
+	
 
 	//ScatterPlotDialog dialog = new ScatterPlotDialog(Y, null, variance);
 		
