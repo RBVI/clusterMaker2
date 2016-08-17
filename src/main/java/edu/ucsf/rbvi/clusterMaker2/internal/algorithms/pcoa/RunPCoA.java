@@ -93,6 +93,15 @@ public class RunPCoA {
 			ResultPanelPCoA.createAndShowGui(components, network, networkView, distanceMatrix.getRowNodes(), variance);
 
 		}			
+		if(context.pcoaPlot) {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					System.out.println("Scatter plot dialog call");
+					ScatterPlotDialog dialog = new ScatterPlotDialog(components, null, variance);
+					dialog.setTitle("PCoA ScatterPlot");
+				}
+			});
+		}
 	}
 
 	private void debugln(String message) {

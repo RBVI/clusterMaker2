@@ -1,30 +1,15 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.TreeMap;
 import java.text.DecimalFormat;
 
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-
-import com.itextpdf.text.pdf.PdfStructTreeController.returnType;
-
 import cern.colt.function.tdouble.IntIntDoubleFunction;
-import cern.colt.function.tdouble.DoubleFunction;
 import cern.jet.math.tdouble.DoubleFunctions;
-import cern.colt.matrix.tdouble.DoubleMatrix1D;
-import cern.colt.matrix.tdouble.DoubleFactory1D;
 import cern.colt.matrix.tdouble.DoubleFactory2D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
-import cern.colt.matrix.tdouble.algo.decomposition.DenseDoubleEigenvalueDecomposition;
-import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.ColtMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
-// import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.SimpleMatrix;
-// import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ComputationMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
-import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 public class CalculationMatrix  {
@@ -204,7 +189,7 @@ distancematrix.writeMatrix("distancematrix.txt");
 			System.out.println("Result rows "+result.printMatrixInfo());
 			Matrix mat = matrix.multiplyMatrix(result);
 			// System.out.println("After vector multiply: "+mat.printMatrixInfo());
-			components[k] = matrix.copy(result);
+			components[k] = matrix.copy(mat);
 			components[k].printMatrixInfo();
 			components[k].writeMatrix("component_"+k+".txt");
 			// System.out.println("Component matrix "+k+" has "+components[k].getRowNodes().size()+" nodes");
@@ -212,29 +197,6 @@ distancematrix.writeMatrix("distancematrix.txt");
 
 		return components;
 	}
-	private void calculateLoadingMatrix(CyMatrix matrix, Matrix loading, 
-            double[][] eigenVectors, double[] eigenValues) {
-			int rows = eigenVectors.length;
-			int columns = eigenVectors[0].length;
-			loading.initialize(rows, columns, new double[rows][columns]);
-
-			// System.out.print("Eigenvectors:");
-			for (int row = 0; row < rows; row++) {
-				// 	System.out.print("\n"+matrix.getColumnLabel(row)+"\t");
-				for (int column = columns-1, newCol=0; column >= 0; column--,newCol++) {
-					// 	System.out.print(""+eigenVectors[row][column]+"\t");
-					loading.setValue(row, newCol, 
-							eigenVectors[row][column]*Math.sqrt(Math.abs(eigenValues[column])));
-					// loading.setValue(row, newCol, eigenVectors[row][column]*eigenValues[column]);
-				}
-			}
-			// 	System.out.println("\n");
-
-			loading.setRowLabels(Arrays.asList(matrix.getColumnLabels()));
-			for (int column = 0; column < columns; column++) {
-				loading.setColumnLabel(column, "PC "+(column+1));
-			}
-}
 	
 	
 	//calculate upper triangular matrix from vector

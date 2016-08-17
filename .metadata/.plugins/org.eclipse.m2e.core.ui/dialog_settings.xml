@@ -2,6 +2,7 @@
 <section name="Workbench">
 	<section name="MavenProjectImportWizardPage">
 		<list key="rootDirectory">
+			<item value="C:\Users\Supun\Documents\GSOC\Final\clusterMaker2"/>
 		</list>
 		<list key="projectNameTemplate">
 			<item value="[artifactId]"/>

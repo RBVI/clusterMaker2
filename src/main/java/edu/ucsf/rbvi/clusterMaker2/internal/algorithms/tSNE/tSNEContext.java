@@ -11,7 +11,21 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttrib
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 
 public class tSNEContext {
+	enum GetVisulaisation {
+		NODES("Selected Nodes", 0),
+		EDGES("Edges", 1);
+		
 
+		String name;
+		int value;
+		GetVisulaisation(String name, int value) {
+			this.name = name;
+			this.value = value;
+		}
+
+		public String toString() { return name; }
+		public int getValue() { return value; }
+	}
 CyNetwork network;
 	
 	//Tunables
@@ -19,21 +33,38 @@ CyNetwork network;
 @ContainsTunables
 public EdgeAttributeHandler edgeAttributeHandler;
 
+
+
 @Tunable(description="Distance Metric", gravity=10)
 public ListSingleSelection<DistanceMetric> metric = 
 	new ListSingleSelection<DistanceMetric>(DistanceMetric.values());
 
 @ContainsTunables
 public AttributeList attributeList = null;
-	
+
+
+public boolean selectedOnly = false;
+@Tunable(description="Use only selected nodes/edges for cluster",
+		groups={"t-SNE Advanced Settingss"}, gravity=65)
+public boolean getselectedOnly() { return selectedOnly; }
+public void setselectedOnly(boolean sel) {
+	if (network != null && this.selectedOnly != sel) //kcluster.updateKEstimates(network, sel);
+	this.selectedOnly = sel;
+}
+
 @Tunable(description="Initial Dimensions", groups={"t-SNE Advanced Settings"}, gravity=66)
-public int int_dims;
+public int int_dims=1;
 
 @Tunable(description="Perplexity", groups={"t-SNE Advanced Settings"}, gravity=67)
-public double perplixity;
+public double perplixity=1;
 
 @Tunable(description="Number of Iterations", groups={"t-SNE Advanced Settings"}, gravity=68)
-public int num_of_iterations;
+public int num_of_iterations=1;
+
+@Tunable (description="Visualisation with?", groups={"t-SNE Advanced Settings"},gravity=69)
+public ListSingleSelection<GetVisulaisation> neg = 
+	new ListSingleSelection<GetVisulaisation>(GetVisulaisation.NODES, GetVisulaisation.EDGES);
+
 
 @Tunable(description = "Create t-SNE scatter plot", 
 groups={"Result Options"}, gravity=84.0)
@@ -51,6 +82,10 @@ public tSNEContext(tSNEContext origin) {
 		edgeAttributeHandler.setAdjustLoops(false);
 	
 	}
+	if (attributeList == null)
+		attributeList = new AttributeList(network);
+	else
+		attributeList.setNetwork(network);
 		
 }
 
@@ -70,6 +105,11 @@ public void setNetwork(CyNetwork network) {
 	else{
 		edgeAttributeHandler.setNetwork(network);
 	}
+	
+	if (attributeList == null)
+		attributeList = new AttributeList(network);
+	else
+		attributeList.setNetwork(network);
 		
 }
 
