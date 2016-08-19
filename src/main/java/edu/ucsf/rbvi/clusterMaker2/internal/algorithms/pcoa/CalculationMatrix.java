@@ -24,7 +24,6 @@ public class CalculationMatrix  {
 	double scores[][];
 	CyMatrix distancematrix;
 
-	//double tolerance=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
 
 	private static double EPSILON=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
 
@@ -35,74 +34,14 @@ public class CalculationMatrix  {
 		this.distancematrix=matrix;
 	}
 	
-	public double[][] getScores() {
-		return scores;
-	}
-
-
-	public void setScores(double[][] scores) {
-		this.scores = scores;
-	}
-
-
-	public int getNeg() {
-		return neg;
-	}
-
 
 	public void setNeg(int neg) {
 		this.neg = neg;
 	}
 
-
-	public double[][] getCombine_array() {
-		return combine_array;
-	}
-
-
-	public void setCombine_array(double[][] combine_array) {
-		this.combine_array = combine_array;
-	}
-
-
-	public double[] getEigen_values() {
-		return eigen_values;
-	}
-
-
-	public void setEigen_values(double[] eigen_values) {
-		this.eigen_values = eigen_values;
-	}
-
-
-	public double[][] getEigenvectors() {
-		return eigenVectors.toArray();
-	}
-
-
 	public boolean isSymmetricalCyMatrix() {
 		return distancematrix.isSymmetrical();
 	}
-	
-	//reverse matrix
-	public static double[] matrixReverse(double[] x) {
-
-	    double[] d = new double[x.length];
-
-	    for (int i = 0; i < x.length; i++) {
-	        d[i] = x[x.length - 1 -i];
-	    }
-	    return d;
-	}
-	
-	//calculate transpose of a matrix
-	public  double[][] transposeMatrix(double matrix[][]){
-        double[][] temp = new double[matrix[0].length][matrix.length];
-        for (int i = 0; i < matrix.length; i++)
-            for (int j = 0; j < matrix[0].length; j++)
-                temp[j][i] = matrix[i][j];
-        return temp;
-    }
 
 
 	public Matrix getGowersMatrix() {
@@ -153,7 +92,7 @@ distancematrix.writeMatrix("distancematrix.txt");
 	}
 
 		
-	
+	//do the eigen analysis for both eigen vectors and eigen values
 	public double[] eigenAnalysis(){
 		System.out.println("Getting Gowers Matrix");
 		Matrix G = getGowersMatrix();
@@ -164,16 +103,12 @@ distancematrix.writeMatrix("distancematrix.txt");
 		 eigen_values=G.eigenValues(true);	
 
 		
-		//double tolerance=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
-		/*System.out.println("Eigenvalues: ");
-		for (double d: eigen_values) {
-			System.out.println("  "+d);
-		}*/
-
-		
 		return eigen_values;
 	}
 	
+	
+	
+	//get the coordinates for PCoA
 	public CyMatrix[] getCooridinates(CyMatrix matrix){
 		CyMatrix[] components = new CyMatrix[eigen_values.length];
 
@@ -238,25 +173,6 @@ distancematrix.writeMatrix("distancematrix.txt");
 
 		return explainedVariance;
 	}
-
-	//convert column To Matrix 
-	public double[][] convertColumntoMatrix(double columnmatrix[]){
-		double matrix[][]=new double[eigen_values.length][eigen_values.length];
-		int p=0;
-		for(int i=0;i<matrix.length;i++){
-			for(int j=i;j<matrix.length;j++){
-				if(i==j){
-					matrix[i][j]=0;
-				}else{
-					matrix[i][j]=columnmatrix[p];
-					matrix[j][i]=columnmatrix[p];
-					p++;
-				}
-			}	
-		}
-		return matrix;
-	}
-	
 
 	private static DecimalFormat scFormat = new DecimalFormat("0.###E0");
 	private static DecimalFormat format = new DecimalFormat("0.###");

@@ -13,6 +13,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa.PCoAContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa.RunPCoA;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 
 public class tSNE extends AbstractNetworkClusterer{
@@ -22,6 +24,9 @@ public class tSNE extends AbstractNetworkClusterer{
 	public static String NAME = "t-Distributed Stochastic Neighbor";
 	public final static String GROUP_ATTRIBUTE = "__tSNE.SUID";
 	private CyNetworkView networkView;
+	
+	
+	protected Matrix distances;
 
 	@Tunable(description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
@@ -52,18 +57,19 @@ public class tSNE extends AbstractNetworkClusterer{
 
 		context.setNetwork(network);
 
-		CyMatrix matrix = context.edgeAttributeHandler.getMatrix();
+		CyMatrix edgematrix = context.edgeAttributeHandler.getMatrix();
+		
 		
 		tSNEContext.GetVisulaisation modeselection = context.modeselection.getSelectedValue();
 		
-		if (matrix == null) {
+		if (edgematrix == null) {
 			monitor.showMessage(TaskMonitor.Level.ERROR,"Can't get distance matrix: no attribute value?");
 			return;
 		}
 		
 
 		
-		runtsne = new RuntSNE(network, networkView, context, monitor,matrix);
+		runtsne = new RuntSNE(network, networkView, context, monitor,edgematrix);
 		runtsne.run();
 		//runpcoa.setDebug(false);
 

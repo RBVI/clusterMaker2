@@ -68,10 +68,6 @@ public ListSingleSelection<GetVisulaisation> modeselection =
 	new ListSingleSelection<GetVisulaisation>(GetVisulaisation.NODES, GetVisulaisation.EDGES);
 
 
-/*@Tunable(description = "Create t-SNE scatter plot", 
-groups={"Result Options"}, gravity=84.0)
-public boolean tsnePlot = false;*/
-
 
 public tSNEContext(){
 	metric.setSelectedValue(DistanceMetric.EUCLIDEAN);
@@ -84,10 +80,13 @@ public tSNEContext(tSNEContext origin) {
 		edgeAttributeHandler.setAdjustLoops(false);
 	
 	}
-	if (attributeList == null)
+	if (attributeList == null){
 		attributeList = new AttributeList(network);
-	else
+	}
+	else{
 		attributeList.setNetwork(network);
+	}
+		
 		
 }
 
@@ -108,10 +107,13 @@ public void setNetwork(CyNetwork network) {
 		edgeAttributeHandler.setNetwork(network);
 	}
 	
-	if (attributeList == null)
+	if (attributeList == null){
 		attributeList = new AttributeList(network);
-	else
+	}
+	else{
 		attributeList.setNetwork(network);
+	}
+		
 		
 }
 
@@ -122,6 +124,6 @@ public CyNetwork getNetwork() { return network; }
 
 
 public void setUIHelper(TunableUIHelper helper) {
-	edgeAttributeHandler.setUIHelper(helper);
+	//edgeAttributeHandler.setUIHelper(helper);
 }
 }

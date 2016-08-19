@@ -67,10 +67,6 @@ public class RuntSNE {
 			Y=tsne.tsne(distances, 2, initial_dimensions, perplexity, no_of_iterations, true);
 		}
 	
-	
-	
-	
-	
 		
 		Plot2DPanel plot = new Plot2DPanel();
 	     

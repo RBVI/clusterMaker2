@@ -71,7 +71,7 @@ public class PCoA extends AbstractNetworkClusterer{
 		//Cluster the nodes
 		runpcoa = new RunPCoA(matrix,network,networkView,context, neg.getValue(),monitor);
 		runpcoa.run();
-		runpcoa.setDebug(false);
+		
 
 		if (canceled) return;
 
