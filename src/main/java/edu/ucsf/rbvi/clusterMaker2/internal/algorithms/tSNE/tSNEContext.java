@@ -64,7 +64,7 @@ public double perplixity=1;
 public int num_of_iterations=1;
 
 @Tunable (description="Visualisation with?", groups={"t-SNE Advanced Settings"},gravity=69)
-public ListSingleSelection<GetVisulaisation> neg = 
+public ListSingleSelection<GetVisulaisation> modeselection = 
 	new ListSingleSelection<GetVisulaisation>(GetVisulaisation.NODES, GetVisulaisation.EDGES);
 
 
@@ -115,6 +115,9 @@ public void setNetwork(CyNetwork network) {
 		
 }
 
+public DistanceMetric getDistanceMetric() {
+	return metric.getSelectedValue();
+}
 public CyNetwork getNetwork() { return network; }
 
 

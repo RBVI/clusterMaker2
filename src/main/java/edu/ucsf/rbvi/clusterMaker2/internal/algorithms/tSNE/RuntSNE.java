@@ -10,6 +10,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 import org.math.plot.FrameView;
@@ -26,10 +27,13 @@ public class RuntSNE {
 	protected double perplexity;
 	protected int initial_dimensions;
 	protected int no_of_iterations;
-	protected String mode;
-	protected CyMatrix edgematrix;
+	protected int mode;
+	protected CyMatrix matrix;
+
 	protected double eigenValues[];
 	protected double eigenVectors[][];
+	protected DistanceMetric metric;
+	protected Matrix distances;
 	
 	
 
@@ -41,8 +45,7 @@ public class RuntSNE {
 		this.networkView = networkView;
 		this.context = context;
 		this.monitor = monitor;
-		this.edgematrix=matrix;
-		
+		this.matrix=matrix;
 		
 	}
 	
@@ -50,10 +53,22 @@ public class RuntSNE {
 		no_of_iterations=context.num_of_iterations;
 		initial_dimensions=context.int_dims;
 		perplexity=context.perplixity;
+		tSNEContext.GetVisulaisation val=context.modeselection.getSelectedValue();
+		mode=val.getValue();
 		
-	TSneInterface tsne=new tSNECalculation();
+		System.out.println("Is Symmetrical "+matrix.isSymmetrical());
+		TSneInterface tsne=new tSNECalculation();
+		Matrix Y=null;
+		if(mode==1){//for edges
+			Y=tsne.tsne(matrix, 2, initial_dimensions, perplexity, no_of_iterations, true);
+		}else if(mode==0){//for nodes
+			metric=context.metric.getSelectedValue();
+			distances=matrix.getDistanceMatrix(metric);
+			Y=tsne.tsne(distances, 2, initial_dimensions, perplexity, no_of_iterations, true);
+		}
 	
-	Matrix Y=tsne.tsne(edgematrix, 2, initial_dimensions, perplexity, no_of_iterations, true);
+	
+	
 	
 	
 		

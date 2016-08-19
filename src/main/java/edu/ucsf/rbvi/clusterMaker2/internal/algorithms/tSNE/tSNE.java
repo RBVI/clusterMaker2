@@ -9,6 +9,7 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.TunableUIHelper;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa.PCoAContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa.RunPCoA;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
@@ -52,6 +53,8 @@ public class tSNE extends AbstractNetworkClusterer{
 		context.setNetwork(network);
 
 		CyMatrix matrix = context.edgeAttributeHandler.getMatrix();
+		
+		tSNEContext.GetVisulaisation modeselection = context.modeselection.getSelectedValue();
 		
 		if (matrix == null) {
 			monitor.showMessage(TaskMonitor.Level.ERROR,"Can't get distance matrix: no attribute value?");
