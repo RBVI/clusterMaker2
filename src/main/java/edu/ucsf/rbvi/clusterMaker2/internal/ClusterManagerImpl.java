@@ -51,8 +51,7 @@ public class ClusterManagerImpl implements ClusterManager {
 	double networkClusterIndex = 50.0;
 	double attributeClusterIndex = 1.0;
 	double filterIndex = 100.0;
-        double pcaIndex = 150.0;
-        double pcoaIndex = 200.0;
+  double dimRedIndex = 150.0; // Dimensionality reduction
 	double vizClusterIndex = 1.0;
 	double rankingIndex = 1.0;
 	Map<CyNetwork, List<ResultsPanel>> resultsPanelMap;
@@ -117,15 +116,11 @@ public class ClusterManagerImpl implements ClusterManager {
 				props.setProperty(MENU_GRAVITY, ""+filterIndex);
 				break;
 
-			case PCA:
-				pcaIndex += 1.0;
-				props.setProperty(MENU_GRAVITY, ""+pcaIndex);
+			case DIMRED:
+				dimRedIndex += 1.0;
+				props.setProperty(MENU_GRAVITY, ""+dimRedIndex);
 				break;
-				
-			case DIMERD:
-				pcaIndex += 1.0;
-				props.setProperty(MENU_GRAVITY, ""+pcaIndex);
-				break;
+
 			}
 			serviceRegistrar.registerService(alg, TaskFactory.class, props);
 		}

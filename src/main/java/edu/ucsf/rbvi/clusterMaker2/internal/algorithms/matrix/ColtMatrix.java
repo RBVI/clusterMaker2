@@ -775,8 +775,6 @@ public class ColtMatrix implements Matrix {
 		int n = A.columns();
 		int p = B.columns();
 
-		System.out.println("multiplyMatrix: m="+m+", n="+n+", p="+p);
-
 		// Create views into B
 		final DoubleMatrix1D[] Brows= new DoubleMatrix1D[n];
 		for (int i = n; --i>=0; ) Brows[i] = B.viewRow(i);

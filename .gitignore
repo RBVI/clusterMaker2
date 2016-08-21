@@ -4,3 +4,7 @@
 *.iml
 tags
 *.jpg
+.metadata
+.project
+.settings
+.classpath

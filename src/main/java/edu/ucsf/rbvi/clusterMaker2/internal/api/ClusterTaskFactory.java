@@ -6,7 +6,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskFactory;
 
 public interface ClusterTaskFactory extends TaskFactory {
-	public enum ClusterType { NETWORK, ATTRIBUTE, FILTER, PCA, UI, DIMERD, tSNE };
+	public enum ClusterType { NETWORK, ATTRIBUTE, FILTER, DIMRED, UI };
 
 	/**
  	 * Get the short name of this algorithm

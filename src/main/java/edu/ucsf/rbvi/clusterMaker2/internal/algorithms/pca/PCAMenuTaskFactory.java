@@ -24,7 +24,7 @@ public class PCAMenuTaskFactory implements ClusterTaskFactory{
 		this.clusterManager = clusterManager;
 	}
 
-	public String getShortName() {return "pca";};
+	public String getShortName() {return "dimred";};
 	public String getName() {return "--- Dimensionality Reduction ---";};
 
 	public ClusterViz getVisualizer() {
@@ -41,7 +41,7 @@ public class PCAMenuTaskFactory implements ClusterTaskFactory{
 	}
 
 	public List<ClusterTaskFactory.ClusterType> getTypeList() { 
-		return Collections.singletonList(ClusterTaskFactory.ClusterType.PCA); 
+		return Collections.singletonList(ClusterTaskFactory.ClusterType.DIMRED); 
 	}
 
 	public TaskIterator createTaskIterator() {

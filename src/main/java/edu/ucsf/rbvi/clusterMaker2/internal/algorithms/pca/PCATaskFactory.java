@@ -35,7 +35,7 @@ public class PCATaskFactory extends AbstractClusterTaskFactory{
 	}
 
 	public List<ClusterTaskFactory.ClusterType> getTypeList() { 
-		return Collections.singletonList(ClusterTaskFactory.ClusterType.PCA); 
+		return Collections.singletonList(ClusterTaskFactory.ClusterType.DIMRED); 
 	}
 
 	public TaskIterator createTaskIterator() {

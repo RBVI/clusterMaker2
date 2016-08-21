@@ -72,8 +72,7 @@ public class RunPCoA {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					System.out.println("Scatter plot dialog call");
-					ScatterPlotDialog dialog = new ScatterPlotDialog(components, null, variance);
-					dialog.setTitle("PCoA ScatterPlot");
+					ScatterPlotDialog dialog = new ScatterPlotDialog("PCoA Scatter Plot", monitor, components, variance);
 				}
 			});
 		}

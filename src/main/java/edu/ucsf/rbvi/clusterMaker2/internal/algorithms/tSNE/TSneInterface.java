@@ -7,7 +7,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 public interface TSneInterface {
 
-	CyMatrix tsne(Matrix matrix, int no_dims, int initial_dims, double perplexity, int max_iter, boolean use_pca,CyNetwork network);
+	CyMatrix tsne(CyMatrix matrix, int no_dims, int initial_dims, double perplexity, int max_iter, boolean use_pca);
 
 	R Hbeta (Matrix D, double beta);
 	

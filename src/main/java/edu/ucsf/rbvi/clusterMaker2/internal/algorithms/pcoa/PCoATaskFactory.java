@@ -30,12 +30,12 @@ public class PCoATaskFactory extends AbstractClusterTaskFactory{
 	}
 
 	public List<ClusterTaskFactory.ClusterType> getTypeList() { 
-		return Collections.singletonList(ClusterTaskFactory.ClusterType.DIMERD); 
+		return Collections.singletonList(ClusterTaskFactory.ClusterType.DIMRED); 
 	}
 
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new PCoA(context, clusterManager));
 	}
-    
-	
+
+
 }

@@ -418,6 +418,14 @@ public interface Matrix {
 	public void threshold(double thresh);
 
 	/**
+	 * Transpose the matrix.  This will return a new
+	 * matrix that is the transpose of this matrix.
+	 *
+	 * @return a new matrix that is the transpose of this matrix
+	 */
+	// public Matrix transpose();
+
+	/**
 	 * Return the eigenvalues of a matrix
 	 *
 	 * @param nonZero if true, only return the non-zero eigenvalues

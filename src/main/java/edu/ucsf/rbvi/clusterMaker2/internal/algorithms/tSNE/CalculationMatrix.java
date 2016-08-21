@@ -2,13 +2,11 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE;
 
 import java.text.DecimalFormat;
 
+import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.ThreadLocalRandom;
-
-import org.cytoscape.model.CyNetwork;
-
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.ColtMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyColtMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
@@ -43,30 +41,22 @@ public class CalculationMatrix {
 	public Matrix transpose(Matrix matrix) {
 		 return transpose(matrix, 1000);
 	}
-	
+
 	public Matrix transpose(Matrix matrix, int ll) {
+		// return matrix.transpose();
 		int cols = matrix.nColumns();
 		int rows = matrix.nRows();
 		Matrix transpose=new ColtMatrix(cols,rows);
-		
-		//if(rows < 100 ) {
-			for (int i = 0; i < cols; i++){
-				for (int j = 0; j < rows; j++){
-					transpose.setValue(i, j, matrix.getValue(j, i));
-				}
+		for (int i = 0; i < cols; i++){
+			for (int j = 0; j < rows; j++){
+				transpose.setValue(i, j, matrix.getValue(j, i));
 			}
-				
-		 /*else {
-			//MatrixTransposer process = new MatrixTransposer(matrix, transpose,0,rows,ll);     
-			MatrixTransposer process = new MatrixTransposer(matrix, transpose,0,rows,ll); 
-			pool.invoke(process);
-		}*/
+		}
 		return transpose;
 	}
 
-
-
-	/*class MatrixTransposer extends RecursiveAction {
+	/*
+	class MatrixTransposer extends RecursiveAction {
 		private static final long serialVersionUID = 1L;
 		Matrix orig;
 		Matrix transpose;
@@ -114,9 +104,9 @@ public class CalculationMatrix {
 				e.printStackTrace();
 			}
 		}
-	}*/
+	}
+	*/
 
-	
 	public static Matrix exp(Matrix m1) {
 		Matrix matrix=new ColtMatrix(m1.nRows(),m1.nColumns());
 		for (int i = 0; i < matrix.nRows(); i++) {
@@ -126,6 +116,7 @@ public class CalculationMatrix {
 		}
 		return matrix;
 	}
+
 	public static double [] sqrt(double [] v1) {
 		double [] vector = new double[v1.length];
 		for (int i = 0; i < vector.length; i++) {
@@ -153,7 +144,6 @@ public class CalculationMatrix {
 		return matrix;
 	}
 	
-	
 	public static double [] pow(double [] m1, double power) {
 		double[] matrix = new double[m1.length];
 		for (int i = 0; i < matrix.length; i++) {
@@ -172,8 +162,6 @@ public class CalculationMatrix {
 		}
 		return matrix;
 	}
-	
-	
 	
 	public static double [] scalarInverse(double [] v1) {
 		double [] vector = new double[v1.length];
@@ -245,15 +233,7 @@ public class CalculationMatrix {
 		}
 		return equals;
 	}
-	public static boolean [][] biggerThan(CyMatrix matrix, double value) {
-		boolean [][] equals = new boolean[matrix.nRows()][matrix.nColumns()];
-		for (int i = 0; i < matrix.nRows(); i++) {
-			for (int j = 0; j < matrix.nColumns(); j++) {
-				equals[i][j] = Double.compare(matrix.getValue(i, j), value) == 1;
-			}
-		}
-		return equals;
-	}
+	
 	public static boolean [][] negate(boolean [][] booleans) {
 		boolean [][] negates = new boolean[booleans.length][booleans[0].length];
 		for (int i = 0; i < booleans.length; i++) {
@@ -273,8 +253,6 @@ public class CalculationMatrix {
 		}
 		return absolutes;
 	}
-	
-	
 
 	
 	public static Matrix mean(Matrix matrix, int axis) {
@@ -314,7 +292,6 @@ public class CalculationMatrix {
 		return result;
 	}
 
-
 	
 	public static Matrix sum(Matrix matrix, int axis) {
 		
@@ -345,7 +322,6 @@ public class CalculationMatrix {
 	}
 
 
-
 	public static double sum(Matrix matrix) {
 		double sum = 0.0;
 		for (int i = 0; i < matrix.nRows(); i++) {
@@ -355,7 +331,6 @@ public class CalculationMatrix {
 		}
 		return sum;
 	}
-	
 
 	public static Matrix maximum(Matrix matrix, double maxval) {
 		
@@ -368,7 +343,7 @@ public class CalculationMatrix {
 		return maxed;
 	}
 	
-	
+
 	public static void assignAllLessThan(Matrix matrix, double lessthan, double assign) {
 		for (int i = 0; i < matrix.nRows(); i++) {
 			for (int j = 0; j < matrix.nColumns(); j++) {
@@ -378,7 +353,6 @@ public class CalculationMatrix {
 			}
 		}
 	}
-	
 	public static Matrix square(Matrix matrix) {
 		return scalarPow(matrix,2);
 	}
@@ -400,18 +374,15 @@ public class CalculationMatrix {
 	}
 
 	
-	
 	public static Matrix scalarPow(Matrix matrix, double power) {
 		Matrix result=new ColtMatrix(matrix.nRows(), matrix.nColumns());
 		for (int i = 0; i < matrix.nRows(); i++) {
 			for (int j = 0; j < matrix.nColumns(); j++) {
-				
-				result.setValue(i, j, matrix.getValue(i, j)+Math.pow(matrix.getValue(i, j), power));
+				result.setValue(i, j, Math.pow(matrix.getValue(i, j), power));
 			}
 		}
 		return result;
 	}
-
 
 	public static Matrix addColumnVector(Matrix matrix, Matrix colvector) {
 		
@@ -424,9 +395,6 @@ public class CalculationMatrix {
 		return result;
 	}
 
-
-
-	
 	public static Matrix addRowVector(Matrix matrix, Matrix rowvector) {
 	
 		Matrix result=new ColtMatrix(matrix.nRows(),matrix.nColumns());
@@ -437,7 +405,6 @@ public class CalculationMatrix {
 		}
 		return result;
 	}
-	
 
 	public static Matrix tile(Matrix matrix, int rowtimes, int coltimes) {
 		
@@ -455,7 +422,6 @@ public class CalculationMatrix {
 
 		return result;
 	}
-	
 	
 	public static int [] range(int n) {
 		int [] result = new int[n];
@@ -494,7 +460,6 @@ public class CalculationMatrix {
 		return parScalarMultiply(m1, m2);
 	}
 	
-
 	
 	public Matrix parScalarMultiply(Matrix m1,Matrix m2) {
 		int ll = 600;
@@ -503,7 +468,7 @@ public class CalculationMatrix {
 		pool.invoke(process);
 		return result;
 	}
-	
+
 	
 	public Matrix parScalarMinus(Matrix m1,Matrix m2) {
 		int ll = 600;
@@ -514,7 +479,6 @@ public class CalculationMatrix {
 		return result;
 	}
 
-	
 	public interface MatrixOp {
 		double compute(double op1, double op2);
 	}
@@ -588,9 +552,6 @@ public class CalculationMatrix {
 			num.setValue(range[j], range1[j], value);
 		}
 	}
-	
-	
-	
 	public static Matrix getValuesFromRow(Matrix matrix, int row, int[] indicies) {
 		Matrix values=new ColtMatrix(1,indicies.length);
 		for (int j = 0; j < indicies.length; j++) {
@@ -599,7 +560,6 @@ public class CalculationMatrix {
 		}
 		return values;
 	}
-	
 	
 	public static void assignValuesToRow(Matrix matrix, int row, int[] indicies, double [] values) {
 		if( indicies.length != values.length ) {
@@ -610,15 +570,6 @@ public class CalculationMatrix {
 		}
 	}
 
-	
-	public static void assignValuesToRow(CyMatrix matrix, int row, int[] indicies, double [] values) {
-		if( indicies.length != values.length ) {
-			throw new IllegalArgumentException("Length of indicies and values have to be equal");
-		}
-		for (int j = 0; j < indicies.length; j++) {
-			matrix.setValue(row, indicies[j], values[j]);
-		}
-	}
 
 	public static Matrix fillMatrix(int rows, int cols, double fillvalue) {
 		Matrix matrix=new ColtMatrix(rows, cols);
@@ -629,7 +580,6 @@ public class CalculationMatrix {
 			}
 		return matrix;
 	}
-
 
 	
 	public static Matrix plus(Matrix m1, Matrix m2) {
@@ -644,8 +594,7 @@ public class CalculationMatrix {
 			
 		return matrix;
 	}
-	
-	
+
 
 	public static Matrix scalarPlus(Matrix m1, double m2) {
 		Matrix matrix=new ColtMatrix(m1.nRows(),m1.nColumns());
@@ -657,16 +606,12 @@ public class CalculationMatrix {
 		}
 		return matrix;
 	}
-	
-	
 
 	public Matrix minus(Matrix m1, Matrix m2) {
 		return parScalarMinus(m1, m2);
 	}
 
-	
-	
-	
+
 	public static Matrix scalarDivide(Matrix numerator, double denom) {
 		Matrix matrix = new ColtMatrix(numerator.nRows(),numerator.nColumns());
 		for (int i = 0; i < numerator.nRows(); i++){
@@ -679,7 +624,6 @@ public class CalculationMatrix {
 		return matrix;
 	}
 
-	
 	public static Matrix scalarDivide(Matrix numerator, Matrix denom) {
 		Matrix matrix=new ColtMatrix(numerator.nRows(),numerator.nColumns());
 		for (int i = 0; i < numerator.nRows(); i++){
@@ -696,8 +640,7 @@ public class CalculationMatrix {
 		Matrix matrix=new ColtMatrix(m1.nRows(),m1.nColumns());
 		for (int i = 0; i < m1.nRows(); i++){
 			for (int j = 0; j < m1.nColumns(); j++){
-				double prevalue=m1.getValue(i, j);
-				matrix.setValue(i, j, prevalue*mul);
+				matrix.setValue(i, j, m1.getValue(i, j)*mul);
 			}
 					
 		}
@@ -705,22 +648,8 @@ public class CalculationMatrix {
 		return matrix;
 	}
 	
-	/*public static Matrix scalarMult(Matrix m1, double mul) {
-		Matrix matrix=new ColtMatrix(m1.nRows(),m1.nColumns());
-		for (int i = 0; i < m1.nRows(); i++){
-			for (int j = 0; j < m1.nColumns(); j++){
-				matrix.setValue(i, j, matrix.getValue(i, j)*mul);
-			}
-					
-		}
-				
-		return matrix;
-	}*/
-
 	
-	
-public static Matrix times(Matrix m1, Matrix m2) {
-		
+	public static Matrix times(Matrix m1, Matrix m2) {
 		return m1.multiplyMatrix(m2);
 	}
 
@@ -745,24 +674,47 @@ public static Matrix times(Matrix m1, Matrix m2) {
 		return result;
 	}
 	
-	public static Matrix arrayToCyMatrix(double[][] array){
-		Matrix matrix=new ColtMatrix(array.length, array[0].length);
-		
+	public static CyMatrix arrayToCyMatrix(CyMatrix mat, double[][] array){
+		CyMatrix matrix=new CyColtMatrix(mat.getNetwork(), array.length, array[0].length);
+
 		for (int row = 0; row < array.length; row++) {
 			for (int col = 0; col < array[0].length; col++) {
-			matrix.setValue(row, col, array[row][col]);
-			}}
-		return matrix;
-	}
+				matrix.setValue(row, col, array[row][col]);
+			}
+		}
 
-	public static CyMatrix matrixToCyMatrix(Matrix mat,CyNetwork network){
-		CyMatrix matrix=new CyColtMatrix(network,mat.nRows(), mat.nColumns());
-		
-		for (int row = 0; row < mat.nRows(); row++) {
-			for (int col = 0; col < mat.nColumns(); col++) {
-			matrix.setValue(row, col, mat.getValue(row, col));
-			}}
+		if (array.length == mat.nRows()) {
+			matrix.setRowNodes(mat.getRowNodes());
+			matrix.setRowLabels(Arrays.asList(mat.getRowLabels()));
+		}
+
+		if (array[0].length == mat.nColumns()) {
+			matrix.setColumnNodes(mat.getColumnNodes());
+			matrix.setColumnLabels(Arrays.asList(mat.getColumnLabels()));
+		}
+
 		return matrix;
 	}
 	
+	public static CyMatrix matrixToCyMatrix(CyMatrix mat, Matrix m1) {
+		CyMatrix matrix=new CyColtMatrix(mat.getNetwork(), m1.nRows(), m1.nColumns());
+
+		for (int row = 0; row < m1.nRows(); row++) {
+			for (int col = 0; col < m1.nColumns(); col++) {
+				matrix.setValue(row, col, m1.getValue(row, col));
+			}
+		}
+
+		if (m1.nRows() == mat.nRows()) {
+			matrix.setRowNodes(mat.getRowNodes());
+			matrix.setRowLabels(Arrays.asList(mat.getRowLabels()));
+		}
+
+		if (m1.nColumns() == mat.nColumns()) {
+			matrix.setColumnNodes(mat.getColumnNodes());
+			matrix.setColumnLabels(Arrays.asList(mat.getColumnLabels()));
+		}
+
+		return matrix;
+	}
 }

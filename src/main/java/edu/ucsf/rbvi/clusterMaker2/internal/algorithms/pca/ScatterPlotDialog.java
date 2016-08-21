@@ -37,6 +37,7 @@ import org.jdesktop.swingx.JXCollapsiblePane;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.work.TaskMonitor;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
@@ -82,30 +83,82 @@ public class ScatterPlotDialog extends JDialog {
 
 	private boolean useLoadings;
 
-	public ScatterPlotDialog(CyMatrix[] components, Matrix loading, double[] varianceArray) {
+	// Entry point for tSNE and related
+	public ScatterPlotDialog(String title, TaskMonitor monitor, CyMatrix coordinates) {
 		super();
-		setTitle("PCA ScatterPlot");
+		setTitle(title);
+		monitor.setTitle(title);
+		useLoadings = false;
+		this.scores = new CyMatrix[1];
+		this.scores[0] = coordinates;
 
-		this.scores = components;
-		loadingsColorMap = new HashMap<String, Color>();
-		if (loading != null) {
-			this.loadings = loading;
-			useLoadings = true;
-			initializeColors();
-		} else {
-			useLoadings = false;
-			this.loadings = CyMatrixFactory.makeSmallMatrix(components[0].getNetwork(), 1, components.length);
-			for (int col=0; col < components.length; col++) {
-				loadings.setColumnLabel(col, "PC "+(col+1));
-			}
+		this.variances = null;
+		this.loadings = CyMatrixFactory.makeSmallMatrix(scores[0].getNetwork(), 1, 2);
+		loadings.setColumnLabel(0, "X Axis");
+		loadings.setColumnLabel(1, "Y Axis");
+		thisDialog = this;
+
+		if (coordinates.nColumns() != 2) {
+			monitor.showMessage(TaskMonitor.Level.ERROR, "Coordinate scatterplot must have 2 columns!");
+			return;
 		}
+
+		container = new JPanel();
+		createUI();
+		getContentPane().add(container);
+
+		pack();
+		setLocationByPlatform(true);
+	}
+
+	// Entry point for PCoA and related
+	public ScatterPlotDialog(String title, TaskMonitor monitor, CyMatrix[] components, double[] varianceArray) {
+		super();
+		setTitle(title);
+		monitor.setTitle(title);
+		useLoadings = false;
+		this.scores = components;
+		this.loadings = CyMatrixFactory.makeSmallMatrix(components[0].getNetwork(), 1, components.length);
+		for (int col=0; col < components.length; col++) {
+			loadings.setColumnLabel(col, "PC "+(col+1));
+		}
+
 		this.variances = varianceArray;
 
 		thisDialog = this;
 
-		if(scores == null){
+		if(scores == null || scores.length < 2 || scores.length != varianceArray.length) {
+			monitor.showMessage(TaskMonitor.Level.ERROR, "Coordinate scatterplot must at least 2 columns!");
 			return;
-		}else if(scores.length < 2){
+		}
+
+		container = new JPanel();
+		createUI();
+		getContentPane().add(container);
+
+		pack();
+		setLocationByPlatform(true);
+	}
+
+	// Entry point for PCA
+	public ScatterPlotDialog(String title, TaskMonitor monitor, CyMatrix[] components, Matrix loading, double[] varianceArray) {
+		super();
+		setTitle(title);
+		monitor.setTitle(title);
+
+		this.scores = components;
+		loadingsColorMap = new HashMap<String, Color>();
+		this.loadings = loading;
+		useLoadings = true;
+		initializeColors();
+
+		this.variances = varianceArray;
+
+		thisDialog = this;
+
+		// Sanity check
+		if(scores == null || scores.length < 2 || scores.length != varianceArray.length) {
+			monitor.showMessage(TaskMonitor.Level.ERROR, "PCA scatterplot must at least 2 columns!");
 			return;
 		}
 
@@ -161,12 +214,14 @@ public class ScatterPlotDialog extends JDialog {
 			container.add(legendPanel, constraints);
 		}
 
-		constraints.gridx = 0;
-		constraints.gridy = 1;
-		constraints.gridwidth = 2;
-		constraints.anchor = GridBagConstraints.SOUTHWEST;
-		constraints.fill = GridBagConstraints.HORIZONTAL;
-		container.add(createControlJPanel(scores, loadings), constraints);
+		if (variances != null) {
+			constraints.gridx = 0;
+			constraints.gridy = 1;
+			constraints.gridwidth = 2;
+			constraints.anchor = GridBagConstraints.SOUTHWEST;
+			constraints.fill = GridBagConstraints.HORIZONTAL;
+			container.add(createControlJPanel(scores, loadings), constraints);
+		}
 
 		container.setBorder(BorderFactory.createEtchedBorder());
 

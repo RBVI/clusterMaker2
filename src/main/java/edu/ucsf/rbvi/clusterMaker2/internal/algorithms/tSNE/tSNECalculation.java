@@ -4,7 +4,6 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
-import edu.ufl.cise.colamd.tdouble.Colamd_Col;
 
 
 import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.abs;
@@ -55,15 +54,15 @@ public class tSNECalculation implements TSneInterface{
 			this.monitor = monitor;
 		}
 
-	public CyMatrix tsne(Matrix X, int k, int initial_dims, double perplexity,CyNetwork network) {
-		return tsne(X,k,initial_dims, perplexity, 2000, true,network);
+	public CyMatrix tsne(CyMatrix X, int k, int initial_dims, double perplexity) {
+		return tsne(X,k,initial_dims, perplexity, 2000, true);
 	}
 
-	public CyMatrix tsne(Matrix X, int k, int initial_dims, double perplexity, int maxIterations,CyNetwork network) {
-		return tsne(X,k,initial_dims, perplexity, maxIterations, true,network);
+	public CyMatrix tsne(CyMatrix X, int k, int initial_dims, double perplexity, int maxIterations) {
+		return tsne(X,k,initial_dims, perplexity, maxIterations, true);
 	}
 
-	public CyMatrix tsne(Matrix matrix, int no_dims, int initial_dims, double perplexity, int max_iter, boolean use_pca,CyNetwork network) {
+	public CyMatrix tsne(CyMatrix matrix, int no_dims, int initial_dims, double perplexity, int max_iter, boolean use_pca) {
 
 		//double X[][]=matrix.toArray();
 
@@ -77,7 +76,7 @@ public class tSNECalculation implements TSneInterface{
 			PrincipalComponentAnalysis pca = new PrincipalComponentAnalysis();
 			double trmpmatrix[][] = pca.pca(matrix.toArray(), initial_dims);
 
-			matrix= CalculationMatrix.arrayToCyMatrix(trmpmatrix);
+			matrix= CalculationMatrix.arrayToCyMatrix(matrix, trmpmatrix);
 
 			//System.out.println("X:Shape after PCA is = " + matrix.nRows() + " x " + matrix.nColumns());
 			monitor.showMessage(TaskMonitor.Level.INFO, "X:Shape after PCA is = " + matrix.nRows() + " x " + matrix.nColumns());
@@ -97,8 +96,8 @@ public class tSNECalculation implements TSneInterface{
 
 		// Compute P-values
 		Matrix P = x2p(matrix, 1e-5, perplexity).P;
-		
-		
+
+
 		P = plus(P , mo.transpose(P));
 		P = scalarDivide(P,sum(P));
 		P = scalarMult(P , 4);					// early exaggeration
@@ -158,9 +157,7 @@ public class tSNECalculation implements TSneInterface{
 				P = scalarDivide(P , 4);
 		}
 
-		CyMatrix L=CalculationMatrix.matrixToCyMatrix(Y, network);
-		//Matrix mat=MatrixtSNE.arrayToCyMatrix(Y);
-		// Return solution
+		CyMatrix L=CalculationMatrix.matrixToCyMatrix(matrix, Y);
 		return L;
 	}
 
@@ -236,8 +233,6 @@ public class tSNECalculation implements TSneInterface{
 				tries = tries + 1;
 			}
 			assignValuesToRow(P, i,concatenate(range(0,i),range(i+1,n)),thisP.toArray()[0]);
-			System.out.println("P matrix info "+P.printMatrixInfo()); 
-			P.writeMatrix("pvalues");
 		}
 
 		R r = new R();
