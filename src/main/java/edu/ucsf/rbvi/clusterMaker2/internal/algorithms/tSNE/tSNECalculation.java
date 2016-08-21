@@ -236,6 +236,8 @@ public class tSNECalculation implements TSneInterface{
 				tries = tries + 1;
 			}
 			assignValuesToRow(P, i,concatenate(range(0,i),range(i+1,n)),thisP.toArray()[0]);
+			System.out.println("P matrix info "+P.printMatrixInfo()); 
+			P.writeMatrix("pvalues");
 		}
 
 		R r = new R();
@@ -243,8 +245,7 @@ public class tSNECalculation implements TSneInterface{
 		r.beta = beta;
 		double sigma = mean(sqrt(scalarInverse(beta)));
 
-		System.out.println("P matrix info "+P.printMatrixInfo()); 
-		P.writeMatrix("pvalues");
+	
 		//System.out.println("Mean value of sigma: " + sigma);
 		monitor.showMessage(TaskMonitor.Level.INFO, "Mean value of sigma: " + sigma);
 

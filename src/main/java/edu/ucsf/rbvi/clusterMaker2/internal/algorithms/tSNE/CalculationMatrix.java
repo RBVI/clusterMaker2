@@ -692,7 +692,7 @@ public class CalculationMatrix {
 		return matrix;
 	}
 	
-	/*public static Matrix scalarMult(Matrix m1, double mul) {
+	public static Matrix scalarMult(Matrix m1, double mul) {
 		Matrix matrix=new ColtMatrix(m1.nRows(),m1.nColumns());
 		for (int i = 0; i < m1.nRows(); i++){
 			for (int j = 0; j < m1.nColumns(); j++){
@@ -703,9 +703,9 @@ public class CalculationMatrix {
 		}
 				
 		return matrix;
-	}*/
+	}
 	
-	public static Matrix scalarMult(Matrix m1, double mul) {
+	/*public static Matrix scalarMult(Matrix m1, double mul) {
 		Matrix matrix=new ColtMatrix(m1.nRows(),m1.nColumns());
 		for (int i = 0; i < m1.nRows(); i++){
 			for (int j = 0; j < m1.nColumns(); j++){
@@ -715,7 +715,7 @@ public class CalculationMatrix {
 		}
 				
 		return matrix;
-	}
+	}*/
 
 	
 	
