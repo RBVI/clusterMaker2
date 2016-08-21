@@ -2,6 +2,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE;
 
 
 
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 import edu.ufl.cise.colamd.tdouble.Colamd_Col;
 
@@ -37,37 +38,49 @@ import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMa
 import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.tile;
 import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.times;
 
+import java.util.Arrays;
+
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.work.TaskMonitor;
+
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.ColtMatrix;
 
 public class tSNECalculation implements TSneInterface{
 
 	CalculationMatrix mo = new CalculationMatrix();
+	
+	TaskMonitor monitor;
+	
+		public tSNECalculation(TaskMonitor monitor) {
+			this.monitor = monitor;
+		}
 
-	public Matrix tsne(Matrix X, int k, int initial_dims, double perplexity) {
-		return tsne(X,k,initial_dims, perplexity, 2000, true);
+	public CyMatrix tsne(Matrix X, int k, int initial_dims, double perplexity,CyNetwork network) {
+		return tsne(X,k,initial_dims, perplexity, 2000, true,network);
 	}
 
-	public Matrix tsne(Matrix X, int k, int initial_dims, double perplexity, int maxIterations) {
-		return tsne(X,k,initial_dims, perplexity, maxIterations, true);
+	public CyMatrix tsne(Matrix X, int k, int initial_dims, double perplexity, int maxIterations,CyNetwork network) {
+		return tsne(X,k,initial_dims, perplexity, maxIterations, true,network);
 	}
 
-	public Matrix tsne(Matrix matrix, int no_dims, int initial_dims, double perplexity, int max_iter, boolean use_pca) {
+	public CyMatrix tsne(Matrix matrix, int no_dims, int initial_dims, double perplexity, int max_iter, boolean use_pca,CyNetwork network) {
 
-		double X[][]=matrix.toArray();
+		//double X[][]=matrix.toArray();
 
 		String IMPLEMENTATION_NAME = this.getClass().getSimpleName();
-		System.out.println("X:Shape is = " + matrix.nRows() + " x " + matrix.nColumns());
-		System.out.println("Running " + IMPLEMENTATION_NAME + ".");
+		//System.out.println("X:Shape is = " + matrix.nRows() + " x " + matrix.nColumns());
+		//System.out.println("Running " + IMPLEMENTATION_NAME + ".");
+		monitor.showMessage(TaskMonitor.Level.INFO, "Running " + IMPLEMENTATION_NAME + ".");
 		if(use_pca && matrix.nColumns() > initial_dims && initial_dims > 0) {
-			System.out.println("Using pca");
+			//System.out.println("Using pca");
+			monitor.showMessage(TaskMonitor.Level.INFO, "Using pca");
 			PrincipalComponentAnalysis pca = new PrincipalComponentAnalysis();
 			double trmpmatrix[][] = pca.pca(matrix.toArray(), initial_dims);
 
 			matrix= CalculationMatrix.arrayToCyMatrix(trmpmatrix);
 
-			matrix=CalculationMatrix.arrayToCyMatrix(trmpmatrix);
-
-			System.out.println("X:Shape after PCA is = " + matrix.nRows() + " x " + matrix.nColumns());
+			//System.out.println("X:Shape after PCA is = " + matrix.nRows() + " x " + matrix.nColumns());
+			monitor.showMessage(TaskMonitor.Level.INFO, "X:Shape after PCA is = " + matrix.nRows() + " x " + matrix.nColumns());
 		}
 		
 		int n = matrix.nRows();
@@ -77,19 +90,22 @@ public class tSNECalculation implements TSneInterface{
 		int eta                 = 500;
 		double min_gain         = 0.01;
 
-		Matrix Y           = rnorm(n,no_dims);
+		Matrix Y           =  rnorm(n,no_dims);
 		Matrix dY          = fillMatrix(n,no_dims, 0.0);
 		Matrix iY          = fillMatrix(n,no_dims,0.0);
 		Matrix gains       = fillMatrix(n,no_dims,1.0);
 
 		// Compute P-values
 		Matrix P = x2p(matrix, 1e-5, perplexity).P;
+		
+		
 		P = plus(P , mo.transpose(P));
 		P = scalarDivide(P,sum(P));
 		P = scalarMult(P , 4);					// early exaggeration
 		P = maximum(P, 1e-12);
 
-		System.out.println("Y:Shape is = " + Y.nRows() + " x " + Y.nColumns());
+		//System.out.println("Y:Shape is = " + Y.nRows() + " x " + Y.nColumns());
+		monitor.showMessage(TaskMonitor.Level.INFO, "Y:Shape is = " + Y.nRows() + " x " + Y.nColumns());
 		
 		// Run iterations
 		for (int iter = 0; iter < max_iter; iter++) {
@@ -130,9 +146,11 @@ public class tSNECalculation implements TSneInterface{
 				Matrix logdivide = log(scalarDivide(P , Q));
 				logdivide = replaceNaN(logdivide,0);
 				double C = sum(mo.scalarMultiply(P , logdivide));
-				System.out.println("Iteration " + (iter + 1) + ": error is " + C);
+				//System.out.println("Iteration " + (iter + 1) + ": error is " + C);
+				monitor.showMessage(TaskMonitor.Level.INFO, "Iteration " + (iter + 1) + ": error is " + C);
 			} else if((iter + 1) % 10 == 0) {
-				System.out.println("Iteration " + (iter + 1));
+				//System.out.println("Iteration " + (iter + 1));
+				monitor.showMessage(TaskMonitor.Level.INFO, "Iteration " + (iter + 1));
 			}
 
 			// Stop lying about P-values
@@ -140,9 +158,10 @@ public class tSNECalculation implements TSneInterface{
 				P = scalarDivide(P , 4);
 		}
 
+		CyMatrix L=CalculationMatrix.matrixToCyMatrix(Y, network);
 		//Matrix mat=MatrixtSNE.arrayToCyMatrix(Y);
 		// Return solution
-		return Y;
+		return L;
 	}
 
 	public R Hbeta (Matrix D, double beta){
@@ -158,7 +177,14 @@ public class tSNECalculation implements TSneInterface{
 
 	public R x2p(Matrix X,double tol, double perplexity){
 		int n               = X.nRows();
-		Matrix sum_X   = sum(square(X), 1);
+		//Matrix sum_X   = sum(square(X), 1);
+		Matrix square_X   = square(X);
+		square_X.setRowLabels(Arrays.asList(X.getRowLabels()));
+		square_X.setColumnLabels(Arrays.asList(X.getColumnLabels()));
+		
+		Matrix sum_X   = sum(square_X, 1);
+		sum_X.setRowLabels(Arrays.asList(X.getRowLabels()));
+		
 		Matrix times   = scalarMult(times(X, mo.transpose(X)), -2);
 		Matrix prodSum = addColumnVector(mo.transpose(times), sum_X);
 		Matrix D       = addRowVector(prodSum, mo.transpose(sum_X));
@@ -169,10 +195,13 @@ public class tSNECalculation implements TSneInterface{
 		double [] beta      = fillMatrix(n,n,1.0).toArray()[0];
 
 		double logU         = Math.log(perplexity);
-		System.out.println("Starting x2p...");
+		//System.out.println("Starting x2p...");
+		monitor.showMessage(TaskMonitor.Level.INFO, "Starting x2p...");
 		for (int i = 0; i < n; i++) {
 			if (i % 500 == 0)
-				System.out.println("Computing P-values for point " + i + " of " + n + "...");
+				monitor.showMessage(TaskMonitor.Level.INFO, "Computing P-values for point " + i + " of " + n + "...");
+				//System.out.println("Computing P-values for point " + i + " of " + n + "...");
+				
 			double betamin = Double.NEGATIVE_INFINITY;
 			double betamax = Double.POSITIVE_INFINITY;
 			Matrix Di = getValuesFromRow(D, i,concatenate(range(0,i),range(i+1,n)));
@@ -214,7 +243,10 @@ public class tSNECalculation implements TSneInterface{
 		r.beta = beta;
 		double sigma = mean(sqrt(scalarInverse(beta)));
 
-		System.out.println("Mean value of sigma: " + sigma);
+		System.out.println("P matrix info "+P.printMatrixInfo()); 
+		P.writeMatrix("pvalues");
+		//System.out.println("Mean value of sigma: " + sigma);
+		monitor.showMessage(TaskMonitor.Level.INFO, "Mean value of sigma: " + sigma);
 
 		return r;
 	}

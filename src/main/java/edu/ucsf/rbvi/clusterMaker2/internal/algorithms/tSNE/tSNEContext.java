@@ -33,26 +33,21 @@ CyNetwork network;
 	//Tunables
 
 @ContainsTunables
-public EdgeAttributeHandler edgeAttributeHandler;
-
-
-
-@Tunable(description="Distance Metric", gravity=10)
-public ListSingleSelection<DistanceMetric> metric = 
-	new ListSingleSelection<DistanceMetric>(DistanceMetric.values());
-
-@ContainsTunables
 public AttributeList attributeList = null;
 
 
 public boolean selectedOnly = false;
 @Tunable(description="Use only selected nodes/edges for cluster",
-		groups={"t-SNE Advanced Settingss"}, gravity=65)
+		groups={"t-SNE Advanced Settings"}, gravity=65)
 public boolean getselectedOnly() { return selectedOnly; }
 public void setselectedOnly(boolean sel) {
-	if (network != null && this.selectedOnly != sel) //kcluster.updateKEstimates(network, sel);
+	if (network != null && this.selectedOnly != sel) 
 	this.selectedOnly = sel;
 }
+
+@Tunable(description="Ignore nodes with missing data",
+		groups={"t-SNE Advanced Settings"}, gravity=66)
+public boolean ignoreMissing = true;
 
 @Tunable(description="Initial Dimensions", groups={"t-SNE Advanced Settings"}, gravity=66)
 public int int_dims=1;
@@ -70,22 +65,17 @@ public ListSingleSelection<GetVisulaisation> modeselection =
 
 
 public tSNEContext(){
-	metric.setSelectedValue(DistanceMetric.EUCLIDEAN);
+	//metric.setSelectedValue(DistanceMetric.EUCLIDEAN);
 }
 
 public tSNEContext(tSNEContext origin) {
-	if (origin.edgeAttributeHandler != null){
-		edgeAttributeHandler = new EdgeAttributeHandler(origin.edgeAttributeHandler);
-		edgeAttributeHandler.setUndirected(false);
-		edgeAttributeHandler.setAdjustLoops(false);
 	
-	}
 	if (attributeList == null){
 		attributeList = new AttributeList(network);
 	}
-	else{
+	/*else{
 		attributeList.setNetwork(network);
-	}
+	}*/
 		
 		
 }
@@ -96,34 +86,18 @@ public void setNetwork(CyNetwork network) {
 
 	this.network = network;
 	
-	if (edgeAttributeHandler == null){
-		
-		edgeAttributeHandler = new EdgeAttributeHandler(network);
-		edgeAttributeHandler.setUndirected(false);
-		edgeAttributeHandler.setAdjustLoops(false);
-		
-	}
-	else{
-		edgeAttributeHandler.setNetwork(network);
-	}
 	
 	if (attributeList == null){
 		attributeList = new AttributeList(network);
 	}
-	else{
+	/*else{
 		attributeList.setNetwork(network);
-	}
+	}*/
 		
 		
 }
 
-public DistanceMetric getDistanceMetric() {
-	return metric.getSelectedValue();
-}
 public CyNetwork getNetwork() { return network; }
 
 
-public void setUIHelper(TunableUIHelper helper) {
-	//edgeAttributeHandler.setUIHelper(helper);
-}
 }

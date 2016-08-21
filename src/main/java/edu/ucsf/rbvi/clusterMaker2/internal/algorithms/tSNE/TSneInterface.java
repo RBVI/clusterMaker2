@@ -1,11 +1,13 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE;
 
+import org.cytoscape.model.CyNetwork;
+
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 public interface TSneInterface {
 
-	Matrix tsne(Matrix matrix, int no_dims, int initial_dims, double perplexity, int max_iter, boolean use_pca);
+	CyMatrix tsne(Matrix matrix, int no_dims, int initial_dims, double perplexity, int max_iter, boolean use_pca,CyNetwork network);
 
 	R Hbeta (Matrix D, double beta);
 	

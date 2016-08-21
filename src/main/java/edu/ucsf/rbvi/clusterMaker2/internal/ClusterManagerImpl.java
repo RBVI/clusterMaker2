@@ -122,7 +122,7 @@ public class ClusterManagerImpl implements ClusterManager {
 				props.setProperty(MENU_GRAVITY, ""+pcaIndex);
 				break;
 				
-			case PCOA:
+			case DIMERD:
 				pcaIndex += 1.0;
 				props.setProperty(MENU_GRAVITY, ""+pcaIndex);
 				break;
