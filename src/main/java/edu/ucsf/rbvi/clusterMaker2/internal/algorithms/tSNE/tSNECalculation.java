@@ -65,6 +65,7 @@ public class tSNECalculation implements TSneInterface{
 	public CyMatrix tsne(CyMatrix matrix, int no_dims, int initial_dims, double perplexity, int max_iter, boolean use_pca) {
 
 		//double X[][]=matrix.toArray();
+		monitor.setProgress(0.0);
 
 		String IMPLEMENTATION_NAME = this.getClass().getSimpleName();
 		//System.out.println("X:Shape is = " + matrix.nRows() + " x " + matrix.nColumns());
@@ -106,8 +107,12 @@ public class tSNECalculation implements TSneInterface{
 		//System.out.println("Y:Shape is = " + Y.nRows() + " x " + Y.nColumns());
 		monitor.showMessage(TaskMonitor.Level.INFO, "Y:Shape is = " + Y.nRows() + " x " + Y.nColumns());
 		
+		double progress = 0.0;
 		// Run iterations
 		for (int iter = 0; iter < max_iter; iter++) {
+			progress = (double)iter/(double)max_iter;
+			monitor.setProgress(progress);
+
 			// Compute pairwise affinities
 			Matrix sum_Y = mo.transpose(sum(square(Y), 1));
 			Matrix num = scalarInverse(scalarPlus(addRowVector(mo.transpose(addRowVector(scalarMult(
@@ -149,7 +154,7 @@ public class tSNECalculation implements TSneInterface{
 				monitor.showMessage(TaskMonitor.Level.INFO, "Iteration " + (iter + 1) + ": error is " + C);
 			} else if((iter + 1) % 10 == 0) {
 				//System.out.println("Iteration " + (iter + 1));
-				monitor.showMessage(TaskMonitor.Level.INFO, "Iteration " + (iter + 1));
+				// monitor.showMessage(TaskMonitor.Level.INFO, "Iteration " + (iter + 1));
 			}
 
 			// Stop lying about P-values

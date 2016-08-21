@@ -109,6 +109,7 @@ public class ScatterPlotDialog extends JDialog {
 
 		pack();
 		setLocationByPlatform(true);
+		setVisible(true);
 	}
 
 	// Entry point for PCoA and related
@@ -138,6 +139,7 @@ public class ScatterPlotDialog extends JDialog {
 
 		pack();
 		setLocationByPlatform(true);
+		setVisible(true);
 	}
 
 	// Entry point for PCA
@@ -214,14 +216,12 @@ public class ScatterPlotDialog extends JDialog {
 			container.add(legendPanel, constraints);
 		}
 
-		if (variances != null) {
-			constraints.gridx = 0;
-			constraints.gridy = 1;
-			constraints.gridwidth = 2;
-			constraints.anchor = GridBagConstraints.SOUTHWEST;
-			constraints.fill = GridBagConstraints.HORIZONTAL;
-			container.add(createControlJPanel(scores, loadings), constraints);
-		}
+		constraints.gridx = 0;
+		constraints.gridy = 1;
+		constraints.gridwidth = 2;
+		constraints.anchor = GridBagConstraints.SOUTHWEST;
+		constraints.fill = GridBagConstraints.HORIZONTAL;
+		container.add(createControlJPanel(scores, loadings), constraints);
 
 		container.setBorder(BorderFactory.createEtchedBorder());
 
@@ -329,28 +329,41 @@ public class ScatterPlotDialog extends JDialog {
 	public JPanel createControlJPanel(final CyMatrix[] components, final Matrix loadings){
 		JPanel control = new JPanel(new GridBagLayout());
 
-		PCs = new String[components.length];
-		for(int i=0;i<PCs.length;i++)
-			PCs[i] = "PC " + (i+1);
+		if (variances != null) {
+			PCs = new String[components.length];
+			for(int i=0;i<PCs.length;i++)
+				PCs[i] = "PC " + (i+1);
 
-		comboXAxis = new JComboBox<String>(PCs);
-		comboYAxis = new JComboBox<String>(PCs);
-		comboYAxis.setSelectedIndex(1);
-		textFieldPointSize.setText("6");
-		labelXVariance = new JLabel(format.format(variances[0]) + "% variance");
-		labelYVariance = new JLabel(format.format(variances[1]) + "% variance");
+			comboXAxis = new JComboBox<String>(PCs);
+			comboYAxis = new JComboBox<String>(PCs);
+			comboYAxis.setSelectedIndex(1);
+			labelXVariance = new JLabel(format.format(variances[0]) + "% variance");
+			labelYVariance = new JLabel(format.format(variances[1]) + "% variance");
 
-		panelXAxis.setLayout(new BoxLayout(panelXAxis, BoxLayout.X_AXIS));
-		panelXAxis.removeAll();
-		panelXAxis.add(comboXAxis);
-		panelXAxis.add(Box.createRigidArea(new Dimension(5,0)));
-		panelXAxis.add(labelXVariance);
+			panelXAxis.setLayout(new BoxLayout(panelXAxis, BoxLayout.X_AXIS));
+			panelXAxis.removeAll();
+			panelXAxis.add(comboXAxis);
+			panelXAxis.add(Box.createRigidArea(new Dimension(5,0)));
+			panelXAxis.add(labelXVariance);
+	
+			panelYAxis.setLayout(new BoxLayout(panelYAxis, BoxLayout.X_AXIS));
+			panelYAxis.removeAll();
+			panelYAxis.add(comboYAxis);
+			panelYAxis.add(Box.createRigidArea(new Dimension(5,0)));
+			panelYAxis.add(labelYVariance);
 
-		panelYAxis.setLayout(new BoxLayout(panelYAxis, BoxLayout.X_AXIS));
-		panelYAxis.removeAll();
-		panelYAxis.add(comboYAxis);
-		panelYAxis.add(Box.createRigidArea(new Dimension(5,0)));
-		panelYAxis.add(labelYVariance);
+			comboXAxis.addActionListener (new ActionListener () {
+				public void actionPerformed(ActionEvent e) {
+					labelXVariance.setText(format.format(variances[comboXAxis.getSelectedIndex()]) + "% variance");
+				}
+			});
+
+			comboYAxis.addActionListener (new ActionListener () {
+				public void actionPerformed(ActionEvent e) {
+					labelYVariance.setText(format.format(variances[comboYAxis.getSelectedIndex()]) + "% variance");
+				}
+			});
+		}
 
 		if(buttonOptions.getActionListeners().length == 0){
 			buttonOptions.addActionListener(collapsiblePaneOptions.getActionMap().get("toggle"));
@@ -365,6 +378,9 @@ public class ScatterPlotDialog extends JDialog {
 				});
 			}
 		}
+
+		textFieldPointSize.setText("6");
+
 		panelButtons.setLayout(new BoxLayout(panelButtons, BoxLayout.X_AXIS));
 		panelButtons.add(buttonOptions);
 		panelButtons.add(buttonPlot);
@@ -375,20 +391,22 @@ public class ScatterPlotDialog extends JDialog {
 		constraints.anchor = GridBagConstraints.WEST;
 		constraints.insets = new Insets(10, 10, 10, 10);
 
-		// add components to the panel
-		constraints.gridx = 0;
-		constraints.gridy = 0;
-		control.add(labelXAxis, constraints);
+		if (variances != null) {
+			// add components to the panel
+			constraints.gridx = 0;
+			constraints.gridy = 0;
+			control.add(labelXAxis, constraints);
 
-		constraints.gridx = 1;
-		control.add(panelXAxis, constraints);
+			constraints.gridx = 1;
+			control.add(panelXAxis, constraints);
 
-		constraints.gridx = 0;
-		constraints.gridy = 1;
-		control.add(labelYAxis, constraints);
+			constraints.gridx = 0;
+			constraints.gridy = 1;
+			control.add(labelYAxis, constraints);
 
-		constraints.gridx = 1;
-		control.add(panelYAxis, constraints);
+			constraints.gridx = 1;
+			control.add(panelYAxis, constraints);
+		}
 
 		constraints.gridx = 0;
 		constraints.gridy = 2;
@@ -401,18 +419,6 @@ public class ScatterPlotDialog extends JDialog {
 		constraints.gridwidth = 2;
 		constraints.anchor = GridBagConstraints.CENTER;
 		control.add(panelButtons, constraints);
-
-		comboXAxis.addActionListener (new ActionListener () {
-			public void actionPerformed(ActionEvent e) {
-				labelXVariance.setText(format.format(variances[comboXAxis.getSelectedIndex()]) + "% variance");
-			}
-		});
-
-		comboYAxis.addActionListener (new ActionListener () {
-			public void actionPerformed(ActionEvent e) {
-				labelYVariance.setText(format.format(variances[comboYAxis.getSelectedIndex()]) + "% variance");
-			}
-		});
 
 		buttonPlot.addActionListener(new ActionListener() {
 
@@ -446,9 +452,16 @@ public class ScatterPlotDialog extends JDialog {
 		for (ComponentListener cl: container.getComponentListeners())
 			container.removeComponentListener(cl);
 
+		int xAxis = 0;
+		int yAxis = 1;
+		if (variances != null) {
+			xAxis = comboXAxis.getSelectedIndex();
+			yAxis = comboYAxis.getSelectedIndex();
+		}
+
 		ScatterPlotPCA scatterPlot = new ScatterPlotPCA(scores, loadings, 
-		                                                comboXAxis.getSelectedIndex(), 
-																		                comboYAxis.getSelectedIndex(),
+		                                                xAxis, 
+																		                yAxis,
 																										pointColor, pointSize, loadingsColorMap,
 																										useLoadings);
 		GridBagConstraints constraints = new GridBagConstraints();

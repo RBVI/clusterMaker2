@@ -4,6 +4,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE;
 import java.awt.Color;
 
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
@@ -16,6 +17,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 import org.math.plot.FrameView;
 import org.math.plot.Plot2DPanel;
 import org.math.plot.plots.ScatterPlot;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ScatterPlotDialog;
 
 
 public class RuntSNE {
@@ -57,8 +59,9 @@ public class RuntSNE {
 		// System.out.println("Is Symmetrical "+matrix.isSymmetrical());
 		monitor.setTitle("Running t-Distributed Stochastic Neighbor (tSNE)");
 		TSneInterface tsne=new tSNECalculation(monitor);
-		Matrix Y=tsne.tsne(matrix, 2, initial_dimensions, perplexity, no_of_iterations, false);
+		CyMatrix Y=tsne.tsne(matrix, 2, initial_dimensions, perplexity, no_of_iterations, false);
 	
+		/*
 		Plot2DPanel plot = new Plot2DPanel();
 	     
 		 ScatterPlot setosaPlot = new ScatterPlot("setosa", Color.BLUE, Y.toArray());
@@ -69,9 +72,14 @@ public class RuntSNE {
 	     FrameView plotframe = new FrameView(plot);
 	     plotframe.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 	     plotframe.setVisible(true);
+		*/
 	
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					ScatterPlotDialog dialog = new ScatterPlotDialog("tSNE Scatter Plot", monitor, Y);
+				}
+			});
 
-	//ScatterPlotDialog dialog = new ScatterPlotDialog("tSNE Scatter Plot", monitor, Y);
 		
 	}
 

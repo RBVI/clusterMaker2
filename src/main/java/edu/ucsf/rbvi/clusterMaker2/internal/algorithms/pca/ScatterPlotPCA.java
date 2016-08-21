@@ -92,7 +92,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 
 		double max = scores[xIndex].getMaxValue();
 		double min = scores[xIndex].getMinValue();
-		// System.out.println("min,max = "+min+","+max);
+		// System.out.println("min = "+min+", max = "+max);
 		if(max > MAX_SCORE || min < MIN_SCORE){
 			if(max > Math.abs(min)){
 				MAX_SCORE = (int) Math.ceil(max);
@@ -103,12 +103,8 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 			}
 		}
 
-		int scaleFontSize = 8;
+		int scaleFontSize = 6;
 		int labelFontSize = 12;
-		int fontChange = MAX_SCORE/10;
-		if (fontChange > 1) {
-			scaleFontSize = scaleFontSize-fontChange*1;
-		}
 
 		scaleFont = new Font("sans-serif", Font.PLAIN, scaleFontSize);
 		labelFont = new Font("sans-serif", Font.BOLD, labelFontSize);
@@ -301,14 +297,26 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		graph_point_width = pointWidth;
 		CyNetwork network = scores[xIndex].getNetwork();
 		graphPoints.clear();
-		for(int i=0; i<scores[xIndex].nRows();i++){
-			CyNode node = scores[xIndex].getRowNode(i);
-			for(int j=0;j<scores[xIndex].nColumns();j++){
+		if (scores.length == 1) {
+			// Coordinate matrix
+			for(int i=0; i<scores[xIndex].nRows();i++){
+				CyNode node = scores[xIndex].getRowNode(i);
 				boolean selected = ModelUtils.isSelected(network, node);
-				int x1 = (int) (scores[xIndex].getValue(i,j) * xScale + newX);
-				int y1 = (int) (-1 * (scores[yIndex].getValue(i,j) * yScale - newY));
+				int x1 = (int) (scores[0].getValue(i,0) * xScale + newX);
+				int y1 = (int) (-1 * (scores[0].getValue(i,1) * yScale - newY));
 				drawPoint(g2, x1, y1, pointColor, selected);
 				graphPoints.add(new Point(x1, y1));
+			}
+		} else {
+			for(int i=0; i<scores[xIndex].nRows();i++){
+				CyNode node = scores[xIndex].getRowNode(i);
+				for(int j=0;j<scores[xIndex].nColumns();j++){
+					boolean selected = ModelUtils.isSelected(network, node);
+					int x1 = (int) (scores[xIndex].getValue(i,j) * xScale + newX);
+					int y1 = (int) (-1 * (scores[yIndex].getValue(i,j) * yScale - newY));
+					drawPoint(g2, x1, y1, pointColor, selected);
+					graphPoints.add(new Point(x1, y1));
+				}
 			}
 		}
 
@@ -362,12 +370,25 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 	}
 
 	public void drawAxes(Graphics2D g2, int width, int height, String labelX, String labelY) {
+		// Adjust the min and max values a little
+		int stepSize = 1;
+		if ((MAX_SCORE-MIN_SCORE) > 20) {
+			int maxTicks = 10;
+			stepSize = (int) Math.ceil( (double)MAX_SCORE / (double)maxTicks);
+			MAX_SCORE = maxTicks * stepSize;
+			MIN_SCORE = -MAX_SCORE;
+		}
+
 	  double xScale = ((double) width) / (MAX_SCORE - MIN_SCORE);
 	  double yScale = ((double) height) / (MAX_SCORE - MIN_SCORE);
 
+		// System.out.println("MAX_SCORE="+MAX_SCORE+", MIN_SCORE="+MIN_SCORE);
+		// System.out.println("xScale="+xScale+", yScale="+yScale);
+
 		g2.setFont(scaleFont);
+
 		// create hatch marks for y axis.
-		for (int i = 0; i <= MAX_SCORE - MIN_SCORE; i++) {
+		for (int i = 0; i <= MAX_SCORE - MIN_SCORE; i+=stepSize) {
 			g2.setColor(Color.WHITE);
 
 			int x0 = XSTART;
@@ -391,7 +412,8 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 
 		// and for x axis
 		g2.setFont(scaleFont);
-		for (int i = 0; i <= MAX_SCORE - MIN_SCORE; i++) {
+
+		for (int i = 0; i <= MAX_SCORE - MIN_SCORE; i += stepSize) {
 			g2.setColor(Color.WHITE);
 			int x0 = (int) (XSTART + i * xScale);
 			int x1 = x0;
@@ -408,7 +430,9 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 			int stringHeight = fm.getHeight();
 
 			g2.setColor(Color.BLACK);
-			g2.drawString(number, x1-(int)(stringWidth/2.0), y1+stringHeight);
+			int xLabel = x1-(int)(stringWidth/2.0);
+			int yLabel = y1+stringHeight;
+			g2.drawString(number, xLabel, yLabel);
 		}
 
 		g2.setFont(labelFont);
