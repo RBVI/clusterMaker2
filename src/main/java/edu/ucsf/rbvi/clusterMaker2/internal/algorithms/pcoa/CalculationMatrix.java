@@ -109,7 +109,7 @@ distancematrix.writeMatrix("distancematrix.txt");
 	
 	
 	//get the coordinates for PCoA
-	public CyMatrix[] getCooridinates(CyMatrix matrix){
+	public CyMatrix[] getCoordinates(CyMatrix matrix){
 		CyMatrix[] components = new CyMatrix[eigen_values.length];
 
 		for(int j=eigen_values.length-1, k=0;j>=0;j--,k++){

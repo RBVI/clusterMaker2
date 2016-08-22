@@ -33,6 +33,12 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
  *          I(Ci) is the number of internal edges in the cluster
  *          D(Ci) is the degree (number of external edges) of the cluster
  *          |E| is the total number of edges in the network
+ *
+ * Modularity for each cluster defined as:
+ * 	Mi = I(Ci)/|E| - {(2*I(Ci) - D(Ci))/ 2*|E|}^2
+ *
+ * (see Community Detection via Maximization of Modularity and Its Variants.
+ * Mingming Chen, Konstantin Kuzmin, Boleslaw K. Szymanski)
  */
 
 public class AbstractClusterResults implements ClusterResults {
@@ -142,10 +148,11 @@ public class AbstractClusterResults implements ClusterResults {
 			// double percentEdgesTouchingCluster = (innerEdges+outerEdges)/edgeCount;
 			// modularity += percentEdgesInCluster - percentEdgesTouchingCluster*percentEdgesTouchingCluster;
 
-			double proportionEdgesInCluster = innerEdges/edgeCount;
+ 			// 	Mi = I(Ci)/|E| - {(2*I(Ci) - D(Ci))/ 2*|E|}^2
+			double proportionEdgesInCluster = innerEdges/edgeCount; // I(Ci)/|E|
 			double proportionEdgesOutCluster = outerEdges/edgeCount;
 
-			double clusterModularity = proportionEdgesInCluster - (proportionEdgesOutCluster/2)*(proportionEdgesOutCluster/2);
+			double clusterModularity = proportionEdgesInCluster - Math.pow((2*innerEdges - outerEdges)/(2*edgeCount), 2);
 			modularityList.add(clusterModularity);
 			modularity += clusterModularity;
 			//modularity += proportionEdgesInCluster - (proportionEdgesOutCluster/2)*(proportionEdgesOutCluster/2);
