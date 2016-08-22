@@ -55,58 +55,7 @@ public class CalculationMatrix {
 		return transpose;
 	}
 
-	/*
-	class MatrixTransposer extends RecursiveAction {
-		private static final long serialVersionUID = 1L;
-		Matrix orig;
-		Matrix transpose;
-		int startRow = -1;
-		int endRow = -1;
-		int limit = 1000;
-
-		public MatrixTransposer(Matrix orig, Matrix transpose, int startRow, int endRow, int ll) {
-			this.limit = ll;
-			this.orig = orig;
-			this.transpose = transpose;
-			this.startRow = startRow;
-			this.endRow = endRow;
-		}
-
-		public MatrixTransposer(Matrix orig,Matrix transpose, int startRow, int endRow) {
-			this.orig = orig;
-			this.transpose = transpose;
-			this.startRow = startRow;
-			this.endRow = endRow;
-		}
-
-		@Override
-		protected void compute() {
-			try {
-				if ( (endRow-startRow) <= limit ) {
-					int cols = orig.nColumns();
-					for (int i = 0; i < cols; i++) {
-						for (int j = startRow; j < endRow; j++) {
-							transpose.setValue(i, j, orig.getValue(i, j));
-						}
-					}
-				}
-				else {
-					int range = (endRow-startRow);
-					int startRow1 = startRow;
-					int endRow1 = startRow + (range / 2);
-					int startRow2 = endRow1;
-					int endRow2 = endRow;
-					invokeAll(new MatrixTransposer(orig, transpose, startRow1, endRow1, limit),
-							new MatrixTransposer(orig, transpose, startRow2, endRow2, limit));
-				}
-			}
-			catch ( Exception e ) {
-				e.printStackTrace();
-			}
-		}
-	}
-	*/
-
+	
 	public static Matrix exp(Matrix m1) {
 		Matrix matrix=new ColtMatrix(m1.nRows(),m1.nColumns());
 		for (int i = 0; i < matrix.nRows(); i++) {

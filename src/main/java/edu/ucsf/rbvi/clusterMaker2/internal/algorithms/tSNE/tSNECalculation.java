@@ -162,7 +162,8 @@ public class tSNECalculation implements TSneInterface{
 				P = scalarDivide(P , 4);
 		}
 
-		CyMatrix L=CalculationMatrix.matrixToCyMatrix(matrix, Y);
+		//CyMatrix L=CalculationMatrix.matrixToCyMatrix(matrix, Y);
+		CyMatrix L=matrix.copy(Y);
 		return L;
 	}
 
