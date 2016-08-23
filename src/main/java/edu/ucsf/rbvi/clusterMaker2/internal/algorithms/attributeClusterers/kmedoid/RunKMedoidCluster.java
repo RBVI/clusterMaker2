@@ -60,6 +60,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractKClusterAlgorithm;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
 
 public class RunKMedoidCluster extends AbstractKClusterAlgorithm {
 	KMedoidContext context;
@@ -70,7 +71,7 @@ public class RunKMedoidCluster extends AbstractKClusterAlgorithm {
 		this.context = context;
 	}
 
-	// The kmeans implementation of a k-clusterer
+	// The kmedoid implementation of a k-clusterer
 	public int kcluster(int nClusters, int nIterations, CyMatrix matrix, DistanceMetric metric, int[] clusterID) {
 		// System.out.println("Running kmedoid with "+nClusters+" clusters");
 		if (monitor != null)
@@ -88,13 +89,16 @@ public class RunKMedoidCluster extends AbstractKClusterAlgorithm {
 
 		int[] centers;
 		if (context.kcluster.initializeNearCenter) {
-			centers = chooseCentralElementsAsCenters(matrix.nRows(), nClusters, distances, null);
+			centers = chooseCentralElementsAsCenters(matrix.nRows(), nClusters, 
+					                                     matrix.getDistanceMatrix(metric).toArray(), clusterID);
 		} else {
-			centers = chooseRandomElementsAsCenters(matrix.nRows(), nClusters);
+			chooseRandomElementsAsCenters(matrix.nRows(), nClusters, clusterID);
+			centers = calculateCenters(nClusters, matrix, metric, clusterID);
 		}
 		int[] oldCenters = null;
 		// outputCenters(centers);
 
+		
 		while (centersChanged(oldCenters, centers)) {
 			oldCenters = centers;
 			// outputClusterId(clusterID);
@@ -133,12 +137,6 @@ public class RunKMedoidCluster extends AbstractKClusterAlgorithm {
 
 	private int[] calculateCenters(int nClusters, CyMatrix matrix, DistanceMetric metric, int[] clusterId) {
 		int[] newCenters = new int[nClusters];
-		// CyMatrix cData = new CyMatrix(network, nClusters, matrix.nRows());
-		// CyMatrix cData = new CyMatrix(network, nClusters, matrix.nColumns());
-
-		// Calculate all of the cluster centers
-		// getClusterMeans(nClusters, matrix, cData, clusterId);
-
 		// For each cluster, find the closest row
 		for (int cluster = 0; cluster < nClusters; cluster++) {
 			// newCenters[cluster] = findMedoid(matrix, cData, cluster, clusterId);
