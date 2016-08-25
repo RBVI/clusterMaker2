@@ -62,7 +62,7 @@ public class RunPCoA {
 		if(neg==2){//corect negative eigen values
 			calc.correctEigenValues();
 		}
-		CyMatrix components[]=calc.getCooridinates(distanceMatrix);
+		CyMatrix components[]=calc.getCoordinates(distanceMatrix);
 		System.out.println("Completed Coordinates Calculation");
 		if(context.pcoaResultPanel){
 			ResultPanelPCoA.createAndShowGui(components, network, networkView, distanceMatrix.getRowNodes(), variance);
