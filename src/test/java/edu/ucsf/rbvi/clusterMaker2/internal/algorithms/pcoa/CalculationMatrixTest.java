@@ -145,7 +145,7 @@ public class CalculationMatrixTest {
 				{-0.5147954337536527,-0.4999999999999998,0.6469800144154148,0.0}, 
 				{0.5944129043987613,-0.5000000000000001,0.30584655853107445,0.0} 	
 		};
-	//	assertArrayEquals(null,expect,(calcmatrix.scaleEigenVectors()));
+		//assertArrayEquals(null,expect,(calcmatrix.scaleEigenVectors()));
 	}
 	@Test
 	public void test() {
