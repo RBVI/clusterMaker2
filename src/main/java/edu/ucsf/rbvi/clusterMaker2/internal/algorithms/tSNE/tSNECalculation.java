@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE;
 
 
 
@@ -6,36 +6,36 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.abs;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.addColumnVector;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.addRowVector;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.assignAllLessThan;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.assignAtIndex;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.assignValuesToRow;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.biggerThan;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.concatenate;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.diag;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.equal;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.exp;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.fillMatrix;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.getValuesFromRow;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.log;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.maximum;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.mean;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.negate;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.plus;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.range;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.replaceNaN;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.rnorm;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.scalarDivide;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.scalarInverse;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.scalarMult;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.scalarPlus;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.sqrt;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.square;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.sum;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.times;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne.CalculationMatrix.tile;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.abs;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.addColumnVector;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.addRowVector;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.assignAllLessThan;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.assignAtIndex;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.assignValuesToRow;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.biggerThan;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.concatenate;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.diag;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.equal;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.exp;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.fillMatrix;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.getValuesFromRow;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.log;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.maximum;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.mean;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.negate;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.plus;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.range;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.replaceNaN;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.rnorm;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.scalarDivide;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.scalarInverse;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.scalarMult;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.scalarPlus;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.sqrt;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.square;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.sum;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.times;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.CalculationMatrix.tile;
 
 import java.util.Arrays;
 

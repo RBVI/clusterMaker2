@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tsne;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE;
 
 import java.util.List;
 
