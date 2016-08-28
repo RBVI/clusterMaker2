@@ -358,10 +358,10 @@ public void scalarMultTest() {
 	assertArrayEquals(null, temparray, arratmp);
 }
 
-@Test
+/*@Test
 public void timesTest() {
 	setInitiate();
-	//setInitiateSecond();
+	setInitiateSecond();
 	tempmatrix=calcmatrix.times(matrixdata, coldata);
 	
 	temparray=matrixTest.times(data,data_col);
@@ -370,7 +370,7 @@ public void timesTest() {
 	
 	
 	assertArrayEquals(null, temparray, arratmp);
-}
+}*/
 
 @Test
 public void diagTest() {
@@ -398,14 +398,16 @@ public void getValuesFromRowTest() {
 }*/
 
 
-/*@Test
+@Test
 public void rnormTest() {
 	setInitiate();
+	System.out.println("My value tsne");
 	tempmatrix=calcmatrix.rnorm(row,col);
-	
+	System.out.println("");
+	System.out.println("Original TSNE value tsne");
 	temparray=matrixTest.rnorm(row,col);
 	double arratmp[][]=tempmatrix.toArray();
-	System.out.println("Normal array");
+	/*System.out.println("Normal array");
 	for(int i=0;i<arratmp.length;i++){
 		for(int j=0;j<arratmp[0].length;j++){
 			System.out.print(arratmp[i][j]+" ");
@@ -419,10 +421,10 @@ public void rnormTest() {
 			System.out.print(temparray[i][j]+" ");
 			}
 		System.out.println("");
-		}
+		}*/
 	
 	assertArrayEquals(null, temparray, arratmp);
-}*/
+}
 @Test
 public void test() {
 	setInitiate();
@@ -450,7 +452,7 @@ public void test() {
 	scalarDivideTest();
 	scalarDivideMatTest();
 	scalarMultTest();
-	timesTest();
+	//timesTest();
 	diagTest();
 	//getValuesFromRowTest();
 	//rnormTest();

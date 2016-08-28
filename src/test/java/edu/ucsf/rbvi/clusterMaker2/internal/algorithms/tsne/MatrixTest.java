@@ -501,7 +501,7 @@ public class MatrixTest {
 	public static double[][] rnorm(int m, int n) {
 		double[][] array = new double[m][n];
 		for (int i = 0; i < m; i++) {
-			for (int j = 0; j < array[i].length; j++) {				
+			for (int j = 0; j < array[i].length; j++) {		
 				array[i][j] = rnorm(0.0,1.0);
 			}
 		}
@@ -535,7 +535,9 @@ public class MatrixTest {
 	 * @return random sample
 	 */
 	public static double rnorm(double mu, double sigma) {
-		return mu + (ThreadLocalRandom.current().nextGaussian() * sigma);
+		double val=mu + (ThreadLocalRandom.current().nextGaussian() * sigma);
+		System.out.print(val+" ");
+		return val;
 	}
 
 	// Unit Tested
