@@ -9,8 +9,8 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.ThreadLocalRandom;
 
-import Jama.Matrix;
-import org.ejml.data.DenseMatrix64F;
+// import Jama.Matrix;
+// import org.ejml.data.DenseMatrix64F;
 
 public class MatrixTest {
 	Random rnd = new Random();
@@ -1377,11 +1377,13 @@ public class MatrixTest {
 	}
 	
 	// Unit Tested
+	/*
 	public static double[][] times(double[][] m1, double[][] m2) {
 		Matrix A = Matrix.constructWithCopy(m1);
 		Matrix B = Matrix.constructWithCopy(m2);
 		return A.times(B).getArray();
 	}
+	*/
 
 	public static double [] scalarMultiply(double[] m1, double mul) {
 		double[] matrix = new double[m1.length];
@@ -1482,6 +1484,7 @@ public class MatrixTest {
 		return res;
 	}
 
+	/*
 	public static double [][] extractDoubleArray(DenseMatrix64F p) {
 		int rows = p.getNumRows();
 		int cols = p.getNumCols();
@@ -1516,6 +1519,7 @@ public class MatrixTest {
 		}
 		return result;
 	}
+	*/
 
 	public static double[][] extractRowCols(int col, double[][] zs2, int[] cJIdxs) {
 		double [][] res = new double[cJIdxs.length][1];

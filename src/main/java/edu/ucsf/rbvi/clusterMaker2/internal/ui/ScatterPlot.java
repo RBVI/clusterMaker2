@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca;
+package edu.ucsf.rbvi.clusterMaker2.internal.ui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.swing.*;
-import org.jdesktop.swingx.JXCollapsiblePane;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -44,7 +43,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
  * @author root
  */
 @SuppressWarnings("serial")
-public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotionListener{
+public class ScatterPlot extends JPanel implements MouseListener, MouseMotionListener{
 	private float scale = 1;
 	private static int MAX_SCORE = 1;
 	private static int MIN_SCORE = -1;
@@ -77,7 +76,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 
 	private boolean useLoadings;
 
-	public ScatterPlotPCA(CyMatrix[] scores, Matrix loadings, 
+	public ScatterPlot(CyMatrix[] scores, Matrix loadings, 
 	                      int x, int y, Color pointColor, int pointWidth,
 				                Map<String, Color> colorMap, boolean useLoadings) {
 		this.scores = scores;
@@ -92,7 +91,7 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 
 		double max = scores[xIndex].getMaxValue();
 		double min = scores[xIndex].getMinValue();
-		// System.out.println("min = "+min+", max = "+max);
+		System.out.println("min = "+min+", max = "+max);
 		if(max > MAX_SCORE || min < MIN_SCORE){
 			if(max > Math.abs(min)){
 				MAX_SCORE = (int) Math.ceil(max);
@@ -236,7 +235,20 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 		currentX = p.x;
 		currentY = p.y;
 		if (shift) {
-			selectRange(startingX, startingY, currentX, currentY);
+			int x1 = startingX;
+			int x2 = currentX;
+			int y1 = startingY;
+			int y2 = currentY;
+			if (currentX < startingX) {
+				x2 = startingX;
+				x1 = currentX;
+			}
+			if (currentY < startingY) {
+				y2 = startingY;
+				y1 = currentY;
+			}
+			// selectRange(startingX, startingY, currentX, currentY);
+			selectRange(x1, y1, x2, y2);
 		}
 		repaint();
 	}
@@ -341,8 +353,11 @@ public class ScatterPlotPCA extends JPanel implements MouseListener, MouseMotion
 			BasicStroke stroke = new BasicStroke(0.5f);
 			g2.setStroke(stroke);
 			g2.setColor(Color.BLACK);
-			g2.drawRect(startingX, startingY, 
-			            Math.abs(currentX-startingX), Math.abs(currentY-startingY));
+			int x = startingX;
+			int y = startingY;
+			if (currentX < startingX) x = currentX;
+			if (currentY < startingY) y = currentY;
+			g2.drawRect(x, y, Math.abs(currentX-startingX), Math.abs(currentY-startingY));
 		}
 	}
 

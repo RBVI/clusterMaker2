@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca;
+package edu.ucsf.rbvi.clusterMaker2.internal.ui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -160,7 +160,7 @@ public class ScatterPlotDialog extends JDialog {
 
 		// Sanity check
 		if(scores == null || scores.length < 2 || scores.length != varianceArray.length) {
-			monitor.showMessage(TaskMonitor.Level.ERROR, "PCA scatterplot must at least 2 columns!");
+			monitor.showMessage(TaskMonitor.Level.ERROR, "Scatterplot must at least 2 columns!");
 			return;
 		}
 
@@ -191,8 +191,8 @@ public class ScatterPlotDialog extends JDialog {
 		container.setLayout(new GridBagLayout());
 		container.removeAll();
 
-		ScatterPlotPCA scatterPlot = 
-		 				new ScatterPlotPCA(scores, loadings, 0, 1, pointColor, 6, loadingsColorMap, useLoadings);
+		ScatterPlot scatterPlot = 
+		 				new ScatterPlot(scores, loadings, 0, 1, pointColor, 6, loadingsColorMap, useLoadings);
 
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.anchor = GridBagConstraints.NORTHWEST;
@@ -219,6 +219,8 @@ public class ScatterPlotDialog extends JDialog {
 		constraints.gridx = 0;
 		constraints.gridy = 1;
 		constraints.gridwidth = 2;
+		constraints.weightx = 1.0;
+		constraints.weighty = 0;
 		constraints.anchor = GridBagConstraints.SOUTHWEST;
 		constraints.fill = GridBagConstraints.HORIZONTAL;
 		container.add(createControlJPanel(scores, loadings), constraints);
@@ -390,18 +392,20 @@ public class ScatterPlotDialog extends JDialog {
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.anchor = GridBagConstraints.WEST;
 		constraints.insets = new Insets(10, 10, 10, 10);
+		constraints.fill = GridBagConstraints.HORIZONTAL;
 
+		int gridy = 0;
 		if (variances != null) {
 			// add components to the panel
 			constraints.gridx = 0;
-			constraints.gridy = 0;
+			constraints.gridy = gridy++;
 			control.add(labelXAxis, constraints);
 
 			constraints.gridx = 1;
 			control.add(panelXAxis, constraints);
 
 			constraints.gridx = 0;
-			constraints.gridy = 1;
+			constraints.gridy = gridy++;
 			control.add(labelYAxis, constraints);
 
 			constraints.gridx = 1;
@@ -409,13 +413,13 @@ public class ScatterPlotDialog extends JDialog {
 		}
 
 		constraints.gridx = 0;
-		constraints.gridy = 2;
+		constraints.gridy = gridy++;
 		constraints.gridwidth = 2;
 		constraints.anchor = GridBagConstraints.CENTER;
 		control.add(createAdvanceOptionPane(), constraints);
 
 		constraints.gridx = 0;
-		constraints.gridy = 3;
+		constraints.gridy = gridy++;
 		constraints.gridwidth = 2;
 		constraints.anchor = GridBagConstraints.CENTER;
 		control.add(panelButtons, constraints);
@@ -459,11 +463,11 @@ public class ScatterPlotDialog extends JDialog {
 			yAxis = comboYAxis.getSelectedIndex();
 		}
 
-		ScatterPlotPCA scatterPlot = new ScatterPlotPCA(scores, loadings, 
-		                                                xAxis, 
-																		                yAxis,
-																										pointColor, pointSize, loadingsColorMap,
-																										useLoadings);
+		ScatterPlot scatterPlot = new ScatterPlot(scores, loadings, 
+		                                          xAxis, 
+																		          yAxis,
+																							pointColor, pointSize, loadingsColorMap,
+																							useLoadings);
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.anchor = GridBagConstraints.NORTHWEST;
 		constraints.insets = new Insets(5, 5, 5, 5);

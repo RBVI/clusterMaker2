@@ -15,7 +15,6 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 
 public class CalculationMatrix {
-	Random rnd = new Random();
 	static DecimalFormat mydecimalFormat = new DecimalFormat("00.###E0");
 	private static ForkJoinPool pool = new ForkJoinPool();
 	public static int noDigits = 4;

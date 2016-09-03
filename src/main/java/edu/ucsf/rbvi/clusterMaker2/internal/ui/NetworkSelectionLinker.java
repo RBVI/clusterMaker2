@@ -72,6 +72,7 @@ public class NetworkSelectionLinker implements RowsSetListener {
 		if (!e.containsColumn(CyNetwork.SELECTED) || ignoreSelection)
 			return;
 
+		// System.out.println("Select");
 		CyNetworkView currentNetworkView = clusterManager.getNetworkView();
 
 		ignoreSelection = true;
@@ -85,6 +86,7 @@ public class NetworkSelectionLinker implements RowsSetListener {
 					for (CySubNetwork sub2: rootNetwork.getSubNetworkList()) {
 						if (subNetwork.equals(sub2) || sub2.getDefaultNodeTable().getRow(suid) == null)
 							continue;
+						// System.out.println("Selecting row "+suid);
 						sub2.getDefaultNodeTable().getRow(suid).set(CyNetwork.SELECTED, value);
 					}
 				}

@@ -398,6 +398,7 @@ public void getValuesFromRowTest() {
 }*/
 
 
+/*
 @Test
 public void rnormTest() {
 	setInitiate();
@@ -407,24 +408,11 @@ public void rnormTest() {
 	System.out.println("Original TSNE value tsne");
 	temparray=matrixTest.rnorm(row,col);
 	double arratmp[][]=tempmatrix.toArray();
-	/*System.out.println("Normal array");
-	for(int i=0;i<arratmp.length;i++){
-		for(int j=0;j<arratmp[0].length;j++){
-			System.out.print(arratmp[i][j]+" ");
-			}
-		System.out.println("");
-		}
-	
-	System.out.println("Convereted array");
-	for(int i=0;i<temparray.length;i++){
-		for(int j=0;j<temparray[0].length;j++){
-			System.out.print(temparray[i][j]+" ");
-			}
-		System.out.println("");
-		}*/
 	
 	assertArrayEquals(null, temparray, arratmp);
 }
+*/
+
 @Test
 public void test() {
 	setInitiate();

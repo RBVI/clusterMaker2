@@ -40,43 +40,15 @@
 					<instructions>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
-						<Export-Package>!${bundle.namespace}.*,*;-split-package:=merge-first</Export-Package>
+						<Export-Package>!${bundle.namespace}.*</Export-Package>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
-						<Import-Package>*;resolution:=optional</Import-Package>
-						<Embed-Dependency>
-							parallelcolt;scope=compile|runtime,
-							csparsej;scope=compile|runtime,
-							jung-api;scope=compile|runtime;inline=true,
-							jung-graph-impl;scope=compile|runtime;inline=true,
-							jung-algorithms;scope=compile|runtime;inline=true
-							<!--*;scope=!provided|test;groupId=!org.cytoscape-->
-						</Embed-Dependency>
+						<Embed-Dependency>*;scope=!provided</Embed-Dependency>
 						<Embed-Transitive>true</Embed-Transitive>
+						<Import-Package>*;resolution:=optional</Import-Package>
 					</instructions>
 				</configuration>
 			</plugin>
-			<!-- plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>1.4</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<artifactSet>
-								<includes>
-									<include>org.openscience.cdk:*</include>
-								</includes>
-							</artifactSet>
-							<minimizeJar>true</minimizeJar>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin -->
 		</plugins>
 	</build>
 
@@ -111,6 +83,11 @@
 				<enabled>true</enabled>
 			</releases>
 		</repository>
+		<repository>
+			<id>apache_maven2</id>
+			<url>http://repo.maven.apache.org/maven2/</url>
+			<releases><enabled>true</enabled></releases>
+		</repository>
 	</repositories>
 
 	<dependencies>
@@ -118,125 +95,141 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>application-api</artifactId>
 			<version>${cytoscape.api.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-api</artifactId>
 			<version>${cytoscape.api.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-application-api</artifactId>
 			<version>${cytoscape.api.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>group-api</artifactId>
 			<version>${cytoscape.api.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>core-task-api</artifactId>
 			<version>${cytoscape.api.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>viewmodel-api</artifactId>
 			<version>${cytoscape.api.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>layout-api</artifactId>
 			<version>${cytoscape.api.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>presentation-api</artifactId>
 			<version>${cytoscape.api.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-api</artifactId>
 			<version>${cytoscape.api.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>service-api</artifactId>
 			<version>${cytoscape.api.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.osgi</groupId>
 			<artifactId>org.osgi.core</artifactId>
 			<version>${osgi.api.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>net.sourceforge.parallelcolt</groupId>
 			<artifactId>parallelcolt</artifactId>
 			<version>0.10.0</version>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>com.itextpdf</groupId>
 			<artifactId>itextpdf</artifactId>
 			<version>5.5.6</version>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.freehep</groupId>
 			<artifactId>freehep-graphicsio-ps</artifactId>
 			<version>2.2.1</version>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.freehep</groupId>
 			<artifactId>freehep-graphicsio-pdf</artifactId>
 			<version>2.2.1</version>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.freehep</groupId>
 			<artifactId>freehep-graphicsio-svg</artifactId>
 			<version>2.2.1</version>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.swinglabs</groupId>
 			<artifactId>swingx</artifactId>
 			<version>0.9.2</version>
+			<optional>true</optional>
 		</dependency>
-		<dependency>
-  <groupId>org.ejml</groupId>
-  <artifactId>all</artifactId>
-  <version>0.29</version>
-</dependency>
-
-<dependency>
-      <groupId>com.github.yannrichet</groupId>
-      <artifactId>JMathPlot</artifactId>
-      <version>1.0.1</version>
-    </dependency>
-
-    <!--dependency>
-      <groupId>org.jfree</groupId>
-      <artifactId>jfreechart</artifactId>
-      <version>1.0.19</version>
-      <optional>true</optional>
+		<!--dependency>
+			<groupId>org.ejml</groupId>
+			<artifactId>all</artifactId>
+			<version>0.29</version>
+			<scope>provided</scope>
 		</dependency-->
+
 		<dependency>
 			<groupId>org.ops4j.pax.logging</groupId>
 			<artifactId>pax-logging-api</artifactId>
 			<version>1.5.2</version>
 			<scope>provided</scope>
 		</dependency>
-        <dependency>
-            <groupId>net.sf.jung</groupId>
-            <artifactId>jung-graph-impl</artifactId>
-            <version>2.1</version>
-        </dependency>
+		<dependency>
+			<groupId>net.sf.jung</groupId>
+			<artifactId>jung-graph-impl</artifactId>
+			<version>2.1</version>
+			<optional>true</optional>
+		</dependency>
 		<dependency>
 			<groupId>net.sf.jung</groupId>
 			<artifactId>jung-algorithms</artifactId>
 			<version>2.1</version>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.jung</groupId>
 			<artifactId>jung-api</artifactId>
 			<version>2.1</version>
+			<optional>true</optional>
 		</dependency>
+		<!--dependency>
+			<groupId>com.github.yannrichet</groupId>
+			<artifactId>JMathPlot</artifactId>
+			<version>1.0.1</version>
+			<scope>test</scope>
+		</dependency-->
+
 	</dependencies>
 </project>

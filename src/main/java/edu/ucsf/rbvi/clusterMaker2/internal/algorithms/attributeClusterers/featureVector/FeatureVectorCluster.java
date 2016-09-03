@@ -149,6 +149,8 @@ public class FeatureVectorCluster extends AbstractAttributeClusterer {
 			if (canceled) return;
 			monitor.setProgress((double)i/((double)nNodes*4));
 		}
+		monitor.setStatusMessage("Min distance = "+mindistance+", max distance = "+maxdistance);
+
 
 		monitor.setStatusMessage("Assigning values to edges");
 
@@ -163,13 +165,14 @@ public class FeatureVectorCluster extends AbstractAttributeClusterer {
 		for (int i = 0; i < nNodes; i++) {
 			for (int j = i+1; j < nNodes; j++) {
 				// time = System.currentTimeMillis();
+				// This scales the distances to be between 0.0 and 1.0
 				double distance = (distanceMatrix[i][j]-mindistance)/scale;
-
-				CyNode source = (CyNode)ModelUtils.getNetworkObjectWithName(network, matrix.getRowLabel(i), CyNode.class);
-				CyNode target = (CyNode)ModelUtils.getNetworkObjectWithName(network, matrix.getRowLabel(j), CyNode.class);
 
 				if (context.createNewNetwork == true && distance > context.edgeCutoff && context.edgeCutoff != 0.0)
 					continue;
+
+				CyNode source = (CyNode)ModelUtils.getNetworkObjectWithName(network, matrix.getRowLabel(i), CyNode.class);
+				CyNode target = (CyNode)ModelUtils.getNetworkObjectWithName(network, matrix.getRowLabel(j), CyNode.class);
 
 				// time = System.currentTimeMillis();
 				if (context.createNewNetwork == true) {
@@ -190,6 +193,8 @@ public class FeatureVectorCluster extends AbstractAttributeClusterer {
 			if (canceled) return;
 			monitor.setProgress(25.0 + (75.0 * (double)i/(double)nNodes)/100.0);
 		}
+
+		System.out.println("Network created -- creating view");
 
 		// If we're supposed to, create the new network
 		if (context.createNewNetwork) {
