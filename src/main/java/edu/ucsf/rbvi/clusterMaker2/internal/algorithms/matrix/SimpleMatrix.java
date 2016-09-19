@@ -402,7 +402,8 @@ public class SimpleMatrix implements Matrix {
 			for (int col = colStart(row); col < nColumns; col++) {
 				if (data[row][col] == null) {
 					data[row][col] = 0.0d;
-					data[col][row] = 0.0d;
+					if (symmetric && row != col)
+						data[col][row] = 0.0d;
 				}
 			}
 		}

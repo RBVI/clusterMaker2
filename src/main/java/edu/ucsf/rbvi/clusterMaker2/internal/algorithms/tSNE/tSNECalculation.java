@@ -74,7 +74,7 @@ public class tSNECalculation implements TSneInterface{
 		if(use_pca && matrix.nColumns() > initial_dims && initial_dims > 0) {
 			//System.out.println("Using pca");
 			monitor.showMessage(TaskMonitor.Level.INFO, "Using pca");
-			PrincipalComponentAnalysis pca = new PrincipalComponentAnalysis();
+			// PrincipalComponentAnalysis pca = new PrincipalComponentAnalysis();
 	//		double trmpmatrix[][] = pca.pca(matrix.toArray(), initial_dims);
 
 //			matrix= CalculationMatrix.arrayToCyMatrix(matrix, trmpmatrix);

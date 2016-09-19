@@ -364,6 +364,7 @@ public void scalarMultTest() {
 	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
+/*
 @Test
 public void timesTest() {
 	setInitiate();
@@ -379,6 +380,7 @@ public void timesTest() {
 	// assertArrayEquals(temparray, ejmlMatrix, DELTA);
 	assertArrayEquals(temparray, arratmp, DELTA);
 }
+*/
 
 @Test
 public void diagTest() {
@@ -406,13 +408,15 @@ public void getValuesFromRowTest() {
 }*/
 
 
-/*@Test
+/*
+@Test
 public void rnormTest() {
 	setInitiate();
 	tempmatrix=calcmatrix.rnorm(row,col);
 	
 	temparray=matrixTest.rnorm(row,col);
 	double arratmp[][]=tempmatrix.toArray();
+<<<<<<< HEAD
 	System.out.println("Normal array");
 	for(int i=0;i<arratmp.length;i++){
 		for(int j=0;j<arratmp[0].length;j++){
@@ -430,7 +434,8 @@ public void rnormTest() {
 		}
 	
 	assertArrayEquals(temparray, arratmp, DELTA);
-}*/
+}
+*/
 public void	assertArrayEquals(double[][] temparray, double[][] arratmp, double DELTA) {
 	for(int row=0;row<arratmp.length;row++){
 		for(int col=0;col<arratmp[0].length;col++){
@@ -466,7 +471,7 @@ public void test() {
 	scalarDivideTest();
 	scalarDivideMatTest();
 	scalarMultTest();
-	timesTest();
+	// timesTest();
 	diagTest();
 	//getValuesFromRowTest();
 	//rnormTest();

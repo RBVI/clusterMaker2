@@ -17,6 +17,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.ColtMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.ScatterPlotDialog;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
@@ -86,7 +87,7 @@ public class RunPCA {
 		if(context.pcaPlot) {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					System.out.println("Scatter plot dialog call");
+					// System.out.println("Scatter plot dialog call");
 					ScatterPlotDialog dialog = new ScatterPlotDialog("PCA Scatter Plot", monitor, components, loadingMatrix, variance);
 				}
 			});

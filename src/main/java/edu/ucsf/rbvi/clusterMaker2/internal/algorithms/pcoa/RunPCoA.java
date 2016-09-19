@@ -10,7 +10,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ScatterPlotDialog;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.ScatterPlotDialog;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 
 public class RunPCoA {
