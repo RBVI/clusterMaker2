@@ -20,6 +20,7 @@ MatrixTest matrixTest;
 int row=10,col=10;
 int axis=1;
 int rowtimes=9,coltimes=10;
+double DELTA = 0.00000000005;
 double maxval=101.2345454,replace=105.35783;
 double data[][]=new double[row][col];
 double data_col[][]=new double[row][col];
@@ -39,7 +40,12 @@ public void setInitiate(){
 			}
 	//	System.out.println("");
 		}
-matrixdata.initialize(row, col, data);	
+// matrixdata.initialize(row, col, data);	
+for (int i = 0; i < row; i++) {
+	for (int j = 0; j < col; j++) {
+		matrixdata.setValue(i,j,data[i][j]);
+	}
+}
 calcmatrix=new CalculationMatrix();
 matrixTest=new MatrixTest();
 }
@@ -70,7 +76,7 @@ public void transposeTest() {
 	double arratmp[][]=tempmatrix.toArray();
 	
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 @Test
@@ -96,7 +102,7 @@ public void expTest() {
 			}
 		System.out.println("");
 		}*/
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 @Test
@@ -108,7 +114,7 @@ public void logTest() {
 	double arratmp[][]=tempmatrix.toArray();
 	
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 @Test
@@ -120,7 +126,7 @@ public void scalarInverseTest() {
 	double arratmp[][]=tempmatrix.toArray();
 	
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 
@@ -133,7 +139,7 @@ public void absTest() {
 	double arratmp[][]=tempmatrix.toArray();
 	
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 @Test
@@ -145,7 +151,7 @@ public void meanTest() {
 	double arratmp[][]=tempmatrix.toArray();
 	
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 @Test
@@ -157,7 +163,7 @@ public void sumTest() {
 	double arratmp[][]=tempmatrix.toArray();
 	
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 @Test
@@ -180,7 +186,7 @@ public void maximumTest() {
 	temparray=matrixTest.maximum(data,maxval);
 	double arratmp[][]=tempmatrix.toArray();
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 @Test
@@ -191,7 +197,7 @@ public void squareTest() {
 	temparray=matrixTest.square(data);
 	double arratmp[][]=tempmatrix.toArray();
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 @Test
@@ -202,7 +208,7 @@ public void replaceNaNTest() {
 	temparray=matrixTest.replaceNaN(data,replace);
 	double arratmp[][]=tempmatrix.toArray();
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 @Test
@@ -213,7 +219,7 @@ public void scalarPowTest() {
 	temparray=matrixTest.scalarPow(data,replace);
 	double arratmp[][]=tempmatrix.toArray();
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 @Test
@@ -225,7 +231,7 @@ public void addColumnVectorTest() {
 	temparray=matrixTest.addColumnVector(data,data_col);
 	double arratmp[][]=tempmatrix.toArray();
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 @Test
@@ -237,7 +243,7 @@ public void addRowVectorTest() {
 	temparray=matrixTest.addRowVector(data,data_col);
 	double arratmp[][]=tempmatrix.toArray();
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 @Test
@@ -249,7 +255,7 @@ public void tileTest() {
 	double arratmp[][]=tempmatrix.toArray();
 	
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 @Test
@@ -262,7 +268,7 @@ public void scalarMultiplyTest() {
 
 	double arratmp[][]=tempmatrix.toArray();
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 @Test
@@ -275,7 +281,7 @@ public void fillMatrixTest() {
 
 	double arratmp[][]=tempmatrix.toArray();
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 
@@ -289,7 +295,7 @@ public void plusTest() {
 
 	double arratmp[][]=tempmatrix.toArray();
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 @Test
@@ -302,7 +308,7 @@ public void scalarplusTest() {
 
 	double arratmp[][]=tempmatrix.toArray();
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 @Test
@@ -315,7 +321,7 @@ public void minusTest() {
 
 	double arratmp[][]=tempmatrix.toArray();
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 @Test
@@ -328,7 +334,7 @@ public void scalarDivideTest() {
 
 	double arratmp[][]=tempmatrix.toArray();
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 @Test
@@ -341,7 +347,7 @@ public void scalarDivideMatTest() {
 
 	double arratmp[][]=tempmatrix.toArray();
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
 @Test
@@ -355,22 +361,24 @@ public void scalarMultTest() {
 	double arratmp[][]=tempmatrix.toArray();
 	
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
-/*@Test
+@Test
 public void timesTest() {
 	setInitiate();
-	setInitiateSecond();
+	//setInitiateSecond();
 	tempmatrix=calcmatrix.times(matrixdata, coldata);
 	
 	temparray=matrixTest.times(data,data_col);
 
 	double arratmp[][]=tempmatrix.toArray();
+
+	double[][] ejmlMatrix = matrixTest.timesEJML(data, data_col);
 	
-	
-	assertArrayEquals(null, temparray, arratmp);
-}*/
+	// assertArrayEquals(temparray, ejmlMatrix, DELTA);
+	assertArrayEquals(temparray, arratmp, DELTA);
+}
 
 @Test
 public void diagTest() {
@@ -383,7 +391,7 @@ public void diagTest() {
 	double arratmp[][]=tempmatrix.toArray();
 	
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }
 /*@Test
 public void getValuesFromRowTest() {
@@ -394,20 +402,18 @@ public void getValuesFromRowTest() {
 
 	double arratmp[][]=tempmatrix.toArray();
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
 }*/
 
 
-@Test
+/*@Test
 public void rnormTest() {
 	setInitiate();
-	System.out.println("My value tsne");
 	tempmatrix=calcmatrix.rnorm(row,col);
-	System.out.println("");
-	System.out.println("Original TSNE value tsne");
+	
 	temparray=matrixTest.rnorm(row,col);
 	double arratmp[][]=tempmatrix.toArray();
-	/*System.out.println("Normal array");
+	System.out.println("Normal array");
 	for(int i=0;i<arratmp.length;i++){
 		for(int j=0;j<arratmp[0].length;j++){
 			System.out.print(arratmp[i][j]+" ");
@@ -421,14 +427,22 @@ public void rnormTest() {
 			System.out.print(temparray[i][j]+" ");
 			}
 		System.out.println("");
-		}*/
+		}
 	
-	assertArrayEquals(null, temparray, arratmp);
+	assertArrayEquals(temparray, arratmp, DELTA);
+}*/
+public void	assertArrayEquals(double[][] temparray, double[][] arratmp, double DELTA) {
+	for(int row=0;row<arratmp.length;row++){
+		for(int col=0;col<arratmp[0].length;col++){
+			assertEquals(temparray[row][col],arratmp[row][col], DELTA);
+		}
+	}
 }
+
 @Test
 public void test() {
 	setInitiate();
-	assertArrayEquals(null, data, matrixdata.toArray());
+	assertArrayEquals(data, matrixdata.toArray(), DELTA);
 	transposeTest();
 	expTest();
 	logTest();
@@ -452,7 +466,7 @@ public void test() {
 	scalarDivideTest();
 	scalarDivideMatTest();
 	scalarMultTest();
-	//timesTest();
+	timesTest();
 	diagTest();
 	//getValuesFromRowTest();
 	//rnormTest();

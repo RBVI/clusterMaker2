@@ -14,9 +14,9 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
-import org.math.plot.FrameView;
-import org.math.plot.Plot2DPanel;
-import org.math.plot.plots.ScatterPlot;
+// import org.math.plot.FrameView;
+// import org.math.plot.Plot2DPanel;
+// import org.math.plot.plots.ScatterPlot;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.ScatterPlotDialog;
 
 

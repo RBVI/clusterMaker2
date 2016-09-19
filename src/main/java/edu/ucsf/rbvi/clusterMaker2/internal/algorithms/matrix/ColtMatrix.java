@@ -885,7 +885,11 @@ public class ColtMatrix implements Matrix {
 		blas.dgemm(false, false, 1.0, aMat, bMat, 0.0, cMat);
 		ColtMatrix c = new ColtMatrix(this, cMat);
 		*/
-		DoubleMatrix2D cMat = DoubleFactory2D.sparse.make(nRows, b.nColumns());
+		DoubleMatrix2D cMat;
+		if (data.getClass().getName().indexOf("Sparse") >= 0)
+			cMat = DoubleFactory2D.sparse.make(nRows, b.nColumns());
+		else
+			cMat = DoubleFactory2D.dense.make(nRows, b.nColumns());
 		data.zMult(b.getColtMatrix(), cMat);
 		ColtMatrix c = new ColtMatrix(this, cMat);
 		return c;

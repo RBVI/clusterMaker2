@@ -205,12 +205,6 @@
   <version>0.29</version>
 </dependency>
 
-<dependency>
-      <groupId>com.github.yannrichet</groupId>
-      <artifactId>JMathPlot</artifactId>
-      <version>1.0.1</version>
-    </dependency>
-
     <!--dependency>
       <groupId>org.jfree</groupId>
       <artifactId>jfreechart</artifactId>
@@ -237,6 +231,19 @@
 			<groupId>net.sf.jung</groupId>
 			<artifactId>jung-api</artifactId>
 			<version>2.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/junit/junit -->
+		<!--dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.2</version>
+			<scope>test</scope>
+		</dependency -->
+		<dependency>
+			<groupId>com.github.yannrichet</groupId>
+			<artifactId>JMathPlot</artifactId>
+			<version>1.0.1</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

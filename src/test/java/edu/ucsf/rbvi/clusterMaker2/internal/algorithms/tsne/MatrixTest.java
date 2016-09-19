@@ -535,9 +535,7 @@ public class MatrixTest {
 	 * @return random sample
 	 */
 	public static double rnorm(double mu, double sigma) {
-		double val=mu + (ThreadLocalRandom.current().nextGaussian() * sigma);
-		System.out.print(val+" ");
-		return val;
+		return mu + (ThreadLocalRandom.current().nextGaussian() * sigma);
 	}
 
 	// Unit Tested
@@ -1378,6 +1376,23 @@ public class MatrixTest {
 	
 	// Unit Tested
 	public static double[][] times(double[][] m1, double[][] m2) {
+		int aRows = m1.length;
+		int aColumns = m1[0].length;
+		int bRows = m2.length;
+		int bColumns = m2[0].length;
+		double[][] result = new double[aRows][bColumns];
+		for (int i = 0; i < aRows; i++) { // aRow
+			for (int j = 0; j < bColumns; j++) { // bColumn
+				for (int k = 0; k < aColumns; k++) { // aColumn
+					result[i][j] += m1[i][k] * m2[k][j];
+				}
+			}
+		}
+
+		return result;
+	}
+
+	public static double[][] timesEJML(double[][] m1, double[][] m2) {
 		Matrix A = Matrix.constructWithCopy(m1);
 		Matrix B = Matrix.constructWithCopy(m2);
 		return A.times(B).getArray();
