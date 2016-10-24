@@ -319,6 +319,7 @@ public class ClusterManagerImpl implements ClusterManager {
 	}
 
 	public boolean isLinked(CyNetwork network) {
+		if (network == null) return false;
 		CyRootNetwork rootNetwork = ((CySubNetwork)network).getRootNetwork();
 		if (linkedNetworks.containsKey(rootNetwork))
 			return true;
