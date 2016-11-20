@@ -113,10 +113,11 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
             if (matrix.isSymmetrical() || matrix.isAssymetricalEdge()) {
                 ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_EDGE_ATTRIBUTE,
                         weightAttributes[0], String.class, null);
-            } else if (matrix.isSymmetrical()) {
-                ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE,
-                        attrList, List.class, String.class);
             }
+            if (matrix.isSymmetrical()) {
+            	ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE,
+             	       attrList, List.class, String.class);
+						}
         }
 
         String[] rowArray = matrix.getRowLabels();

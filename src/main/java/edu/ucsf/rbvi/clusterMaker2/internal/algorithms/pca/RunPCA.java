@@ -75,8 +75,10 @@ public class RunPCA {
 		// ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
 
 		// System.out.println("Computing principle components");
-		final Matrix loadingMatrix = new ColtMatrix();
-		final CyMatrix[] components = computePCs(matrix, loadingMatrix);
+		// final Matrix loadingMatrix = new ColtMatrix(); // Change to use CyMatrixFactory...
+		final CyMatrix[] components = computePCs(matrix);
+
+		final Matrix loadingMatrix = calculateLoadingMatrix(matrix);
 
 		final double[] variance = computeVariance(eigenValues);
 
@@ -94,7 +96,7 @@ public class RunPCA {
 		}
 	}
 
-	public CyMatrix[] computePCs(CyMatrix matrix, Matrix loadingMatrix){
+	public CyMatrix[] computePCs(CyMatrix matrix/*, Matrix loadingMatrix*/) {
 		// matrix.writeMatrix("output.txt");
 
 		Matrix C;
@@ -127,7 +129,7 @@ public class RunPCA {
 		monitor.showMessage(TaskMonitor.Level.INFO, "Found "+eigenVectors.length+" EigenVectors of length "+eigenVectors[0].length);
 
 		// Calculate the loading matrix
-		calculateLoadingMatrix(matrix, loadingMatrix, eigenVectors, eigenValues);
+		// calculateLoadingMatrix(matrix, loadingMatrix, eigenVectors, eigenValues);
 
 		/*
 		loadingMatrix.writeMatrix("loadingMatrix.txt");
@@ -191,6 +193,7 @@ public class RunPCA {
 	}
 	*/
 
+	/*
 	private void calculateLoadingMatrix(CyMatrix matrix, Matrix loading, 
 	                                    double[][] eigenVectors, double[] eigenValues) {
 		int rows = eigenVectors.length;
@@ -213,6 +216,32 @@ public class RunPCA {
 		for (int column = 0; column < columns; column++) {
 			loading.setColumnLabel(column, "PC "+(column+1));
 		}
+	}
+	*/
+
+	private Matrix calculateLoadingMatrix(CyMatrix matrix) {
+		int rows = eigenVectors.length;
+		int columns = eigenVectors[0].length;
+		Matrix loading = CyMatrixFactory.makeSmallMatrix(matrix.getNetwork(), rows, columns);
+		// loading.initialize(rows, columns, new double[rows][columns]);
+
+		// System.out.print("Eigenvectors:");
+		for (int row = 0; row < rows; row++) {
+			// System.out.print("\n"+matrix.getColumnLabel(row)+"\t");
+			for (int column = columns-1, newCol=0; column >= 0; column--,newCol++) {
+				// System.out.print(""+eigenVectors[row][column]+"\t");
+				loading.setValue(row, newCol, 
+				                 eigenVectors[row][column]*Math.sqrt(Math.abs(eigenValues[column])));
+				// loading.setValue(row, newCol, eigenVectors[row][column]*eigenValues[column]);
+			}
+		}
+		// System.out.println("\n");
+
+		loading.setRowLabels(Arrays.asList(matrix.getColumnLabels()));
+		for (int column = 0; column < columns; column++) {
+			loading.setColumnLabel(column, "PC "+(column+1));
+		}
+		return loading;
 	}
 
 	private class CalculateComponent implements Runnable {
