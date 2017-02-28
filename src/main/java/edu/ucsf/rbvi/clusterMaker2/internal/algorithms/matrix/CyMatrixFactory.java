@@ -237,9 +237,20 @@ public class CyMatrixFactory {
 				List<CyNode> sourceNodeList = getNodesFromEdges(network, edgeList, targetNodeList, weight, ignoreMissing);
 				Collections.sort(targetNodeList, new CyIdentifiableNameComparator(network));
 				Collections.sort(sourceNodeList, new CyIdentifiableNameComparator(network));
-				CyMatrix matrix = makeTypedMatrix(network, sourceNodeList.size(), targetNodeList.size(), false, type);
+				CyMatrix matrix = makeTypedMatrix(network, sourceNodeList.size(), targetNodeList.size(), transpose, type);
+				/*
+				if (transpose) {
+					CyMatrix matrix = makeTypedMatrix(network, sourceNodeList.size(), targetNodeList.size(), true, type);
+					matrix.setAssymetricalEdge(true);
+					return makeAssymmetricalMatrix(network, matrix, targetNodeList, sourceNodeList, edgeList, weight);
+				} else {
+					CyMatrix matrix = makeTypedMatrix(network, sourceNodeList.size(), targetNodeList.size(), false, type);
+					matrix.setAssymetricalEdge(true);
+					return makeAssymmetricalMatrix(network, matrix, sourceNodeList, targetNodeList, edgeList, weight);
+				}
+				*/
 				matrix.setAssymetricalEdge(true);
-				return makeAssymmetricalMatrix(network, matrix, sourceNodeList, targetNodeList, edgeList, weight);
+				return makeAssymmetricalMatrix(network, matrix, sourceNodeList, targetNodeList, edgeList, weight, transpose);
 			}
 		}
 		return null;
@@ -320,7 +331,14 @@ public class CyMatrixFactory {
 	private static CyMatrix makeAssymmetricalMatrix(CyNetwork network, CyMatrix matrix, 
 	                                                List<CyNode> sourceNodeList, 
 	                                                List<CyNode> targetNodeList,
-	                                                List<CyEdge> edgeList, String weight) {
+	                                                List<CyEdge> edgeList, String weight,
+																									boolean transpose) {
+		if (transpose) {
+			// Swap source and target
+			List<CyNode> tmp = sourceNodeList;
+			sourceNodeList = targetNodeList;
+			targetNodeList = tmp;
+		}
 		// Create a map we can use to get the row for our data
 		Map<CyNode, Integer> rowMap = new HashMap<CyNode, Integer>(sourceNodeList.size());
 		for (int row = 0; row < sourceNodeList.size(); row++) {
@@ -337,8 +355,17 @@ public class CyMatrixFactory {
 		matrix.setColumnNodes(targetNodeList);
 		for (CyEdge edge: edgeList) {
 			Double val = ModelUtils.getNumericValue(network, edge, weight);
-			int row = rowMap.get(edge.getSource());
-			int col = colMap.get(edge.getTarget());
+			CyNode source;
+			CyNode target;
+			if (transpose) {
+				source = edge.getTarget();
+				target = edge.getSource();
+			} else {
+		 		source = edge.getSource();
+		 		target = edge.getTarget();
+			}
+			int row = rowMap.get(source);
+			int col = colMap.get(target);
 			if (val != null) {
 				matrix.setValue(row, col, val);
 			}

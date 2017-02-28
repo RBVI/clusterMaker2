@@ -16,16 +16,16 @@ import java.util.List;
 import java.util.Properties;
 
 public interface ClusterManager {
-	String MATRIX_ATTRIBUTE = "__distanceMatrix";
-	String CLUSTER_NODE_ATTRIBUTE = "__nodeClusters";
-	String CLUSTER_ATTR_ATTRIBUTE = "__attrClusters";
-	String CLUSTER_EDGE_ATTRIBUTE = "__clusterEdgeWeight";
-	String NODE_ORDER_ATTRIBUTE = "__nodeOrder";
-	String ARRAY_ORDER_ATTRIBUTE = "__arrayOrder";
-	String CLUSTER_TYPE_ATTRIBUTE = "__clusterType";
-	String CLUSTER_ATTRIBUTE = "__clusterAttribute";
-	String CLUSTER_PARAMS_ATTRIBUTE = "__clusterParams";
-	String RANKING_ATTRIBUTE = "__rankingAttribute";
+	static String MATRIX_ATTRIBUTE = "__distanceMatrix";
+	static String CLUSTER_NODE_ATTRIBUTE = "__nodeClusters";
+	static String CLUSTER_ATTR_ATTRIBUTE = "__attrClusters";
+	static String CLUSTER_EDGE_ATTRIBUTE = "__clusterEdgeWeight";
+	static String NODE_ORDER_ATTRIBUTE = "__nodeOrder";
+	static String ARRAY_ORDER_ATTRIBUTE = "__arrayOrder";
+	static String CLUSTER_TYPE_ATTRIBUTE = "__clusterType";
+	static String CLUSTER_ATTRIBUTE = "__clusterAttribute";
+	static String CLUSTER_PARAMS_ATTRIBUTE = "__clusterParams";
+	static String RANKING_ATTRIBUTE = "__rankingAttribute";
 
 
 	// Returns the list of cluster algorithms
