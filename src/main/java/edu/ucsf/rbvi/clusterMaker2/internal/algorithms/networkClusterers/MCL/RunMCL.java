@@ -16,8 +16,8 @@ import java.util.Map;
 import java.util.Set;
 import java.lang.Math;
 
-import cern.colt.function.tdouble.IntIntDoubleFunction;
-import cern.colt.matrix.tdouble.DoubleMatrix2D;
+// import cern.colt.function.tdouble.IntIntDoubleFunction;
+// import cern.colt.matrix.tdouble.DoubleMatrix2D;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -100,6 +100,7 @@ public class RunMCL {
 		// Normalize
 		normalize(matrix, clusteringThresh, false);
 
+
 		debugln("Normalized matrix:",matrix);
 
 		double residual = 1.0;
@@ -141,7 +142,8 @@ public class RunMCL {
 
 			// m.trimToSize();
 			residual = calculateResiduals(matrix);
-			debugln("Iteration: "+(i+1)+" residual: "+residual);
+			// debugln("Iteration: "+(i+1)+" residual: "+residual);
+			System.out.println("Iteration: "+(i+1)+" residual: "+residual);
 
 			if (canceled) {
 				monitor.setStatusMessage("canceled"); 	//monitor.setStatusMessage
@@ -156,7 +158,13 @@ public class RunMCL {
 
 		clusterCount = 0;
 		HashMap<Integer, NodeCluster> clusterMap = new HashMap<Integer, NodeCluster>();
-		matrix.getColtMatrix().forEachNonZero(new ClusterMatrix(clusterMap));
+		ClusterMatrix clusterMat = new ClusterMatrix(clusterMap);
+		for (int row = 0; row < matrix.nRows(); row++) {
+			for (int col = 0; col < matrix.nColumns(); col++) {
+				clusterMat.apply(row, col, matrix.doubleValue(row, col));
+			}
+		}
+		// matrix.getColtMatrix().forEachNonZero(new ClusterMatrix(clusterMap));
 
 		//Update node attributes in network to include clusters. Create cygroups from clustered nodes
 		monitor.setStatusMessage("Created "+clusterCount+" clusters");
@@ -201,13 +209,28 @@ public class RunMCL {
 	 */
 	private void normalize(Matrix matrix, double clusteringThresh, boolean prune)
 	{
+		// long startTime = System.currentTimeMillis();
 		// Remove any really low values and create the sums array
 		double [] sums = new double[matrix.nColumns()];
-		matrix.getColtMatrix().forEachNonZero(new MatrixZeroAndSum(prune, clusteringThresh, sums));
+		if (prune)
+			matrix.ops().threshold(clusteringThresh);
+
+		for (int col = 0; col < matrix.nColumns(); col++) {
+			sums[col] = matrix.ops().columnSum(col);
+			if (sums[col] == 0.0) {
+				matrix.setValue(col,col,1.0);
+			} else {
+				matrix.ops().normalizeColumn(col);
+			}
+		}
+		// System.out.println("Normalization took "+(System.currentTimeMillis()-startTime)+"ms");
+
+		// matrix.getColtMatrix().forEachNonZero(new MatrixZeroAndSum(prune, clusteringThresh, sums));
 
 		// Finally, adjust the values
-		matrix.getColtMatrix().forEachNonZero(new MatrixNormalize(sums));
+		// matrix.getColtMatrix().forEachNonZero(new MatrixNormalize(sums));
 
+		/*
 		// Last step -- find any columns that summed to zero and set the diagonal to 1
 		for (int col = 0; col < sums.length; col++) {
 			if (sums[col] == 0.0) {
@@ -215,6 +238,7 @@ public class RunMCL {
 				matrix.setValue(col,col,1.0);
 			}
 		}
+		*/
 	}
 	
 	/**
@@ -262,87 +286,7 @@ public class RunMCL {
 	}
 
 	
-	/**
-	 * The MatrixPow class raises the value of each non-zero cell of the matrix
-	 * to the power passed in it's constructor.
-	 */
-	private class MatrixPow implements IntIntDoubleFunction {
-		double pow;
-
-		public MatrixPow(double power) {
-			this.pow = power;
-		}
-		
-		public double apply(int row, int column, double value) {
-			if (canceled) { return 0.0; }
-			return Math.pow(value,pow);
-		}
-		
-	}
-
-	/**
-	 * The MatrixZeroAndSum looks through all non-zero cells in a matrix
-	 * and if the value of the cell is beneath "threshold" it is set to
-	 * zero.  All non-zero cells in a column are added together to return
-	 * the sum of each column.
-	 */
-	private class MatrixZeroAndSum implements IntIntDoubleFunction {
-		double threshold;
-		double [] colSums;
-		boolean prune;
-
-		public MatrixZeroAndSum (boolean prune, double threshold, double[] colSums) {
-			this.threshold = threshold;
-			this.colSums = colSums;
-			this.prune = prune;
-		}
-
-		public double apply(int row, int column, double value) {
-			if (prune && (value < threshold))
-				return 0.0;
-			colSums[column] += value;
-			return value;
-		}
-	}
-	
-	/**
-	 * The MatrixSumAndSumSq looks through all non-zero cells in a matrix
-	 * and calculates the sums and sum of squares for each column.
-	 */
-	private class MatrixSumAndSumSq implements IntIntDoubleFunction {
-		double [] sumSquares;
-		double [] colSums;
-
-		public MatrixSumAndSumSq (double[] colSums, double[] sumSquares) {
-			this.sumSquares = sumSquares;
-			this.colSums = colSums;
-		}
-		public double apply(int row, int column, double value) {
-			colSums[column] += value;
-			sumSquares[column] += value*value;
-			return value;
-		}
-	}
-	
-	/**
-	 * The MatrixNormalize class takes as input an array of sums for
-	 * each column in the matrix and uses that to normalize the sum of the
-	 * column to 1.  If the sum of the column is 0, the diagonal is set to 1.
-	 */
-	private class MatrixNormalize implements IntIntDoubleFunction {
-		double [] colSums;
-
-		public MatrixNormalize(double[] colSums) {
-			this.colSums = colSums;
-		}
-
-		public double apply(int row, int column, double value) {
-			if (canceled) { return 0.0; }
-			return value/colSums[column];
-		}
-	}
-	
-	private class ClusterMatrix implements IntIntDoubleFunction {
+	private class ClusterMatrix {
 		Map<Integer, NodeCluster> clusterMap;
 
 		public ClusterMatrix(Map<Integer,NodeCluster> clusterMap) {
@@ -350,7 +294,7 @@ public class RunMCL {
 		}
 
 		public double apply(int row, int column, double value) {
-			if (canceled) { return 0.0; }
+			if (canceled || value == 0.0 || Double.isNaN(value)) { return 0.0; }
 
 			if (row == column) 
 				return value;

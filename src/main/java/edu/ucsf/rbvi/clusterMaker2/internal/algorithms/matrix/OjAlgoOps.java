@@ -106,6 +106,10 @@ public class OjAlgoOps implements MatrixOps {
 	}
 
 	public void normalizeRow(int row) {
+		double sum = rowSum(row);
+		matrix.data.modifyRow(row, 0L, PrimitiveFunction.DIVIDE.second(sum));
+
+		/*
 		// First see if we've got any negative numbers
 		AggregatorFunction<Double> tmpVisitor = matrix.storeFactory.aggregator().minimum();
 		matrix.data.visitRow(row, 0L, tmpVisitor);
@@ -124,9 +128,13 @@ public class OjAlgoOps implements MatrixOps {
 		for (int column = 0; column < matrix.nColumns(); column++) 
 			matrix.setValue(row, column, matrix.getValue(row, column)/sum);
 		matrix.updateMinMax();
+		*/
 	}
 
 	public void normalizeColumn(int column) {
+		double sum = columnSum(column);
+		matrix.data.modifyColumn(0L, column, PrimitiveFunction.DIVIDE.second(sum));
+		/*
 		// First see if we've got any negative numbers
 		AggregatorFunction<Double> tmpVisitor = matrix.storeFactory.aggregator().minimum();
 		matrix.data.visitColumn(0L, column, tmpVisitor);
@@ -145,6 +153,7 @@ public class OjAlgoOps implements MatrixOps {
 		for (int row = 0; row < matrix.nRows(); row++) 
 			matrix.setValue(row, column, matrix.getValue(row, column)/sum);
 		matrix.updateMinMax();
+		*/
 	}
 
 	public void standardizeRow(int row) {

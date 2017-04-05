@@ -140,7 +140,7 @@ public class OjAlgoMatrix implements Matrix {
 		if (arrayData != null) {
 			data = storeFactory.rows(arrayData);
 		} else {
-			data = storeFactory.makeEye(rows, columns);
+			data = storeFactory.makeZero(rows, columns);
 		}
 		nRows = (int)data.countRows();
 		nColumns = (int)data.countColumns();
@@ -152,7 +152,7 @@ public class OjAlgoMatrix implements Matrix {
 	}
 
 	public void initialize(int rows, int columns, Double[][] arrayData) {
-		data = storeFactory.makeEye(rows, columns);
+		data = storeFactory.makeZero(rows, columns);
 		nRows = (int)data.countRows();
 		nColumns = (int)data.countColumns();
 		if (arrayData != null) {

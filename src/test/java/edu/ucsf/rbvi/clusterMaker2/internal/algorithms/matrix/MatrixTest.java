@@ -9,8 +9,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 public class MatrixTest {
 
 	double DELTA = 0.000001;
-	int rows = 1000;
-	int columns = 1000;
+	int rows = 100;
+	int columns = 100;
 	Matrix coltMatrix;
 	Matrix coltMatrix2;
 	Matrix simpleMatrix;
@@ -121,6 +121,46 @@ public class MatrixTest {
 		timeStart();
 		System.out.println("Sum by columns: "+sumByColumns(ojAlgoMatrix));
 		timeEnd("Sum by columns");
+	}
+	
+	@Test
+	public void normalizeColumnsTest() {
+		initialize();
+
+		double [] sums = new double[simpleMatrix.nColumns()];
+
+		timeStart();
+    for (int col = 0; col < simpleMatrix.nColumns(); col++) {
+      sums[col] = simpleMatrix.ops().columnSum(col);
+      if (sums[col] == 0.0) {
+        simpleMatrix.setValue(col,col,1.0);
+      } else {
+        simpleMatrix.ops().normalizeColumn(col);
+      }
+    }
+		timeEnd("normalize columns simple matrix");
+
+		timeStart();
+    for (int col = 0; col < coltMatrix.nColumns(); col++) {
+      sums[col] = coltMatrix.ops().columnSum(col);
+      if (sums[col] == 0.0) {
+        coltMatrix.setValue(col,col,1.0);
+      } else {
+        coltMatrix.ops().normalizeColumn(col);
+      }
+    }
+		timeEnd("normalize columns colt matrix");
+
+		timeStart();
+    for (int col = 0; col < ojAlgoMatrix.nColumns(); col++) {
+      sums[col] = ojAlgoMatrix.ops().columnSum(col);
+      if (sums[col] == 0.0) {
+        ojAlgoMatrix.setValue(col,col,1.0);
+      } else {
+        ojAlgoMatrix.ops().normalizeColumn(col);
+      }
+    }
+		timeEnd("normalize columns ojAlgo matrix");
 	}
 
 	@Test

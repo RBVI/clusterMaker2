@@ -141,12 +141,12 @@ public class ColtOps implements MatrixOps {
 
 	public void normalizeRow(int row) {
 		getData().viewRow(row).normalize();
-		matrix.updateMinMax();
+		// matrix.updateMinMax();
 	}
 
 	public void normalizeColumn(int column) {
 		getData().viewColumn(column).normalize();
-		matrix.updateMinMax();
+		// matrix.updateMinMax();
 	}
 
 	public void standardizeRow(int row) {
