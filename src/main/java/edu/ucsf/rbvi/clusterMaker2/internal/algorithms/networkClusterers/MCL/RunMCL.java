@@ -16,6 +16,9 @@ import java.util.Map;
 import java.util.Set;
 import java.lang.Math;
 
+import cern.colt.function.tdouble.IntIntDoubleFunction;
+import cern.colt.matrix.tdouble.DoubleMatrix2D;
+
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -31,10 +34,12 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
+/*
 import cern.colt.function.tdouble.IntIntDoubleFunction;
 import cern.colt.matrix.tdouble.DoubleFactory2D;
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
+*/
 
 
 public class RunMCL {
@@ -96,7 +101,7 @@ public class RunMCL {
 		matrix.printMatrixInfo();
 
 		// Normalize
-		normalize(matrix.getColtMatrix(), clusteringThresh, false);
+		normalize(matrix, clusteringThresh, false);
 
 		debugln("Normalized matrix:");
 		matrix.printMatrixInfo();
@@ -112,11 +117,11 @@ public class RunMCL {
 				monitor.setStatusMessage("Iteration: "+(i+1)+" expanding "); //monitor.setStatus();
 				debugln("Iteration: "+(i+1)+" expanding ");
 				matrix.printMatrixInfo();
-				Matrix multiMatrix = matrix.multiplyMatrix(matrix);
+				Matrix multiMatrix = matrix.ops().multiplyMatrix(matrix);
 				matrix = matrix.copy(multiMatrix);
 
 				// Normalize
-				normalize(matrix.getColtMatrix(), clusteringThresh, false);
+				normalize(matrix, clusteringThresh, false);
 				monitor.showMessage(TaskMonitor.Level.INFO,"Expansion "+(i+1)+" took "+(System.currentTimeMillis()-t)+"ms");
 			}
 
@@ -132,7 +137,7 @@ public class RunMCL {
 				m.forEachNonZero(myPow);
 
 				// Normalize
-				normalize(matrix.getColtMatrix(), clusteringThresh, true);
+				normalize(matrix, clusteringThresh, true);
 			}
 
 			debugln("^ "+(i+1)+" after inflation");
@@ -197,20 +202,20 @@ public class RunMCL {
 	 * @param clusteringThresh the maximum value that we will take as a "zero" value
 	 * @param prune if 'false', don't prune this pass
 	 */
-	private void normalize(DoubleMatrix2D matrix, double clusteringThresh, boolean prune)
+	private void normalize(Matrix matrix, double clusteringThresh, boolean prune)
 	{
 		// Remove any really low values and create the sums array
-		double [] sums = new double[matrix.columns()];
-		matrix.forEachNonZero(new MatrixZeroAndSum(prune, clusteringThresh, sums));
+		double [] sums = new double[matrix.nColumns()];
+		matrix.getColtMatrix().forEachNonZero(new MatrixZeroAndSum(prune, clusteringThresh, sums));
 
 		// Finally, adjust the values
-		matrix.forEachNonZero(new MatrixNormalize(sums));
+		matrix.getColtMatrix().forEachNonZero(new MatrixNormalize(sums));
 
 		// Last step -- find any columns that summed to zero and set the diagonal to 1
 		for (int col = 0; col < sums.length; col++) {
 			if (sums[col] == 0.0) {
 				// debugln("Column "+col+" sums to 0");
-				matrix.set(col,col,1.0);
+				matrix.setValue(col,col,1.0);
 			}
 		}
 	}

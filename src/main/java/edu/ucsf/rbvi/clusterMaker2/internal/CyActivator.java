@@ -37,6 +37,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.MAM.MAMTaskFactor
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PR.PRTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PRWP.PRWPTaskFactory;
 
+// import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEOjAlgo.tSNEOjAlgoTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.tSNETaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa.PCoATaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
@@ -192,6 +193,9 @@ public class CyActivator extends AbstractCyActivator {
 		
 		//tSNE
 		registerService(bc, new tSNETaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+
+		//tSNEOjAlgo
+		// registerService(bc, new tSNEOjAlgoTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		
 		// Link Network Selections
 		LinkSelectionTaskFactory linkTaskFactory = new LinkSelectionTaskFactory(clusterManager);

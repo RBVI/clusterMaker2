@@ -5,12 +5,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.cytoscape.application.CyUserLog;
 import org.apache.log4j.Logger;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixOps;
 
 import cern.colt.matrix.tdouble.DoubleFactory2D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
@@ -20,9 +22,7 @@ import cern.colt.matrix.tdouble.algo.DoubleStatistic;
 import cern.colt.matrix.tdouble.algo.SmpDoubleBlas;
 
 public class SimpleMatrix implements Matrix {
-	protected Double[][] data;
-	protected SmpDoubleBlas blas;
-	private DenseDoubleEigenvalueDecomposition decomp = null;
+	protected double[][] data;
 	protected int[] index;
 	protected int nRows;
 	protected int nColumns;
@@ -34,9 +34,10 @@ public class SimpleMatrix implements Matrix {
 	protected boolean transposed = false;
 	private static double EPSILON=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
 	final Logger logger = Logger.getLogger(CyUserLog.NAME);
+	public final SimpleOps ops;
 
 	public SimpleMatrix() {
-		blas = new SmpDoubleBlas();
+		ops = new SimpleOps(this);
 	}
 
 	public SimpleMatrix(SimpleMatrix mat) {
@@ -46,6 +47,8 @@ public class SimpleMatrix implements Matrix {
 		minValue = mat.minValue;
 		maxValue = mat.maxValue;
 		index = Arrays.copyOf(mat.index, mat.index.length);
+		data = Arrays.stream(mat.data).map(e1->e1.clone()).toArray($->data.clone());
+		/*
 		for (int row = 0; row < nRows; row++) {
 			for (int col = colStart(row); col < nColumns; col++) {
 				data[row][col] = mat.data[row][col];
@@ -53,44 +56,53 @@ public class SimpleMatrix implements Matrix {
 					data[col][row] = mat.data[col][row];
 			}
 		}
+		*/
 	}
 
 	public SimpleMatrix(int rows, int columns) {
-		data = new Double[rows][columns];
+		this();
+		data = new double[rows][columns];
 		nRows = rows;
 		nColumns = columns;
 		rowLabels = new String[rows];
 		columnLabels = new String[columns];
+		IntStream.range(0, data.length).forEach(x->Arrays.fill(data[x], Double.NaN));
+		/*
+		for (int row = 0; row < rows; row++) {
+			Arrays.fill(data[row], Double.NaN);
+		}
+		*/
+		index = null;
+	}
+
+	public SimpleMatrix(int rows, int columns, double initialValue) {
+		this();
+		data = new double[rows][columns];
+		nRows = rows;
+		nColumns = columns;
+		rowLabels = new String[rows];
+		columnLabels = new String[columns];
+		IntStream.range(0, data.length).forEach(x->Arrays.fill(data[x], initialValue));
 		index = null;
 	}
 
 	public SimpleMatrix(SimpleMatrix mat, double[][] inputData) {
 		this();
-		data = new Double[nRows][nColumns];
 		transposed = mat.transposed;
 		symmetric = mat.symmetric;
 		minValue = mat.minValue;
 		maxValue = mat.maxValue;
 		rowLabels = Arrays.copyOf(mat.rowLabels, mat.rowLabels.length);
 		columnLabels = Arrays.copyOf(mat.columnLabels, mat.columnLabels.length);
-		for (int row = 0; row < nRows; row++) {
-			for (int column = 0; column < nColumns; column++) {
-				this.data[row][column] = inputData[row][column];
-			}
-		}
+		nRows = inputData.length;
+		nColumns = inputData[0].length;
+		data = Arrays.stream(inputData).map(e1->e1.clone()).toArray($->inputData.clone());
 	}
 
 	public void initialize(int rows, int columns, double[][] arrayData) {
 		nRows = rows;
 		nColumns = columns;
-		data = new Double[rows][columns];
-		if (arrayData != null) {
-			for (int row = 0; row < rows; row++) {
-				for (int col = 0; col < columns; col++) {
-					setValue(row, col, arrayData[row][col]);
-				}
-			}
-		}
+		data = Arrays.stream(arrayData).map(e1->e1.clone()).toArray($->arrayData.clone());
 		transposed = false;
 		symmetric = false;
 		rowLabels = new String[nRows];
@@ -100,19 +112,24 @@ public class SimpleMatrix implements Matrix {
 	public void initialize(int rows, int columns, Double[][] arrayData) {
 		nRows = rows;
 		nColumns = columns;
-		data = new Double[rows][columns];
+		data = new double[rows][columns];
 		if (arrayData != null) {
-			for (int row = 0; row < rows; row++) {
-				for (int col = 0; col < columns; col++) {
-					setValue(row, col, arrayData[row][col]);
-				}
-			}
+			IntStream.range(0, rows).parallel()
+				.forEach(r -> IntStream.range(0, columns)
+					.forEach(c -> {
+									if (arrayData[r][c] == null)
+										data[r][c] = Double.NaN;
+									else
+										data[r][c] = arrayData[r][c];
+					}));
 		}
 		transposed = false;
 		symmetric = false;
 		rowLabels = new String[nRows];
 		columnLabels = new String[nColumns];
 	}
+
+	public MatrixOps ops() { return ops; }
 	
 	/**
 	 * Return the number of rows in this matrix.
@@ -140,10 +157,14 @@ public class SimpleMatrix implements Matrix {
 	 * @return the (possibly null) value at that location
 	 */
 	public Double getValue(int row, int column) { 
+		double v;
 		if (index == null)
-			return data[row][column]; 
+			v = data[row][column]; 
 		else
-			return data[index[row]][index[column]]; 
+			v = data[index[row]][index[column]]; 
+		if (Double.isNaN(v))
+			return null;
+		return v;
 	}
 
 	/**
@@ -154,9 +175,7 @@ public class SimpleMatrix implements Matrix {
 	 * @return the value at that location, if it was set, otherwise, return Double.NaN.
 	 */
 	public double doubleValue(int row, int column) {
-		Double d = getValue(row, column);
-		if (d == null) return Double.NaN;
-		return d.doubleValue();
+		return getValue(row, column);
 	}
 	
 	/**
@@ -174,10 +193,7 @@ public class SimpleMatrix implements Matrix {
 			column = index[column];
 		}
 
-		if (Double.isNaN(value))
-			data[row][column] = null;
-		else
-			data[row][column] = value;
+		data[row][column] = value;
 	}
 
 	/**
@@ -197,7 +213,10 @@ public class SimpleMatrix implements Matrix {
 			column = index[column];
 		}
 
-		data[row][column] = value;
+		if (value == null || Double.isNaN(value))
+			data[row][column] = Double.NaN;
+		else
+			data[row][column] = value;
 	}
 
 	/**
@@ -208,8 +227,8 @@ public class SimpleMatrix implements Matrix {
 	 * @return true if this location has a value, false otherwise
 	 */
 	public boolean hasValue(int row, int column) {
-		Double d = getValue(row, column);
-		if (d == null)
+		double d = getValue(row, column);
+		if (Double.isNaN(d))
 			return false;
 		return true;
 	}
@@ -311,14 +330,14 @@ public class SimpleMatrix implements Matrix {
 		mat.rowLabels = Arrays.copyOf(rowLabels, rowLabels.length);
 		mat.columnLabels = Arrays.copyOf(rowLabels, rowLabels.length);
 
-		for (int row = 0; row < nRows; row++) {
-			for (int column = row; column < this.nRows; column++) {
-				double metValue = metric.getMetric(this, this, row, column);
-				mat.setValue(row, column, metValue);
-				if (row != column)
-					mat.setValue(column, row, metValue);
-			}
-		}
+		IntStream.range(0, nRows).parallel()
+			.forEach(row -> IntStream.range(0, nColumns)
+				.forEach(column -> {
+					double metValue = metric.getMetric(this, this, row, column);
+					mat.setValue(row, column, metValue);
+					if (row != column)
+						mat.setValue(column, row, metValue);
+				}));
 		return mat;
 	}
  
@@ -330,6 +349,9 @@ public class SimpleMatrix implements Matrix {
 	 */
 	public double[][] toArray() {
 		double doubleData[][] = new double[nRows][nColumns];
+		IntStream.range(0, nRows).parallel()
+			.forEach(row -> doubleData[row] = Arrays.copyOf(data[row], nColumns));
+
 		for (int row = 0; row < nRows; row++) {
 			for (int col = colStart(row); col < nColumns; col++) {
 				doubleData[row][col] = doubleValue(row, col);
@@ -398,15 +420,15 @@ public class SimpleMatrix implements Matrix {
 	 * Set all missing values to zero
 	 */
 	public void setMissingToZero() {
-		for (int row = 0; row < nRows; row++) {
-			for (int col = colStart(row); col < nColumns; col++) {
-				if (data[row][col] == null) {
-					data[row][col] = 0.0d;
-					if (symmetric && row != col)
-						data[col][row] = 0.0d;
-				}
-			}
-		}
+		IntStream.range(0, nRows).parallel()
+			.forEach(row -> IntStream.range(colStart(row), nColumns)
+				.forEach(column -> {
+					if (data[row][column] == Double.NaN) {
+						data[row][column] = 0.0d;
+						if (symmetric && row != column)
+							data[column][row] = 0.0d;
+					}
+				}));
 	}
 
 	/**
@@ -418,19 +440,6 @@ public class SimpleMatrix implements Matrix {
 		}
 	}
 
-	public void threshold() {
-		threshold(EPSILON);
-	}
-
-	public void threshold(double thresh) {
-		for (int row = 0; row < nRows; row++) {
-			for (int col = colStart(row); col < nColumns; col++) {
-				if (getValue(row, col) <= thresh)
-					setValue(row, col, 0.0);
-			}
-		}
-	}
-
 	/**
 	 * Return the rank order of the columns in a row
 	 *
@@ -439,9 +448,9 @@ public class SimpleMatrix implements Matrix {
 	 */
 	public double[] getRank(int row) {
 		// Get the masked row
-		double[] tData = new double[nColumns];
+		double[] tData = new double[nColumns()];
 		int nVals = 0;
-		for (int column = 0; column < nColumns; column++) {
+		for (int column = 0; column < nColumns(); column++) {
 			if (hasValue(row,column))
 				tData[nVals++] = data[row][column];
 		}
@@ -528,7 +537,7 @@ public class SimpleMatrix implements Matrix {
 					newMatrix.setColumnLabel(c, columnLabels[c+col]);
 
 				newMatrix.data[r][c] = data[r+row][c+col];
-				if (newMatrix.data[r][c] != null) {
+				if (!Double.isNaN(newMatrix.data[r][c])) {
 					if (newMatrix.data[r][c] < newMin)
 						newMin = newMatrix.data[r][c];
 					if (newMatrix.data[r][c] > newMax)
@@ -555,353 +564,10 @@ public class SimpleMatrix implements Matrix {
 		return new SimpleMatrix(this);
 	}
 
-	/**
-	 * Invert the matrix in place
-	 */
-	public void invertMatrix() {
-		if (nRows != nColumns) {
-			logger.warn("clusterMaker2 SimpleMatrix: attempt to invert an assymetric network");
-		}
-		Double b[][] = new Double[nRows][nColumns];
-		Double x[][] = new Double[nRows][nColumns];
-		int idx[] = new int[nRows];
-
-		// Create identity matrix
-		for (int row = 0; row < nRows; row++) {
-			for (int col = 0; col < nColumns; col++) {
-				if (row == col)
-					b[row][col] = 1.0d;
-				else
-					b[row][col] = 0.0d;
-			}
-		}
-
-		// Transform the matrix into an upper triangle
-		gaussian(data, idx);
-
-		// Update the matrix b[i][j] with the ratios stored
-		for (int i = 0; i < nRows-1; ++i) {
-			for (int j=i+1; j < nRows; ++j) {
-				for (int k=0; k < nRows; ++k) {
-					b[idx[j]][k] -= data[idx[j]][i]*b[idx[i]][k];
-				}
-			}
-		}
-
-		// Perform backward substitution
-		for (int i = 0; i < nRows; ++i) {
-			x[nRows-1][i] = b[idx[nRows-1]][i]/data[idx[nRows-1]][nRows-1];
-			for (int j = nRows-2; j >=0; --j) {
-				x[j][i] = b[idx[j]][i];
-				for (int k = j+1; k < nRows; ++k) {
-					x[j][i] -= data[idx[j]][k]*x[k][i];
-				}
-
-				x[j][i] /= data[idx[j]][j];
-			}
-		}
-		data = x;
-	}
-
-	/**
-	 * Normalize the matrix in place
-	 */
-	public void normalize() {
-		double span = maxValue - minValue;
-		double min = minValue;
-		double max = maxValue;
-		minValue = Double.MAX_VALUE;
-		maxValue = Double.MIN_VALUE;
-		for (int row = 0; row < nRows; row++) {
-			for (int col = colStart(row); col < nColumns; col++) {
-				Double d = getValue(row, col);
-				if (d == null)
-					continue;
-				setValue(row, col, (d-min)/span);
-				if (symmetric && col != row)
-					setValue(col, row, (d-min)/span);
-			}
-		}
-	}
-
-	/**
-	 * Normalize the matrix in place.  This is actual matrix normalization,
-	 * i.e. all cells sum to 1.0
-	 */
-	public void normalizeMatrix() {
-		double sum = 0.0;
-		minValue = Double.MAX_VALUE;
-		maxValue = Double.MIN_VALUE;
-		for (int row = 0; row < nRows; row++) {
-			for (int col = colStart(row); col < nColumns; col++) {
-				Double d = getValue(row, col);
-				if (d == null)
-					continue;
-				sum += d.doubleValue();
-				if (symmetric && col != row)
-					sum += d.doubleValue();
-			}
-		}
-
-		for (int row = 0; row < nRows; row++) {
-			for (int col = colStart(row); col < nColumns; col++) {
-				Double d = getValue(row, col);
-				if (d == null)
-					continue;
-				setValue(row, col, d/sum);
-				if (symmetric && col != row)
-					setValue(col, row, d/sum);
-			}
-		}
-	}
-
-	/**
-	 * Normalize a matrix row in place (all columns in the row sum to 1.0)
-	 *
-	 * @param row the row to normalize
-	 */
-	public void normalizeRow(int row) {
-		double sum = 0.0;
-		for (int col = 0; col < nColumns; col++) {
-			Double d = getValue(row, col);
-			if (d == null)
-				continue;
-			sum += d.doubleValue();
-		}
-		for (int col = 0; col < nColumns; col++) {
-			Double d = getValue(row, col);
-			if (d == null)
-				continue;
-			setValue(row, col, d/sum);
-		}
-
-		updateMinMax();
-	}
-
-	/**
-	 * Normalize a matrix column in place (all rows in the column sum to 1.0)
-	 *
-	 * @param column the column to normalize
-	 */
-	public void normalizeColumn(int column) {
-		double sum = 0.0;
-		for (int row = 0; row < nRows; row++) {
-			Double d = getValue(row, column);
-			if (d == null)
-				continue;
-			sum += d.doubleValue();
-		}
-
-		for (int row = 0; row < nRows; row++) {
-			Double d = getValue(row, column);
-			if (d == null)
-				continue;
-			setValue(row, column, d/sum);
-		}
-
-		updateMinMax();
-	}
-
-	public void standardizeRow(int row) {
-		double mean = rowMean(row);
-		double variance = rowVariance(row, mean);
-		double stdev = Math.sqrt(variance);
-		for (int column = 0; column < nColumns; column++) {
-			double cell = this.getValue(row, column);
-			this.setValue(row, column, (cell-mean)/stdev);
-		}
-	}
-
-	public void standardizeColumn(int column) {
-		double mean = columnMean(column);
-		double variance = columnVariance(column, mean);
-		double stdev = Math.sqrt(variance);
-		for (int row = 0; row < nRows; row++) {
-			double cell = this.getValue(row, column);
-			this.setValue(row, column, (cell-mean)/stdev);
-		}
-	}
-
-	public void centralizeColumns() {
-		for(int i=0;i<nColumns;i++){
-			// Replace with parallel function?
-			double mean = 0.0;
-			for(int j=0;j<nRows; j++){
-				double cell = this.getValue(j, i);
-				if (!Double.isNaN(cell))
-					mean += cell;
-			}
-			mean /= nRows;
-			for(int j=0;j<nRows;j++){
-				double cell = this.getValue(j, i);
-				if (!Double.isNaN(cell))
-					this.setValue(j, i, cell - mean);
-				else
-					this.setValue(i, j, 0.0d);
-			}
-		}
-	}
-
-	public void centralizeRows() {
-		for(int i=0;i<nRows;i++){
-			// Replace with parallel function?
-			double mean = 0.0;
-			for(int j=0;j<nColumns; j++){
-				double cell = this.getValue(i, j);
-				if (!Double.isNaN(cell))
-					mean += cell;
-			}
-			mean /= nColumns;
-			for(int j=0;j<nColumns;j++){
-				double cell = this.getValue(i, j);
-				if (!Double.isNaN(cell))
-					this.setValue(i, j, cell - mean);
-				else
-					this.setValue(i, j, 0.0d);
-			}
-		}
-	}
-
-	public double columnSum(int column) {
-		double sum = 0.0;
-		for(int j=0;j<nRows; j++){
-			double cell = this.getValue(j, column);
-			if (!Double.isNaN(cell))
-				sum += cell;
-		}
-		return sum;
-	}
-	
-	public double rowSum(int row) {
-		double sum = 0.0;
-		for(int j=0;j<nColumns; j++){
-			double cell = this.getValue(row, j);
-			if (!Double.isNaN(cell))
-				sum += cell;
-		}
-		return sum;
-	}
-
-	public double columnMean(int column) {
-		double mean = 0.0;
-		for(int j=0;j<nRows; j++){
-			double cell = this.getValue(j, column);
-			if (!Double.isNaN(cell))
-				mean += cell;
-		}
-		return mean/nRows;
-	}
-
-	public double rowMean(int row) {
-		double mean = 0.0;
-		for(int j=0;j<nColumns; j++){
-			double cell = this.getValue(row, j);
-			if (!Double.isNaN(cell))
-				mean += cell;
-		}
-		return mean/nColumns;
-	}
-	
-	public double columnVariance(int column) {
-		double mean = columnMean(column);
-		return columnVariance(column, mean);
-	}
-
-	public double columnVariance(int column, double mean) {
-		double variance = 0.0;
-		for(int j=0;j<nRows; j++){
-			double cell = this.getValue(j, column);
-			if (!Double.isNaN(cell))
-				variance += Math.pow((cell-mean),2);
-		}
-		return variance/nRows;
-	}
-	
-	public double rowVariance(int row) {
-		double mean = rowMean(row);
-		return rowVariance(row, mean);
-	}
-
-	public double rowVariance(int row, double mean) {
-		double variance = 0.0;
-		for(int j=0;j<nColumns; j++){
-			double cell = this.getValue(row, j);
-			if (!Double.isNaN(cell))
-				variance += Math.pow((cell-mean),2);
-		}
-		return variance/nColumns;
-	}
-
 	public DoubleMatrix2D getColtMatrix() {
 		DoubleMatrix2D mat = DoubleFactory2D.dense.make(nRows, nColumns);
 		mat.assign(toArray());
 		return mat;
-	}
-
-	public Matrix multiplyMatrix(Matrix b) {
-		return mult(b);
-	}
-
-	public Matrix covariance() {
-		DoubleMatrix2D matrix2D = DoubleStatistic.covariance(getColtMatrix());
-		return copyDataFromMatrix(matrix2D);
-	}
-
-	public Matrix correlation() {
-		DoubleMatrix2D matrix2D = DoubleStatistic.covariance(getColtMatrix());
-		matrix2D = DoubleStatistic.correlation(matrix2D);
-		return copyDataFromMatrix(matrix2D);
-	}
-
-	public double[] eigenValues(boolean nonZero){
-		if (decomp == null)
-			decomp = new DenseDoubleEigenvalueDecomposition(getColtMatrix());
-
-		double[] allValues = decomp.getRealEigenvalues().toArray();
-		if (!nonZero)
-			return allValues;
-
-		int size = 0;
-		for (double d: allValues) {
-			if (Math.abs(d) > EPSILON)size++;
-		}
-		double [] nonZ = new double[size];
-		int index = 0;
-		for (double d: allValues) {
-			if (Math.abs(d) > EPSILON)
-				nonZ[index++] = d;
-		}
-
-		return nonZ;
-	}
-
-	public double[][] eigenVectors(){
-		if (decomp == null)
-			decomp = new DenseDoubleEigenvalueDecomposition(getColtMatrix());
-		return decomp.getV().toArray();
-	}
-
-	public Matrix mult(Matrix b) {
-		DoubleMatrix2D aMat = getColtMatrix();
-		DoubleMatrix2D bMat = b.getColtMatrix();
-		DoubleMatrix2D cMat = DoubleFactory2D.sparse.make(nRows, nColumns);
-		blas.dgemm(false, false, 1.0, aMat, bMat, 0.0, cMat);
-		double[][] data = cMat.toArray();
-		return new SimpleMatrix(this, data);
-	}
-
-	public int cardinality() {
-		int cardinality = 0;
-		for (int row = 0; row < nRows; row++) {
-			for (int col = colStart(row); col < nColumns; col++) {
-				if (getValue(row, col) != null) {
-					cardinality++;
-					if (symmetric)
-						cardinality++;
-				}
-			}
-		}
-		return cardinality;
 	}
 
 	/**
@@ -911,7 +577,7 @@ public class SimpleMatrix implements Matrix {
 	 */
 	public String printMatrixInfo() {
 		String s = "Simple Matrix("+nRows+", "+nColumns+")\n";
-		s += " cardinality is "+cardinality()+"\n";
+		s += " cardinality is "+ops.cardinality()+"\n";
 		return s;
 	}
 
@@ -947,16 +613,12 @@ public class SimpleMatrix implements Matrix {
 		}
 	}
 
-	private Matrix copyDataFromMatrix(DoubleMatrix2D matrix2D) {
-		SimpleMatrix mat = new SimpleMatrix(matrix2D.rows(), matrix2D.columns());
+	protected Matrix copyDataFromMatrix(DoubleMatrix2D matrix2D) {
+		SimpleMatrix mat = new SimpleMatrix();
+		double[][]inputData = matrix2D.toArray();
+		mat.initialize(matrix2D.rows(), matrix2D.columns(), inputData);
 		mat.symmetric = true;
 		mat.transposed = this.transposed;
-		double[][]inputData = matrix2D.toArray();
-		for (int row = 0; row < mat.nRows; row++) {
-			for (int column = 0; column < mat.nColumns; column++) {
-				mat.data[row][column] = inputData[row][column];
-			}
-		}
 		String[] labels;
 		if (this.transposed)
 			labels = rowLabels;
@@ -969,56 +631,7 @@ public class SimpleMatrix implements Matrix {
 		return mat;
 	}
 
-	private void gaussian(Double a[][], int idx[]) {
-		int n = idx.length;
-		double c[] = new double[n];
-
-		// Initialize the index
-		for (int i=0; i < n; ++i)
-			idx[i] = i;
-
-		// Find the rescaling factors, one from each row
-		for (int i= 0; i < n; ++i) {
-			double c1 = 0;
-			for (int j=0; j<n; ++j) {
-				double c0 = Math.abs(a[i][j]);
-				if (c0 > c1) c1 = c0;
-			}
-			c[i] = c1;
-		}
-
-		// Search the pivoting element from each column
-		int k = 0;
-		for (int j=0; j<n-1; ++j) {
-			double pi1 = 0;
-			for (int i=j; i<n; ++i) {
-				double pi0 = Math.abs(a[idx[i]][j]);
-				pi0 /= c[idx[i]];
-				if (pi0 > pi1) {
-					pi1 = pi0;
-					k = i;
-				}
-			}
-
-			// Interchange rows according to the pivoting order
-			int itmp = idx[j];
-			idx[j] = idx[k];
-			idx[k] = itmp;
-
-			for (int i = j+1; i<n; ++i) {
-				double pj = a[idx[i]][j]/a[idx[j]][j];
-				// Record pivoting ratios below the diagonal
-				a[idx[i]][j] = pj;
-
-				// Modify other elements accordingly
-				for (int l=j+1; l<n; ++l) {
-					a[idx[i]][l] -= pj*a[idx[j]][l];
-				}
-			}
-		}
-	}
-
-	private void updateMinMax() {
+	public void updateMinMax() {
 		maxValue = Double.MIN_VALUE;
 		minValue = Double.MAX_VALUE;
 		for (int row = 0; row < nRows; row++) {
@@ -1031,7 +644,7 @@ public class SimpleMatrix implements Matrix {
 		}
 	}
 
-	private int colStart(int row) {
+	protected int colStart(int row) {
 		if (!symmetric) return 0;
 		return row;
 	}

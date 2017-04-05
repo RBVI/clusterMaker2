@@ -18,6 +18,10 @@ import cern.colt.matrix.tdouble.DoubleMatrix2D;
  * 		o The matrix is separately indexed
  */
 public interface Matrix {
+	/**
+	 * Get the MatrixOps for this Matrix type.
+	 */
+	public MatrixOps ops();
 
 	/**
 	 * Initialize the matrix data
@@ -262,183 +266,9 @@ public interface Matrix {
 	public Matrix submatrix(int row, int col, int rows, int cols);
 
 	/**
-	 * Invert the matrix in place
+	 * Update the minimum and maximum values of the matrix
 	 */
-	public void invertMatrix();
-
-	/**
-	 * Normalize the matrix in place.  This actually doesn't do matrix
-	 * normalization -- it just uses the min and max values to bound
-	 * the matrix
-	 */
-	public void normalize();
-
-	/**
-	 * Normalize the matrix in place.  This is actual matrix normalization,
-	 * i.e. all cells sum to 1.0
-	 */
-	public void normalizeMatrix();
-
-	/**
-	 * Normalize a matrix row in place (all columns in the row sum to 1.0)
-	 *
-	 * @param row the row to normalize
-	 */
-	public void normalizeRow(int row);
-
-	/**
-	 * Normalize a matrix column in place (all rows in the column sum to 1.0)
-	 *
-	 * @param column the column to normalize
-	 */
-	public void normalizeColumn(int column);
-
-	/**
-	 * Standardize the data in a row
-	 *
-	 * @param row the row to standardize
-	 */
-	public void standardizeRow(int row);
-
-	/**
-	 * Standardize the data in a column
-	 *
-	 * @param column the column to standardize
-	 */
-	public void standardizeColumn(int column);
-
-	/**
-	 * Normalize a matrix column in place (all rows in the column sum to 1.0)
-	 *
-	 * @param column the column to normalize
-
-	/**
-	 * Centralize the rows of a matrix around the mean of the row
-	 *
-	 */
-	public void centralizeRows();
-
-	/**
-	 * Centralize the column of a matrix around the mean of the column
-	 *
-	 */
-	public void centralizeColumns();
-
-	/**
-	 * Return the sum of a row
-	 *
-	 * @param row the row to get the sum of
-	 * @return the sum
-	 */
-	public double rowSum(int row);
-
-	/**
-	 * Return the sum of a column
-	 *
-	 * @param column the column to get the sum of
-	 * @return the sum
-	 */
-	public double columnSum(int row);
-
-	/**
-	 * Return the variance of a row
-	 *
-	 * @param row the row to get the variance of
-	 * @return the variance
-	 */
-	public double rowVariance(int row);
-
-	/**
-	 * Return the variance of a column
-	 *
-	 * @param column the column to get the variance of
-	 * @return the variance
-	 */
-	public double columnVariance(int row);
-
-	/**
-	 * Return the mean of a row
-	 *
-	 * @param row the row to get the mean of
-	 * @return the mean
-	 */
-	public double rowMean(int row);
-
-	/**
-	 * Return the mean of a column
-	 *
-	 * @param column the column to get the mean of
-	 * @return the mean
-	 */
-	public double columnMean(int column);
-
-	/**
-	 * Return the cardinality (number of non-null values) of this matrix
-	 *
-	 * @return cardinality
-	 */
-	public int cardinality();
-
-	/**
-	 * Multiply two matrices together
-	 *
-	 * @param matrix the matrix to multiple with our matrix
-	 * @return the multiplied matrix
-	 */
-	public Matrix multiplyMatrix(Matrix matrix);
-
-	/**
-	 * Return the covariance of a matrix
-	 *
-	 * @return the covariance of the matrix
-	 */
-	public Matrix covariance();
-
-	/**
-	 * Return the correlation of a matrix
-	 *
-	 * @return the correlation of the matrix
-	 */
-	public Matrix correlation();
-
-	/**
-	 * Threshold the matrix.  This will remove all of the
-	 * values less than a default threshold to increase the sparsity
-	 * of the matrix (decrease the cardinality).
-	 */
-	public void threshold();
-
-	/**
-	 * Threshold the matrix.  This will remove all of the
-	 * very, very small values to increase the sparsity
-	 * of the matrix (decrease the cardinality).
-	 *
-	 * @param threshold the actual threshold to use
-	 */
-	public void threshold(double thresh);
-
-	/**
-	 * Transpose the matrix.  This will return a new
-	 * matrix that is the transpose of this matrix.
-	 *
-	 * @return a new matrix that is the transpose of this matrix
-	 */
-	// public Matrix transpose();
-
-	/**
-	 * Return the eigenvalues of a matrix
-	 *
-	 * @param nonZero if true, only return the non-zero eigenvalues
-	 * @return the eigenvalues of the matrix
-	 */
-	public double[] eigenValues(boolean nonZero);
-
-	/**
-	 * Return the eigenvectors of a matrix
-	 *
-	 * @return the eigenvectors of the matrix
-	 */
-	public double[][] eigenVectors();
+	public void updateMinMax();
 
 	/**
 	 * Return some information about the matrix

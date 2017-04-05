@@ -84,9 +84,9 @@ distancematrix.writeMatrix("distancematrix.txt");
 		
 		//System.out.println("Completed Gowers Matrix");
 
-		Matrix mat1 = cMat.multiplyMatrix(cA);
+		Matrix mat1 = cMat.ops().multiplyMatrix(cA);
 
-		Matrix G = mat1.multiplyMatrix(cMat);
+		Matrix G = mat1.ops().multiplyMatrix(cMat);
 		System.out.println("Completed Gowers Matrix");
 		return G;
 	}
@@ -99,8 +99,8 @@ distancematrix.writeMatrix("distancematrix.txt");
 		System.out.println("Done Getting Gowers Matrix");
 		G.writeMatrix("Gowers.txt");
 		
-		eigen_vectors=G.eigenVectors();
-		 eigen_values=G.eigenValues(true);	
+		eigen_vectors=G.ops().eigenVectors();
+		eigen_values=G.ops().eigenValues(true);	
 
 		
 		return eigen_values;
@@ -122,7 +122,7 @@ distancematrix.writeMatrix("distancematrix.txt");
 			// System.out.println("vector: "+result.printMatrixInfo());
 			System.out.println("Matrix rows "+matrix.printMatrixInfo());
 			System.out.println("Result rows "+result.printMatrixInfo());
-			Matrix mat = matrix.multiplyMatrix(result);
+			Matrix mat = matrix.ops().multiplyMatrix(result);
 			// System.out.println("After vector multiply: "+mat.printMatrixInfo());
 			components[k] = matrix.copy(mat);
 			components[k].printMatrixInfo();

@@ -102,28 +102,28 @@ public class RunPCA {
 		Matrix C;
 		if (standardize) {
 			for (int column = 0; column < matrix.nColumns(); column++) {
-				matrix.standardizeColumn(column);
+				matrix.ops().standardizeColumn(column);
 			}
 		}
 		// System.out.println("centralizing columns");
-		matrix.centralizeColumns();
+		matrix.ops().centralizeColumns();
 		// matrix.writeMatrix("centralized.txt");
 
 		if (matrixType.equals("correlation")) {
 			// System.out.println("Creating correlation matrix");
-			C = matrix.correlation();
+			C = matrix.ops().correlation();
 			// C.writeMatrix("correlation.txt");
 		} else {
 			// Covariance
 			// System.out.println("Creating covariance matrix");
-			C = matrix.covariance();
+			C = matrix.ops().covariance();
 			// C.writeMatrix("covariance.txt");
 		}
 
 		// System.out.println("Finding eigenValues");
-		eigenValues = C.eigenValues(true);
+		eigenValues = C.ops().eigenValues(true);
 		// System.out.println("Finding eigenVectors");
-		eigenVectors = C.eigenVectors();
+		eigenVectors = C.ops().eigenVectors();
 
 		monitor.showMessage(TaskMonitor.Level.INFO, "Found "+eigenValues.length+" EigenValues");
 		monitor.showMessage(TaskMonitor.Level.INFO, "Found "+eigenVectors.length+" EigenVectors of length "+eigenVectors[0].length);
@@ -151,7 +151,7 @@ public class RunPCA {
 			 System.out.println("matrix: "+matrix.printMatrixInfo());
 			 System.out.println("vector: "+result.printMatrixInfo());
 
-			Matrix mat = matrix.multiplyMatrix(result);
+			Matrix mat = matrix.ops().multiplyMatrix(result);
 			// System.out.println("After vector multiply: "+mat.printMatrixInfo());
 			components[k] = matrix.copy(mat);
 			components[k].printMatrixInfo();

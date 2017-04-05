@@ -598,7 +598,7 @@ public class CalculationMatrix {
 	
 	
 	public static Matrix times(Matrix m1, Matrix m2) {
-		return m1.multiplyMatrix(m2);
+		return m1.ops().multiplyMatrix(m2);
 	}
 
 	public static Matrix diag(Matrix ds) {

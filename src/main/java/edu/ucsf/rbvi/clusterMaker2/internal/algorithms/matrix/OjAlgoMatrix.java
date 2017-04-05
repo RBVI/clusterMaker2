@@ -14,22 +14,34 @@ import java.util.concurrent.TimeUnit;
 import org.cytoscape.application.CyUserLog;
 import org.apache.log4j.Logger;
 
-import cern.colt.function.tdouble.IntIntDoubleFunction;
-import cern.colt.function.tdouble.DoubleFunction;
-import cern.jet.math.tdouble.DoubleFunctions;
-import cern.colt.matrix.tdouble.DoubleMatrix1D;
-import cern.colt.matrix.tdouble.DoubleFactory1D;
 import cern.colt.matrix.tdouble.DoubleFactory2D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
-import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
-import cern.colt.matrix.tdouble.algo.DoubleStatistic;
+
+import org.ojalgo.OjAlgoUtils;
+import org.ojalgo.access.Access1D;
+import org.ojalgo.function.NullaryFunction;
+import org.ojalgo.function.PrimitiveFunction;
+import org.ojalgo.function.aggregator.Aggregator;
+import org.ojalgo.function.aggregator.AggregatorFunction;
+import org.ojalgo.matrix.BasicMatrix;
+import org.ojalgo.matrix.BasicMatrix.Builder;
+import org.ojalgo.matrix.PrimitiveMatrix;
+import org.ojalgo.matrix.decomposition.DecompositionStore;
+import org.ojalgo.matrix.decomposition.Eigenvalue;
+import org.ojalgo.matrix.store.ElementsSupplier;
+import org.ojalgo.matrix.store.MatrixStore;
+import org.ojalgo.matrix.store.PhysicalStore;
+import org.ojalgo.matrix.store.PrimitiveDenseStore;
+import org.ojalgo.matrix.task.InverterTask;
+import org.ojalgo.matrix.task.SolverTask;
+import org.ojalgo.matrix.task.TaskException;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixOps;
 
-public class ColtMatrix implements Matrix {
-	protected DoubleMatrix2D data;
+public class OjAlgoMatrix implements Matrix {
+	protected PhysicalStore<Double> data;
 	protected int[] index = null;
 	protected int nRows;
 	protected int nColumns;
@@ -39,26 +51,29 @@ public class ColtMatrix implements Matrix {
 	protected double minValue = Double.MAX_VALUE;
 	protected boolean symmetric = false;
 	protected boolean transposed = false;
+	private static double EPSILON=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
+	private Eigenvalue<Double> decomp = null;
 	private int nThreads = -1;
 	final Logger logger = Logger.getLogger(CyUserLog.NAME);
+	public final OjAlgoOps ops;
+
+	protected final PhysicalStore.Factory<Double, PrimitiveDenseStore> storeFactory;
 
 	// For debugging messages
 	private static DecimalFormat scFormat = new DecimalFormat("0.###E0");
 	private static DecimalFormat format = new DecimalFormat("0.###");
 
-	// Our MatrixOps
-	public final ColtOps ops;
-
-	public ColtMatrix() {
+	public OjAlgoMatrix() {
 		nThreads = Runtime.getRuntime().availableProcessors()-1;
-		ops = new ColtOps(this);
+		storeFactory = PrimitiveDenseStore.FACTORY;
+		ops = new OjAlgoOps(this);
 	}
 
-	public ColtMatrix(ColtMatrix mat) {
+	public OjAlgoMatrix(OjAlgoMatrix mat) {
 		this();
 		data = mat.data.copy();
-		nRows = data.rows();
-		nColumns = data.columns();
+		nRows = (int)data.countRows();
+		nColumns = (int)data.countColumns();
 		transposed = mat.transposed;
 		symmetric = mat.symmetric;
 		minValue = mat.minValue;
@@ -72,9 +87,9 @@ public class ColtMatrix implements Matrix {
 			index = Arrays.copyOf(mat.index, mat.index.length);
 	}
 
-	public ColtMatrix(int rows, int columns) {
+	public OjAlgoMatrix(int rows, int columns) {
 		this();
-		data = DoubleFactory2D.sparse.make(rows,columns);
+		data = storeFactory.makeZero(rows, columns);
 		nRows = rows;
 		nColumns = columns;
 		rowLabels = new String[rows];
@@ -82,7 +97,18 @@ public class ColtMatrix implements Matrix {
 		index = null;
 	}
 
-	public ColtMatrix(ColtMatrix mat, DoubleMatrix2D data) {
+	public OjAlgoMatrix(int rows, int columns, double initialValue) {
+		this();
+		MatrixFiller f = new MatrixFiller(initialValue);
+		data = storeFactory.makeFilled(rows, columns, f);
+		nRows = rows;
+		nColumns = columns;
+		rowLabels = new String[rows];
+		columnLabels = new String[columns];
+		index = null;
+	}
+
+	public OjAlgoMatrix(OjAlgoMatrix mat, MatrixStore<Double> data) {
 		this();
 		transposed = mat.transposed;
 		symmetric = mat.symmetric;
@@ -91,17 +117,17 @@ public class ColtMatrix implements Matrix {
 		if (mat.columnLabels != null)
 			columnLabels = Arrays.copyOf(mat.columnLabels, mat.columnLabels.length);
 
-		this.data = data;
-		nRows = data.rows();
-		nColumns = data.columns();
+		this.data = storeFactory.copy(data);
+		nRows = (int)data.countRows();
+		nColumns = (int)data.countColumns();
 		updateMinMax();
 	}
 
-	public ColtMatrix(SimpleMatrix mat) {
+	public OjAlgoMatrix(SimpleMatrix mat) {
 		this();
-		data = DoubleFactory2D.sparse.make(mat.toArray());
-		nRows = data.rows();
-		nColumns = data.columns();
+		data = storeFactory.rows(mat.toArray());
+		nRows = (int)data.countRows();
+		nColumns = (int)data.countColumns();
 		transposed = mat.transposed;
 		symmetric = mat.symmetric;
 		minValue = mat.minValue;
@@ -110,16 +136,14 @@ public class ColtMatrix implements Matrix {
 			index = Arrays.copyOf(mat.index, mat.index.length);
 	}
 
-	public MatrixOps ops() { return ops; }
-
 	public void initialize(int rows, int columns, double[][] arrayData) {
 		if (arrayData != null) {
-			data = DoubleFactory2D.sparse.make(arrayData);
+			data = storeFactory.rows(arrayData);
 		} else {
-			data = DoubleFactory2D.sparse.make(rows, columns);
+			data = storeFactory.makeEye(rows, columns);
 		}
-		nRows = data.rows();
-		nColumns = data.columns();
+		nRows = (int)data.countRows();
+		nColumns = (int)data.countColumns();
 		transposed = false;
 		symmetric = false;
 		rowLabels = new String[nRows];
@@ -128,9 +152,9 @@ public class ColtMatrix implements Matrix {
 	}
 
 	public void initialize(int rows, int columns, Double[][] arrayData) {
-		data = DoubleFactory2D.sparse.make(rows, columns);
-		nRows = data.rows();
-		nColumns = data.columns();
+		data = storeFactory.makeEye(rows, columns);
+		nRows = (int)data.countRows();
+		nColumns = (int)data.countColumns();
 		if (arrayData != null) {
 			for (int row = 0; row < rows; row++) {
 				for (int col = 0; col < columns; col++) {
@@ -144,6 +168,8 @@ public class ColtMatrix implements Matrix {
 		columnLabels = new String[nColumns];
 		updateMinMax();
 	}
+
+	public MatrixOps ops() { return ops; }
 
 	/**
 	 * Return the number of rows in this matrix.
@@ -173,9 +199,9 @@ public class ColtMatrix implements Matrix {
 	public Double getValue(int row, int column) { 
 		Double d;
 		if (index == null)
-			d = data.getQuick(row, column);
+			d = data.get(row, column);
 		else
-			d = data.getQuick(index[row], index[column]);
+			d = data.get(index[row], index[column]);
 		if (Double.isNaN(d))
 			return null;
 		return d;
@@ -210,7 +236,7 @@ public class ColtMatrix implements Matrix {
 			column = index[column];
 		}
 
-		data.setQuick(row, column, value);
+		data.set(row, column, value);
 	}
 
 	/**
@@ -232,9 +258,9 @@ public class ColtMatrix implements Matrix {
 		}
 
 		if (value == null)
-			data.setQuick(row, column, Double.NaN);
+			data.set(row, column, Double.NaN);
 		else
-			data.setQuick(row, column, value);
+			data.set(row, column, value);
 	}
 
 	/**
@@ -342,7 +368,7 @@ public class ColtMatrix implements Matrix {
 	 * @return a new Matrix of the distances between the rows
 	 */
 	public Matrix getDistanceMatrix(DistanceMetric metric) {
-		ColtMatrix mat = new ColtMatrix(nRows, nRows);
+		OjAlgoMatrix mat = new OjAlgoMatrix(nRows, nRows);
 		mat.transposed = false;
 		mat.symmetric = true;
 		mat.rowLabels = Arrays.copyOf(rowLabels, rowLabels.length);
@@ -437,9 +463,9 @@ public class ColtMatrix implements Matrix {
 		for (int row = 0; row < nRows; row++) {
 			for (int col = colStart(row); col < nColumns; col++) {
 				if (getValue(row, col) == null) {
-					data.setQuick(row, col, 0.0d);
+					data.set(row, col, 0.0d);
 					if (symmetric && row != col)
-						data.setQuick(col, row, 0.0d);
+						data.set(col, row, 0.0d);
 				}
 			}
 		}
@@ -454,7 +480,7 @@ public class ColtMatrix implements Matrix {
 			for (int col = 0; col < nColumns; col++ ) {
 				if (data.get(row,col) > max) max = data.get(row,col);
 			}
-			data.setQuick(row, row, max);
+			data.set(row, row, max);
 		}
 	}
 
@@ -505,7 +531,7 @@ public class ColtMatrix implements Matrix {
 	public void index() {
 		if (!symmetric) {
 			// Can't index a non-symmetric matrix!
-			logger.warn("clusterMaker2 ColtMatrix: attempt to index an assymetric network");
+			logger.warn("clusterMaker2 OjAlgoMatrix: attempt to index an assymetric network");
 			return;
 		}
 
@@ -521,7 +547,7 @@ public class ColtMatrix implements Matrix {
 	 * index.  This is an efficient way to access submatrices
 	 */
 	public Matrix submatrix(int[] index) {
-		ColtMatrix mat = new ColtMatrix();
+		OjAlgoMatrix mat = new OjAlgoMatrix();
 		mat.data = data;
 		mat.index = index;
 		mat.nRows = nRows;
@@ -545,8 +571,14 @@ public class ColtMatrix implements Matrix {
 	 * @return submatrix
 	 */
 	public Matrix submatrix(int row, int col, int rows, int cols) {
-		ColtMatrix newMatrix = new ColtMatrix(rows, cols);
-		newMatrix.data = data.viewPart(row, col, rows, cols);
+		OjAlgoMatrix newMatrix = new OjAlgoMatrix(rows, cols);
+		// FIXME
+		// newMatrix.data = data.viewPart(row, col, rows, cols);
+		for (int r = 0; r < rows; r++) {
+			for (int c = 0; c < cols; c++) {
+				newMatrix.setValue(r,c, getValue(row+r,col+c));
+			}
+		}
 		double newMin = Double.MAX_VALUE;
 		double newMax = Double.MIN_VALUE;
 		for (int r = 0; r < rows; r++) {
@@ -572,25 +604,45 @@ public class ColtMatrix implements Matrix {
 	 * @return matrix copy
 	 */
 	public Matrix copy() {
-		return new ColtMatrix(this);
+		return new OjAlgoMatrix(this);
 	}
 
-	private DoubleMatrix2D create2DMatrix (DoubleMatrix1D[] rows) {
-		int columns = (int)rows[0].size();
-		DoubleMatrix2D C = DoubleFactory2D.sparse.make(rows.length, columns);
-		for (int row = 0; row < rows.length; row++) {
-			for (int col = 0; col < columns; col++) {
-				double value = rows[row].getQuick(col);
-				if (value != 0.0)
-					C.setQuick(row, col, value);
-			}
-		}
-		return C;
-	}
-
-	public DoubleMatrix2D getColtMatrix() {
+	public MatrixStore<Double> getOjAlgoMatrix() {
 		return data;
 	}
+
+	/*
+	public Matrix gowers() {
+		// Create the Identity matrix
+		DoubleMatrix2D I = DoubleFactory2D.sparse.identity(this.nRows());
+
+		// Create the ones matrix.  This is equivalent to 11'/n
+		DoubleMatrix2D one = DoubleFactory2D.dense.make(this.nRows(), this.nRows(), 1.0/this.nRows());
+
+		// Create the subtraction matrix (I-11'/n)
+		DoubleMatrix2D mat = I.assign(one, DoubleFunctions.minus);
+
+		// Create our data matrix
+		final DoubleMatrix2D A = DoubleFactory2D.sparse.make(this.nRows(), this.nRows());
+
+		data.forEachNonZero(
+			new IntIntDoubleFunction() {
+				public double apply(int row, int column, double value) {
+					A.setQuick(row, column, -Math.pow(value,2)/2.0);
+					return value;
+				}
+			}
+		);
+
+		OjAlgoMatrix cMat = new OjAlgoMatrix(this, mat);
+		OjAlgoMatrix cA = new OjAlgoMatrix(this, A);
+
+		// Finally, the Gower's matrix is mat*A*mat
+		
+		Matrix mat1 = cMat.multiplyMatrix(cA);
+		return mat1.multiplyMatrix(cMat);
+	}
+	*/
 
 	/**
 	 * Debugging routine to print out information about a matrix
@@ -598,23 +650,23 @@ public class ColtMatrix implements Matrix {
 	 * @param matrix the matrix we're going to print out information about
 	 */
 	public String printMatrixInfo() {
-		String s = "Colt Matrix("+data.rows()+", "+data.columns()+")\n";
+		String s = "OjAlgo Matrix("+data.countRows()+", "+data.countColumns()+")\n";
 		if (data.getClass().getName().indexOf("Sparse") >= 0)
 			s += " matrix is sparse\n";
 		else
 			s += " matrix is dense\n";
-		s += " cardinality is "+data.cardinality()+"\n";
+		s += " cardinality is "+ops.cardinality()+"\n";
 		return s;
 	}
 
 	public String printMatrix() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("ColtMatrix("+nRows+", "+nColumns+")\n");
+		sb.append("OjAlgoMatrix("+nRows+", "+nColumns+")\n");
 		if (data.getClass().getName().indexOf("Sparse") >= 0)
 			sb.append(" matrix is sparse\n");
 		else
 			sb.append(" matrix is dense\n");
-		sb.append(" cardinality is "+data.cardinality()+"\n\t");
+		sb.append(" cardinality is "+ops.cardinality()+"\n\t");
 
 		for (int col = 0; col < nColumns; col++) {
 			sb.append(getColumnLabel(col)+"\t");
@@ -665,11 +717,15 @@ public class ColtMatrix implements Matrix {
 		sm.index = Arrays.copyOf(this.index, this.index.length);
 		return sm;
 	}
+
+	public DoubleMatrix2D getColtMatrix() {
+		DoubleMatrix2D mat = DoubleFactory2D.dense.make(nRows, nColumns);
+		mat.assign(toArray());
+		return mat;
+	}
 	
-	protected Matrix copyDataFromMatrix(DoubleMatrix2D matrix2D) {
-		ColtMatrix mat = new ColtMatrix();
-		double[][]inputData = matrix2D.toArray();
-		mat.initialize(matrix2D.rows(), matrix2D.columns(), inputData);
+	protected Matrix copyDataFromMatrix(PhysicalStore<Double> matrix2D) {
+		OjAlgoMatrix mat = new OjAlgoMatrix((int)matrix2D.countRows(), (int)matrix2D.countColumns());
 		mat.symmetric = true;
 		mat.data = matrix2D;
 		String[] labels;
@@ -681,18 +737,26 @@ public class ColtMatrix implements Matrix {
 			mat.rowLabels = Arrays.copyOf(labels, labels.length);
 			mat.columnLabels = Arrays.copyOf(labels, labels.length);
 		}
+		mat.updateMinMax();
 		return mat;
 	}
 
 	public void updateMinMax() {
-		double[] min = data.getMinLocation();
-		double[] max = data.getMaxLocation();
-		minValue = min[0];
-		maxValue = max[0];
+		minValue = data.aggregateAll(Aggregator.MINIMUM);
+		maxValue = data.aggregateAll(Aggregator.MAXIMUM);
 	}
 
 	protected int colStart(int row) {
 		if (!symmetric) return 0;
 		return row;
+	}
+
+	class MatrixFiller implements NullaryFunction<Double> {
+		double value;
+		public MatrixFiller(double value) {
+			this.value = value;
+		}
+		public double doubleValue() { return value; }
+		public Double invoke() { return value; }
 	}
 }

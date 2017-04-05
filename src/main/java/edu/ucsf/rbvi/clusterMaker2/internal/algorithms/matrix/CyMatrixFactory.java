@@ -23,10 +23,10 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeWeightConverter;
 
 public class CyMatrixFactory {
-	enum MatrixTypes {SIMPLE, LARGE};
+	enum MatrixType {SIMPLE, COLT, SPARSE, LARGE, OJALGO};
 
 	/**
-	 * Create a large, possibly sparse empty matrix
+	 * Create an empty matrix that may be very large
 	 *
 	 * @param network the network that will be the source of the data
 	 * @param rows the number of rows in the matrix
@@ -34,7 +34,19 @@ public class CyMatrixFactory {
 	 * @return the empty matrix
 	 */
 	public static CyMatrix makeLargeMatrix(CyNetwork network, int rows, int columns) {
-		return new CyColtMatrix(network, rows, columns);
+		return makeTypedMatrix(network, rows, columns, false, MatrixType.LARGE);
+	}
+
+	/**
+	 * Create a sparse empty matrix
+	 *
+	 * @param network the network that will be the source of the data
+	 * @param rows the number of rows in the matrix
+	 * @param columns the number of columns in the matix
+	 * @return the empty matrix
+	 */
+	public static CyMatrix makeSparseMatrix(CyNetwork network, int rows, int columns) {
+		return makeTypedMatrix(network, rows, columns, false, MatrixType.SPARSE);
 	}
 
 	/**
@@ -66,7 +78,7 @@ public class CyMatrixFactory {
 			edges.addAll(ModelUtils.getConnectingEdges(network,nodes));
 		}
 
-		CyMatrix matrix = new CyColtMatrix(network, nodes.size(), nodes.size());
+		CyMatrix matrix = makeTypedMatrix(network, nodes.size(), nodes.size(), false, MatrixType.LARGE);
 		matrix.setRowNodes(nodes);
 		matrix.setColumnNodes(nodes);
 		Map<CyNode, Integer> nodeMap = new HashMap<CyNode, Integer>(nodes.size());
@@ -141,7 +153,7 @@ public class CyMatrixFactory {
 	                                       boolean selectedOnly, boolean ignoreMissing,
 										       							boolean transpose, boolean assymetric) {
 		return makeMatrix(network, attributes, selectedOnly, ignoreMissing, transpose, 
-		                  assymetric, MatrixTypes.LARGE);
+		                  assymetric, MatrixType.LARGE);
 	}
 
 	/**
@@ -153,7 +165,7 @@ public class CyMatrixFactory {
 	 * @return the empty matrix
 	 */
 	public static CyMatrix makeSmallMatrix(CyNetwork network, int rows, int columns) {
-		return new CySimpleMatrix(network, rows, columns);
+		return makeTypedMatrix(network, rows, columns, false, MatrixType.SIMPLE);
 	}
 
 	/**
@@ -174,7 +186,7 @@ public class CyMatrixFactory {
 	 * @return the empty matrix
 	 */
 	public static CyMatrix makeSmallMatrix(CyNetwork network, int rows, int columns, Double[] data) {
-		CyMatrix mat = new CySimpleMatrix(network, rows, columns);
+		CyMatrix mat = makeTypedMatrix(network, rows, columns, false, MatrixType.SIMPLE);
 		for (int row = 0; row < rows; row++) {
 			for (int col = 0; col < columns; col++) {
 				mat.setValue(row, col, data[row*columns+col]);
@@ -201,13 +213,13 @@ public class CyMatrixFactory {
 	                                       boolean selectedOnly, boolean ignoreMissing,
 																	       boolean transpose, boolean assymetric) {
 		return makeMatrix(network, attributes, selectedOnly, 
-		                  ignoreMissing, transpose, assymetric, MatrixTypes.SIMPLE);
+		                  ignoreMissing, transpose, assymetric, MatrixType.SIMPLE);
 	}
 
 
 	private static CyMatrix makeMatrix(CyNetwork network, String[] attributes,
 	                                   boolean selectedOnly, boolean ignoreMissing,
-															       boolean transpose, boolean assymetric, MatrixTypes type) {
+															       boolean transpose, boolean assymetric, MatrixType type) {
 		// Create our local copy of the weightAtributes array
 		String[] attributeArray = new String[attributes.length];
 
@@ -237,20 +249,9 @@ public class CyMatrixFactory {
 				List<CyNode> sourceNodeList = getNodesFromEdges(network, edgeList, targetNodeList, weight, ignoreMissing);
 				Collections.sort(targetNodeList, new CyIdentifiableNameComparator(network));
 				Collections.sort(sourceNodeList, new CyIdentifiableNameComparator(network));
-				CyMatrix matrix = makeTypedMatrix(network, sourceNodeList.size(), targetNodeList.size(), transpose, type);
-				/*
-				if (transpose) {
-					CyMatrix matrix = makeTypedMatrix(network, sourceNodeList.size(), targetNodeList.size(), true, type);
-					matrix.setAssymetricalEdge(true);
-					return makeAssymmetricalMatrix(network, matrix, targetNodeList, sourceNodeList, edgeList, weight);
-				} else {
-					CyMatrix matrix = makeTypedMatrix(network, sourceNodeList.size(), targetNodeList.size(), false, type);
-					matrix.setAssymetricalEdge(true);
-					return makeAssymmetricalMatrix(network, matrix, sourceNodeList, targetNodeList, edgeList, weight);
-				}
-				*/
+				CyMatrix matrix = makeTypedMatrix(network, sourceNodeList.size(), targetNodeList.size(), false, type);
 				matrix.setAssymetricalEdge(true);
-				return makeAssymmetricalMatrix(network, matrix, sourceNodeList, targetNodeList, edgeList, weight, transpose);
+				return makeAssymmetricalMatrix(network, matrix, sourceNodeList, targetNodeList, edgeList, weight);
 			}
 		}
 		return null;
@@ -331,14 +332,7 @@ public class CyMatrixFactory {
 	private static CyMatrix makeAssymmetricalMatrix(CyNetwork network, CyMatrix matrix, 
 	                                                List<CyNode> sourceNodeList, 
 	                                                List<CyNode> targetNodeList,
-	                                                List<CyEdge> edgeList, String weight,
-																									boolean transpose) {
-		if (transpose) {
-			// Swap source and target
-			List<CyNode> tmp = sourceNodeList;
-			sourceNodeList = targetNodeList;
-			targetNodeList = tmp;
-		}
+	                                                List<CyEdge> edgeList, String weight) {
 		// Create a map we can use to get the row for our data
 		Map<CyNode, Integer> rowMap = new HashMap<CyNode, Integer>(sourceNodeList.size());
 		for (int row = 0; row < sourceNodeList.size(); row++) {
@@ -355,17 +349,8 @@ public class CyMatrixFactory {
 		matrix.setColumnNodes(targetNodeList);
 		for (CyEdge edge: edgeList) {
 			Double val = ModelUtils.getNumericValue(network, edge, weight);
-			CyNode source;
-			CyNode target;
-			if (transpose) {
-				source = edge.getTarget();
-				target = edge.getSource();
-			} else {
-		 		source = edge.getSource();
-		 		target = edge.getTarget();
-			}
-			int row = rowMap.get(source);
-			int col = colMap.get(target);
+			int row = rowMap.get(edge.getSource());
+			int col = colMap.get(edge.getTarget());
 			if (val != null) {
 				matrix.setValue(row, col, val);
 			}
@@ -375,7 +360,7 @@ public class CyMatrixFactory {
 	}
 
 	private static CyMatrix makeTypedMatrix(CyNetwork network, int rows, int columns, 
-	                                        boolean transpose, MatrixTypes type) {
+	                                        boolean transpose, MatrixType type) {
 		int nrows = rows;
 		int ncolumns = columns;
 		if (transpose) {
@@ -390,8 +375,15 @@ public class CyMatrixFactory {
 				matrix = new CySimpleMatrix(network, nrows, ncolumns);
 				break;
 
+			// For now, we use Colt for both large and sparse matrices
+			case COLT:
 			case LARGE:
+			case SPARSE:
 				matrix = new CyColtMatrix(network, nrows, ncolumns);
+				break;
+
+			case OJALGO:
+				matrix = new CyOjAlgoMatrix(network, nrows, ncolumns);
 				break;
 		}
 

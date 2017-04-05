@@ -16,7 +16,7 @@
 	<packaging>bundle</packaging>
 	<name>${bundle.symbolicName}</name>
 
-	<version>1.0.0</version>
+	<version>1.1.0</version>
 
 	<build>
 		<plugins>
@@ -222,6 +222,12 @@
 			<groupId>net.sf.jung</groupId>
 			<artifactId>jung-api</artifactId>
 			<version>2.1</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.ojalgo</groupId>
+			<artifactId>ojalgo</artifactId>
+			<version>42.0.0</version>
 			<optional>true</optional>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/junit/junit -->
