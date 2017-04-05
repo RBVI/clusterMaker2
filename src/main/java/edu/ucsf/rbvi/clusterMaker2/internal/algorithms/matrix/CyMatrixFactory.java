@@ -377,11 +377,11 @@ public class CyMatrixFactory {
 
 			// For now, we use Colt for both large and sparse matrices
 			case COLT:
-			case LARGE:
 			case SPARSE:
 				matrix = new CyColtMatrix(network, nrows, ncolumns);
 				break;
 
+			case LARGE:
 			case OJALGO:
 				matrix = new CyOjAlgoMatrix(network, nrows, ncolumns);
 				break;

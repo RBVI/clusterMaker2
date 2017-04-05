@@ -25,17 +25,17 @@ public class MatrixTest {
 		double scalarValue = 1.6;
 		// First, simpleMatrix
 		timeStart();
-		simpleMatrix.ops().multiply(scalarValue);
+		simpleMatrix.ops().multiplyScalar(scalarValue);
 		timeEnd("multiply simple matrix by scalar");
 
 		timeStart();
-		coltMatrix.ops().multiply(scalarValue);
+		coltMatrix.ops().multiplyScalar(scalarValue);
 		timeEnd("multiply colt matrix by scalar");
 
 		assertArrayEquals(simpleMatrix.toArray(), coltMatrix.toArray(), DELTA);
 
 		timeStart();
-		ojAlgoMatrix.ops().multiply(scalarValue);
+		ojAlgoMatrix.ops().multiplyScalar(scalarValue);
 		timeEnd("multiply ojAlgo matrix by scalar");
 		assertArrayEquals(simpleMatrix.toArray(), ojAlgoMatrix.toArray(), DELTA);
 	}

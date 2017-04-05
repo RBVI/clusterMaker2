@@ -216,9 +216,21 @@ public class ColtOps implements MatrixOps {
 	public double columnSum(int column) {
 		return getData().viewColumn(column).zSum();
 	}
+
+	public double columnSum2(int column) {
+		DoubleMatrix1D colMat = getData().viewColumn(column);
+		double rSum2 = colMat.aggregate(DoubleFunctions.plus, DoubleFunctions.square);
+		return rSum2;
+	}
 	
 	public double rowSum(int row) {
 		return getData().viewRow(row).zSum();
+	}
+	
+	public double rowSum2(int row) {
+		DoubleMatrix1D rowMat = getData().viewRow(row);
+		double rSum2 = rowMat.aggregate(DoubleFunctions.plus, DoubleFunctions.square);
+		return rSum2;
 	}
 
 	public double columnMean(int column) {
@@ -328,7 +340,7 @@ public class ColtOps implements MatrixOps {
 	 * @param matrix our matrix
 	 * @param value to add to each cell
 	 */
-	public void add(double value) {
+	public void addScalar(double value) {
 		DoubleMatrix2D data = getData();
 		data.forEachNonZero(
 			new IntIntDoubleFunction() {
@@ -345,7 +357,7 @@ public class ColtOps implements MatrixOps {
 	 * @param matrix our matrix
 	 * @param value to subtract from each cell
 	 */
-	public void subtract(double value) {
+	public void subtractScalar(double value) {
 		DoubleMatrix2D data = getData();
 		data.forEachNonZero(
 			new IntIntDoubleFunction() {
@@ -362,7 +374,7 @@ public class ColtOps implements MatrixOps {
 	 * @param matrix our matrix
 	 * @param value to multiply each cell by
 	 */
-	public void multiply(double value) {
+	public void multiplyScalar(double value) {
 		DoubleMatrix2D data = getData();
 		data.forEachNonZero(
 			new IntIntDoubleFunction() {
@@ -379,7 +391,7 @@ public class ColtOps implements MatrixOps {
 	 * @param matrix our matrix
 	 * @param value to divide each cell by
 	 */
-	public void divide(double value) {
+	public void divideScalar(double value) {
 		DoubleMatrix2D data = getData();
 		data.forEachNonZero(
 			new IntIntDoubleFunction() {
@@ -396,7 +408,7 @@ public class ColtOps implements MatrixOps {
 	 * @param matrix our matrix
 	 * @param value power to raise to each cell
 	 */
-	public void pow(double value) {
+	public void powScalar(double value) {
 		DoubleMatrix2D data = getData();
 		data.forEachNonZero(
 			new IntIntDoubleFunction() {

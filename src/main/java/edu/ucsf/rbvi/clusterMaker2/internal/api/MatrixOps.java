@@ -72,12 +72,28 @@ public interface MatrixOps {
 	public double rowSum(int row);
 
 	/**
+	 * Return the sum of squares of a row
+	 *
+	 * @param row the row to get the sum of squares of
+	 * @return the sum
+	 */
+	public double rowSum2(int row);
+
+	/**
 	 * Return the sum of a column
 	 *
 	 * @param column the column to get the sum of
-	 * @return the sum
+	 * @return the sum of squares
 	 */
-	public double columnSum(int row);
+	public double columnSum(int column);
+
+	/**
+	 * Return the sum of squares of a column
+	 *
+	 * @param column the column to get the sum of squares of
+	 * @return the sum of squares
+	 */
+	public double columnSum2(int column);
 
 	/**
 	 * Return the variance of a row
@@ -127,39 +143,39 @@ public interface MatrixOps {
 	public Matrix multiplyMatrix(Matrix matrix);
 
 	/**
-	 * add a value to all cells in the matrix
+	 * add a value to all cells in this matrix
 	 * 
 	 * @param value to add to each cell
 	 */
-	public void add(double value);
+	public void addScalar(double value);
 
 	/**
-	 * subtract a value from all cells in the matrix
+	 * subtract a value from all cells in this matrix
 	 * 
 	 * @param value to subtract from each cell
 	 */
-	public void subtract(double value);
+	public void subtractScalar(double value);
 
 	/**
-	 * multiple all cells in the matrix by a value
+	 * multiple all cells in this matrix by a value
 	 * 
 	 * @param value to multiply each cell by
 	 */
-	public void multiply(double value);
+	public void multiplyScalar(double value);
 
 	/**
-	 * divide all cells in the matrix by a value
+	 * divide all cells in this matrix by a value
 	 * 
 	 * @param value to divide each cell by
 	 */
-	public void divide(double value);
+	public void divideScalar(double value);
 
 	/**
-	 * raise all cells in the matrix by a power
+	 * raise all cells in this matrix by a power
 	 * 
 	 * @param value power to raise to each cell
 	 */
-	public void pow(double value);
+	public void powScalar(double value);
 
 	/**
 	 * Return the covariance of a matrix

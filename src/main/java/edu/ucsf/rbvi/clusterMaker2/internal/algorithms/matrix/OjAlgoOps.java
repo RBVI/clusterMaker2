@@ -96,12 +96,12 @@ public class OjAlgoOps implements MatrixOps {
 		// positive
 		double minValue = matrix.getMinValue();
 		if (minValue < 0.0) {
-			add(-minValue);
+			addScalar(-minValue);
 		}
 
 		// Get the sum of all of the cells in the matrix
 		double sum = matrix.data.aggregateAll(Aggregator.SUM);
-		divide(sum);  // Devide all of the cells by the sum
+		divideScalar(sum);  // Devide all of the cells by the sum
 		matrix.updateMinMax();
 	}
 
@@ -204,9 +204,21 @@ public class OjAlgoOps implements MatrixOps {
 		matrix.data.visitColumn(0L, column, tmpVisitor);
 		return tmpVisitor.getNumber();
 	}
-	
+
+	public double columnSum2(int column) {
+		final AggregatorFunction<Double> tmpVisitor = matrix.storeFactory.aggregator().sum2();
+		matrix.data.visitColumn(0L, column, tmpVisitor);
+		return tmpVisitor.getNumber();
+	}
+
 	public double rowSum(int row) {
 		final AggregatorFunction<Double> tmpVisitor = matrix.storeFactory.aggregator().sum();
+		matrix.data.visitRow(row, 0L, tmpVisitor);
+		return tmpVisitor.getNumber();
+	}
+
+	public double rowSum2(int row) {
+		final AggregatorFunction<Double> tmpVisitor = matrix.storeFactory.aggregator().sum2();
 		matrix.data.visitRow(row, 0L, tmpVisitor);
 		return tmpVisitor.getNumber();
 	}
@@ -252,19 +264,6 @@ public class OjAlgoOps implements MatrixOps {
 		return variance/matrix.nColumns();
 	}
 
-	// For some reason, the parallelcolt version of zMult doesn't
-	// really take advantage of the available cores.  This version does, but
-	// it seems like it only works for multiplying matrices of the same
-	// size.
-	public Matrix multiplyMatrix(Matrix m2) {
-		if (matrix instanceof OjAlgoMatrix) {
-			OjAlgoMatrix m = (OjAlgoMatrix)m2;
-			PhysicalStore<Double> mat = (PhysicalStore<Double>)matrix.data.multiply(m.data);
-			return new OjAlgoMatrix(matrix, mat);
-		}
-		return null; // Throw error -- mismatched implementations?
-	}
-
 	public Matrix covariance() {
 		PhysicalStore<Double> cov = matrix.storeFactory.makeZero(matrix.nColumns(), matrix.nColumns());
 		double[] columnMeans = new double[matrix.nColumns()];
@@ -292,14 +291,14 @@ public class OjAlgoOps implements MatrixOps {
 	/**
 	 * Add a value to all cells in the matrix
 	 */
-	public void add(double value) {
+	public void addScalar(double value) {
 		matrix.data.modifyAll(PrimitiveFunction.ADD.second(value));
 	}
 
 	/**
 	 * Add a matrix to this matrix
 	 */
-	public Matrix add(Matrix addend) {
+	public Matrix addMatrix(Matrix addend) {
 		OjAlgoMatrix ojAddend = (OjAlgoMatrix)addend;
 		MatrixStore<Double> d = matrix.data.add(ojAddend.data);
 		return new OjAlgoMatrix(matrix, d);
@@ -308,37 +307,46 @@ public class OjAlgoOps implements MatrixOps {
 	/**
 	 * Subtract a value to all cells in the matrix
 	 */
-	public void subtract(double value) {
+	public void subtractScalar(double value) {
 		matrix.data.modifyAll(PrimitiveFunction.SUBTRACT.second(value));
 	}
 
 	/**
 	 * Subtract a matrix from this matrix
 	 */
-	public Matrix subtract(Matrix addend) {
-		OjAlgoMatrix ojAddend = (OjAlgoMatrix)addend;
-		MatrixStore<Double> d = matrix.data.subtract(ojAddend.data);
+	public Matrix subtractMatrix(Matrix subend) {
+		OjAlgoMatrix ojSubend = (OjAlgoMatrix)subend;
+		MatrixStore<Double> d = matrix.data.subtract(ojSubend.data);
 		return new OjAlgoMatrix(matrix, d);
 	}
 
 	/**
 	 * Multiply a value to all cells in the matrix
 	 */
-	public void multiply(double value) {
+	public void multiplyScalar(double value) {
 		matrix.data.modifyAll(PrimitiveFunction.MULTIPLY.second(value));
+	}
+	
+	public Matrix multiplyMatrix(Matrix m2) {
+		if (matrix instanceof OjAlgoMatrix) {
+			OjAlgoMatrix m = (OjAlgoMatrix)m2;
+			PhysicalStore<Double> mat = (PhysicalStore<Double>)matrix.data.multiply(m.data);
+			return new OjAlgoMatrix(matrix, mat);
+		}
+		return null; // Throw error -- mismatched implementations?
 	}
 
 	/**
 	 * Divide a value to all cells in the matrix
 	 */
-	public void divide(double value) {
+	public void divideScalar(double value) {
 		matrix.data.modifyAll(PrimitiveFunction.DIVIDE.second(value));
 	}
 
 	/**
 	 * Raise all of the cells in the matrix by a power
 	 */
-	public void pow(double value) {
+	public void powScalar(double value) {
 		Pow p = new Pow(value);
 		matrix.data.modifyAll(p);
 	}

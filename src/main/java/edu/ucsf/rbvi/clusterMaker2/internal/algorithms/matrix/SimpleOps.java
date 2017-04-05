@@ -246,10 +246,25 @@ public class SimpleOps implements MatrixOps {
 									.filter(v -> !Double.isNaN(v))
 									.sum();
 	}
+
+	public double columnSum2(int column) {
+		return Arrays.stream(matrix.data)
+									.mapToDouble(arr -> arr[column])
+									.filter(v -> !Double.isNaN(v))
+									.map(d-> d*d)
+									.sum();
+	}
 	
 	public double rowSum(int row) {
 		return Arrays.stream(matrix.data[row])
 										.filter(v -> !Double.isNaN(v))
+										.sum();
+	}
+	
+	public double rowSum2(int row) {
+		return Arrays.stream(matrix.data[row])
+										.filter(v -> !Double.isNaN(v))
+										.map(d-> d*d)
 										.sum();
 	}
 
@@ -306,7 +321,7 @@ public class SimpleOps implements MatrixOps {
 		return mult(b);
 	}
 
-	public void add(double v) {
+	public void addScalar(double v) {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(matrix.colStart(row), matrix.nColumns())
 				.forEach(column -> {
@@ -316,7 +331,7 @@ public class SimpleOps implements MatrixOps {
 				}));
 	}
 
-	public void subtract(double v) {
+	public void subtractScalar(double v) {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(matrix.colStart(row), matrix.nColumns())
 				.forEach(column -> {
@@ -326,7 +341,7 @@ public class SimpleOps implements MatrixOps {
 				}));
 	}
 
-	public void multiply(double v) {
+	public void multiplyScalar(double v) {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(matrix.colStart(row), matrix.nColumns())
 				.forEach(column -> {
@@ -336,7 +351,7 @@ public class SimpleOps implements MatrixOps {
 				}));
 	}
 
-	public void divide(double v) {
+	public void divideScalar(double v) {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(matrix.colStart(row), matrix.nColumns())
 				.forEach(column -> {
@@ -346,7 +361,7 @@ public class SimpleOps implements MatrixOps {
 				}));
 	}
 
-	public void pow(double v) {
+	public void powScalar(double v) {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(matrix.colStart(row), matrix.nColumns())
 				.forEach(column -> {

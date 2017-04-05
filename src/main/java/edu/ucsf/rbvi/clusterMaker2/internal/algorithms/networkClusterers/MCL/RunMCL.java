@@ -95,19 +95,15 @@ public class RunMCL {
 		// Matrix matrix;
 		double numClusters;
 
-		debugln("Initial matrix:");
-		
-		
-		matrix.printMatrixInfo();
+		debugln("Initial matrix:",matrix);
 
 		// Normalize
 		normalize(matrix, clusteringThresh, false);
 
-		debugln("Normalized matrix:");
-		matrix.printMatrixInfo();
+		debugln("Normalized matrix:",matrix);
 
 		double residual = 1.0;
-		IntIntDoubleFunction myPow = new MatrixPow(inflationParameter);
+		// IntIntDoubleFunction myPow = new MatrixPow(inflationParameter);
 		debugln("residual = "+residual+" maxResidual = "+maxResidual);
 		for (int i=0; (i<number_iterations)&&(residual>maxResidual); i++)
 		{
@@ -116,7 +112,7 @@ public class RunMCL {
 				long t = System.currentTimeMillis();
 				monitor.setStatusMessage("Iteration: "+(i+1)+" expanding "); //monitor.setStatus();
 				debugln("Iteration: "+(i+1)+" expanding ");
-				matrix.printMatrixInfo();
+				debugln("matrix: ",matrix);
 				Matrix multiMatrix = matrix.ops().multiplyMatrix(matrix);
 				matrix = matrix.copy(multiMatrix);
 
@@ -128,13 +124,14 @@ public class RunMCL {
 			debugln("^ "+(i+1)+" after expansion");
 
 			// Inflate
-			DoubleMatrix2D m = matrix.getColtMatrix();
+			// DoubleMatrix2D m = matrix.getColtMatrix();
 			{
 				long t = System.currentTimeMillis();
 				monitor.setStatusMessage("Iteration: "+(i+1)+" inflating");	//monitor.setStatusMessage
 				debugln("Iteration: "+(i+1)+" inflating");
 
-				m.forEachNonZero(myPow);
+				matrix.ops().powScalar(inflationParameter);
+				// m.forEachNonZero(myPow);
 
 				// Normalize
 				normalize(matrix, clusteringThresh, true);
@@ -142,8 +139,8 @@ public class RunMCL {
 
 			debugln("^ "+(i+1)+" after inflation");
 
-			m.trimToSize();
-			residual = calculateResiduals(m);
+			// m.trimToSize();
+			residual = calculateResiduals(matrix);
 			debugln("Iteration: "+(i+1)+" residual: "+residual);
 
 			if (canceled) {
@@ -153,7 +150,7 @@ public class RunMCL {
 		}
 
 		// If we're in debug mode, output the matrix
-		matrix.printMatrixInfo();
+		debugln("Matrix: ", matrix);
 
 		monitor.setStatusMessage("Assigning nodes to clusters");	//monitor.setStatusMessage
 
@@ -227,11 +224,15 @@ public class RunMCL {
 	 * @param matrix the (sparse) data matrix we're operating on
 	 * @return residual value
 	 */
-	private double calculateResiduals(DoubleMatrix2D matrix) {
+	private double calculateResiduals(Matrix matrix) {
 		// Calculate and return the residuals
-		double[] sums = new double[matrix.columns()];
-		double [] sumSquares = new double[matrix.columns()];
-		matrix.forEachNonZero(new MatrixSumAndSumSq(sums, sumSquares));
+		double[] sums = new double[matrix.nColumns()];
+		double [] sumSquares = new double[matrix.nColumns()];
+		// matrix.forEachNonZero(new MatrixSumAndSumSq(sums, sumSquares));
+		for (int column = 0; column < matrix.nColumns(); column++) {
+			sums[column] = matrix.ops().columnSum(column);
+			sumSquares[column] = matrix.ops().columnSum2(column);
+		}
 		double residual = 0.0;
 		for (int i = 0; i < sums.length; i++) {
 			residual = Math.max(residual, sums[i] - sumSquares[i]);
@@ -244,6 +245,12 @@ public class RunMCL {
 	
 	private void debugln(String message) {
 		if (debug) System.out.println(message);
+	}
+
+	private void debugln(String message, CyMatrix matrix) {
+		if (!debug) 
+			return;
+		System.out.println(message+matrix.printMatrixInfo());
 	}
 
 	private void debugln() {
