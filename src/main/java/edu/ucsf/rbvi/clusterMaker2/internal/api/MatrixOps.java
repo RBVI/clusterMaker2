@@ -186,10 +186,10 @@ public interface MatrixOps {
 	 * of the column is already known.
 	 * Note: does not update matrix min/max values.  
 	 * 
-	 * @param value to divide each cell in the column by
 	 * @param column the column we're dividing
+	 * @param value to divide each cell in the column by
 	 */
-	public void divideScalarColumn(double value, int column);
+	public void divideScalarColumn(int column, double value);
 
 	/**
 	 * raise all cells in this matrix by a power

@@ -116,8 +116,6 @@ public class SimpleOps implements MatrixOps {
 						matrix.setValue(row, col, d);
 						if (matrix.symmetric && col != row)
 							matrix.setValue(col, row, d);
-						matrix.minValue = Math.min(matrix.minValue, d);
-						matrix.maxValue = Math.max(matrix.maxValue, d);
 					}
 				}));
 
@@ -141,8 +139,6 @@ public class SimpleOps implements MatrixOps {
 							matrix.setValue(row, col, d);
 							if (matrix.symmetric && col != row)
 								matrix.setValue(col, row, d);
-							matrix.minValue = Math.min(matrix.minValue, d);
-							matrix.maxValue = Math.max(matrix.maxValue, d);
 						}
 					}));
 	}
@@ -219,12 +215,10 @@ public class SimpleOps implements MatrixOps {
 			for(int j=0;j<matrix.nRows();j++){
 				double cell = matrix.getValue(j, i);
 				if (!Double.isNaN(cell)) {
-					cell = mean-cell;
+					cell = cell-mean;
 				} else {
 					cell = 0.0d;
 				}
-				matrix.minValue = Math.min(matrix.minValue, cell);
-				matrix.maxValue = Math.max(matrix.maxValue, cell);
 				matrix.setValue(j, i, cell);
 			}
 		}
@@ -249,8 +243,6 @@ public class SimpleOps implements MatrixOps {
 				} else {
 					matrix.setValue(i, j, 0.0d);
 				}
-				matrix.minValue = Math.min(matrix.minValue, cell);
-				matrix.maxValue = Math.max(matrix.maxValue, cell);
 				matrix.setValue(j, i, cell);
 			}
 		}

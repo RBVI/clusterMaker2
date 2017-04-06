@@ -16,9 +16,6 @@ import java.util.Map;
 import java.util.Set;
 import java.lang.Math;
 
-// import cern.colt.function.tdouble.IntIntDoubleFunction;
-// import cern.colt.matrix.tdouble.DoubleMatrix2D;
-
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -33,14 +30,6 @@ import org.cytoscape.work.TaskMonitor;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
-
-/*
-import cern.colt.function.tdouble.IntIntDoubleFunction;
-import cern.colt.matrix.tdouble.DoubleFactory2D;
-import cern.colt.matrix.tdouble.DoubleMatrix1D;
-import cern.colt.matrix.tdouble.DoubleMatrix2D;
-*/
-
 
 public class RunMCL {
 
@@ -132,7 +121,6 @@ public class RunMCL {
 				debugln("Iteration: "+(i+1)+" inflating");
 
 				matrix.ops().powScalar(inflationParameter);
-				// m.forEachNonZero(myPow);
 
 				// Normalize
 				normalize(matrix, clusteringThresh, true);
@@ -140,10 +128,15 @@ public class RunMCL {
 
 			debugln("^ "+(i+1)+" after inflation");
 
-			// m.trimToSize();
 			residual = calculateResiduals(matrix);
-			// debugln("Iteration: "+(i+1)+" residual: "+residual);
-			System.out.println("Iteration: "+(i+1)+" residual: "+residual);
+			/*
+			double newResidual = calculateResiduals(matrix);
+			if (newResidual >= residual) break;
+			residual = newResidual;
+			*/
+
+			debugln("Iteration: "+(i+1)+" residual: "+residual);
+			// System.out.println("Iteration: "+(i+1)+" residual: "+residual);
 
 			if (canceled) {
 				monitor.setStatusMessage("canceled"); 	//monitor.setStatusMessage
@@ -164,7 +157,6 @@ public class RunMCL {
 				clusterMat.apply(row, col, matrix.doubleValue(row, col));
 			}
 		}
-		// matrix.getColtMatrix().forEachNonZero(new ClusterMatrix(clusterMap));
 
 		//Update node attributes in network to include clusters. Create cygroups from clustered nodes
 		monitor.setStatusMessage("Created "+clusterCount+" clusters");
@@ -220,25 +212,10 @@ public class RunMCL {
 			if (sums[col] == 0.0) {
 				matrix.setValue(col,col,1.0);
 			} else {
-				matrix.ops().normalizeColumn(col);
+				matrix.ops().divideScalarColumn(col, sums[col]);
 			}
 		}
 		// System.out.println("Normalization took "+(System.currentTimeMillis()-startTime)+"ms");
-
-		// matrix.getColtMatrix().forEachNonZero(new MatrixZeroAndSum(prune, clusteringThresh, sums));
-
-		// Finally, adjust the values
-		// matrix.getColtMatrix().forEachNonZero(new MatrixNormalize(sums));
-
-		/*
-		// Last step -- find any columns that summed to zero and set the diagonal to 1
-		for (int col = 0; col < sums.length; col++) {
-			if (sums[col] == 0.0) {
-				// debugln("Column "+col+" sums to 0");
-				matrix.setValue(col,col,1.0);
-			}
-		}
-		*/
 	}
 	
 	/**
@@ -252,7 +229,6 @@ public class RunMCL {
 		// Calculate and return the residuals
 		double[] sums = new double[matrix.nColumns()];
 		double [] sumSquares = new double[matrix.nColumns()];
-		// matrix.forEachNonZero(new MatrixSumAndSumSq(sums, sumSquares));
 		for (int column = 0; column < matrix.nColumns(); column++) {
 			sums[column] = matrix.ops().columnSum(column);
 			sumSquares[column] = matrix.ops().columnSum2(column);

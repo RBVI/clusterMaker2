@@ -75,6 +75,8 @@ public class OjAlgoOps implements MatrixOps {
 	public void normalize() {
 		double minValue = matrix.getMinValue();
 		double span = matrix.getMaxValue() - minValue;
+		matrix.minValue = Double.MAX_VALUE;
+		matrix.maxValue = Double.MIN_VALUE;
 		for (int row = 0; row < matrix.nRows(); row++) {
 			for (int col = matrix.colStart(row); col < matrix.nColumns(); col++) {
 				Double d = matrix.getValue(row, col);
@@ -85,7 +87,6 @@ public class OjAlgoOps implements MatrixOps {
 					matrix.setValue(col, row, (d-minValue)/span);
 			}
 		}
-		matrix.updateMinMax();
 	}
 
 	/**
@@ -108,52 +109,11 @@ public class OjAlgoOps implements MatrixOps {
 	public void normalizeRow(int row) {
 		double sum = rowSum(row);
 		matrix.data.modifyRow(row, 0L, PrimitiveFunction.DIVIDE.second(sum));
-
-		/*
-		// First see if we've got any negative numbers
-		AggregatorFunction<Double> tmpVisitor = matrix.storeFactory.aggregator().minimum();
-		matrix.data.visitRow(row, 0L, tmpVisitor);
-		double minValue =  tmpVisitor.getNumber();
-
-		// FIXME
-		if (minValue < 0) {
-			for (int column = 0; column < matrix.nColumns(); column++) 
-				matrix.setValue(row, column, matrix.getValue(row, column)-minValue);
-		}
-
-		tmpVisitor = matrix.storeFactory.aggregator().sum();
-		matrix.data.visitRow(row, 0L, tmpVisitor);
-		double sum =  tmpVisitor.getNumber();
-
-		for (int column = 0; column < matrix.nColumns(); column++) 
-			matrix.setValue(row, column, matrix.getValue(row, column)/sum);
-		matrix.updateMinMax();
-		*/
 	}
 
 	public void normalizeColumn(int column) {
 		double sum = columnSum(column);
 		matrix.data.modifyColumn(0L, column, PrimitiveFunction.DIVIDE.second(sum));
-		/*
-		// First see if we've got any negative numbers
-		AggregatorFunction<Double> tmpVisitor = matrix.storeFactory.aggregator().minimum();
-		matrix.data.visitColumn(0L, column, tmpVisitor);
-		double minValue =  tmpVisitor.getNumber();
-
-		// FIXME
-		if (minValue < 0) {
-			for (int row = 0; row < matrix.nRows(); row++) 
-				matrix.setValue(row, column, matrix.getValue(row, column)-minValue);
-		}
-
-		tmpVisitor = matrix.storeFactory.aggregator().sum();
-		matrix.data.visitColumn(0L, column, tmpVisitor);
-		double sum =  tmpVisitor.getNumber();
-
-		for (int row = 0; row < matrix.nRows(); row++) 
-			matrix.setValue(row, column, matrix.getValue(row, column)/sum);
-		matrix.updateMinMax();
-		*/
 	}
 
 	public void standardizeRow(int row) {
@@ -348,6 +308,19 @@ public class OjAlgoOps implements MatrixOps {
 	 */
 	public void divideScalar(double value) {
 		matrix.data.modifyAll(PrimitiveFunction.DIVIDE.second(value));
+	}
+
+	/**
+	 * divide all cells in a column by a value.  This is used
+	 * primarily for normalization when the current sum
+	 * of the column is already known.
+	 * Note: does not update matrix min/max values.  
+	 * 
+	 * @param column the column we're dividing
+	 * @param value to divide each cell in the column by
+	 */
+	public void divideScalarColumn(int column, double value) {
+		matrix.data.modifyColumn(0L, column, PrimitiveFunction.DIVIDE.second(value));
 	}
 
 	/**

@@ -123,8 +123,7 @@ public class ColtOps implements MatrixOps {
 		matrix.minValue = Double.MAX_VALUE;
 		matrix.maxValue = Double.MIN_VALUE;
 		for (int row = 0; row < matrix.nRows(); row++) {
-			for (int col = ((ColtMatrix)matrix).colStart(row); 
-			     col < matrix.nColumns(); col++) {
+			for (int col = ((ColtMatrix)matrix).colStart(row); col < matrix.nColumns(); col++) {
 				Double d = matrix.getValue(row, col);
 				if (d == null)
 					continue;
@@ -132,8 +131,6 @@ public class ColtOps implements MatrixOps {
 				matrix.setValue(row, col, val);
 				if (matrix.isSymmetrical() && col != row)
 					matrix.setValue(col, row, val);
-				matrix.minValue = Math.min(matrix.minValue, val);
-				matrix.maxValue = Math.max(matrix.maxValue, val);
 			}
 		}
 	}
@@ -176,26 +173,23 @@ public class ColtOps implements MatrixOps {
 	public void centralizeColumns() {
 		matrix.minValue = Double.MAX_VALUE;
 		matrix.maxValue = Double.MIN_VALUE;
-		for(int i=0;i<matrix.nColumns();i++){
+		for(int col=0;col<matrix.nColumns();col++){
 			// Replace with parallel function?
 			double mean = 0.0;
-			for(int j=0;j<matrix.nRows(); j++){
-				double cell = matrix.getValue(j, i);
+			for(int row=0;row<matrix.nRows(); row++){
+				double cell = matrix.getValue(row, col);
 				if (!Double.isNaN(cell))
 					mean += cell;
 			}
 			mean /= matrix.nRows();
-			for(int j=0;j<matrix.nRows();j++){
-				double cell = matrix.getValue(j, i);
+			for(int row=0;row<matrix.nRows();row++){
+				double cell = matrix.getValue(row, col);
 				if (!Double.isNaN(cell)) {
 					cell = cell-mean;
 				} else {
-					cell = 0.0;
+					cell = 0.0d;
 				}
-				matrix.setValue(j, i, cell);
-
-				matrix.minValue = Math.min(matrix.minValue, cell);
-				matrix.maxValue = Math.max(matrix.maxValue, cell);
+				matrix.setValue(row, col, cell);
 			}
 		}
 	}
@@ -220,9 +214,6 @@ public class ColtOps implements MatrixOps {
 					cell = 0.0d;
 
 				matrix.setValue(j, i, cell);
-
-				matrix.minValue = Math.min(matrix.minValue, cell);
-				matrix.maxValue = Math.max(matrix.maxValue, cell);
 			}
 		}
 	}
@@ -414,6 +405,25 @@ public class ColtOps implements MatrixOps {
 				}
 			}
 		);
+	}
+
+	/**
+	 * divide all cells in a column by a value.  This is used
+	 * primarily for normalization when the current sum
+	 * of the column is already known.
+	 * Note: does not update matrix min/max values.  
+	 * 
+	 * @param column the column we're dividing
+	 * @param value to divide each cell in the column by
+	 */
+	public void divideScalarColumn(int column, double value) {
+		DoubleMatrix1D col = getData().viewColumn(column);
+		col.assign(new DoubleFunction() {
+					public double apply(double v) {
+						return v/value;
+					}
+				}
+			);
 	}
 
 	/**
