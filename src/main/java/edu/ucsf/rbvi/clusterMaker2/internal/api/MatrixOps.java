@@ -27,6 +27,7 @@ public interface MatrixOps {
 
 	/**
 	 * Normalize a matrix row in place (all columns in the row sum to 1.0)
+	 * Note: does not update matrix min/max values.  
 	 *
 	 * @param row the row to normalize
 	 */
@@ -34,6 +35,7 @@ public interface MatrixOps {
 
 	/**
 	 * Normalize a matrix column in place (all rows in the column sum to 1.0)
+	 * Note: does not update matrix min/max values.  
 	 *
 	 * @param column the column to normalize
 	 */
@@ -41,6 +43,7 @@ public interface MatrixOps {
 
 	/**
 	 * Standardize the data in a row
+	 * Note: does not update matrix min/max values.  
 	 *
 	 * @param row the row to standardize
 	 */
@@ -49,17 +52,20 @@ public interface MatrixOps {
 	/**
 	 * Standardize the data in a column
 	 *
+	 * Note: does not update matrix min/max values.  
 	 * @param column the column to standardize
 	 */
 	public void standardizeColumn(int column);
 
 	/**
 	 * Centralize all the rows of a matrix around the mean of that row
+	 * Note: does not update matrix min/max values.  
 	 */
 	public void centralizeRows();
 
 	/**
 	 * Centralize all the columns of a matrix around the mean of that column
+	 * Note: does not update matrix min/max values.  
 	 */
 	public void centralizeColumns();
 
@@ -144,6 +150,7 @@ public interface MatrixOps {
 
 	/**
 	 * add a value to all cells in this matrix
+	 * Note: does not update matrix min/max values.  
 	 * 
 	 * @param value to add to each cell
 	 */
@@ -151,6 +158,7 @@ public interface MatrixOps {
 
 	/**
 	 * subtract a value from all cells in this matrix
+	 * Note: does not update matrix min/max values.  
 	 * 
 	 * @param value to subtract from each cell
 	 */
@@ -158,6 +166,7 @@ public interface MatrixOps {
 
 	/**
 	 * multiple all cells in this matrix by a value
+	 * Note: does not update matrix min/max values.  
 	 * 
 	 * @param value to multiply each cell by
 	 */
@@ -165,13 +174,26 @@ public interface MatrixOps {
 
 	/**
 	 * divide all cells in this matrix by a value
+	 * Note: does not update matrix min/max values.  
 	 * 
 	 * @param value to divide each cell by
 	 */
 	public void divideScalar(double value);
 
 	/**
+	 * divide all cells in a column by a value.  This is used
+	 * primarily for normalization when the current sum
+	 * of the column is already known.
+	 * Note: does not update matrix min/max values.  
+	 * 
+	 * @param value to divide each cell in the column by
+	 * @param column the column we're dividing
+	 */
+	public void divideScalarColumn(double value, int column);
+
+	/**
 	 * raise all cells in this matrix by a power
+	 * Note: does not update matrix min/max values.  
 	 * 
 	 * @param value power to raise to each cell
 	 */

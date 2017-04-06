@@ -120,18 +120,22 @@ public class ColtOps implements MatrixOps {
 	public void normalize() {
 		double minValue = matrix.getMinValue();
 		double span = matrix.getMaxValue() - minValue;
+		matrix.minValue = Double.MAX_VALUE;
+		matrix.maxValue = Double.MIN_VALUE;
 		for (int row = 0; row < matrix.nRows(); row++) {
 			for (int col = ((ColtMatrix)matrix).colStart(row); 
 			     col < matrix.nColumns(); col++) {
 				Double d = matrix.getValue(row, col);
 				if (d == null)
 					continue;
-				matrix.setValue(row, col, (d-minValue)/span);
+				double val = (d-minValue)/span;
+				matrix.setValue(row, col, val);
 				if (matrix.isSymmetrical() && col != row)
-					matrix.setValue(col, row, (d-minValue)/span);
+					matrix.setValue(col, row, val);
+				matrix.minValue = Math.min(matrix.minValue, val);
+				matrix.maxValue = Math.max(matrix.maxValue, val);
 			}
 		}
-		matrix.updateMinMax();
 	}
 
 	public void normalizeMatrix() {
@@ -157,7 +161,6 @@ public class ColtOps implements MatrixOps {
 			double cell = matrix.getValue(row, column);
 			matrix.setValue(row, column, (cell-mean)/stdev);
 		}
-		matrix.updateMinMax();
 	}
 
 	public void standardizeColumn(int column) {
@@ -168,10 +171,11 @@ public class ColtOps implements MatrixOps {
 			double cell = matrix.getValue(row, column);
 			matrix.setValue(row, column, (cell-mean)/stdev);
 		}
-		matrix.updateMinMax();
 	}
 
 	public void centralizeColumns() {
+		matrix.minValue = Double.MAX_VALUE;
+		matrix.maxValue = Double.MIN_VALUE;
 		for(int i=0;i<matrix.nColumns();i++){
 			// Replace with parallel function?
 			double mean = 0.0;
@@ -183,16 +187,22 @@ public class ColtOps implements MatrixOps {
 			mean /= matrix.nRows();
 			for(int j=0;j<matrix.nRows();j++){
 				double cell = matrix.getValue(j, i);
-				if (!Double.isNaN(cell))
-					matrix.setValue(j, i, cell - mean);
-				else
-					matrix.setValue(i, j, 0.0d);
+				if (!Double.isNaN(cell)) {
+					cell = cell-mean;
+				} else {
+					cell = 0.0;
+				}
+				matrix.setValue(j, i, cell);
+
+				matrix.minValue = Math.min(matrix.minValue, cell);
+				matrix.maxValue = Math.max(matrix.maxValue, cell);
 			}
 		}
-		matrix.updateMinMax();
 	}
 
 	public void centralizeRows() {
+		matrix.minValue = Double.MAX_VALUE;
+		matrix.maxValue = Double.MIN_VALUE;
 		for(int i=0;i<matrix.nRows();i++){
 			// Replace with parallel function?
 			double mean = 0.0;
@@ -205,12 +215,16 @@ public class ColtOps implements MatrixOps {
 			for(int j=0;j<matrix.nColumns();j++){
 				double cell = matrix.getValue(i, j);
 				if (!Double.isNaN(cell))
-					matrix.setValue(i, j, cell - mean);
+					cell = cell-mean;
 				else
-					matrix.setValue(i, j, 0.0d);
+					cell = 0.0d;
+
+				matrix.setValue(j, i, cell);
+
+				matrix.minValue = Math.min(matrix.minValue, cell);
+				matrix.maxValue = Math.max(matrix.maxValue, cell);
 			}
 		}
-		matrix.updateMinMax();
 	}
 
 	public double columnSum(int column) {

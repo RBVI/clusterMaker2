@@ -112,11 +112,15 @@ public class SimpleOps implements MatrixOps {
 				.forEach(col -> {
 					double d = matrix.getValue(row, col);
 					if (!Double.isNaN(d)) {
-						matrix.setValue(row, col, (d-min)/span);
+						d = (d-min)/span;
+						matrix.setValue(row, col, d);
 						if (matrix.symmetric && col != row)
-							matrix.setValue(col, row, (d-min)/span);
+							matrix.setValue(col, row, d);
+						matrix.minValue = Math.min(matrix.minValue, d);
+						matrix.maxValue = Math.max(matrix.maxValue, d);
 					}
 				}));
+
 	}
 
 	/**
@@ -133,9 +137,12 @@ public class SimpleOps implements MatrixOps {
 				.forEach(col -> {
 						double d = matrix.getValue(row, col);
 						if (!Double.isNaN(d)) {
-							matrix.setValue(row, col, d/sum);
+							d = d/sum;
+							matrix.setValue(row, col, d);
 							if (matrix.symmetric && col != row)
-								matrix.setValue(col, row, d/sum);
+								matrix.setValue(col, row, d);
+							matrix.minValue = Math.min(matrix.minValue, d);
+							matrix.maxValue = Math.max(matrix.maxValue, d);
 						}
 					}));
 	}
@@ -156,8 +163,6 @@ public class SimpleOps implements MatrixOps {
 										if (!Double.isNaN(val))
 											matrix.setValue(row, col, val/sum);
 						});
-
-		matrix.updateMinMax();
 	}
 
 	/**
@@ -177,7 +182,6 @@ public class SimpleOps implements MatrixOps {
 										if (!Double.isNaN(val))
 											matrix.setValue(row, column, val/sum);
 						});
-		matrix.updateMinMax();
 	}
 
 	public void standardizeRow(int row) {
@@ -201,6 +205,8 @@ public class SimpleOps implements MatrixOps {
 	}
 
 	public void centralizeColumns() {
+		matrix.minValue = Double.MAX_VALUE;
+		matrix.maxValue = Double.MIN_VALUE;
 		for(int i=0;i<matrix.nColumns();i++){
 			// Replace with parallel function?
 			double mean = 0.0;
@@ -212,15 +218,21 @@ public class SimpleOps implements MatrixOps {
 			mean /= matrix.nRows();
 			for(int j=0;j<matrix.nRows();j++){
 				double cell = matrix.getValue(j, i);
-				if (!Double.isNaN(cell))
-					matrix.setValue(j, i, cell - mean);
-				else
-					matrix.setValue(i, j, 0.0d);
+				if (!Double.isNaN(cell)) {
+					cell = mean-cell;
+				} else {
+					cell = 0.0d;
+				}
+				matrix.minValue = Math.min(matrix.minValue, cell);
+				matrix.maxValue = Math.max(matrix.maxValue, cell);
+				matrix.setValue(j, i, cell);
 			}
 		}
 	}
 
 	public void centralizeRows() {
+		matrix.minValue = Double.MAX_VALUE;
+		matrix.maxValue = Double.MIN_VALUE;
 		for(int i=0;i<matrix.nRows();i++){
 			// Replace with parallel function?
 			double mean = 0.0;
@@ -232,10 +244,14 @@ public class SimpleOps implements MatrixOps {
 			mean /= matrix.nColumns();
 			for(int j=0;j<matrix.nColumns();j++){
 				double cell = matrix.getValue(i, j);
-				if (!Double.isNaN(cell))
+				if (!Double.isNaN(cell)) {
 					matrix.setValue(i, j, cell - mean);
-				else
+				} else {
 					matrix.setValue(i, j, 0.0d);
+				}
+				matrix.minValue = Math.min(matrix.minValue, cell);
+				matrix.maxValue = Math.max(matrix.maxValue, cell);
+				matrix.setValue(j, i, cell);
 			}
 		}
 	}
@@ -359,6 +375,15 @@ public class SimpleOps implements MatrixOps {
 					if (!Double.isNaN(value))
 						matrix.setValue(row, column, value/v);
 				}));
+	}
+
+	public void divideScalarColumn(int column, double sum) {
+		IntStream.range(0, matrix.nRows())
+						.forEach(row -> {
+										double val = matrix.getValue(row, column);
+										if (!Double.isNaN(val))
+											matrix.setValue(row, column, val/sum);
+						});
 	}
 
 	public void powScalar(double v) {

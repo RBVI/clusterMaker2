@@ -164,7 +164,6 @@ public class OjAlgoOps implements MatrixOps {
 			double cell = matrix.getValue(row, column);
 			matrix.setValue(row, column, (cell-mean)/stdev);
 		}
-		matrix.updateMinMax();
 	}
 
 	public void standardizeColumn(int column) {
@@ -175,7 +174,6 @@ public class OjAlgoOps implements MatrixOps {
 			double cell = matrix.getValue(row, column);
 			matrix.setValue(row, column, (cell-mean)/stdev);
 		}
-		matrix.updateMinMax();
 	}
 
 	// FIXME
