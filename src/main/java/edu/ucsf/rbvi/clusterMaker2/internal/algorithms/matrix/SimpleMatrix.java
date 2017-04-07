@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix.DISTRIBUTION;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixOps;
 
 import cern.colt.matrix.tdouble.DoubleFactory2D;
@@ -130,6 +131,23 @@ public class SimpleMatrix implements Matrix {
 	}
 
 	public MatrixOps ops() { return ops; }
+
+	public Matrix like() {
+		return new SimpleMatrix();
+	}
+
+	public Matrix like(int rows, int columns) {
+		return new SimpleMatrix(rows, columns);
+	}
+
+	public Matrix like(int rows, int columns, double initialValue) {
+		return new SimpleMatrix(rows, columns, initialValue);
+	}
+
+	// FIXME
+	public Matrix like(int rows, int columns, DISTRIBUTION dist) {
+		return null;
+	}
 	
 	/**
 	 * Return the number of rows in this matrix.

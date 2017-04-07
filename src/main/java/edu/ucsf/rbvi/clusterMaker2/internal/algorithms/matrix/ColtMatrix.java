@@ -17,6 +17,9 @@ import org.apache.log4j.Logger;
 import cern.colt.function.tdouble.IntIntDoubleFunction;
 import cern.colt.function.tdouble.DoubleFunction;
 import cern.jet.math.tdouble.DoubleFunctions;
+import cern.jet.random.tdouble.Binomial;
+import cern.jet.random.tdouble.Normal;
+import cern.jet.random.tdouble.engine.DoubleRandomEngine;
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleFactory1D;
 import cern.colt.matrix.tdouble.DoubleFactory2D;
@@ -26,6 +29,7 @@ import cern.colt.matrix.tdouble.algo.DoubleStatistic;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix.DISTRIBUTION;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixOps;
 
 public class ColtMatrix implements Matrix {
@@ -82,6 +86,19 @@ public class ColtMatrix implements Matrix {
 		index = null;
 	}
 
+	public ColtMatrix(int rows, int columns, double initialValue) {
+		this(rows, columns);
+		data.assign(initialValue);
+	}
+
+	public ColtMatrix(int rows, int columns, DISTRIBUTION dist) {
+		this(rows, columns);
+		if (dist.equals(DISTRIBUTION.NORMAL))
+			data.assign(new Normal(0.0, 1.0, DoubleRandomEngine.makeDefault()));
+		else if (dist.equals(DISTRIBUTION.BINOMIAL))
+			data.assign(new Binomial(1, 0.5, DoubleRandomEngine.makeDefault()));
+	}
+
 	public ColtMatrix(ColtMatrix mat, DoubleMatrix2D data) {
 		this();
 		transposed = mat.transposed;
@@ -111,6 +128,22 @@ public class ColtMatrix implements Matrix {
 	}
 
 	public MatrixOps ops() { return ops; }
+
+	public Matrix like() {
+		return new ColtMatrix();
+	}
+
+	public Matrix like(int rows, int columns) {
+		return new ColtMatrix(rows, columns);
+	}
+
+	public Matrix like(int rows, int columns, double initialValue) {
+		return new ColtMatrix(rows, columns, initialValue);
+	}
+
+	public Matrix like(int rows, int columns, DISTRIBUTION dist) {
+		return new ColtMatrix(rows, columns, dist);
+	}
 
 	public void initialize(int rows, int columns, double[][] arrayData) {
 		if (arrayData != null) {

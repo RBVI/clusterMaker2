@@ -91,9 +91,9 @@ public class tSNECalculation implements TSneInterface{
 		double min_gain         = 0.01;
 
 		Matrix Y           =  rnorm(n,no_dims);
-		Matrix dY          = fillMatrix(n,no_dims, 0.0);
-		Matrix iY          = fillMatrix(n,no_dims,0.0);
-		Matrix gains       = fillMatrix(n,no_dims,1.0);
+		Matrix dY          = matrix.like(n, no_dims, 0.0);
+		Matrix iY          = matrix.like(n, no_dims, 0.0);
+		Matrix gains       = matrix.like(n, no_dims, 1.0);
 
 		// Compute P-values
 		Matrix P = x2p(matrix, 1e-5, perplexity).P;

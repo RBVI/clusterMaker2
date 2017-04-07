@@ -36,9 +36,12 @@ import org.ojalgo.matrix.store.PrimitiveDenseStore;
 import org.ojalgo.matrix.task.InverterTask;
 import org.ojalgo.matrix.task.SolverTask;
 import org.ojalgo.matrix.task.TaskException;
+import org.ojalgo.random.Binomial;
+import org.ojalgo.random.Normal;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix.DISTRIBUTION;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixOps;
 
 public class OjAlgoMatrix implements Matrix {
@@ -109,6 +112,19 @@ public class OjAlgoMatrix implements Matrix {
 		index = null;
 	}
 
+	public OjAlgoMatrix(int rows, int columns, DISTRIBUTION dist) {
+		this();
+		if (dist.equals(DISTRIBUTION.NORMAL))
+			data = storeFactory.makeFilled(rows, columns, new Normal());
+		else if (dist.equals(DISTRIBUTION.BINOMIAL))
+			data = storeFactory.makeFilled(rows, columns, new Binomial());
+		nRows = rows;
+		nColumns = columns;
+		rowLabels = new String[rows];
+		columnLabels = new String[columns];
+		index = null;
+	}
+
 	public OjAlgoMatrix(OjAlgoMatrix mat, MatrixStore<Double> data) {
 		this();
 		transposed = mat.transposed;
@@ -168,6 +184,22 @@ public class OjAlgoMatrix implements Matrix {
 		rowLabels = new String[nRows];
 		columnLabels = new String[nColumns];
 		updateMinMax();
+	}
+
+	public Matrix like() {
+		return new OjAlgoMatrix();
+	}
+
+	public Matrix like(int rows, int columns) {
+		return new OjAlgoMatrix(rows, columns);
+	}
+
+	public Matrix like(int rows, int columns, double initialValue) {
+		return new OjAlgoMatrix(rows, columns, initialValue);
+	}
+
+	public Matrix like(int rows, int columns, DISTRIBUTION dist) {
+		return new OjAlgoMatrix(rows, columns, dist);
 	}
 
 	public MatrixOps ops() { return ops; }

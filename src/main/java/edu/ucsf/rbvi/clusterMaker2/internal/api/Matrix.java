@@ -19,6 +19,11 @@ import cern.colt.matrix.tdouble.DoubleMatrix2D;
  */
 public interface Matrix {
 	/**
+	 * enum for types of functions used to fill matrices
+	 */
+	enum DISTRIBUTION {NORMAL, BINOMIAL};
+
+	/**
 	 * Get the MatrixOps for this Matrix type.
 	 */
 	public MatrixOps ops();
@@ -40,6 +45,43 @@ public interface Matrix {
 	 * @param data a (possibly null) matrix of data
 	 */
 	public void initialize(int rows, int columns, Double[][] data);
+
+	/**
+	 * Create a new matrix of the same type as this matrix.
+	 *
+	 * @return the new matrix
+	 */
+	public Matrix like();
+
+	/**
+	 * Create a new matrix of the same type as this matrix.
+	 *
+	 * @param rows the number of rows
+	 * @param columns the number of columns
+	 * @return the new matrix
+	 */
+	public Matrix like(int rows, int columns);
+
+	/**
+	 * Create a new matrix of the same type as this matrix.
+	 *
+	 * @param rows the number of rows
+	 * @param columns the number of columns
+	 * @param initialValue the value to initialize the matrix
+	 * @return the new matrix
+	 */
+	public Matrix like(int rows, int columns, double initialValue);
+
+	/**
+	 * Create a new matrix of the same type as this matrix.
+	 *
+	 * @param rows the number of rows
+	 * @param columns the number of columns
+	 * @param initial the distribution to use to fill the matrix
+	 * @return the new matrix
+	 */
+	public Matrix like(int rows, int columns, DISTRIBUTION initial);
+	
 	
 	/**
 	 * Return the number of rows in this matrix.
