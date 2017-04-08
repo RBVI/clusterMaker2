@@ -47,6 +47,21 @@ public class SimpleOps implements MatrixOps {
 	}
 
 	/**
+	 * Create a transposed matrix
+	 */
+	public Matrix transpose() {
+		double[][] data = new double[matrix.nColumns()][matrix.nRows()];
+		IntStream.range(0, matrix.nRows()).parallel()
+			.forEach(row -> IntStream.range(0, matrix.nColumns())
+				.forEach(column -> {
+					data[column][row] = matrix.getValue(row, column);
+				}));
+		SimpleMatrix result = new SimpleMatrix(matrix, data);
+		result.transposed = true;
+		return result;
+	}
+
+	/**
 	 * Invert the matrix in place
 	 */
 	public void invertMatrix() {

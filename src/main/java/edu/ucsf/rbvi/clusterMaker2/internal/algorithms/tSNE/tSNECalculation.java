@@ -90,7 +90,7 @@ public class tSNECalculation implements TSneInterface{
 		int eta                 = 500;
 		double min_gain         = 0.01;
 
-		Matrix Y           =  rnorm(n,no_dims);
+		Matrix Y           = matrix.like(n,no_dims,Matrix.DISTRIBUTION.NORMAL);
 		Matrix dY          = matrix.like(n, no_dims, 0.0);
 		Matrix iY          = matrix.like(n, no_dims, 0.0);
 		Matrix gains       = matrix.like(n, no_dims, 1.0);
@@ -99,7 +99,7 @@ public class tSNECalculation implements TSneInterface{
 		Matrix P = x2p(matrix, 1e-5, perplexity).P;
 
 
-		P = plus(P , mo.transpose(P));
+		P = plus(P , P.ops().transpose());
 		P = scalarDivide(P,sum(P));
 		P = scalarMult(P , 4);					// early exaggeration
 		P = maximum(P, 1e-12);
@@ -180,11 +180,15 @@ public class tSNECalculation implements TSneInterface{
 	public R x2p(Matrix X,double tol, double perplexity){
 		int n               = X.nRows();
 		//Matrix sum_X   = sum(square(X), 1);
-		Matrix square_X   = square(X);
-		square_X.setRowLabels(Arrays.asList(X.getRowLabels()));
-		square_X.setColumnLabels(Arrays.asList(X.getColumnLabels()));
+		Matrix square_X = X.copy();
+		square_X.ops().powScalar(2);
+		// square_X.setRowLabels(Arrays.asList(X.getRowLabels()));
+		// square_X.setColumnLabels(Arrays.asList(X.getColumnLabels()));
 		
-		Matrix sum_X   = sum(square_X, 1);
+		Matrix sum_X   = square_X.like(X.nRows(), 1);
+		for (int row = 0; row < X.nRows(); row++) {
+			sum_X.setValue(row, 1, square_X.ops().rowSum(row));
+		}
 		sum_X.setRowLabels(Arrays.asList(X.getRowLabels()));
 		
 		Matrix times   = scalarMult(times(X, mo.transpose(X)), -2);

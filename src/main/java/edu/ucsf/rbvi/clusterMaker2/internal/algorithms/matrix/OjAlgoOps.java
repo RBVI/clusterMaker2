@@ -50,6 +50,16 @@ public class OjAlgoOps implements MatrixOps {
 	}
 
 	/**
+	 * Create a new matrix that is the transpose of this one
+	 */
+	public Matrix transpose() {
+		OjAlgoMatrix result = (OjAlgoMatrix)matrix.copy();
+		result.data.transpose();
+		result.transposed = true;
+		return result;
+	}
+
+	/**
 	 * Invert the matrix in place
 	 */
 	public void invertMatrix() {

@@ -58,6 +58,17 @@ public class ColtOps implements MatrixOps {
 	}
 
 	/**
+	 * Create a new matrix that is the transpose of this matrix
+	 */
+	public Matrix transpose() {
+		DenseDoubleAlgebra dda = new DenseDoubleAlgebra();
+		DoubleMatrix2D trans = dda.transpose(matrix.data);
+		ColtMatrix result = new ColtMatrix(matrix, trans);
+		result.transposed = true;
+		return result;
+	}
+
+	/**
 	 * Return the rank order of the columns in a row
 	 *
 	 * @param row the row to rank the columns in

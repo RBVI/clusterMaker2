@@ -236,7 +236,7 @@ public interface MatrixOps {
 	 *
 	 * @return a new matrix that is the transpose of this matrix
 	 */
-	// public Matrix transpose();
+	public Matrix transpose();
 
 	/**
 	 * Return the eigenvalues of a matrix
