@@ -229,6 +229,10 @@ public class ColtOps implements MatrixOps {
 		}
 	}
 
+	public double sum() {
+		return getData().zSum();
+	}
+
 	public double columnSum(int column) {
 		return getData().viewColumn(column).zSum();
 	}
@@ -353,7 +357,6 @@ public class ColtOps implements MatrixOps {
 	/**
 	 * add a value to all cells in the matrix
 	 * 
-	 * @param matrix our matrix
 	 * @param value to add to each cell
 	 */
 	public void addScalar(double value) {
@@ -368,9 +371,28 @@ public class ColtOps implements MatrixOps {
 	}
 
 	/**
+	 * add two matrices together
+	 * 
+	 * @param addend the matrix to add to our matrix
+	 */
+	public void addMatrix(Matrix addend) {
+		DoubleMatrix2D data = getData();
+		data.forEachNonZero(
+			new IntIntDoubleFunction() {
+				public double apply(int row, int column, double v) {
+					double addendValue = addend.getValue(row, column);
+					if (!Double.isNaN(addendValue))
+						return v+addendValue;
+					else
+						return v;
+				}
+			}
+		);
+	}
+
+	/**
 	 * subtract a value from all cells in the matrix
 	 * 
-	 * @param matrix our matrix
 	 * @param value to subtract from each cell
 	 */
 	public void subtractScalar(double value) {
@@ -379,6 +401,26 @@ public class ColtOps implements MatrixOps {
 			new IntIntDoubleFunction() {
 				public double apply(int row, int column, double v) {
 					return v-value;
+				}
+			}
+		);
+	}
+
+	/**
+	 * subtract a matrix from this matrix
+	 * 
+	 * @param subtrahend the matrix to subtract from our matrix
+	 */
+	public void subtractMatrix(Matrix subtrahend) {
+		DoubleMatrix2D data = getData();
+		data.forEachNonZero(
+			new IntIntDoubleFunction() {
+				public double apply(int row, int column, double v) {
+					double subValue = subtrahend.getValue(row, column);
+					if (!Double.isNaN(subValue))
+						return v-subValue;
+					else
+						return v;
 				}
 			}
 		);

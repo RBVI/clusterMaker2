@@ -271,6 +271,7 @@ public void scalarMultiplyTest() {
 	assertArrayEquals(temparray, arratmp, DELTA);
 }
 
+/*
 @Test
 public void fillMatrixTest() {
 	setInitiate();
@@ -283,6 +284,7 @@ public void fillMatrixTest() {
 	
 	assertArrayEquals(temparray, arratmp, DELTA);
 }
+*/
 
 
 @Test
@@ -464,7 +466,7 @@ public void test() {
 	addRowVectorTest();
 	tileTest();
 	scalarMultiplyTest();
-	fillMatrixTest();
+	// fillMatrixTest();
 	minusTest();
 	scalarplusTest();
 	minusTest();

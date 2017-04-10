@@ -123,20 +123,29 @@ public class OjAlgoMatrix implements Matrix {
 		rowLabels = new String[rows];
 		columnLabels = new String[columns];
 		index = null;
+		updateMinMax();
 	}
 
 	public OjAlgoMatrix(OjAlgoMatrix mat, MatrixStore<Double> data) {
 		this();
 		transposed = mat.transposed;
 		symmetric = mat.symmetric;
-		if (mat.rowLabels != null)
-			rowLabels = Arrays.copyOf(mat.rowLabels, mat.rowLabels.length);
-		if (mat.columnLabels != null)
-			columnLabels = Arrays.copyOf(mat.columnLabels, mat.columnLabels.length);
-
 		this.data = storeFactory.copy(data);
 		nRows = (int)data.countRows();
 		nColumns = (int)data.countColumns();
+
+		if (mat.rowLabels != null && mat.rowLabels.length == nRows) {
+			rowLabels = Arrays.copyOf(mat.rowLabels, mat.rowLabels.length);
+		} else if (mat.columnLabels != null && mat.columnLabels.length == nRows) {
+			rowLabels = Arrays.copyOf(mat.columnLabels, mat.columnLabels.length);
+		}
+
+		if (mat.columnLabels != null && mat.columnLabels.length == nColumns) {
+			columnLabels = Arrays.copyOf(mat.columnLabels, mat.columnLabels.length);
+		} else if (mat.rowLabels != null && mat.rowLabels.length == nColumns) {
+			columnLabels = Arrays.copyOf(mat.rowLabels, mat.rowLabels.length);
+		}
+
 		updateMinMax();
 	}
 
@@ -230,11 +239,7 @@ public class OjAlgoMatrix implements Matrix {
 	 * @return the (possibly null) value at that location
 	 */
 	public Double getValue(int row, int column) { 
-		Double d;
-		if (index == null)
-			d = data.get(row, column);
-		else
-			d = data.get(index[row], index[column]);
+		double d = doubleValue(row, column);
 		if (Double.isNaN(d))
 			return null;
 		return d;
@@ -248,9 +253,10 @@ public class OjAlgoMatrix implements Matrix {
 	 * @return the value at that location, if it was set, otherwise, return Double.NaN.
 	 */
 	public double doubleValue(int row, int column) {
-		Double d = getValue(row, column);
-		if (d == null) return Double.NaN;
-		return d.doubleValue();
+		if (index == null)
+			return data.doubleValue(row, column);
+		else
+			return data.doubleValue(index[row], index[column]);
 	}
 
 	/**
@@ -304,8 +310,8 @@ public class OjAlgoMatrix implements Matrix {
 	 * @return true if this location has a value, false otherwise
 	 */
 	public boolean hasValue(int row, int column) {
-		Double d = getValue(row, column);
-		if (d == null)
+		double d = doubleValue(row, column);
+		if (Double.isNaN(d))
 			return false;
 		return true;
 	}
@@ -495,7 +501,7 @@ public class OjAlgoMatrix implements Matrix {
 	public void setMissingToZero() {
 		for (int row = 0; row < nRows; row++) {
 			for (int col = colStart(row); col < nColumns; col++) {
-				if (getValue(row, col) == null) {
+				if (Double.isNaN(doubleValue(row, col))) {
 					data.set(row, col, 0.0d);
 					if (symmetric && row != col)
 						data.set(col, row, 0.0d);
@@ -609,7 +615,7 @@ public class OjAlgoMatrix implements Matrix {
 		// newMatrix.data = data.viewPart(row, col, rows, cols);
 		for (int r = 0; r < rows; r++) {
 			for (int c = 0; c < cols; c++) {
-				newMatrix.setValue(r,c, getValue(row+r,col+c));
+				newMatrix.setValue(r,c, doubleValue(row+r,col+c));
 			}
 		}
 		double newMin = Double.MAX_VALUE;
@@ -708,7 +714,7 @@ public class OjAlgoMatrix implements Matrix {
 		for (int row = 0; row < nRows; row++) {
 			sb.append(getRowLabel(row)+":\t"); //node.getIdentifier()
 			for (int col = 0; col < nColumns; col++) {
-				double value = getValue(row, col);
+				double value = doubleValue(row, col);
 				if (value < 0.001)
 					sb.append(""+scFormat.format(value)+"\t");
 				else

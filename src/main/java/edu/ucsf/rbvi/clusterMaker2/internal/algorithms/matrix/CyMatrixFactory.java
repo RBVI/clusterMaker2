@@ -23,7 +23,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeWeightConverter;
 
 public class CyMatrixFactory {
-	enum MatrixType {SIMPLE, COLT, SPARSE, LARGE, OJALGO};
+	public enum MatrixType {SIMPLE, COLT, SPARSE, LARGE, OJALGO};
 
 	/**
 	 * Create an empty matrix that may be very large
@@ -217,7 +217,7 @@ public class CyMatrixFactory {
 	}
 
 
-	private static CyMatrix makeMatrix(CyNetwork network, String[] attributes,
+	public static CyMatrix makeMatrix(CyNetwork network, String[] attributes,
 	                                   boolean selectedOnly, boolean ignoreMissing,
 															       boolean transpose, boolean assymetric, MatrixType type) {
 		// Create our local copy of the weightAtributes array

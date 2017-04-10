@@ -53,8 +53,8 @@ public class OjAlgoOps implements MatrixOps {
 	 * Create a new matrix that is the transpose of this one
 	 */
 	public Matrix transpose() {
-		OjAlgoMatrix result = (OjAlgoMatrix)matrix.copy();
-		result.data.transpose();
+		PhysicalStore<Double> data = matrix.storeFactory.transpose(matrix.data);
+		OjAlgoMatrix result = new OjAlgoMatrix(matrix, data);
 		result.transposed = true;
 		return result;
 	}
@@ -89,8 +89,8 @@ public class OjAlgoOps implements MatrixOps {
 		matrix.maxValue = Double.MIN_VALUE;
 		for (int row = 0; row < matrix.nRows(); row++) {
 			for (int col = matrix.colStart(row); col < matrix.nColumns(); col++) {
-				Double d = matrix.getValue(row, col);
-				if (d == null)
+				double d = matrix.doubleValue(row, col);
+				if (Double.isNaN(d))
 					continue;
 				matrix.setValue(row, col, (d-minValue)/span);
 				if (matrix.isSymmetrical() && col != row)
@@ -111,7 +111,7 @@ public class OjAlgoOps implements MatrixOps {
 		}
 
 		// Get the sum of all of the cells in the matrix
-		double sum = matrix.data.aggregateAll(Aggregator.SUM);
+		double sum = sum();
 		divideScalar(sum);  // Devide all of the cells by the sum
 		matrix.updateMinMax();
 	}
@@ -131,7 +131,7 @@ public class OjAlgoOps implements MatrixOps {
 		double variance = rowVariance(row, mean);
 		double stdev = Math.sqrt(variance);
 		for (int column = 0; column < matrix.nColumns(); column++) {
-			double cell = matrix.getValue(row, column);
+			double cell = matrix.doubleValue(row, column);
 			matrix.setValue(row, column, (cell-mean)/stdev);
 		}
 	}
@@ -141,7 +141,7 @@ public class OjAlgoOps implements MatrixOps {
 		double variance = columnVariance(column, mean);
 		double stdev = Math.sqrt(variance);
 		for (int row = 0; row < matrix.nRows(); row++) {
-			double cell = matrix.getValue(row, column);
+			double cell = matrix.doubleValue(row, column);
 			matrix.setValue(row, column, (cell-mean)/stdev);
 		}
 	}
@@ -151,7 +151,7 @@ public class OjAlgoOps implements MatrixOps {
 		for(int col=0;col<matrix.nColumns();col++){
 			double mean = columnMean(col);
 			for(int row=0;row<matrix.nRows();row++){
-				double cell = matrix.getValue(row, col);
+				double cell = matrix.doubleValue(row, col);
 				if (!Double.isNaN(cell))
 					matrix.setValue(row, col, cell - mean);
 				else
@@ -166,7 +166,7 @@ public class OjAlgoOps implements MatrixOps {
 			double mean = rowMean(row);
 
 			for(int col=0;col<matrix.nColumns();col++){
-				double cell = matrix.getValue(row, col);
+				double cell = matrix.doubleValue(row, col);
 				if (!Double.isNaN(cell))
 					matrix.setValue(row, col, cell - mean);
 				else
@@ -174,6 +174,10 @@ public class OjAlgoOps implements MatrixOps {
 			}
 		}
 		matrix.updateMinMax();
+	}
+
+	public double sum() {
+		return matrix.data.aggregateAll(Aggregator.SUM);
 	}
 
 	public double columnSum(int column) {
@@ -219,7 +223,7 @@ public class OjAlgoOps implements MatrixOps {
 	public double columnVariance(int column, double mean) {
 		double variance = 0.0;
 		for(int j=0;j<matrix.nRows(); j++){
-			double cell = matrix.getValue(j, column);
+			double cell = matrix.doubleValue(j, column);
 			if (!Double.isNaN(cell))
 				variance += Math.pow((cell-mean),2);
 		}
@@ -234,7 +238,7 @@ public class OjAlgoOps implements MatrixOps {
 	public double rowVariance(int row, double mean) {
 		double variance = 0.0;
 		for(int j=0;j<matrix.nColumns(); j++){
-			double cell = matrix.getValue(row, j);
+			double cell = matrix.doubleValue(row, j);
 			if (!Double.isNaN(cell))
 				variance += Math.pow((cell-mean),2);
 		}
@@ -275,10 +279,10 @@ public class OjAlgoOps implements MatrixOps {
 	/**
 	 * Add a matrix to this matrix
 	 */
-	public Matrix addMatrix(Matrix addend) {
+	public void addMatrix(Matrix addend) {
 		OjAlgoMatrix ojAddend = (OjAlgoMatrix)addend;
 		MatrixStore<Double> d = matrix.data.add(ojAddend.data);
-		return new OjAlgoMatrix(matrix, d);
+		matrix.data = (PhysicalStore<Double>)d;
 	}
 
 	/**
@@ -291,10 +295,10 @@ public class OjAlgoOps implements MatrixOps {
 	/**
 	 * Subtract a matrix from this matrix
 	 */
-	public Matrix subtractMatrix(Matrix subend) {
+	public void subtractMatrix(Matrix subend) {
 		OjAlgoMatrix ojSubend = (OjAlgoMatrix)subend;
 		MatrixStore<Double> d = matrix.data.subtract(ojSubend.data);
-		return new OjAlgoMatrix(matrix, d);
+		matrix.data = (PhysicalStore<Double>)d;
 	}
 
 	/**

@@ -1,8 +1,7 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.api;
 
 /**
- * A generic wrapper around Matrix various matrix operations, from the most simple
- * (a two-dimensional array) to more complex sparse implementations.
+ * Every matrix implementation must provide these operations.
  */
 public interface MatrixOps {
 
@@ -102,6 +101,13 @@ public interface MatrixOps {
 	public double columnSum2(int column);
 
 	/**
+	 * Return the sum of a matrix
+	 *
+	 * @return the sum of the the matrix
+	 */
+	public double sum();
+
+	/**
 	 * Return the variance of a row
 	 *
 	 * @param row the row to get the variance of
@@ -157,12 +163,28 @@ public interface MatrixOps {
 	public void addScalar(double value);
 
 	/**
+	 * add a matrix to this matrix 
+	 * Note: does not update matrix min/max values.  
+	 * 
+	 * @param addend the matrix to add to this matrix
+	 */
+	public void addMatrix(Matrix addend);
+
+	/**
 	 * subtract a value from all cells in this matrix
 	 * Note: does not update matrix min/max values.  
 	 * 
 	 * @param value to subtract from each cell
 	 */
 	public void subtractScalar(double value);
+
+	/**
+	 * subtract a matrix from this matrix 
+	 * Note: does not update matrix min/max values.  
+	 * 
+	 * @param subtrahend the matrix to add to this matrix
+	 */
+	public void subtractMatrix(Matrix subtrahend);
 
 	/**
 	 * multiple all cells in this matrix by a value

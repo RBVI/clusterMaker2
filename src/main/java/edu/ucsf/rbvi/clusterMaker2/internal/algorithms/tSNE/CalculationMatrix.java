@@ -124,8 +124,7 @@ public class CalculationMatrix {
 		Matrix matrix=new ColtMatrix(m, n);
 		for (int i = 0; i < m; i++) {				
 			for (int j = 0; j < matrix.nColumns(); j++) {
-				double value = rnorm(0.0,1.0);
-				matrix.setValue(i, j, value);
+				matrix.setValue(i, j, rnorm(0.0,1.0));
 			}
 		}
 		return matrix;
@@ -134,7 +133,7 @@ public class CalculationMatrix {
 	public static double [] rnorm(int n, double [] mus, double [] sigmas) {
 		double [] res = new double[n];
 		for (int i = 0; i < res.length; i++) {
-			res[i] = mus[i] + (rnorm() * sigmas[i]);
+			res[i] = mus[i] + (ThreadLocalRandom.current().nextGaussian() * sigmas[i]);
 		}
 		return res; 
 	}
@@ -142,7 +141,7 @@ public class CalculationMatrix {
 	public static double [] rnorm(int n, double mu, double [] sigmas) {
 		double [] res = new double[n];
 		for (int i = 0; i < res.length; i++) {
-			res[i] = mu + (rnorm() * sigmas[i]);
+			res[i] = mu + (ThreadLocalRandom.current().nextGaussian() * sigmas[i]);
 		}
 		return res; 
 	}
@@ -152,7 +151,8 @@ public class CalculationMatrix {
 	}
 
 	public static double rnorm(double mu, double sigma) {
-		return mu + (rnorm() * sigma);
+		double val=mu + (ThreadLocalRandom.current().nextGaussian() * sigma);
+		return val;
 	}
 
 	

@@ -354,6 +354,16 @@ public class SimpleOps implements MatrixOps {
 				}));
 	}
 
+	public void addMatrix(Matrix addend) {
+		IntStream.range(0, matrix.nRows()).parallel()
+			.forEach(row -> IntStream.range(matrix.colStart(row), matrix.nColumns())
+				.forEach(column -> {
+					double value = matrix.getValue(row, column);
+					if (!Double.isNaN(value) && !Double.isNaN(addend.getValue(row, column)))
+						matrix.setValue(row, column, value+addend.getValue(row, column));
+				}));
+	}
+
 	public void subtractScalar(double v) {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(matrix.colStart(row), matrix.nColumns())
@@ -361,6 +371,16 @@ public class SimpleOps implements MatrixOps {
 					double value = matrix.getValue(row, column);
 					if (!Double.isNaN(value))
 						matrix.setValue(row, column, value-v);
+				}));
+	}
+
+	public void subtractMatrix(Matrix subtrahend) {
+		IntStream.range(0, matrix.nRows()).parallel()
+			.forEach(row -> IntStream.range(matrix.colStart(row), matrix.nColumns())
+				.forEach(column -> {
+					double value = matrix.getValue(row, column);
+					if (!Double.isNaN(value) && !Double.isNaN(subtrahend.getValue(row, column)))
+						matrix.setValue(row, column, value-subtrahend.getValue(row, column));
 				}));
 	}
 
@@ -507,7 +527,7 @@ public class SimpleOps implements MatrixOps {
 		}
 	}
 
-	private double sum() {
+	public double sum() {
 		return Arrays.stream(matrix.data).parallel()
 						.flatMapToDouble(arr -> Arrays.stream(arr))
 						.filter(v -> !Double.isNaN(v))

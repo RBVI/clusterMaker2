@@ -75,8 +75,8 @@ public class tSNE extends AbstractNetworkClusterer{
 		}
 
 		// CyMatrix matrix = context.edgeAttributeHandler.getMatrix();
-		CyMatrix matrix = CyMatrixFactory.makeLargeMatrix(network, attrArray, context.selectedOnly, 
-		                                                  context.ignoreMissing, false, false);
+		CyMatrix matrix = CyMatrixFactory.makeMatrix(network, attrArray, context.selectedOnly, 
+		                                             context.ignoreMissing, false, false, CyMatrixFactory.MatrixType.SPARSE);
 		
 		if (matrix == null) {
 			monitor.showMessage(TaskMonitor.Level.ERROR,"Can't get distance matrix: no attribute value?");

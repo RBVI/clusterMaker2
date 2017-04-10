@@ -90,16 +90,15 @@ public class tSNECalculation implements TSneInterface{
 		int eta                 = 500;
 		double min_gain         = 0.01;
 
-		Matrix Y           = matrix.like(n,no_dims,Matrix.DISTRIBUTION.NORMAL);
-		Matrix dY          = matrix.like(n, no_dims, 0.0);
-		Matrix iY          = matrix.like(n, no_dims, 0.0);
-		Matrix gains       = matrix.like(n, no_dims, 1.0);
+		Matrix Y           = rnorm(n,no_dims);
+		Matrix dY          = fillMatrix(n,no_dims, 0.0);
+		Matrix iY          = fillMatrix(n,no_dims,0.0);
+		Matrix gains       = fillMatrix(n,no_dims,1.0);
 
 		// Compute P-values
 		Matrix P = x2p(matrix, 1e-5, perplexity).P;
 
-
-		P = plus(P , P.ops().transpose());
+		P = plus(P , mo.transpose(P));
 		P = scalarDivide(P,sum(P));
 		P = scalarMult(P , 4);					// early exaggeration
 		P = maximum(P, 1e-12);
@@ -113,6 +112,8 @@ public class tSNECalculation implements TSneInterface{
 			progress = (double)iter/(double)max_iter;
 			monitor.setProgress(progress);
 
+			// P.writeMatrix("P-"+iter);
+
 			// Compute pairwise affinities
 			Matrix sum_Y = mo.transpose(sum(square(Y), 1));
 			Matrix num = scalarInverse(scalarPlus(addRowVector(mo.transpose(addRowVector(scalarMult(
@@ -122,14 +123,19 @@ public class tSNECalculation implements TSneInterface{
 					sum_Y),
 					1));
 
+
 			assignAtIndex(num, range(n), range(n), 0);
+			// num.writeMatrix("num-"+iter);
 			Matrix Q = scalarDivide(num , sum(num));
 
 			Q = maximum(Q, 1e-12);
+			// Q.writeMatrix("Q-"+iter);
 
 			// Compute gradient
 			Matrix L = mo.scalarMultiply(mo.minus(P , Q), num);
-		    dY = scalarMult(times(mo.minus(diag(sum(L, 1)),L) , Y), 4);
+			// L.writeMatrix("L-"+iter);
+
+			dY = scalarMult(times(mo.minus(diag(sum(L, 1)),L) , Y), 4);
 			
 			// Perform the update
 			if (iter < 20)
@@ -139,16 +145,21 @@ public class tSNECalculation implements TSneInterface{
 			gains = plus(mo.scalarMultiply(scalarPlus(gains,0.2), abs(negate(equal(biggerThan(dY,0.0),biggerThan(iY,0.0))))),
 					mo.scalarMultiply(scalarMult(gains,0.8), abs(equal(biggerThan(dY,0.0),biggerThan(iY,0.0)))));
 
+			// gains.writeMatrix("gains-"+iter);
+
 			assignAllLessThan(gains, min_gain, min_gain);
 			iY = mo.minus(scalarMult(iY,momentum) , scalarMult(mo.scalarMultiply(gains , dY),eta));
 			Y = plus(Y , iY);
 			//double [][] tile = tile(mean(Y, 0), n, 1);
 			Y = mo.minus(Y , tile(mean(Y, 0), n, 1));
 
+			// Y.writeMatrix("Y-"+iter);
+
 			// Compute current value of cost function
 			if ((iter % 100 == 0))   {
 				Matrix logdivide = log(scalarDivide(P , Q));
 				logdivide = replaceNaN(logdivide,0);
+				// logdivide.writeMatrix("logdivide-"+iter);
 				double C = sum(mo.scalarMultiply(P , logdivide));
 				//System.out.println("Iteration " + (iter + 1) + ": error is " + C);
 				monitor.showMessage(TaskMonitor.Level.INFO, "Iteration " + (iter + 1) + ": error is " + C);
@@ -179,23 +190,18 @@ public class tSNECalculation implements TSneInterface{
 
 	public R x2p(Matrix X,double tol, double perplexity){
 		int n               = X.nRows();
-		//Matrix sum_X   = sum(square(X), 1);
-		Matrix square_X = X.copy();
-		square_X.ops().powScalar(2);
-		// square_X.setRowLabels(Arrays.asList(X.getRowLabels()));
-		// square_X.setColumnLabels(Arrays.asList(X.getColumnLabels()));
+
+		Matrix square_X   = square(X);
+		square_X.setRowLabels(Arrays.asList(X.getRowLabels()));
+		square_X.setColumnLabels(Arrays.asList(X.getColumnLabels()));
 		
-		Matrix sum_X   = square_X.like(X.nRows(), 1);
-		for (int row = 0; row < X.nRows(); row++) {
-			sum_X.setValue(row, 1, square_X.ops().rowSum(row));
-		}
+		Matrix sum_X   = sum(square_X, 1);
 		sum_X.setRowLabels(Arrays.asList(X.getRowLabels()));
 		
 		Matrix times   = scalarMult(times(X, mo.transpose(X)), -2);
 		Matrix prodSum = addColumnVector(mo.transpose(times), sum_X);
 		Matrix D       = addRowVector(prodSum, mo.transpose(sum_X));
 
-		
 		// D seems correct at this point compared to Python version
 		Matrix P       = fillMatrix(n,n,0.0);
 		double [] beta      = fillMatrix(n,n,1.0).toArray()[0];
@@ -247,6 +253,7 @@ public class tSNECalculation implements TSneInterface{
 		R r = new R();
 		r.P = P;
 		r.beta = beta;
+		// System.out.println("beta: "+edu.ucsf.rbvi.clusterMaker2.internal.api.ArrayUtils.printArray(beta));
 		double sigma = mean(sqrt(scalarInverse(beta)));
 
 	
