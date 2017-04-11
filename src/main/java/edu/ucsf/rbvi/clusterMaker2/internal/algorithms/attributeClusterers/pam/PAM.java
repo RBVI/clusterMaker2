@@ -190,7 +190,7 @@ public class PAM implements KClusterable {
 			// assume distance to itself is 0
 			double d = 0;
 			for (int jj = 0; jj < m; ++jj) {
-				d += distances.getValue(ii, jj);
+				d += distances.doubleValue(ii, jj);
 			}
 			totalDistances[ii] = d;
 			if (d < minDistance) {
@@ -219,10 +219,10 @@ public class PAM implements KClusterable {
 					// for each non-medoid j != i, calculate the gain
 					for (int jj = 0; jj < m; ++jj) {
 						if (jj == ii || medoids.contains(elements[jj]) ) continue;
-						if (nearestDistances[jj] > distances.getValue(ii, jj)) {
+						if (nearestDistances[jj] > distances.doubleValue(ii, jj)) {
 							// add i will improve j's nearest distances
 							// (if selected, i will be the new nearest neighbour of j)
-							gain += nearestDistances[jj] - distances.getValue(ii, jj);
+							gain += nearestDistances[jj] - distances.doubleValue(ii, jj);
 						}
 					}
 					gains[ii] = gain;
@@ -277,21 +277,21 @@ public class PAM implements KClusterable {
 					//	if (jj == hh) continue;
 						
 						double d = nearestDistances[jj];
-						if (distances.getValue(ii, jj) > d) {
+						if (distances.doubleValue(ii, jj) > d) {
 							// if removed, i will have no impact
-							if (distances.getValue(jj, hh) < d) {
+							if (distances.doubleValue(jj, hh) < d) {
 								// if selected, h will improve nearest distance for j
-								change += distances.getValue(jj, hh) - d;
+								change += distances.doubleValue(jj, hh) - d;
 							}
 						} else {
 							// i cannot be closer than the nearest neighbour for j;
 							// therefore, distances[i][j] == d
 							// and i is currently the nearest neighbour for j
 							double e = nextNearestDistances[jj];
-							if (distances.getValue(jj, hh) < e) {
+							if (distances.doubleValue(jj, hh) < e) {
 								// if i and h are swapped, h will become the nearest neighbour
 								// nearest distance for j may improve or worsen
-								change += distances.getValue(jj, hh) - d;
+								change += distances.doubleValue(jj, hh) - d;
 							} else {
 								// if i is removed, the current next-nearest of j will be promoted to nearest
 								change += e - d;
@@ -363,7 +363,7 @@ public class PAM implements KClusterable {
 			
 			// check if any nearest distance improves
 			for (int ii = 0; ii < m; ++ii) {
-				double d = distances.getValue(ii, added);
+				double d = distances.doubleValue(ii, added);
 				if (d < nearestDistances[ii]) {
 					// element i is nearer to added medoid than previous nearest: update
 					double oldDistance = nearestDistances[ii];
@@ -404,8 +404,8 @@ public class PAM implements KClusterable {
 			int jj = it.next().intValue();
 			// ignore if j is the nearestMedoid, since we are interested in the next-nearest
 			if (jj == nearestMedoid) continue;
-			if (distances.getValue(ii, jj) < minDistance) {
-				minDistance = distances.getValue(ii, jj);
+			if (distances.doubleValue(ii, jj) < minDistance) {
+				minDistance = distances.doubleValue(ii, jj);
 				nextNearestMedoid = jj;
 			}
 		}

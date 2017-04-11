@@ -226,7 +226,7 @@ public class RunFCM {
 				double numerator = 0;
 				Double distance = 0.0;
 				for (int e = 0; e < nelements; e++){
-					distance = distanceMatrix.getValue(e, d);
+					distance = distanceMatrix.doubleValue(e, d);
 
 					numerator += Math.pow(tClusterMemberships[e][c],findex) * distance;
 
@@ -260,7 +260,7 @@ public class RunFCM {
 
 				for(int k = 0; k < number_clusters; k++){
 
-					sumDistanceRatios += Math.pow((cData.getValue(c, i)/cData.getValue(k, i)), fpower);
+					sumDistanceRatios += Math.pow((cData.doubleValue(c, i)/cData.doubleValue(k, i)), fpower);
 
 				}
 

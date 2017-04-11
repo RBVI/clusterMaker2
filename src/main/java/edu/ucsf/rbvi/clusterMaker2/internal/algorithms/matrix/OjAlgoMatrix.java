@@ -24,6 +24,7 @@ import org.ojalgo.function.PrimitiveFunction;
 import org.ojalgo.function.aggregator.Aggregator;
 import org.ojalgo.function.aggregator.AggregatorFunction;
 import org.ojalgo.machine.Hardware;
+import org.ojalgo.machine.VirtualMachine;
 import org.ojalgo.matrix.BasicMatrix;
 import org.ojalgo.matrix.BasicMatrix.Builder;
 import org.ojalgo.matrix.PrimitiveMatrix;
@@ -60,6 +61,7 @@ public class OjAlgoMatrix implements Matrix {
 	private int nThreads = -1;
 	final Logger logger = Logger.getLogger(CyUserLog.NAME);
 	public final OjAlgoOps ops;
+	static VirtualMachine env = null;
 
 	protected final PhysicalStore.Factory<Double, PrimitiveDenseStore> storeFactory;
 
@@ -70,6 +72,12 @@ public class OjAlgoMatrix implements Matrix {
 	public OjAlgoMatrix() {
 		nThreads = Runtime.getRuntime().availableProcessors()-1;
 		storeFactory = PrimitiveDenseStore.FACTORY;
+		if (env == null) {
+			env = org.ojalgo.OjAlgoUtils.ENVIRONMENT;
+			// System.out.println("Architecture = "+env.getArchitecture());
+			// System.out.println("Threads = "+env.getThreads());
+			// System.out.println("Memory = "+env.getMemory());
+		}
 		ops = new OjAlgoOps(this);
 	}
 
@@ -125,7 +133,7 @@ public class OjAlgoMatrix implements Matrix {
 		index = null;
 		updateMinMax();
 	}
-
+	
 	public OjAlgoMatrix(OjAlgoMatrix mat, MatrixStore<Double> data) {
 		this();
 		transposed = mat.transposed;
@@ -209,6 +217,16 @@ public class OjAlgoMatrix implements Matrix {
 
 	public Matrix like(int rows, int columns, DISTRIBUTION dist) {
 		return new OjAlgoMatrix(rows, columns, dist);
+	}
+
+	public Matrix like(Matrix initial) {
+		if (initial instanceof OjAlgoMatrix) {
+			return new OjAlgoMatrix(this, ((OjAlgoMatrix)initial).data);
+		} else {
+			OjAlgoMatrix newMat = new OjAlgoMatrix();
+			newMat.initialize(initial.nRows(), initial.nColumns(), initial.toArray());
+			return newMat;
+		}
 	}
 
 	public MatrixOps ops() { return ops; }

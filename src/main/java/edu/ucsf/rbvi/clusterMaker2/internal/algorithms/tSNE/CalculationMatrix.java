@@ -48,7 +48,7 @@ public class CalculationMatrix {
 		Matrix transpose=new ColtMatrix(cols,rows);
 		for (int i = 0; i < cols; i++){
 			for (int j = 0; j < rows; j++){
-				transpose.setValue(i, j, matrix.getValue(j, i));
+				transpose.setValue(i, j, matrix.doubleValue(j, i));
 			}
 		}
 		return transpose;
@@ -59,7 +59,7 @@ public class CalculationMatrix {
 		Matrix matrix=new ColtMatrix(m1.nRows(),m1.nColumns());
 		for (int i = 0; i < matrix.nRows(); i++) {
 			for (int j = 0; j < matrix.nColumns(); j++) {
-				matrix.setValue(i, j, Math.exp(m1.getValue(i, j)));
+				matrix.setValue(i, j, Math.exp(m1.doubleValue(i, j)));
 			}
 		}
 		return matrix;
@@ -86,7 +86,7 @@ public class CalculationMatrix {
 		Matrix matrix=new ColtMatrix(m1.nRows(),m1.nColumns());
 		for (int i = 0; i < matrix.nRows(); i++) {
 			for (int j = 0; j < matrix.nColumns(); j++) {
-				matrix.setValue(i, j, Math.log(m1.getValue(i, j)));
+				matrix.setValue(i, j, Math.log(m1.doubleValue(i, j)));
 			}
 		}
 		return matrix;
@@ -105,7 +105,7 @@ public class CalculationMatrix {
 		
 		for (int i = 0; i < matrix.nRows(); i++) {
 			for (int j = 0; j < matrix.nColumns(); j++) {
-				matrix.setValue(i, j, (1/m1.getValue(i, j)));
+				matrix.setValue(i, j, (1/m1.doubleValue(i, j)));
 			}
 		}
 		return matrix;
@@ -176,7 +176,7 @@ public class CalculationMatrix {
 		boolean [][] equals = new boolean[matrix.nRows()][matrix.nColumns()];
 		for (int i = 0; i < matrix.nRows(); i++) {
 			for (int j = 0; j < matrix.nColumns(); j++) {
-				equals[i][j] = Double.compare(matrix.getValue(i, j), value) == 1;
+				equals[i][j] = Double.compare(matrix.doubleValue(i, j), value) == 1;
 			}
 		}
 		return equals;
@@ -212,7 +212,7 @@ public class CalculationMatrix {
 			for (int j = 0; j < matrix.nColumns(); j++) {
 				double colsum = 0.0;
 				for (int i = 0; i < matrix.nRows(); i++) {
-					colsum += matrix.getValue(i, j);
+					colsum += matrix.doubleValue(i, j);
 				}
 				result.setValue(0, j, (colsum/matrix.nRows()));
 			}
@@ -221,7 +221,7 @@ public class CalculationMatrix {
 			for (int i = 0; i < matrix.nRows(); i++) {
 				double rowsum = 0.0;
 				for (int j = 0; j < matrix.nColumns(); j++) {
-					rowsum += matrix.getValue(i, j);
+					rowsum += matrix.doubleValue(i, j);
 				}
 				result.setValue(i, 0, (rowsum / matrix.nColumns()));
 			}
@@ -229,7 +229,7 @@ public class CalculationMatrix {
 			result=new ColtMatrix(1,1);
 			for (int j = 0; j < matrix.nColumns(); j++) {
 				for (int i = 0; i < matrix.nRows(); i++) {					
-					zerovalue+=matrix.getValue(i, j);
+					zerovalue+=matrix.doubleValue(i, j);
 				}
 			}
 			zerovalue/=(matrix.nColumns()*matrix.nRows());
@@ -250,7 +250,7 @@ public class CalculationMatrix {
 			for (int j = 0; j < matrix.nColumns(); j++) {
 				double rowsum = 0.0;
 				for (int i = 0; i < matrix.nRows(); i++) {
-					rowsum += matrix.getValue(i, j);
+					rowsum += matrix.doubleValue(i, j);
 				}
 				result.setValue(0, j, rowsum);
 			}
@@ -259,7 +259,7 @@ public class CalculationMatrix {
 			for (int i = 0; i < matrix.nRows(); i++) {
 				double colsum = 0.0;
 				for (int j = 0; j < matrix.nColumns(); j++) {
-					colsum += matrix.getValue(i, j);
+					colsum += matrix.doubleValue(i, j);
 				}
 				result.setValue(i, 0, colsum);
 			}
@@ -274,7 +274,7 @@ public class CalculationMatrix {
 		double sum = 0.0;
 		for (int i = 0; i < matrix.nRows(); i++) {
 			for (int j = 0; j < matrix.nColumns(); j++) {
-				sum+=matrix.getValue(i, j);
+				sum+=matrix.doubleValue(i, j);
 			}
 		}
 		return sum;
@@ -285,7 +285,7 @@ public class CalculationMatrix {
 		Matrix maxed=new ColtMatrix(matrix.nRows(),matrix.nColumns());
 		for (int i = 0; i < matrix.nRows(); i++) {
 			for (int j = 0; j < matrix.nColumns(); j++) {
-				maxed.setValue(i, j, (matrix.getValue(i, j) > maxval ? matrix.getValue(i, j):maxval));
+				maxed.setValue(i, j, (matrix.doubleValue(i, j) > maxval ? matrix.doubleValue(i, j):maxval));
 			}
 		}
 		return maxed;
@@ -295,7 +295,7 @@ public class CalculationMatrix {
 	public static void assignAllLessThan(Matrix matrix, double lessthan, double assign) {
 		for (int i = 0; i < matrix.nRows(); i++) {
 			for (int j = 0; j < matrix.nColumns(); j++) {
-				if( matrix.getValue(i, j) < lessthan) {
+				if( matrix.doubleValue(i, j) < lessthan) {
 					matrix.setValue(i, j, assign);
 				}
 			}
@@ -311,10 +311,10 @@ public class CalculationMatrix {
 		Matrix result=new ColtMatrix(matrix.nRows(),matrix.nColumns());
 		for (int i = 0; i < matrix.nRows(); i++) {
 			for (int j = 0; j < matrix.nColumns(); j++) {
-				if(Double.isNaN(matrix.getValue(i, j))) {
+				if(Double.isNaN(matrix.doubleValue(i, j))) {
 					result.setValue(i, j, repl);
 				} else {
-					result.setValue(i, j, matrix.getValue(i, j));
+					result.setValue(i, j, matrix.doubleValue(i, j));
 				}
 			}
 		}
@@ -326,7 +326,7 @@ public class CalculationMatrix {
 		Matrix result=new ColtMatrix(matrix.nRows(), matrix.nColumns());
 		for (int i = 0; i < matrix.nRows(); i++) {
 			for (int j = 0; j < matrix.nColumns(); j++) {
-				result.setValue(i, j, Math.pow(matrix.getValue(i, j), power));
+				result.setValue(i, j, Math.pow(matrix.doubleValue(i, j), power));
 			}
 		}
 		return result;
@@ -337,7 +337,7 @@ public class CalculationMatrix {
 		Matrix result=new ColtMatrix(matrix.nRows(),matrix.nColumns());
 		for (int i = 0; i < matrix.nRows(); i++) {
 			for (int j = 0; j < matrix.nColumns(); j++) {
-				result.setValue(i, j, (matrix.getValue(i, j)+colvector.getValue(i, 0)));
+				result.setValue(i, j, (matrix.doubleValue(i, j)+colvector.doubleValue(i, 0)));
 			}
 		}
 		return result;
@@ -348,7 +348,7 @@ public class CalculationMatrix {
 		Matrix result=new ColtMatrix(matrix.nRows(),matrix.nColumns());
 		for (int i = 0; i < matrix.nRows(); i++) {
 			for (int j = 0; j < matrix.nColumns(); j++) {
-				result.setValue(i, j, (matrix.getValue(i, j)+rowvector.getValue(0, j)));
+				result.setValue(i, j, (matrix.doubleValue(i, j)+rowvector.doubleValue(0, j)));
 			}
 		}
 		return result;
@@ -361,7 +361,7 @@ public class CalculationMatrix {
 			for (int j = 0; j < matrix.nRows(); j++) {
 				for (int k = 0, resultcol = 0; k < coltimes; k++) {
 					for (int l = 0; l < matrix.nColumns(); l++) {
-						result.setValue(resultrow, resultcol++, matrix.getValue(j, l));
+						result.setValue(resultrow, resultcol++, matrix.doubleValue(j, l));
 					}
 				}
 				resultrow++;
@@ -474,7 +474,7 @@ public class CalculationMatrix {
 					int cols = matrix1.nColumns();
 					for (int i = startRow; i < endRow; i++) {
 						for (int j = 0; j < cols; j++) {
-							resultMatrix.setValue(i, j,op.compute(matrix1.getValue(i, j), matrix2.getValue(i, j)) );
+							resultMatrix.setValue(i, j,op.compute(matrix1.doubleValue(i, j), matrix2.doubleValue(i, j)) );
 						}
 					}
 				}
@@ -504,7 +504,7 @@ public class CalculationMatrix {
 		Matrix values=new ColtMatrix(1,indicies.length);
 		for (int j = 0; j < indicies.length; j++) {
 			
-			values.setValue(0, j, matrix.getValue(row, indicies[j]));
+			values.setValue(0, j, matrix.doubleValue(row, indicies[j]));
 		}
 		return values;
 	}
@@ -536,7 +536,7 @@ public class CalculationMatrix {
 		
 		for (int i = 0; i < m1.nRows(); i++){
 			for (int j = 0; j < m1.nColumns(); j++){
-				matrix.setValue(i, j, ( m1.getValue(i, j) + m2.getValue(i, j)));
+				matrix.setValue(i, j, ( m1.doubleValue(i, j) + m2.doubleValue(i, j)));
 		}
 		}
 			
@@ -548,7 +548,7 @@ public class CalculationMatrix {
 		Matrix matrix=new ColtMatrix(m1.nRows(),m1.nColumns());
 		for (int i = 0; i < m1.nRows(); i++){
 			for (int j = 0; j < m1.nColumns(); j++){
-				matrix.setValue(i, j, (m1.getValue(i, j)+m2));
+				matrix.setValue(i, j, (m1.doubleValue(i, j)+m2));
 			}
 				
 		}
@@ -564,7 +564,7 @@ public class CalculationMatrix {
 		Matrix matrix = new ColtMatrix(numerator.nRows(),numerator.nColumns());
 		for (int i = 0; i < numerator.nRows(); i++){
 			for (int j = 0; j < numerator.nColumns(); j++){
-				matrix.setValue(i, j, (numerator.getValue(i, j)/denom));
+				matrix.setValue(i, j, (numerator.doubleValue(i, j)/denom));
 			}
 				
 		}
@@ -576,7 +576,7 @@ public class CalculationMatrix {
 		Matrix matrix=new ColtMatrix(numerator.nRows(),numerator.nColumns());
 		for (int i = 0; i < numerator.nRows(); i++){
 			for (int j = 0; j < numerator.nColumns(); j++){
-				matrix.setValue(i, j, (numerator.getValue(i, j)/denom.getValue(i, j)));
+				matrix.setValue(i, j, (numerator.doubleValue(i, j)/denom.doubleValue(i, j)));
 			}
 				
 		}
@@ -588,7 +588,7 @@ public class CalculationMatrix {
 		Matrix matrix=new ColtMatrix(m1.nRows(),m1.nColumns());
 		for (int i = 0; i < m1.nRows(); i++){
 			for (int j = 0; j < m1.nColumns(); j++){
-				matrix.setValue(i, j, m1.getValue(i, j)*mul);
+				matrix.setValue(i, j, m1.doubleValue(i, j)*mul);
 			}
 					
 		}
@@ -609,10 +609,10 @@ public class CalculationMatrix {
 			for (int j = 0; j < result.nColumns(); j++) {
 				if(i==j) {
 					if(isLong){
-						result.setValue(i, j, ds.getValue(i, 0));
+						result.setValue(i, j, ds.doubleValue(i, 0));
 					}
 					else{
-						result.setValue(i, j, ds.getValue(0, i));
+						result.setValue(i, j, ds.doubleValue(0, i));
 					}
 						
 				}

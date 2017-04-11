@@ -144,9 +144,17 @@ public class SimpleMatrix implements Matrix {
 		return new SimpleMatrix(rows, columns, initialValue);
 	}
 
-	// FIXME
 	public Matrix like(int rows, int columns, DISTRIBUTION dist) {
-		return null;
+		OjAlgoMatrix ojMat = new OjAlgoMatrix(rows, columns, dist);
+		Matrix newMat = like();
+		newMat.initialize(rows, columns, ojMat.toArray());
+		return newMat;
+	}
+
+	public Matrix like(Matrix initial) {
+		Matrix newMat = like();
+		newMat.initialize(initial.nRows(), initial.nColumns(), initial.toArray());
+		return newMat;
 	}
 	
 	/**
@@ -175,11 +183,7 @@ public class SimpleMatrix implements Matrix {
 	 * @return the (possibly null) value at that location
 	 */
 	public Double getValue(int row, int column) { 
-		double v;
-		if (index == null)
-			v = data[row][column]; 
-		else
-			v = data[index[row]][index[column]]; 
+		double v = doubleValue(row, column);
 		if (Double.isNaN(v))
 			return null;
 		return v;
@@ -193,7 +197,12 @@ public class SimpleMatrix implements Matrix {
 	 * @return the value at that location, if it was set, otherwise, return Double.NaN.
 	 */
 	public double doubleValue(int row, int column) {
-		return getValue(row, column);
+		double v;
+		if (index == null)
+			v = data[row][column]; 
+		else
+			v = data[index[row]][index[column]]; 
+		return v;
 	}
 	
 	/**
@@ -245,7 +254,7 @@ public class SimpleMatrix implements Matrix {
 	 * @return true if this location has a value, false otherwise
 	 */
 	public boolean hasValue(int row, int column) {
-		double d = getValue(row, column);
+		double d = doubleValue(row, column);
 		if (Double.isNaN(d))
 			return false;
 		return true;
@@ -609,7 +618,7 @@ public class SimpleMatrix implements Matrix {
 		for (int row = 0; row < nRows; row++) {
 			sb.append(getRowLabel(row)+":\t"); //node.getIdentifier()
 			for (int col = 0; col < nColumns; col++) {
-				sb.append(""+getValue(row,col)+"\t");
+				sb.append(""+doubleValue(row,col)+"\t");
 			} 
 			sb.append("\n");
 		} 

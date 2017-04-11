@@ -40,7 +40,7 @@ public class SimpleOps implements MatrixOps {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(matrix.colStart(row), matrix.nColumns())
 				.forEach(column -> {
-					if (matrix.getValue(row, column) <= thresh) {
+					if (matrix.doubleValue(row, column) <= thresh) {
 						matrix.setValue(row, column, 0.0);
 					}
 				}));
@@ -54,7 +54,7 @@ public class SimpleOps implements MatrixOps {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(0, matrix.nColumns())
 				.forEach(column -> {
-					data[column][row] = matrix.getValue(row, column);
+					data[column][row] = matrix.doubleValue(row, column);
 				}));
 		SimpleMatrix result = new SimpleMatrix(matrix, data);
 		result.transposed = true;
@@ -125,7 +125,7 @@ public class SimpleOps implements MatrixOps {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(matrix.colStart(row), matrix.nColumns())
 				.forEach(col -> {
-					double d = matrix.getValue(row, col);
+					double d = matrix.doubleValue(row, col);
 					if (!Double.isNaN(d)) {
 						d = (d-min)/span;
 						matrix.setValue(row, col, d);
@@ -148,7 +148,7 @@ public class SimpleOps implements MatrixOps {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(matrix.colStart(row), matrix.nColumns())
 				.forEach(col -> {
-						double d = matrix.getValue(row, col);
+						double d = matrix.doubleValue(row, col);
 						if (!Double.isNaN(d)) {
 							d = d/sum;
 							matrix.setValue(row, col, d);
@@ -170,7 +170,7 @@ public class SimpleOps implements MatrixOps {
 
 		IntStream.range(0, matrix.nColumns())
 						.forEach(col -> {
-										double val = matrix.getValue(row, col);
+										double val = matrix.doubleValue(row, col);
 										if (!Double.isNaN(val))
 											matrix.setValue(row, col, val/sum);
 						});
@@ -189,7 +189,7 @@ public class SimpleOps implements MatrixOps {
 
 		IntStream.range(0, matrix.nRows())
 						.forEach(row -> {
-										double val = matrix.getValue(row, column);
+										double val = matrix.doubleValue(row, column);
 										if (!Double.isNaN(val))
 											matrix.setValue(row, column, val/sum);
 						});
@@ -200,7 +200,7 @@ public class SimpleOps implements MatrixOps {
 		double variance = rowVariance(row, mean);
 		double stdev = Math.sqrt(variance);
 		for (int column = 0; column < matrix.nColumns(); column++) {
-			double cell = matrix.getValue(row, column);
+			double cell = matrix.doubleValue(row, column);
 			matrix.setValue(row, column, (cell-mean)/stdev);
 		}
 	}
@@ -210,7 +210,7 @@ public class SimpleOps implements MatrixOps {
 		double variance = columnVariance(column, mean);
 		double stdev = Math.sqrt(variance);
 		for (int row = 0; row < matrix.nRows(); row++) {
-			double cell = matrix.getValue(row, column);
+			double cell = matrix.doubleValue(row, column);
 			matrix.setValue(row, column, (cell-mean)/stdev);
 		}
 	}
@@ -222,13 +222,13 @@ public class SimpleOps implements MatrixOps {
 			// Replace with parallel function?
 			double mean = 0.0;
 			for(int j=0;j<matrix.nRows(); j++){
-				double cell = matrix.getValue(j, i);
+				double cell = matrix.doubleValue(j, i);
 				if (!Double.isNaN(cell))
 					mean += cell;
 			}
 			mean /= matrix.nRows();
 			for(int j=0;j<matrix.nRows();j++){
-				double cell = matrix.getValue(j, i);
+				double cell = matrix.doubleValue(j, i);
 				if (!Double.isNaN(cell)) {
 					cell = cell-mean;
 				} else {
@@ -246,13 +246,13 @@ public class SimpleOps implements MatrixOps {
 			// Replace with parallel function?
 			double mean = 0.0;
 			for(int j=0;j<matrix.nColumns(); j++){
-				double cell = matrix.getValue(i, j);
+				double cell = matrix.doubleValue(i, j);
 				if (!Double.isNaN(cell))
 					mean += cell;
 			}
 			mean /= matrix.nColumns();
 			for(int j=0;j<matrix.nColumns();j++){
-				double cell = matrix.getValue(i, j);
+				double cell = matrix.doubleValue(i, j);
 				if (!Double.isNaN(cell)) {
 					matrix.setValue(i, j, cell - mean);
 				} else {
@@ -312,7 +312,7 @@ public class SimpleOps implements MatrixOps {
 	public double columnVariance(int column, double mean) {
 		double variance = 0.0;
 		for(int j=0;j<matrix.nRows(); j++){
-			double cell = matrix.getValue(j, column);
+			double cell = matrix.doubleValue(j, column);
 			if (!Double.isNaN(cell))
 				variance += Math.pow((cell-mean),2);
 		}
@@ -327,7 +327,7 @@ public class SimpleOps implements MatrixOps {
 	public double rowVariance(int row, double mean) {
 		double variance = 0.0;
 		for(int j=0;j<matrix.nColumns(); j++){
-			double cell = matrix.getValue(row, j);
+			double cell = matrix.doubleValue(row, j);
 			if (!Double.isNaN(cell))
 				variance += Math.pow((cell-mean),2);
 		}
@@ -348,7 +348,7 @@ public class SimpleOps implements MatrixOps {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(matrix.colStart(row), matrix.nColumns())
 				.forEach(column -> {
-					double value = matrix.getValue(row, column);
+					double value = matrix.doubleValue(row, column);
 					if (!Double.isNaN(value))
 						matrix.setValue(row, column, value+v);
 				}));
@@ -358,9 +358,9 @@ public class SimpleOps implements MatrixOps {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(matrix.colStart(row), matrix.nColumns())
 				.forEach(column -> {
-					double value = matrix.getValue(row, column);
-					if (!Double.isNaN(value) && !Double.isNaN(addend.getValue(row, column)))
-						matrix.setValue(row, column, value+addend.getValue(row, column));
+					double value = matrix.doubleValue(row, column);
+					if (!Double.isNaN(value) && !Double.isNaN(addend.doubleValue(row, column)))
+						matrix.setValue(row, column, value+addend.doubleValue(row, column));
 				}));
 	}
 
@@ -368,7 +368,7 @@ public class SimpleOps implements MatrixOps {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(matrix.colStart(row), matrix.nColumns())
 				.forEach(column -> {
-					double value = matrix.getValue(row, column);
+					double value = matrix.doubleValue(row, column);
 					if (!Double.isNaN(value))
 						matrix.setValue(row, column, value-v);
 				}));
@@ -378,9 +378,9 @@ public class SimpleOps implements MatrixOps {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(matrix.colStart(row), matrix.nColumns())
 				.forEach(column -> {
-					double value = matrix.getValue(row, column);
-					if (!Double.isNaN(value) && !Double.isNaN(subtrahend.getValue(row, column)))
-						matrix.setValue(row, column, value-subtrahend.getValue(row, column));
+					double value = matrix.doubleValue(row, column);
+					if (!Double.isNaN(value) && !Double.isNaN(subtrahend.doubleValue(row, column)))
+						matrix.setValue(row, column, value-subtrahend.doubleValue(row, column));
 				}));
 	}
 
@@ -388,7 +388,7 @@ public class SimpleOps implements MatrixOps {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(matrix.colStart(row), matrix.nColumns())
 				.forEach(column -> {
-					double value = matrix.getValue(row, column);
+					double value = matrix.doubleValue(row, column);
 					if (!Double.isNaN(value))
 						matrix.setValue(row, column, value*v);
 				}));
@@ -398,7 +398,7 @@ public class SimpleOps implements MatrixOps {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(matrix.colStart(row), matrix.nColumns())
 				.forEach(column -> {
-					double value = matrix.getValue(row, column);
+					double value = matrix.doubleValue(row, column);
 					if (!Double.isNaN(value))
 						matrix.setValue(row, column, value/v);
 				}));
@@ -407,7 +407,7 @@ public class SimpleOps implements MatrixOps {
 	public void divideScalarColumn(int column, double sum) {
 		IntStream.range(0, matrix.nRows())
 						.forEach(row -> {
-										double val = matrix.getValue(row, column);
+										double val = matrix.doubleValue(row, column);
 										if (!Double.isNaN(val))
 											matrix.setValue(row, column, val/sum);
 						});
@@ -417,7 +417,7 @@ public class SimpleOps implements MatrixOps {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(matrix.colStart(row), matrix.nColumns())
 				.forEach(column -> {
-					double value = matrix.getValue(row, column);
+					double value = matrix.doubleValue(row, column);
 					if (!Double.isNaN(value))
 						matrix.setValue(row, column, Math.pow(value,v));
 				}));
@@ -465,7 +465,7 @@ public class SimpleOps implements MatrixOps {
 	public Matrix mult(Matrix b) {
 		double[][] data = Arrays.stream(matrix.data).map(r ->
 			IntStream.range(0, b.nColumns()).mapToDouble(i ->
-				IntStream.range(0, b.nRows()).mapToDouble(j -> r[j] * b.getValue(j, i))
+				IntStream.range(0, b.nRows()).mapToDouble(j -> r[j] * b.doubleValue(j, i))
 					.sum()).toArray()).toArray(double[][]::new);
 		return new SimpleMatrix(matrix, data);
 	}

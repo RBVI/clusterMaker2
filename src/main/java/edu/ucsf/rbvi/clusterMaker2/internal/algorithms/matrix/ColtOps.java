@@ -135,8 +135,8 @@ public class ColtOps implements MatrixOps {
 		matrix.maxValue = Double.MIN_VALUE;
 		for (int row = 0; row < matrix.nRows(); row++) {
 			for (int col = ((ColtMatrix)matrix).colStart(row); col < matrix.nColumns(); col++) {
-				Double d = matrix.getValue(row, col);
-				if (d == null)
+				double d = matrix.doubleValue(row, col);
+				if (Double.isNaN(d))
 					continue;
 				double val = (d-minValue)/span;
 				matrix.setValue(row, col, val);
@@ -166,7 +166,7 @@ public class ColtOps implements MatrixOps {
 		double variance = rowVariance(row, mean);
 		double stdev = Math.sqrt(variance);
 		for (int column = 0; column < matrix.nColumns(); column++) {
-			double cell = matrix.getValue(row, column);
+			double cell = matrix.doubleValue(row, column);
 			matrix.setValue(row, column, (cell-mean)/stdev);
 		}
 	}
@@ -176,7 +176,7 @@ public class ColtOps implements MatrixOps {
 		double variance = columnVariance(column, mean);
 		double stdev = Math.sqrt(variance);
 		for (int row = 0; row < matrix.nRows(); row++) {
-			double cell = matrix.getValue(row, column);
+			double cell = matrix.doubleValue(row, column);
 			matrix.setValue(row, column, (cell-mean)/stdev);
 		}
 	}
@@ -188,13 +188,13 @@ public class ColtOps implements MatrixOps {
 			// Replace with parallel function?
 			double mean = 0.0;
 			for(int row=0;row<matrix.nRows(); row++){
-				double cell = matrix.getValue(row, col);
+				double cell = matrix.doubleValue(row, col);
 				if (!Double.isNaN(cell))
 					mean += cell;
 			}
 			mean /= matrix.nRows();
 			for(int row=0;row<matrix.nRows();row++){
-				double cell = matrix.getValue(row, col);
+				double cell = matrix.doubleValue(row, col);
 				if (!Double.isNaN(cell)) {
 					cell = cell-mean;
 				} else {
@@ -212,13 +212,13 @@ public class ColtOps implements MatrixOps {
 			// Replace with parallel function?
 			double mean = 0.0;
 			for(int j=0;j<matrix.nColumns(); j++){
-				double cell = matrix.getValue(i, j);
+				double cell = matrix.doubleValue(i, j);
 				if (!Double.isNaN(cell))
 					mean += cell;
 			}
 			mean /= matrix.nColumns();
 			for(int j=0;j<matrix.nColumns();j++){
-				double cell = matrix.getValue(i, j);
+				double cell = matrix.doubleValue(i, j);
 				if (!Double.isNaN(cell))
 					cell = cell-mean;
 				else
@@ -256,7 +256,7 @@ public class ColtOps implements MatrixOps {
 	public double columnMean(int column) {
 		double mean = 0.0;
 		for(int j=0;j<matrix.nRows(); j++){
-			double cell = matrix.getValue(j, column);
+			double cell = matrix.doubleValue(j, column);
 			if (!Double.isNaN(cell))
 				mean += cell;
 		}
@@ -266,7 +266,7 @@ public class ColtOps implements MatrixOps {
 	public double rowMean(int row) {
 		double mean = 0.0;
 		for(int j=0;j<matrix.nColumns(); j++){
-			double cell = matrix.getValue(row, j);
+			double cell = matrix.doubleValue(row, j);
 			if (!Double.isNaN(cell))
 				mean += cell;
 		}
@@ -281,7 +281,7 @@ public class ColtOps implements MatrixOps {
 	public double columnVariance(int column, double mean) {
 		double variance = 0.0;
 		for(int j=0;j<matrix.nRows(); j++){
-			double cell = matrix.getValue(j, column);
+			double cell = matrix.doubleValue(j, column);
 			if (!Double.isNaN(cell))
 				variance += Math.pow((cell-mean),2);
 		}
@@ -296,7 +296,7 @@ public class ColtOps implements MatrixOps {
 	public double rowVariance(int row, double mean) {
 		double variance = 0.0;
 		for(int j=0;j<matrix.nColumns(); j++){
-			double cell = matrix.getValue(row, j);
+			double cell = matrix.doubleValue(row, j);
 			if (!Double.isNaN(cell))
 				variance += Math.pow((cell-mean),2);
 		}
@@ -380,7 +380,7 @@ public class ColtOps implements MatrixOps {
 		data.forEachNonZero(
 			new IntIntDoubleFunction() {
 				public double apply(int row, int column, double v) {
-					double addendValue = addend.getValue(row, column);
+					double addendValue = addend.doubleValue(row, column);
 					if (!Double.isNaN(addendValue))
 						return v+addendValue;
 					else
@@ -416,7 +416,7 @@ public class ColtOps implements MatrixOps {
 		data.forEachNonZero(
 			new IntIntDoubleFunction() {
 				public double apply(int row, int column, double v) {
-					double subValue = subtrahend.getValue(row, column);
+					double subValue = subtrahend.doubleValue(row, column);
 					if (!Double.isNaN(subValue))
 						return v-subValue;
 					else

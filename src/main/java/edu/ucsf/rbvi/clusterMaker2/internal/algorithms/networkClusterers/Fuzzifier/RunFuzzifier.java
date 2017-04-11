@@ -125,10 +125,10 @@ public class RunFuzzifier {
 			int nodeIndex = nodeList.indexOf(node);
 			double sumDistances = 0;
 			for (int i = 0 ; i < Clusters.size(); i++){
-				sumDistances += cData.getValue(i, nodeIndex);
+				sumDistances += cData.doubleValue(i, nodeIndex);
 			}
 			for(int i = 0 ; i < Clusters.size(); i++){
-				ClusterMemberships[nodeIndex][i] = 	cData.getValue(i, nodeIndex)/sumDistances;
+				ClusterMemberships[nodeIndex][i] = 	cData.doubleValue(i, nodeIndex)/sumDistances;
 			} 
 		}
 
@@ -175,7 +175,7 @@ public class RunFuzzifier {
 				numerator = 0;
 				for(CyNode node : cluster){
 					i = nodeList.indexOf(node);
-					distance = distanceMatrix.getValue(i,e);
+					distance = distanceMatrix.doubleValue(i,e);
 					numerator += distance;
 				}
 				cData.setValue(c,e,(numerator/cluster.size()));

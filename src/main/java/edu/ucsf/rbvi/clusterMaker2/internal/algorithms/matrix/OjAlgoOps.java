@@ -35,6 +35,9 @@ public class OjAlgoOps implements MatrixOps {
 	private int nThreads = -1;
 	final Logger logger = Logger.getLogger(CyUserLog.NAME);
 
+	// This is used for Eigenvalue deomposition, which is faster with Colt
+	ColtMatrix cMat;
+
 	public OjAlgoOps(OjAlgoMatrix matrix) {
 		nThreads = Runtime.getRuntime().availableProcessors()-1;
 		this.matrix = matrix;
@@ -389,12 +392,16 @@ public class OjAlgoOps implements MatrixOps {
 		return stdev;
 	}
 
+	// For whatever reason, Eigenvalue decomposition
+	// is very slow for OjAlgo, so we use Colt
 	public double[] eigenValues(boolean nonZero){
-		if (decomp == null) {
-			decomp = Eigenvalue.make(matrix.data);
-			decomp.decompose(matrix.data);
+		if (cMat == null) {
+			cMat = new ColtMatrix();
+			cMat.initialize(matrix.nRows(), matrix.nColumns(), matrix.toArray());
 		}
+		return cMat.ops().eigenValues(nonZero);
 
+		/*
 		double[] allValues = decomp.getD().toRawCopy1D();
 		if (!nonZero)
 			return allValues;
@@ -411,9 +418,16 @@ public class OjAlgoOps implements MatrixOps {
 		}
 
 		return nonZ;
+		*/
 	}
 
 	public double[][] eigenVectors(){
+		if (cMat == null) {
+			cMat = new ColtMatrix();
+			cMat.initialize(matrix.nRows(), matrix.nColumns(), matrix.toArray());
+		}
+		return cMat.ops().eigenVectors();
+		/*
 		if (decomp == null) {
 			decomp = Eigenvalue.make(matrix.data);
 			decomp.decompose(matrix.data);
@@ -421,6 +435,7 @@ public class OjAlgoOps implements MatrixOps {
 
 		MatrixStore<Double> eigv = decomp.getV();
 		return eigv.toRawCopy2D();
+		*/
 	}
 
 	public int cardinality() { return matrix.data.aggregateAll(Aggregator.CARDINALITY).intValue(); }

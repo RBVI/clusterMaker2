@@ -81,8 +81,16 @@ public interface Matrix {
 	 * @return the new matrix
 	 */
 	public Matrix like(int rows, int columns, DISTRIBUTION initial);
-	
-	
+
+	/**
+	 * Create a new matrix of the same type as this matrix, and use
+	 * the data from a different matrix to initialize it.
+	 *
+	 * @param initial the other matrix to use to initialize this matrix
+	 * @return the new matrix
+	 */
+	public Matrix like(Matrix initial);
+
 	/**
 	 * Return the number of rows in this matrix.
 	 *

@@ -145,6 +145,16 @@ public class ColtMatrix implements Matrix {
 		return new ColtMatrix(rows, columns, dist);
 	}
 
+	public Matrix like(Matrix initial) {
+		if (initial instanceof ColtMatrix) {
+			return new ColtMatrix(this, ((ColtMatrix)initial).data);
+		} else {
+			ColtMatrix newMat = new ColtMatrix();
+			newMat.initialize(initial.nRows(), initial.nColumns(), initial.toArray());
+			return newMat;
+		}
+	}
+
 	public void initialize(int rows, int columns, double[][] arrayData) {
 		if (arrayData != null) {
 			data = DoubleFactory2D.sparse.make(arrayData);
@@ -204,11 +214,7 @@ public class ColtMatrix implements Matrix {
 	 * @return the (possibly null) value at that location
 	 */
 	public Double getValue(int row, int column) { 
-		Double d;
-		if (index == null)
-			d = data.getQuick(row, column);
-		else
-			d = data.getQuick(index[row], index[column]);
+		double d = doubleValue(row, column);
 		if (Double.isNaN(d))
 			return null;
 		return d;
@@ -222,9 +228,12 @@ public class ColtMatrix implements Matrix {
 	 * @return the value at that location, if it was set, otherwise, return Double.NaN.
 	 */
 	public double doubleValue(int row, int column) {
-		Double d = getValue(row, column);
-		if (d == null) return Double.NaN;
-		return d.doubleValue();
+		double d;
+		if (index == null)
+			d = data.getQuick(row, column);
+		else
+			d = data.getQuick(index[row], index[column]);
+		return d;
 	}
 
 	/**
@@ -278,8 +287,8 @@ public class ColtMatrix implements Matrix {
 	 * @return true if this location has a value, false otherwise
 	 */
 	public boolean hasValue(int row, int column) {
-		Double d = getValue(row, column);
-		if (d == null)
+		double d = doubleValue(row, column);
+		if (Double.isNaN(d))
 			return false;
 		return true;
 	}
@@ -469,7 +478,7 @@ public class ColtMatrix implements Matrix {
 	public void setMissingToZero() {
 		for (int row = 0; row < nRows; row++) {
 			for (int col = colStart(row); col < nColumns; col++) {
-				if (getValue(row, col) == null) {
+				if (Double.isNaN(doubleValue(row, col))) {
 					data.setQuick(row, col, 0.0d);
 					if (symmetric && row != col)
 						data.setQuick(col, row, 0.0d);
@@ -656,7 +665,7 @@ public class ColtMatrix implements Matrix {
 		for (int row = 0; row < nRows; row++) {
 			sb.append(getRowLabel(row)+":\t"); //node.getIdentifier()
 			for (int col = 0; col < nColumns; col++) {
-				double value = getValue(row, col);
+				double value = doubleValue(row, col);
 				if (value < 0.001)
 					sb.append(""+scFormat.format(value)+"\t");
 				else

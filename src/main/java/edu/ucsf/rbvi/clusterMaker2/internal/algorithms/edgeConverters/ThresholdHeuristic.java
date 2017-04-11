@@ -74,7 +74,7 @@ public class ThresholdHeuristic{
 				if (!matrix.hasValue(row, col))
 					continue;
 
-				int edgeWeight = (int)(matrix.getValue(row, col)*binFactor);
+				int edgeWeight = (int)(matrix.doubleValue(row, col)*binFactor);
 
 				//update totalMin and totalMax, if neccesary
 				if(totalMin > edgeWeight)
@@ -143,7 +143,7 @@ public class ThresholdHeuristic{
 		for(int row = 0; row < matrix.nRows(); row++){
 			for(int col = row; col < matrix.nColumns(); col++){
 				if (matrix.hasValue(row, col)) {
-	  	  	int edgeWeight = (int)(matrix.getValue(row, col)*binFactor);
+	  	  	int edgeWeight = (int)(matrix.doubleValue(row, col)*binFactor);
 	    		int index = shiftIndex(edgeWeight);
 	    		distribArray[index] += 1;
 				}

@@ -12,6 +12,7 @@ import org.cytoscape.work.TaskMonitor;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.ScatterPlotDialog;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 public class RunPCoA {
 
@@ -47,23 +48,32 @@ public class RunPCoA {
 
 	
 	public void run(){
+		long startTime = System.currentTimeMillis();
+		long time = startTime;
+
 		System.out.println("Calculating values");
 		// double data[][]=matrix.toArray();
 		System.out.println("Length "+ distanceMatrix.nRows());
 		
 		//System.out.println("Checking CyMatrix symmetrical "+distanceMatrix.isSymmetrical());
 
-		CalculationMatrix calc=new CalculationMatrix(distanceMatrix, 0, neg);
+		CalculationMatrix calc = new CalculationMatrix();
+
+		// Get the GOwer's Matrix
+		Matrix G = GowersMatrix.getGowersMatrix(distanceMatrix);
+		long delta = System.currentTimeMillis()-time; time = System.currentTimeMillis();
+		System.out.println("Got GowersMatrix in "+delta+"ms");
 		System.out.println("Added data to the matrix ");
-		double eigenValues[]=calc.eigenAnalysis();
-		System.out.println("Completed Eigen Analysis");
+		double eigenValues[]=calc.eigenAnalysis(G);
+		System.out.println("Completed Eigen Analysis, found "+eigenValues.length+" eigenvalues");
 		double variance[]=calc.computeVariance(eigenValues);
-		System.out.println("Completed Variance Calculation");
+		delta = System.currentTimeMillis()-time; time = System.currentTimeMillis();
+		System.out.println("Completed Variance Calculation in "+delta+"ms");
 		if(neg==2){//corect negative eigen values
 			calc.correctEigenValues();
 		}
 		CyMatrix components[]=calc.getCoordinates(distanceMatrix);
-		System.out.println("Completed Coordinates Calculation");
+		System.out.println("Completed Coordinates Calculation in "+(System.currentTimeMillis()-startTime)+"ms");
 		if(context.pcoaResultPanel){
 			ResultPanelPCoA.createAndShowGui(components, network, networkView, distanceMatrix.getRowNodes(), variance);
 
