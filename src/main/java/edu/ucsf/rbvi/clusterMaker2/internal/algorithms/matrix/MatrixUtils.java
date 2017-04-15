@@ -18,13 +18,6 @@ import org.apache.log4j.Logger;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 
 public class MatrixUtils {
-	public static Integer[] indexSort(double[] tData,int nVals) {
-		Integer[] index = new Integer[nVals];
-		for (int i = 0; i < nVals; i++) index[i] = i;
-		IndexComparator iCompare = new IndexComparator(tData);
-		Arrays.sort(index, iCompare);
-		return index;
-	}
 
 	public static Map<Integer, List<CyNode>> findConnectedComponents(CyMatrix matrix) {
 		// Get the colt matrix
@@ -92,25 +85,20 @@ public class MatrixUtils {
 		list1.addAll(list2);
 	}
 
-	/*
-	public static CyMatrix multiplyMatrix(CyMatrix A, CyMatrix B) {
-		DoubleMatrix2D cMat = DoubleFactory2D.sparse.make(A.nRows(), A.nColumns());
-		DoubleMatrix2D aMat = A.getColtMatrix();
-		DoubleMatrix2D bMat = B.getColtMatrix();
-		SmpDoubleBlas blas = new SmpDoubleBlas();
-		blas.dgemm(false, false, 1.0, aMat, bMat, 0.0, cMat);
-		return new CyColtMatrix(cMat);
-	}
-	*/
-
-	public static CyMatrix matrixPow(CyMatrix A, double power) {
-		return null;
+	public static Integer[] indexSort(double[] tData,int nVals) {
+		Integer[] index = new Integer[nVals];
+		for (int i = 0; i < nVals; i++) index[i] = i;
+		IndexComparator iCompare = new IndexComparator(tData);
+		Arrays.sort(index, iCompare);
+		return index;
 	}
 
-	public static void normalizeMatrix(CyMatrix A) {
-	}
-
-	public static void normalizeMatrix(CyMatrix A, double min, double max) {
+	public static Integer[] indexSort(String[] tData,int nVals) {
+		Integer[] index = new Integer[nVals];
+		for (int i = 0; i < nVals; i++) index[i] = i;
+		IndexComparator iCompare = new IndexComparator(tData);
+		Arrays.sort(index, iCompare);
+		return index;
 	}
 
 	public static Integer[] indexSort(int[] tData, int nVals) {
@@ -124,6 +112,9 @@ public class MatrixUtils {
 	private static class IndexComparator implements Comparator<Integer> {
 		double[] data = null;
 		int[] intData = null;
+		String[] stringData = null;
+
+		public IndexComparator(String[] data) { this.stringData = data; }
 
 		public IndexComparator(double[] data) { this.data = data; }
 
@@ -138,6 +129,8 @@ public class MatrixUtils {
 				if (intData[o1] < intData[o2]) return -1;
 				if (intData[o1] > intData[o2]) return 1;
 				return 0;
+			} else if (stringData != null) {
+				return stringData[o1].compareTo(stringData[o2]);
 			}
 			return 0;
 		}

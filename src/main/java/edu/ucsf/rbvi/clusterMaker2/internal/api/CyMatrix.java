@@ -126,6 +126,14 @@ public interface CyMatrix extends Matrix {
 	public CyMatrix copy();
 
 	/**
+	 * Sort this matrix by the row labels.  If isNumeric is "true",
+	 * assume the row labels are numeric
+	 *
+	 * @param isNumeric true if the row labels should be numeric
+	 */
+	public void sortByRowLabels(boolean isNumeric);
+
+	/**
 	 * Return a copy of this matrix, but replace the data with a different
 	 * Matrix
 	 *

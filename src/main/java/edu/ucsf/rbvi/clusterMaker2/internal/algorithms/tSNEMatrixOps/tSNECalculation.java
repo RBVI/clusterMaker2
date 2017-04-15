@@ -1,5 +1,8 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.stream.IntStream;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
@@ -26,7 +29,8 @@ import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.multiplyScala
 import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.normalize;
 import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.powScalar;
 import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.rowSum;
-import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.scalarInverse;
+// import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.scalarInverse;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.setDiag;
 import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.subtractScalar;
 import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.sum;
 import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.transpose;
@@ -84,15 +88,22 @@ public class tSNECalculation implements TSneInterface{
 		return tsne(X,k,initial_dims, perplexity, maxIterations, true);
 	}
 
-	public CyMatrix tsne(CyMatrix matrix, int no_dims, int initial_dims, double perplexity, int max_iter, boolean use_pca) {
+	public CyMatrix tsne(CyMatrix matrix, int no_dims, int initial_dims, 
+	                     double perplexity, int max_iter, boolean use_pca) {
 
-		//double X[][]=matrix.toArray();
 		monitor.setProgress(0.0);
 
+		// For debugging purposes only!
+		matrix.sortByRowLabels(true);
+
 		String IMPLEMENTATION_NAME = this.getClass().getSimpleName();
-		//System.out.println("X:Shape is = " + matrix.nRows() + " x " + matrix.nColumns());
-		//System.out.println("Running " + IMPLEMENTATION_NAME + ".");
 		monitor.showMessage(TaskMonitor.Level.INFO, "Running " + IMPLEMENTATION_NAME + ".");
+
+		long end = System.currentTimeMillis();
+		long start = end;
+		long total = end;
+
+		// FIXME: Add prefiltering with PCA
 		if(use_pca && matrix.nColumns() > initial_dims && initial_dims > 0) {
 			//System.out.println("Using pca");
 			monitor.showMessage(TaskMonitor.Level.INFO, "Using pca");
@@ -102,7 +113,8 @@ public class tSNECalculation implements TSneInterface{
 //			matrix= CalculationMatrix.arrayToCyMatrix(matrix, trmpmatrix);
 
 			//System.out.println("X:Shape after PCA is = " + matrix.nRows() + " x " + matrix.nColumns());
-			monitor.showMessage(TaskMonitor.Level.INFO, "X:Shape after PCA is = " + matrix.nRows() + " x " + matrix.nColumns());
+			monitor.showMessage(TaskMonitor.Level.INFO, 
+			                    "X:Shape after PCA is = " + matrix.nRows() + " x " + matrix.nColumns());
 		}
 		
 		int n = matrix.nRows();
@@ -113,17 +125,33 @@ public class tSNECalculation implements TSneInterface{
 		double min_gain         = 0.01;
 
 		Matrix Y           = matrix.like(n, no_dims, Matrix.DISTRIBUTION.NORMAL);
+		// Matrix Y           = matrix.like(n, no_dims, 0.5);
+		Matrix Ysqlmul     = matrix.like(n, n);
 		Matrix dY          = matrix.like(n, no_dims, 0.0);
 		Matrix iY          = matrix.like(n, no_dims, 0.0);
 		Matrix gains       = matrix.like(n, no_dims, 1.0);
+		Matrix btNeg       = matrix.like(n, no_dims);
+		Matrix bt          = matrix.like(n, no_dims);
 
 		// Compute P-values
-		Matrix P = x2p(matrix, 1e-5, perplexity).P;
+		Matrix P           = x2p(matrix, 1e-5, perplexity).P;
+		Matrix Ptr         = transpose(P);
+		Matrix diag        = matrix.like(n, n, 0.0);
 
-		P = addScalar(P , transpose(P));
-		P = divideScalar(P, sum(P));
-		P = multiplyScalar(P, 4.0);		// early exaggeration
-		P = maximum(P, 1e-12);
+		addScalar(P, Ptr);
+
+		// P.writeMatrix("P1");
+
+		// System.out.format("sum(P) = %.20f\n",sum(P));
+		divideScalar(P, sum(P));
+		// P.writeMatrix("P2");
+		replaceNaN(P, Double.MIN_VALUE);
+		// P.writeMatrix("P3");
+		multiplyScalar(P, 4.0);		// early exaggeration
+		// P.writeMatrix("P4");
+		maximum(P, 1e-12);
+
+		// P.writeMatrix("P5");
 
 		//System.out.println("Y:Shape is = " + Y.nRows() + " x " + Y.nColumns());
 		monitor.showMessage(TaskMonitor.Level.INFO, "Y:Shape is = " + Y.nRows() + " x " + Y.nColumns());
@@ -131,35 +159,51 @@ public class tSNECalculation implements TSneInterface{
 		double progress = 0.0;
 		// Run iterations
 		for (int iter = 0; iter < max_iter; iter++) {
+			// The following matrices are updated (rather than replaced)
+			// each cycle:
+			// P, Y, num(?), Ysqlmul
 			progress = (double)iter/(double)max_iter;
 			monitor.setProgress(progress);
 
-			// P.writeMatrix("P-MatrixOps-"+iter);
 
 			// Compute pairwise affinities
-			Matrix sum_Y = transpose(rowSum(powScalar(copy(Y), 2)));
+			Matrix sqed = powScalar(copy(Y), 2);
+			Matrix sum_Y = transpose(rowSum(sqed));
 
-			// Matrix num = scalarInverse(scalarPlus(addRowVector(transpose(
-			//                            addRowVector(scalarMult( 
-			//                            times(Y, transpose(Y)), -2), 
-			//                            sum_Y)), sum_Y), 1));
-			Matrix mat1 = multiplyScalar(multiplyMatrix(Y, transpose(Y)), -1);
-			Matrix mat2 = addRowVector(transpose(addRowVector(mat1, sum_Y)),sum_Y);
-			Matrix num = scalarInverse(addScalar(mat2, 1));
+			// Ysqlmul = Ysqlmul+(-2.0)*Y*trans(Y)
+			Ysqlmul = addScalar(multiplyScalar(multiplyMatrix(Y, transpose(Y)), -2), Ysqlmul);
+			addRowVector(Ysqlmul, sum_Y);
+			Ysqlmul = transpose(Ysqlmul);
+			addRowVector(Ysqlmul, sum_Y);
+
+			addScalar(Ysqlmul, 1.0);
+			divideScalar(1.0, Ysqlmul);
+
+			// Ysqlmul.writeMatrix("Ysqlmul");
+
+			Matrix num = copy(Ysqlmul);
 
 			// Set the diagonals to 0
 			assignAtIndex(num, range(n), range(n), 0.0);
+			// num.writeMatrix("num");
+			// System.out.println("sum(num) = "+sum(num));
 			Matrix Q = divideScalar(copy(num), sum(num));
+			// Q.writeMatrix("Q1");
 
 			Q = maximum(Q, 1e-12);
-			// Q.writeMatrix("Q-MatrixOps-"+iter);
+			// Q.writeMatrix("Q2");
 
 			// Compute gradient
-			// Matrix L = mo.scalarMultiply(mo.minus(P , Q), num);
-			Matrix L = multiplyScalar(subtractScalar(copy(P), Q), num);
-			// L.writeMatrix("L-MatrixOps-"+iter);
-			// dY = scalarMult(times(mo.minus(diag(sum(L, 1)),L) , Y), 4);
-			dY = multiplyScalar(multiplyMatrix(subtractScalar(diag(rowSum(L)),L), Y), 4);
+			Matrix L = subtractScalar(copy(P), Q);
+			L = multiplyScalar(L, num);
+			// L.writeMatrix("L");
+			Matrix rowsum = rowSum(L);
+			// rowsum.writeMatrix("rowsum");
+			setDiag(diag, rowsum);
+			// diag.writeMatrix("diag");
+			L = subtractScalar(copy(diag), L);
+			dY = multiplyMatrix(L, Y);
+			multiplyScalar(dY, 4.0);
 
 			// Perform the update
 			if (iter < 20)
@@ -167,67 +211,93 @@ public class tSNECalculation implements TSneInterface{
 			else
 				momentum = final_momentum;
 
-			// gains = plus(mo.scalarMultiply(scalarPlus(gains,0.2), 
-			// 						 abs(gains,negate(equal(biggerThan(dY,0.0),biggerThan(iY,0.0))))),
-			// 		         mo.scalarMultiply(scalarMult(gains,0.8), 
-			// 						 abs(gains,equal(biggerThan(dY,0.0),biggerThan(iY,0.0)))));
-			/*
-			Matrix t1 = addScalar(copy(gains), 0.2);
-			Matrix t2 = abs(gains,negate(equal(biggerThan(dY,0.0),biggerThan(iY,0.0))));
-			Matrix t3 = multiplyScalar(t1, t2);
+			// dY.writeMatrix("dY");
+			// iY.writeMatrix("iY");
+			boolean[][] boolMtrx = equal(biggerThan(dY, 0.0), biggerThan(iY, 0.0));
+			// writeMatrix("boolMtrx-m", boolMtrx);
+			btNeg.initialize(boolMtrx.length, boolMtrx[0].length, abs(negate(boolMtrx)));
+			bt.initialize(boolMtrx.length, boolMtrx[0].length, abs(boolMtrx));
 
-			Matrix t11 = multiplyScalar(copy(gains), 0.8);
-			Matrix t12 = abs(gains,equal(biggerThan(dY,0.0),biggerThan(iY,0.0)));
-			Matrix t13 = multiplyScalar(t11, t12);
+			// gains.writeMatrix("gains1");
+			// btNeg.writeMatrix("btNeg");
+			// bt.writeMatrix("bt");
 
-			gains = addScalar(t3, t13);
-			*/
+			Matrix gainsSmall = copy(gains);
+			Matrix gainsBig = copy(gains);
+			addScalar(gainsSmall, 0.2);
+			multiplyScalar(gainsBig, 0.8);
 
-			gains = addScalar(multiplyScalar(addScalar(copy(gains),0.2), 
-			 					     	  abs(copy(gains),negate(equal(biggerThan(dY,0.0),biggerThan(iY,0.0))))),
-			 		              multiplyScalar(multiplyScalar(copy(gains),0.8), 
-			 						      abs(copy(gains),equal(biggerThan(dY,0.0),biggerThan(iY,0.0)))));
-
-			// gains.writeMatrix("gains-MatrixOps-"+iter);
+			multiplyScalar(gainsSmall, btNeg);
+			multiplyScalar(gainsBig, bt);
+			gains = addScalar(copy(gainsSmall), gainsBig);
+			// gains.writeMatrix("gains2");
 
 			assignAllLessThan(gains, min_gain, min_gain);
-			iY = subtractScalar(multiplyScalar(iY,momentum), multiplyScalar(multiplyScalar(copy(gains), dY), eta));
-			// iY.writeMatrix("iY-MatrixOps-"+iter);
-			Y = addScalar(Y, iY);
-			//double [][] tile = tile(mean(Y, 0), n, 1);
-			Matrix cMean = columnMean(Y);
-			// cMean.writeMatrix("cMean-MatrixOps-"+iter);
-			// System.out.println("Y: "+Y.printMatrixInfo());
-			Y = subtractScalar(Y , tile(columnMean(Y), n, 1));
 
-			// Y.writeMatrix("Y-MatrixOps-"+iter);
+			// gains.writeMatrix("gains3");
+
+			multiplyScalar(iY, momentum);
+			Matrix gainsdY = multiplyScalar(copy(gains), dY);
+			// gainsdY.writeMatrix("gainsdY");
+			multiplyScalar(gainsdY, eta);
+			subtractScalar(iY, gainsdY);
+			// iY.writeMatrix("iY");
+			addScalar(Y, iY);
+			// Y.writeMatrix("Y2");
+			Matrix colMeanY = columnMean(Y);
+			// colMeanY.writeMatrix("colMeanY");
+			Matrix meanTile = tile(colMeanY, n, 1);
+			// meanTile.writeMatrix("meanTile");
+			subtractScalar(Y, meanTile);
+
+			// Y.writeMatrix("Y3");
 
 			// Compute current value of cost function
 			if ((iter % 100 == 0))   {
-				Matrix logdivide = log(divideScalar(copy(P) , Q));
-				logdivide = replaceNaN(logdivide,0.0);
-				// logdivide.writeMatrix("logdivide-MatrixOps-"+iter);
-				double C = sum(multiplyScalar(copy(P) , logdivide));
+				Matrix Pdiv = copy(P);
+				divideScalar(Pdiv, Q);
+				Matrix logdivide = log(Pdiv);
+				replaceNaN(logdivide,Double.MIN_VALUE);
+				multiplyScalar(logdivide, P);
+				replaceNaN(logdivide,Double.MIN_VALUE);
+				double C = sum(logdivide);
+				end = System.currentTimeMillis();
 				//System.out.println("Iteration " + (iter + 1) + ": error is " + C);
-				monitor.showMessage(TaskMonitor.Level.INFO, "Iteration " + (iter + 1) + ": error is " + C);
-			} else if((iter + 1) % 10 == 0) {
+				monitor.showMessage(TaskMonitor.Level.INFO, 
+					String.format("Iteration %d: error is %f"+
+					" (100 iterations in %4.2f seconds)", iter, C, (end-start)/1000.0));
+				start = System.currentTimeMillis();
+			} /* else if(iter % 10 == 0) {
+				end = System.currentTimeMillis();
+				monitor.showMessage(TaskMonitor.Level.INFO, 
+					"Iteration %d: (10 iterations in %4.2f seconds)",iter,(end-start)/1000);
 				//System.out.println("Iteration " + (iter + 1));
 				// monitor.showMessage(TaskMonitor.Level.INFO, "Iteration " + (iter + 1));
-			}
+				start = System.currentTimeMillis();
+			} */
 
 			// Stop lying about P-values
 			if (iter == 100)
 				P = divideScalar(P , 4);
 		}
 
+		Y.writeMatrix("Y");
+
+		end = System.currentTimeMillis();
+		monitor.showMessage(TaskMonitor.Level.INFO, 
+					String.format("Completed in %4.2f seconds)",(end-total)/1000.0));
 		return matrix.copy(Y);
 	}
 
-	public R Hbeta (Matrix D, double beta){
-		Matrix P = exp(multiplyScalar(multiplyScalar(copy(D),beta),-1));
+	public R Hbeta (Matrix D, double beta) {
+		Matrix P = copy(D);
+		multiplyScalar(P, -beta);
+		P = exp(P);
 		double sumP = sum(P);   // sumP confirmed scalar
-		double H = Math.log(sumP) + beta * sum(multiplyScalar(copy(D),P)) / sumP;
-		P = divideScalar(P,sumP);
+		Matrix Dd = copy(D);
+		multiplyScalar(Dd, P);
+		double H = Math.log(sumP) + beta * sum(Dd) / sumP;
+		P = multiplyScalar(P,1/sumP);
 		R r = new R();
 		r.H = H;
 		r.P = P;
@@ -236,27 +306,14 @@ public class tSNECalculation implements TSneInterface{
 
 	public R x2p(Matrix X,double tol, double perplexity){
 		int n               = X.nRows();
-		// Matrix square_X   = square(X);
-		Matrix square_X   = powScalar(copy(X), 2);
-		square_X.setRowLabels(Arrays.asList(X.getRowLabels()));
-		square_X.setColumnLabels(Arrays.asList(X.getColumnLabels()));
-
-		// Matrix sum_X   = sum(square_X, 1);
-		Matrix sum_X = rowSum(square_X);
-		sum_X.setRowLabels(Arrays.asList(X.getRowLabels()));
-
-		// Matrix times   = scalarMult(times(X, mo.transpose(X)), -2);
-		Matrix times   = multiplyScalar(multiplyMatrix(X, transpose(X)), -2);
-
-		Matrix prodSum = addColumnVector(transpose(times), sum_X);
-
-		Matrix D       = addRowVector(prodSum, transpose(sum_X));
-
-		// D seems correct at this point compared to Python version
-		Matrix P          = X.like(n, n, 0.0);
-		double [] beta    = X.like(n, n, 1.0).toArray()[0];
-
+		Matrix sum_X        = rowSum(powScalar(copy(X), 2));
+		Matrix times        = multiplyScalar(multiplyMatrix(X, transpose(X)), -2);
+		Matrix prodSum      = addColumnVector(transpose(times), sum_X);
+		Matrix D            = addRowVector(prodSum, transpose(sum_X));
+		Matrix P            = X.like(n, n, 0.0);
+		double [] beta      = X.like(n, n, 1.0).toArray()[0];
 		double logU         = Math.log(perplexity);
+
 		//System.out.println("Starting x2p...");
 		monitor.showMessage(TaskMonitor.Level.INFO, "Starting x2p...");
 		for (int i = 0; i < n; i++) {
@@ -267,7 +324,6 @@ public class tSNECalculation implements TSneInterface{
 			double betamin = Double.NEGATIVE_INFINITY;
 			double betamax = Double.POSITIVE_INFINITY;
 			Matrix Di = getValuesFromRow(D, i, concatenate(range(0,i),range(i+1,n)));
-
 
 			R hbeta = Hbeta(Di, beta[i]);
 			double H = hbeta.H;
@@ -300,10 +356,13 @@ public class tSNECalculation implements TSneInterface{
 			assignValuesToRow(P, i,concatenate(range(0,i),range(i+1,n)),thisP.toArray()[0]);
 		}
 
+		// P.writeMatrix("x2p.P");
+
 		R r = new R();
 		r.P = P;
 		r.beta = beta;
 		double sigma = mean(sqrt(scalarInverse(beta)));
+		System.out.println("Mean value of sigma: " + sigma);
 	
 		//System.out.println("Mean value of sigma: " + sigma);
 		monitor.showMessage(TaskMonitor.Level.INFO, "Mean value of sigma: " + sigma);
@@ -320,7 +379,7 @@ public class tSNECalculation implements TSneInterface{
 			.forEach(row -> IntStream.range(0, matrix.nColumns())
 				.forEach(col -> {
 					if (matrix.doubleValue(row, col) < minvalue)
-						matrix.setValue(row, col, minvalue);
+						matrix.setValue(col, col, minvalue);
 				})
 			);
 		return matrix;
@@ -365,5 +424,68 @@ public class tSNECalculation implements TSneInterface{
 			);
 		return matrix;
 	}
+
+  public void writeMatrix(String fileName, double[] vector) {
+    String filePath = "/tmp/" + fileName;
+    try{
+      File file = new File(filePath);
+      if(!file.exists()) {
+        file.createNewFile();
+      }
+      PrintWriter writer = new PrintWriter(filePath, "UTF-8");
+      writer.write(printMatrix(vector));
+      writer.close();
+    }catch(IOException e){
+      e.printStackTrace(System.out);
+    }
+  }
+
+  public String printMatrix(double[] vector) {
+    StringBuilder sb = new StringBuilder();
+    int n = vector.length;
+    sb.append("OjAlgo Matrix("+n+")\n\t");
+    for (int i = 0; i < n; i++) {
+      sb.append("null:\t"); //node.getIdentifier()
+      sb.append(""+vector[i]+"\t");
+      sb.append("\n");
+    }
+    return sb.toString();
+  }
+
+	public void writeMatrix(String fileName, boolean[][] matrix) {
+    String filePath = "/tmp/" + fileName + "-m";
+    try{
+      File file = new File(filePath);
+      if(!file.exists()) {
+        file.createNewFile();
+      }
+      PrintWriter writer = new PrintWriter(filePath, "UTF-8");
+      writer.write(printMatrix(matrix));
+      writer.close();
+    }catch(IOException e){
+      e.printStackTrace(System.out);
+    }
+  }
+
+
+	public String printMatrix(boolean[][] matrix) {
+    StringBuilder sb = new StringBuilder();
+    int nRows = matrix.length;
+    int nColumns = matrix[0].length;
+    sb.append("EJML Matrix("+nRows+", "+nColumns+")\n\t");
+    for (int col = 0; col < nColumns; col++) {
+      sb.append("null\t");
+    }
+    sb.append("\n");
+    for (int row = 0; row < nRows; row++) {
+      sb.append("null:\t"); //node.getIdentifier()
+      for (int col = 0; col < nColumns; col++) {
+        sb.append(""+matrix[row][col]+"\t");
+      }
+      sb.append("\n");
+    }
+    return sb.toString();
+
+  }
 
 }

@@ -6,6 +6,9 @@ import java.util.List;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 
+import cern.colt.matrix.tdouble.DoubleFactory2D;
+import cern.colt.matrix.tdouble.DoubleMatrix2D;
+
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
@@ -234,6 +237,34 @@ public class CyColtMatrix extends ColtMatrix implements CyMatrix {
 		return new CyColtMatrix(this);
 	}
 
+	public void sortByRowLabels(boolean isNumeric) {
+		Integer[] index;
+		if (isNumeric) {
+			double[] labels = new double[rowLabels.length];
+			for (int i = 0; i < labels.length; i++) {
+				if (rowLabels[i] != null)
+					labels[i] = Double.parseDouble(rowLabels[i]);
+			}
+			index = MatrixUtils.indexSort(labels, labels.length);
+		} else {
+			index = MatrixUtils.indexSort(rowLabels, rowLabels.length);
+		}
+
+		String[] newRowLabels = new String[nRows];
+		CyNode[] newRowNodes = new CyNode[nRows];
+		DoubleMatrix2D newData = DoubleFactory2D.sparse.make(nRows, nColumns);
+		for (int row = 0; row < nRows; row++) {
+			newRowLabels[index[row]] = rowLabels[row];
+			newRowNodes[index[row]] = rowNodes[row];
+			for (int col = 0; col < nColumns; col++) {
+				double val = doubleValue(row, col);
+				newData.setQuick((int)index[row], col, val);
+			}
+		}
+		rowLabels = newRowLabels;
+		rowNodes = newRowNodes;
+		data = newData;
+	}
 	/*
 	public CyMatrix convertToLargeMatrix() {
 		return new CyLargeMatrix(this);

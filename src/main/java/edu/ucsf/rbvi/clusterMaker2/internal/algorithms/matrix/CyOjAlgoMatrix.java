@@ -6,6 +6,8 @@ import java.util.List;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 
+import org.ojalgo.matrix.store.PhysicalStore;
+
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
@@ -234,6 +236,34 @@ public class CyOjAlgoMatrix extends OjAlgoMatrix implements CyMatrix {
 		return new CyOjAlgoMatrix(this);
 	}
 
+	public void sortByRowLabels(boolean isNumeric) {
+		Integer[] index;
+		if (isNumeric) {
+			double[] labels = new double[rowLabels.length];
+			for (int i = 0; i < labels.length; i++) {
+				if (rowLabels[i] != null)
+					labels[i] = Double.parseDouble(rowLabels[i]);
+			}
+			index = MatrixUtils.indexSort(labels, labels.length);
+		} else {
+			index = MatrixUtils.indexSort(rowLabels, rowLabels.length);
+		}
+
+		String[] newRowLabels = new String[nRows];
+		CyNode[] newRowNodes = new CyNode[nRows];
+		PhysicalStore<Double> newData = storeFactory.makeZero(nRows, nColumns);
+		for (int row = 0; row < nRows; row++) {
+			newRowLabels[row] = rowLabels[index[row]];
+			newRowNodes[row] = rowNodes[index[row]];
+			for (int col = 0; col < nColumns; col++) {
+				double val = doubleValue(index[row], col);
+				newData.set((long)row, (long)col, (double)val);
+			}
+		}
+		rowLabels = newRowLabels;
+		rowNodes = newRowNodes;
+		data = newData;
+	}
 	/*
 	public CyMatrix convertToLargeMatrix() {
 		return new CyLargeMatrix(this);

@@ -42,12 +42,12 @@ public class BoolMatrixUtils {
 		return negates;
 	}
 
-	public static Matrix abs(Matrix matrix, boolean [][] booleans) {
-		Matrix absolutes = matrix.like(booleans.length,booleans[0].length);
+	public static double[][] abs(boolean [][] booleans) {
+		double [][] absolutes = new double[booleans.length][booleans[0].length];
 		IntStream.range(0, booleans.length)
 			.forEach(row -> IntStream.range(0, booleans[0].length)
 				.forEach(col -> {
-					absolutes.setValue(row, col, (booleans[row][col] ? 1 : 0));
+					absolutes[row][col] = (booleans[row][col] ? 1 : 0);
 			}));
 		return absolutes;
 	}

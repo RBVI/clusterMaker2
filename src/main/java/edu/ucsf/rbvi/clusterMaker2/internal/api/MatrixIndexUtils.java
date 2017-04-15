@@ -72,10 +72,15 @@ public class MatrixIndexUtils {
 		if( indicies.length != values.length ) {
 			throw new IllegalArgumentException("Length of indicies and values have to be equal");
 		}
+		/*
 		IntStream.range(0, indicies.length)
 			.forEach(index -> {
 				matrix.setValue(row, indicies[index], values[index]);
 			});
+		*/
+		for (int index = 0; index < indicies.length; index++) {
+			matrix.setValue(row, indicies[index], values[index]);
+		}
 	}
 
 }

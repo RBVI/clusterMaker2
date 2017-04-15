@@ -222,6 +222,29 @@ public class CySimpleMatrix extends SimpleMatrix implements CyMatrix {
 		return newMatrix;
 	}
 
+	public void sortByRowLabels(boolean isNumeric) {
+		Integer[] index;
+		if (isNumeric) {
+			double[] labels = new double[rowLabels.length];
+			for (int i = 0; i < labels.length; i++) {
+				if (rowLabels[i] != null)
+					labels[i] = Double.parseDouble(rowLabels[i]);
+			}
+			index = MatrixUtils.indexSort(labels, labels.length);
+		} else {
+			index = MatrixUtils.indexSort(rowLabels, rowLabels.length);
+		}
+
+		String[] newRowLabels = new String[nRows];
+		double[][] newData = new double[nRows][nColumns];
+		for (int row = 0; row < nRows; row++) {
+			newRowLabels[index[row]] = rowLabels[row];
+			newData[index[row]] = data[row];
+		}
+		rowLabels = newRowLabels;
+		data = newData;
+	}
+
 	/*
 	public CyMatrix convertToLargeMatrix() {
 		return new CyLargeMatrix(this);

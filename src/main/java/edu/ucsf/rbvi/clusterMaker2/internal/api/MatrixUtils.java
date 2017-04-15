@@ -451,17 +451,18 @@ public class MatrixUtils {
 	}
 
 	/**
-	 * inverse (1/cell) all cells in matrix.  
+	 * inverse (value/cell) all cells in matrix.  
 	 * Note: does not update matrix min/max values.  
 	 * 
-	 * @param matrix the matrix to inverse
+	 * @param value the numerator
+	 * @param matrix the matrix to get the denominators
 	 * @return the matrix
 	 */
-	public static Matrix scalarInverse(Matrix matrix) {
+	public static Matrix divideScalar(double value, Matrix matrix) {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(0, matrix.nColumns())
 				.forEach(col -> {
-					matrix.setValue(row, col, (1/matrix.doubleValue(row, col)));
+					matrix.setValue(row, col, (value/matrix.doubleValue(row, col)));
 				})
 			);
 		return matrix;
@@ -582,6 +583,24 @@ public class MatrixUtils {
 				})
 			);
 		return result;
+	}
+
+	/**
+	 * Set the diagonal of a matrix from a vector
+	 *
+	 * @param matrix the matrix to transpose
+	 * @return a new matrix that is the transpose of this matrix
+	 */
+	public static void setDiag(Matrix matrix, Matrix vector) {
+		if (vector.nRows() == 1) {
+			for (int col = 0; col < vector.nColumns(); col++) {
+				matrix.setValue(col, col, vector.doubleValue(0, col));
+			}
+		} else {
+			for (int row = 0; row < vector.nRows(); row++) {
+				matrix.setValue(row, row, vector.doubleValue(row, 0));
+			}
+		}
 	}
 
 	/**

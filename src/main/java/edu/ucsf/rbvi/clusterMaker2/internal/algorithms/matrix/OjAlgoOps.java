@@ -2,6 +2,8 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 
 import org.cytoscape.application.CyUserLog;
 import org.apache.log4j.Logger;
@@ -180,36 +182,42 @@ public class OjAlgoOps implements MatrixOps {
 	}
 
 	public double sum() {
-		return matrix.data.aggregateAll(Aggregator.SUM);
+		// This method results in a loss of precision!  Rounding
+		// error somewhere (autoboxing?)
+		// return matrix.data.aggregateAll(Aggregator.SUM);
+		double sum = 0.0;
+		for (int col = 0; col < matrix.data.countColumns(); col++)
+			sum += columnSum(col);
+		return sum;
 	}
 
 	public double columnSum(int column) {
 		final AggregatorFunction<Double> tmpVisitor = matrix.storeFactory.aggregator().sum();
 		matrix.data.visitColumn(0L, column, tmpVisitor);
-		return tmpVisitor.getNumber();
+		return tmpVisitor.doubleValue();
 	}
 
 	public double columnSum2(int column) {
 		final AggregatorFunction<Double> tmpVisitor = matrix.storeFactory.aggregator().sum2();
 		matrix.data.visitColumn(0L, column, tmpVisitor);
-		return tmpVisitor.getNumber();
+		return tmpVisitor.doubleValue();
 	}
 
 	public double rowSum(int row) {
 		final AggregatorFunction<Double> tmpVisitor = matrix.storeFactory.aggregator().sum();
 		matrix.data.visitRow(row, 0L, tmpVisitor);
-		return tmpVisitor.getNumber();
+		return tmpVisitor.doubleValue();
 	}
 
 	public double rowSum2(int row) {
 		final AggregatorFunction<Double> tmpVisitor = matrix.storeFactory.aggregator().sum2();
 		matrix.data.visitRow(row, 0L, tmpVisitor);
-		return tmpVisitor.getNumber();
+		return tmpVisitor.doubleValue();
 	}
 
 	public double columnMean(int column) {
 		double sum = columnSum(column);
-		return sum/matrix.nRows();
+		return sum/(double)matrix.data.countRows();
 	}
 
 	public double rowMean(int row) {
@@ -324,7 +332,13 @@ public class OjAlgoOps implements MatrixOps {
 	 * Divide a value to all cells in the matrix
 	 */
 	public void divideScalar(double value) {
-		matrix.data.modifyAll(PrimitiveFunction.DIVIDE.second(value));
+		// matrix.data.modifyAll(PrimitiveFunction.DIVIDE.second(value));
+		IntStream.range(0, matrix.nRows()).parallel()
+			.forEach(row -> IntStream.range(0, matrix.nColumns())
+				.forEach(col -> {
+					matrix.setValue(row, col, matrix.doubleValue(row, col)/value);
+				})
+			);
 	}
 
 	/**
@@ -443,39 +457,6 @@ public class OjAlgoOps implements MatrixOps {
 	public Matrix mult(Matrix b) {
 		return multiplyMatrix(b);
 	}
-
-	/*
-	public Matrix gowers() {
-		// Create the Identity matrix
-		DoubleMatrix2D I = DoubleFactory2D.sparse.identity(this.nRows());
-
-		// Create the ones matrix.  This is equivalent to 11'/n
-		DoubleMatrix2D one = DoubleFactory2D.dense.make(this.nRows(), this.nRows(), 1.0/this.nRows());
-
-		// Create the subtraction matrix (I-11'/n)
-		DoubleMatrix2D mat = I.assign(one, DoubleFunctions.minus);
-
-		// Create our data matrix
-		final DoubleMatrix2D A = DoubleFactory2D.sparse.make(this.nRows(), this.nRows());
-
-		data.forEachNonZero(
-			new IntIntDoubleFunction() {
-				public double apply(int row, int column, double value) {
-					A.setQuick(row, column, -Math.pow(value,2)/2.0);
-					return value;
-				}
-			}
-		);
-
-		OjAlgoMatrix cMat = new OjAlgoMatrix(this, mat);
-		OjAlgoMatrix cA = new OjAlgoMatrix(this, A);
-
-		// Finally, the Gower's matrix is mat*A*mat
-		
-		Matrix mat1 = cMat.multiplyMatrix(cA);
-		return mat1.multiplyMatrix(cMat);
-	}
-	*/
 
 	class Thresh implements PrimitiveFunction.Unary {
 		double epsilon;

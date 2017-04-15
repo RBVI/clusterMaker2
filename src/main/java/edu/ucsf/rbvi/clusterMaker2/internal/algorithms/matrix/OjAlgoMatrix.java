@@ -352,7 +352,9 @@ public class OjAlgoMatrix implements Matrix {
 	public String getColumnLabel(int col) {
 		if (index != null)
 			col = index[col];
-		return columnLabels[col];
+		if (columnLabels != null)
+			return columnLabels[col];
+		return null;
 	}
 
 	/**
@@ -394,7 +396,9 @@ public class OjAlgoMatrix implements Matrix {
 	public String getRowLabel(int row) {
 		if (index != null)
 			row = index[row];
-		return rowLabels[row];
+		if (rowLabels != null)
+			return rowLabels[row];
+		return null;
 	}
 
 	/**
@@ -718,25 +722,27 @@ public class OjAlgoMatrix implements Matrix {
 
 	public String printMatrix() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("OjAlgoMatrix("+nRows+", "+nColumns+")\n");
+		sb.append("OjAlgoMatrix("+data.countRows()+", "+data.countColumns()+")\n");
 		if (data.getClass().getName().indexOf("Sparse") >= 0)
 			sb.append(" matrix is sparse\n");
 		else
 			sb.append(" matrix is dense\n");
 		sb.append(" cardinality is "+ops.cardinality()+"\n\t");
 
-		for (int col = 0; col < nColumns; col++) {
+		for (int col = 0; col < data.countColumns(); col++) {
 			sb.append(getColumnLabel(col)+"\t");
 		}
 		sb.append("\n");
-		for (int row = 0; row < nRows; row++) {
+		for (int row = 0; row < data.countRows(); row++) {
 			sb.append(getRowLabel(row)+":\t"); //node.getIdentifier()
-			for (int col = 0; col < nColumns; col++) {
+			for (int col = 0; col < data.countColumns(); col++) {
 				double value = doubleValue(row, col);
 				if (value < 0.001)
-					sb.append(""+scFormat.format(value)+"\t");
+					// sb.append(""+scFormat.format(value)+"\t");
+					sb.append(""+value+"\t");
 				else
-					sb.append(""+format.format(value)+"\t");
+					// sb.append(""+format.format(value)+"\t");
+					sb.append(""+value+"\t");
 			} 
 			sb.append("\n");
 		} 
