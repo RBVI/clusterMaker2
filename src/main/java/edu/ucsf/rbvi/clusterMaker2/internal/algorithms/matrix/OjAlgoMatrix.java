@@ -118,6 +118,8 @@ public class OjAlgoMatrix implements Matrix {
 		rowLabels = new String[rows];
 		columnLabels = new String[columns];
 		index = null;
+		maxValue = initialValue;
+		minValue = initialValue;
 	}
 
 	public OjAlgoMatrix(int rows, int columns, DISTRIBUTION dist) {
@@ -217,6 +219,12 @@ public class OjAlgoMatrix implements Matrix {
 
 	public Matrix like(int rows, int columns, DISTRIBUTION dist) {
 		return new OjAlgoMatrix(rows, columns, dist);
+	}
+
+	public Matrix like(int rows, int columns, double[][] initial) {
+		Matrix result = new OjAlgoMatrix();
+		result.initialize(rows, columns, initial);
+		return result;
 	}
 
 	public Matrix like(Matrix initial) {
@@ -452,6 +460,7 @@ public class OjAlgoMatrix implements Matrix {
 	 * @return the data in the matrix
 	 */
 	public double[][] toArray() {
+		/*
 		double doubleData[][] = new double[nRows][nColumns];
 		for (int row = 0; row < nRows; row++) {
 			for (int col = colStart(row); col < nColumns; col++) {
@@ -461,6 +470,16 @@ public class OjAlgoMatrix implements Matrix {
 			}
 		}
 		return doubleData;
+		*/
+		return data.toRawCopy2D();
+	}
+
+	public double[] getRow(int row) {
+		return data.sliceRow(row, 0).toRawCopy1D();
+	}
+
+	public double[] getColumn(int column) {
+		return data.sliceColumn(0, column).toRawCopy1D();
 	}
 
 	/**
@@ -671,39 +690,6 @@ public class OjAlgoMatrix implements Matrix {
 	public MatrixStore<Double> getOjAlgoMatrix() {
 		return data;
 	}
-
-	/*
-	public Matrix gowers() {
-		// Create the Identity matrix
-		DoubleMatrix2D I = DoubleFactory2D.sparse.identity(this.nRows());
-
-		// Create the ones matrix.  This is equivalent to 11'/n
-		DoubleMatrix2D one = DoubleFactory2D.dense.make(this.nRows(), this.nRows(), 1.0/this.nRows());
-
-		// Create the subtraction matrix (I-11'/n)
-		DoubleMatrix2D mat = I.assign(one, DoubleFunctions.minus);
-
-		// Create our data matrix
-		final DoubleMatrix2D A = DoubleFactory2D.sparse.make(this.nRows(), this.nRows());
-
-		data.forEachNonZero(
-			new IntIntDoubleFunction() {
-				public double apply(int row, int column, double value) {
-					A.setQuick(row, column, -Math.pow(value,2)/2.0);
-					return value;
-				}
-			}
-		);
-
-		OjAlgoMatrix cMat = new OjAlgoMatrix(this, mat);
-		OjAlgoMatrix cA = new OjAlgoMatrix(this, A);
-
-		// Finally, the Gower's matrix is mat*A*mat
-		
-		Matrix mat1 = cMat.multiplyMatrix(cA);
-		return mat1.multiplyMatrix(cMat);
-	}
-	*/
 
 	/**
 	 * Debugging routine to print out information about a matrix

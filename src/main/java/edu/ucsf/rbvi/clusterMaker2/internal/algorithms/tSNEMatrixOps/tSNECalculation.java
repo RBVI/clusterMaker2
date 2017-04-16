@@ -15,25 +15,29 @@ import static edu.ucsf.rbvi.clusterMaker2.internal.api.ArrayUtils.range;
 import static edu.ucsf.rbvi.clusterMaker2.internal.api.ArrayUtils.scalarInverse;
 import static edu.ucsf.rbvi.clusterMaker2.internal.api.ArrayUtils.sqrt;
 
-import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.addColumnVector;
-import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.addRowVector;
-import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.addScalar;
-import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.columnMean;
-import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.copy;
-import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.diag;
-import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.divideScalar;
-import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.exp;
-import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.log;
-import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.multiplyMatrix;
-import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.multiplyScalar;
-import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.normalize;
-import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.powScalar;
-import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.rowSum;
-// import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.scalarInverse;
-import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.setDiag;
-import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.subtractScalar;
-import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.sum;
-import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.transpose;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.addColumnVector;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.addRowVector;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.addElement;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.addScalar;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.columnMean;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.copy;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.diag;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.divideElement;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.divideScalar;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.expElement;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.logElement;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.multiplyElement;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.multiplyMatrix;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.multiplyScalar;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.normalize;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.powScalar;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.rowSum;
+// import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.scalarInverse;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.setDiag;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.subtractElement;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.subtractScalar;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.sum;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.transpose;
 
 import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixIndexUtils.assignAtIndex;
 import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixIndexUtils.assignValuesToRow;
@@ -138,7 +142,7 @@ public class tSNECalculation implements TSneInterface{
 		Matrix Ptr         = transpose(P);
 		Matrix diag        = matrix.like(n, n, 0.0);
 
-		addScalar(P, Ptr);
+		addElement(P, Ptr);
 
 		// P.writeMatrix("P1");
 
@@ -171,13 +175,13 @@ public class tSNECalculation implements TSneInterface{
 			Matrix sum_Y = transpose(rowSum(sqed));
 
 			// Ysqlmul = Ysqlmul+(-2.0)*Y*trans(Y)
-			Ysqlmul = addScalar(multiplyScalar(multiplyMatrix(Y, transpose(Y)), -2), Ysqlmul);
+			Ysqlmul = addElement(multiplyScalar(multiplyMatrix(Y, transpose(Y)), -2), Ysqlmul);
 			addRowVector(Ysqlmul, sum_Y);
 			Ysqlmul = transpose(Ysqlmul);
 			addRowVector(Ysqlmul, sum_Y);
 
 			addScalar(Ysqlmul, 1.0);
-			divideScalar(1.0, Ysqlmul);
+			divideElement(1.0, Ysqlmul);
 
 			// Ysqlmul.writeMatrix("Ysqlmul");
 
@@ -194,14 +198,14 @@ public class tSNECalculation implements TSneInterface{
 			// Q.writeMatrix("Q2");
 
 			// Compute gradient
-			Matrix L = subtractScalar(copy(P), Q);
-			L = multiplyScalar(L, num);
+			Matrix L = subtractElement(copy(P), Q);
+			L = multiplyElement(L, num);
 			// L.writeMatrix("L");
 			Matrix rowsum = rowSum(L);
 			// rowsum.writeMatrix("rowsum");
 			setDiag(diag, rowsum);
 			// diag.writeMatrix("diag");
-			L = subtractScalar(copy(diag), L);
+			L = subtractElement(copy(diag), L);
 			dY = multiplyMatrix(L, Y);
 			multiplyScalar(dY, 4.0);
 
@@ -227,9 +231,9 @@ public class tSNECalculation implements TSneInterface{
 			addScalar(gainsSmall, 0.2);
 			multiplyScalar(gainsBig, 0.8);
 
-			multiplyScalar(gainsSmall, btNeg);
-			multiplyScalar(gainsBig, bt);
-			gains = addScalar(copy(gainsSmall), gainsBig);
+			multiplyElement(gainsSmall, btNeg);
+			multiplyElement(gainsBig, bt);
+			gains = addElement(copy(gainsSmall), gainsBig);
 			// gains.writeMatrix("gains2");
 
 			assignAllLessThan(gains, min_gain, min_gain);
@@ -237,28 +241,28 @@ public class tSNECalculation implements TSneInterface{
 			// gains.writeMatrix("gains3");
 
 			multiplyScalar(iY, momentum);
-			Matrix gainsdY = multiplyScalar(copy(gains), dY);
+			Matrix gainsdY = multiplyElement(copy(gains), dY);
 			// gainsdY.writeMatrix("gainsdY");
 			multiplyScalar(gainsdY, eta);
-			subtractScalar(iY, gainsdY);
+			subtractElement(iY, gainsdY);
 			// iY.writeMatrix("iY");
-			addScalar(Y, iY);
+			addElement(Y, iY);
 			// Y.writeMatrix("Y2");
 			Matrix colMeanY = columnMean(Y);
 			// colMeanY.writeMatrix("colMeanY");
 			Matrix meanTile = tile(colMeanY, n, 1);
 			// meanTile.writeMatrix("meanTile");
-			subtractScalar(Y, meanTile);
+			subtractElement(Y, meanTile);
 
 			// Y.writeMatrix("Y3");
 
 			// Compute current value of cost function
 			if ((iter % 100 == 0))   {
 				Matrix Pdiv = copy(P);
-				divideScalar(Pdiv, Q);
-				Matrix logdivide = log(Pdiv);
+				divideElement(Pdiv, Q);
+				Matrix logdivide = logElement(Pdiv);
 				replaceNaN(logdivide,Double.MIN_VALUE);
-				multiplyScalar(logdivide, P);
+				multiplyElement(logdivide, P);
 				replaceNaN(logdivide,Double.MIN_VALUE);
 				double C = sum(logdivide);
 				end = System.currentTimeMillis();
@@ -286,16 +290,19 @@ public class tSNECalculation implements TSneInterface{
 		end = System.currentTimeMillis();
 		monitor.showMessage(TaskMonitor.Level.INFO, 
 					String.format("Completed in %4.2f seconds)",(end-total)/1000.0));
+
+		Y.updateMinMax();
+		System.out.format("min = %f, max = %f\n",Y.getMinValue(), Y.getMaxValue());
 		return matrix.copy(Y);
 	}
 
 	public R Hbeta (Matrix D, double beta) {
 		Matrix P = copy(D);
 		multiplyScalar(P, -beta);
-		P = exp(P);
+		P = expElement(P);
 		double sumP = sum(P);   // sumP confirmed scalar
 		Matrix Dd = copy(D);
-		multiplyScalar(Dd, P);
+		multiplyElement(Dd, P);
 		double H = Math.log(sumP) + beta * sum(Dd) / sumP;
 		P = multiplyScalar(P,1/sumP);
 		R r = new R();

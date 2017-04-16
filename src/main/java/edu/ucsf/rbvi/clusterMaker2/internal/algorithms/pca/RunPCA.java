@@ -9,10 +9,10 @@ import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 import javax.swing.SwingUtilities;
 
 
-// import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.ColtMatrix;
@@ -63,19 +63,14 @@ public class RunPCA {
 		this.eigenVectors = null;
 	}
 
-	// this method assumes that eigen values returned by DenseDoubleEigenvalueDecomposition class
+	// this method assumes that eigen values 
 	// are sorted in increasing order
 	public void runOnNodeToAttributeMatrix(){
 		// System.out.println("runOnNodeToAttributeMatrix");
 		CyMatrix matrix = CyMatrixFactory.makeLargeMatrix(network, weightAttributes, context.selectedOnly, 
 		                                                  context.ignoreMissing, false, false);
-		// distanceMatrix = matrix.getDistanceMatrix(context.distanceMetric.getSelectedValue());
-
-		// System.out.println("Creating computationMatrix");
-		// ComputationMatrix mat = new ComputationMatrix(distanceMatrix);
 
 		// System.out.println("Computing principle components");
-		// final Matrix loadingMatrix = new ColtMatrix(); // Change to use CyMatrixFactory...
 		final CyMatrix[] components = computePCs(matrix);
 
 		final Matrix loadingMatrix = calculateLoadingMatrix(matrix);
@@ -105,6 +100,7 @@ public class RunPCA {
 				matrix.ops().standardizeColumn(column);
 			}
 		}
+
 		// System.out.println("centralizing columns");
 		matrix.ops().centralizeColumns();
 		// matrix.writeMatrix("centralized.txt");
@@ -128,9 +124,6 @@ public class RunPCA {
 		monitor.showMessage(TaskMonitor.Level.INFO, "Found "+eigenValues.length+" EigenValues");
 		monitor.showMessage(TaskMonitor.Level.INFO, "Found "+eigenVectors.length+" EigenVectors of length "+eigenVectors[0].length);
 
-		// Calculate the loading matrix
-		// calculateLoadingMatrix(matrix, loadingMatrix, eigenVectors, eigenValues);
-
 		/*
 		loadingMatrix.writeMatrix("loadingMatrix.txt");
 
@@ -148,14 +141,14 @@ public class RunPCA {
 			for(int i=0;i<eigenVectors.length;i++){
 				result.setValue(i,0,eigenVectors[i][j]);
 			}
-			 System.out.println("matrix: "+matrix.printMatrixInfo());
-			 System.out.println("vector: "+result.printMatrixInfo());
+			// System.out.println("matrix: "+matrix.printMatrixInfo());
+			// System.out.println("vector: "+result.printMatrixInfo());
 
 			Matrix mat = matrix.ops().multiplyMatrix(result);
 			// System.out.println("After vector multiply: "+mat.printMatrixInfo());
 			components[k] = matrix.copy(mat);
-			components[k].printMatrixInfo();
-			components[k].writeMatrix("component_"+k+".txt");
+			// components[k].printMatrixInfo();
+			// components[k].writeMatrix("component_"+k+".txt");
 			// System.out.println("Component matrix "+k+" has "+components[k].getRowNodes().size()+" nodes");
 		}
 
@@ -175,57 +168,21 @@ public class RunPCA {
 		return explainedVariance;
 	}
 
-	/*
-	public double[] computeVariance(CyMatrix matrix){
-		Matrix C = matrix.covariance();
-
-		double[] values = C.eigenValues(true);
-		double[] variances = new double[values.length];
-
-		double sum = 0;
-		for(int i=0;i<values.length;i++)
-			sum += values[i];
-
-		for(int i=0,j=values.length-1; j>=0; j--,i++){
-			variances[i] = (double) Math.round((values[j]*100/sum) * 100) / 100;
-		}
-		return variances;
-	}
-	*/
-
-	/*
-	private void calculateLoadingMatrix(CyMatrix matrix, Matrix loading, 
-	                                    double[][] eigenVectors, double[] eigenValues) {
-		int rows = eigenVectors.length;
-		int columns = eigenVectors[0].length;
-		loading.initialize(rows, columns, new double[rows][columns]);
-
-		// System.out.print("Eigenvectors:");
-		for (int row = 0; row < rows; row++) {
-			// System.out.print("\n"+matrix.getColumnLabel(row)+"\t");
-			for (int column = columns-1, newCol=0; column >= 0; column--,newCol++) {
-				// System.out.print(""+eigenVectors[row][column]+"\t");
-				loading.setValue(row, newCol, 
-				                 eigenVectors[row][column]*Math.sqrt(Math.abs(eigenValues[column])));
-				// loading.setValue(row, newCol, eigenVectors[row][column]*eigenValues[column]);
-			}
-		}
-		// System.out.println("\n");
-
-		loading.setRowLabels(Arrays.asList(matrix.getColumnLabels()));
-		for (int column = 0; column < columns; column++) {
-			loading.setColumnLabel(column, "PC "+(column+1));
-		}
-	}
-	*/
-
 	private Matrix calculateLoadingMatrix(CyMatrix matrix) {
 		int rows = eigenVectors.length;
 		int columns = eigenVectors[0].length;
 		Matrix loading = CyMatrixFactory.makeSmallMatrix(matrix.getNetwork(), rows, columns);
 		// loading.initialize(rows, columns, new double[rows][columns]);
 
-		// System.out.print("Eigenvectors:");
+		IntStream.range(0, rows).parallel()
+			.forEach(row -> {
+					for (int column = columns-1, newCol=0; column >=0; column--,newCol++) {
+						loading.setValue(row, newCol, 
+				   		               eigenVectors[row][column]*Math.sqrt(Math.abs(eigenValues[column])));
+					}
+				});
+
+		/* System.out.print("Eigenvectors:");
 		for (int row = 0; row < rows; row++) {
 			// System.out.print("\n"+matrix.getColumnLabel(row)+"\t");
 			for (int column = columns-1, newCol=0; column >= 0; column--,newCol++) {
@@ -236,33 +193,12 @@ public class RunPCA {
 			}
 		}
 		// System.out.println("\n");
+		*/
 
 		loading.setRowLabels(Arrays.asList(matrix.getColumnLabels()));
 		for (int column = 0; column < columns; column++) {
 			loading.setColumnLabel(column, "PC "+(column+1));
 		}
 		return loading;
-	}
-
-	private class CalculateComponent implements Runnable {
-		ComputationMatrix[] components;
-		ComputationMatrix mat;
-		double[] w;
-		int k;
-		int type;
-		
-		public CalculateComponent(ComputationMatrix[] components, int k, 
-		                          ComputationMatrix mat, int type, double[] w) {
-			this.components = components;
-			this.k = k;
-			this.mat = mat;
-			this.w = w;
-			this.type = type;
-		}
-
-		public void run() {
-			// System.out.println("k = "+k+": NODE_ATTRIBUTE -- mutiplying matrix with array");
-			components[k] = ComputationMatrix.multiplyMatrixWithArray(mat, w);
-		}
 	}
 }

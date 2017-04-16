@@ -22,28 +22,28 @@ public class CalculationMatrix  {
 	public CyMatrix[] getCoordinates(CyMatrix matrix){
 		CyMatrix[] components = new CyMatrix[eigen_values.length];
 
-		System.out.println("Found "+eigen_values.length+" eigenvalues");
-		System.out.println("Eigenvectors["+eigen_vectors.length+"]["+eigen_vectors[0].length+"]");
+		// System.out.println("Found "+eigen_values.length+" eigenvalues");
+		// System.out.println("Eigenvectors["+eigen_vectors.length+"]["+eigen_vectors[0].length+"]");
 
 		for(int j=eigen_values.length-1, k=0;j>=0;j--,k++){
 			// double[] w = new double[vectors.length];
 			CyMatrix result = CyMatrixFactory.makeLargeMatrix(matrix.getNetwork(), eigen_values.length,1);
 			for(int i=0;i<eigen_values.length;i++){
-				System.out.println("Setting eigen_vector["+i+"]["+j+"]");
+				// System.out.println("Setting eigen_vector["+i+"]["+j+"]");
 				result.setValue(i,0,eigen_vectors[i][j]);
 			}
 
-			matrix.writeMatrix("matrix");
-			result.writeMatrix("result");
+			// matrix.writeMatrix("matrix");
+			// result.writeMatrix("result");
 			// System.out.println("matrix: "+matrix.printMatrixInfo());
 			// System.out.println("vector: "+result.printMatrixInfo());
-			System.out.println("Matrix rows "+matrix.printMatrixInfo());
-			System.out.println("Result rows "+result.printMatrixInfo());
+			// System.out.println("Matrix rows "+matrix.printMatrixInfo());
+			// System.out.println("Result rows "+result.printMatrixInfo());
 			Matrix mat = matrix.ops().multiplyMatrix(result);
 			// System.out.println("After vector multiply: "+mat.printMatrixInfo());
 			components[k] = matrix.copy(mat);
-			components[k].printMatrixInfo();
-			components[k].writeMatrix("component_"+k+".txt");
+			// components[k].printMatrixInfo();
+			// components[k].writeMatrix("component_"+k+".txt");
 			// System.out.println("Component matrix "+k+" has "+components[k].getRowNodes().size()+" nodes");
 		}
 

@@ -49,6 +49,7 @@ public class PCoA extends AbstractNetworkClusterer{
 	public void run(TaskMonitor monitor) {
 		monitor.setTitle("Running Principal Coordinate Analysis");
 		this.monitor = monitor;
+		long start = System.currentTimeMillis();
 		if (network == null)
 			network = clusterManager.getNetwork();
 
@@ -73,8 +74,9 @@ public class PCoA extends AbstractNetworkClusterer{
 
 		if (canceled) return;
 
+		long duration = System.currentTimeMillis()-start;
 		monitor.showMessage(TaskMonitor.Level.INFO, 
-		                    "PCoA results:\n"+results);
+		                    "PCoA completed in "+duration+"ms");
 
 	}
 

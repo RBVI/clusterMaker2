@@ -18,6 +18,7 @@ import org.ojalgo.matrix.BasicMatrix.Builder;
 import org.ojalgo.matrix.PrimitiveMatrix;
 import org.ojalgo.matrix.decomposition.DecompositionStore;
 import org.ojalgo.matrix.decomposition.Eigenvalue;
+import org.ojalgo.matrix.decomposition.SingularValue;
 import org.ojalgo.matrix.store.ElementsSupplier;
 import org.ojalgo.matrix.store.MatrixStore;
 import org.ojalgo.matrix.store.PhysicalStore;
@@ -34,6 +35,7 @@ public class OjAlgoOps implements MatrixOps {
 	protected final OjAlgoMatrix matrix;
 	private static double EPSILON=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
 	private Eigenvalue<Double> decomp = null;
+	private SingularValue<Double> svdDecomp = null;
 	private int nThreads = -1;
 	final Logger logger = Logger.getLogger(CyUserLog.NAME);
 
@@ -290,7 +292,7 @@ public class OjAlgoOps implements MatrixOps {
 	/**
 	 * Add a matrix to this matrix
 	 */
-	public void addMatrix(Matrix addend) {
+	public void addElement(Matrix addend) {
 		OjAlgoMatrix ojAddend = (OjAlgoMatrix)addend;
 		MatrixStore<Double> d = matrix.data.add(ojAddend.data);
 		matrix.data = (PhysicalStore<Double>)d;
@@ -306,7 +308,7 @@ public class OjAlgoOps implements MatrixOps {
 	/**
 	 * Subtract a matrix from this matrix
 	 */
-	public void subtractMatrix(Matrix subend) {
+	public void subtractElement(Matrix subend) {
 		OjAlgoMatrix ojSubend = (OjAlgoMatrix)subend;
 		MatrixStore<Double> d = matrix.data.subtract(ojSubend.data);
 		matrix.data = (PhysicalStore<Double>)d;
@@ -452,10 +454,42 @@ public class OjAlgoOps implements MatrixOps {
 		*/
 	}
 
+	public Matrix svdU() {
+		if (svdDecomp == null) {
+			svdDecomp = SingularValue.make(matrix.data);
+			svdDecomp.decompose(matrix.data);
+		}
+		return wrap(svdDecomp.getQ1());
+	}
+
+	public Matrix svdS() {
+		if (svdDecomp == null) {
+			svdDecomp = SingularValue.make(matrix.data);
+			svdDecomp.decompose(matrix.data);
+		}
+		return wrap(svdDecomp.getD());
+	}
+
+	public Matrix svdV() {
+		if (svdDecomp == null) {
+			svdDecomp = SingularValue.make(matrix.data);
+			svdDecomp.decompose(matrix.data);
+		}
+		return wrap(svdDecomp.getQ2());
+	}
+
 	public int cardinality() { return matrix.data.aggregateAll(Aggregator.CARDINALITY).intValue(); }
 
 	public Matrix mult(Matrix b) {
 		return multiplyMatrix(b);
+	}
+
+	private Matrix wrap(MatrixStore<Double> mat) {
+		OjAlgoMatrix result = new OjAlgoMatrix();
+		result.data = matrix.storeFactory.copy(mat);
+		result.nRows = (int)mat.countRows();
+		result.nColumns = (int)mat.countColumns();
+		return result;
 	}
 
 	class Thresh implements PrimitiveFunction.Unary {

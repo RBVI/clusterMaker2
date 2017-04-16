@@ -156,6 +156,12 @@ public class SimpleMatrix implements Matrix {
 		newMat.initialize(initial.nRows(), initial.nColumns(), initial.toArray());
 		return newMat;
 	}
+
+	public Matrix like(int rows, int columns, double[][] initial) {
+		Matrix newMat = like();
+		newMat.initialize(rows, columns, initial);
+		return newMat;
+	}
 	
 	/**
 	 * Return the number of rows in this matrix.
@@ -387,6 +393,20 @@ public class SimpleMatrix implements Matrix {
 			}
 		}
 		return doubleData;
+	}
+
+	public double[] getRow(int row) {
+		double rowData[] = new double[nColumns];
+		IntStream.range(0, nColumns).parallel()
+			.forEach(col -> rowData[col] = data[row][col]);
+		return rowData;
+	}
+
+	public double[] getColumn(int col) {
+		double columnData[] = new double[nRows];
+		IntStream.range(0, nRows).parallel()
+			.forEach(row -> columnData[row] = data[row][col]);
+		return columnData;
 	}
 
 	/**

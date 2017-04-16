@@ -155,6 +155,12 @@ public class ColtMatrix implements Matrix {
 		}
 	}
 
+	public Matrix like(int rows, int columns, double[][] initial) {
+		Matrix newMat = like();
+		newMat.initialize(rows, columns, initial);
+		return newMat;
+	}
+
 	public void initialize(int rows, int columns, double[][] arrayData) {
 		if (arrayData != null) {
 			data = DoubleFactory2D.sparse.make(arrayData);
@@ -416,6 +422,14 @@ public class ColtMatrix implements Matrix {
 			}
 		}
 		return doubleData;
+	}
+
+	public double[] getRow(int row) {
+		return data.viewRow(row).toArray();
+	}
+
+	public double[] getColumn(int col) {
+		return data.viewColumn(col).toArray();
 	}
 
 	/**

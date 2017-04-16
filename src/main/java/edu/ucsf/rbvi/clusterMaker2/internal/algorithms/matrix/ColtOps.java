@@ -19,6 +19,7 @@ import cern.colt.matrix.tdouble.DoubleFactory1D;
 import cern.colt.matrix.tdouble.DoubleFactory2D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.decomposition.DenseDoubleEigenvalueDecomposition;
+import cern.colt.matrix.tdouble.algo.decomposition.DenseDoubleSingularValueDecomposition;
 import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
 import cern.colt.matrix.tdouble.algo.DoubleStatistic;
 
@@ -28,6 +29,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixOps;
 public class ColtOps implements MatrixOps {
 	private static double EPSILON=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
 	private DenseDoubleEigenvalueDecomposition decomp = null;
+	private DenseDoubleSingularValueDecomposition svdDecomp = null;
 	private int nThreads = -1;
 	final Logger logger = Logger.getLogger(CyUserLog.NAME);
 
@@ -375,7 +377,7 @@ public class ColtOps implements MatrixOps {
 	 * 
 	 * @param addend the matrix to add to our matrix
 	 */
-	public void addMatrix(Matrix addend) {
+	public void addElement(Matrix addend) {
 		DoubleMatrix2D data = getData();
 		data.forEachNonZero(
 			new IntIntDoubleFunction() {
@@ -411,7 +413,7 @@ public class ColtOps implements MatrixOps {
 	 * 
 	 * @param subtrahend the matrix to subtract from our matrix
 	 */
-	public void subtractMatrix(Matrix subtrahend) {
+	public void subtractElement(Matrix subtrahend) {
 		DoubleMatrix2D data = getData();
 		data.forEachNonZero(
 			new IntIntDoubleFunction() {
@@ -555,6 +557,27 @@ public class ColtOps implements MatrixOps {
 		return eigv.toArray();
 	}
 
+	public Matrix svdU() {
+		if (svdDecomp == null) {
+			svdDecomp= new DenseDoubleSingularValueDecomposition(getData(), true, false);
+		}
+		return wrap(svdDecomp.getU());
+	}
+
+	public Matrix svdS() {
+		if (svdDecomp == null) {
+			svdDecomp= new DenseDoubleSingularValueDecomposition(getData(), true, false);
+		}
+		return wrap(svdDecomp.getS());
+	}
+
+	public Matrix svdV() {
+		if (svdDecomp == null) {
+			svdDecomp= new DenseDoubleSingularValueDecomposition(getData(), true, false);
+		}
+		return wrap(svdDecomp.getV());
+	}
+
 	public int cardinality() { return getData().cardinality(); }
 
 	public Matrix mult(Matrix b) {
@@ -578,41 +601,16 @@ public class ColtOps implements MatrixOps {
 		return c;
 	}
 
-	public Matrix gowers() {
-		// Create the Identity matrix
-		DoubleMatrix2D I = DoubleFactory2D.sparse.identity(matrix.nRows());
-
-		// Create the ones matrix.  This is equivalent to 11'/n
-		DoubleMatrix2D one = 
-						DoubleFactory2D.dense.make(matrix.nRows(), 
-		                                   matrix.nRows(), 1.0/matrix.nRows());
-
-		// Create the subtraction matrix (I-11'/n)
-		DoubleMatrix2D mat = I.assign(one, DoubleFunctions.minus);
-
-		// Create our data matrix
-		final DoubleMatrix2D A = DoubleFactory2D.sparse.make(matrix.nRows(), matrix.nRows());
-
-		getData().forEachNonZero(
-			new IntIntDoubleFunction() {
-				public double apply(int row, int column, double value) {
-					A.setQuick(row, column, -Math.pow(value,2)/2.0);
-					return value;
-				}
-			}
-		);
-
-		ColtMatrix cMat = new ColtMatrix(matrix, mat);
-		ColtMatrix cA = new ColtMatrix(matrix, A);
-
-		// Finally, the Gower's matrix is mat*A*mat
-		
-		Matrix mat1 = cMat.ops().multiplyMatrix(cA);
-		return mat1.ops().multiplyMatrix(cMat);
-	} 
-
 	private DoubleMatrix2D getData() {
 		return matrix.getColtMatrix();
+	}
+
+	private Matrix wrap(DoubleMatrix2D mat) {
+		ColtMatrix result = new ColtMatrix();
+		result.data = mat;
+		result.nRows = mat.rows();
+		result.nColumns = mat.columns();
+		return result;
 	}
 
 	private class ThreadedDotProduct implements Runnable {

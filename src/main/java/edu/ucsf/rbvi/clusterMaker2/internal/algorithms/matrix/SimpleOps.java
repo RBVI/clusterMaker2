@@ -16,6 +16,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixOps;
 import cern.colt.matrix.tdouble.DoubleFactory2D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.decomposition.DenseDoubleEigenvalueDecomposition;
+import cern.colt.matrix.tdouble.algo.decomposition.DenseDoubleSingularValueDecomposition;
 import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
 import cern.colt.matrix.tdouble.algo.DoubleStatistic;
 import cern.colt.matrix.tdouble.algo.SmpDoubleBlas;
@@ -23,6 +24,7 @@ import cern.colt.matrix.tdouble.algo.SmpDoubleBlas;
 public class SimpleOps implements MatrixOps {
 	protected SmpDoubleBlas blas;
 	private DenseDoubleEigenvalueDecomposition decomp = null;
+	private DenseDoubleSingularValueDecomposition svdDecomp = null;
 	private static double EPSILON=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
 	final Logger logger = Logger.getLogger(CyUserLog.NAME);
 	private final SimpleMatrix matrix;
@@ -354,7 +356,7 @@ public class SimpleOps implements MatrixOps {
 				}));
 	}
 
-	public void addMatrix(Matrix addend) {
+	public void addElement(Matrix addend) {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(matrix.colStart(row), matrix.nColumns())
 				.forEach(column -> {
@@ -374,7 +376,7 @@ public class SimpleOps implements MatrixOps {
 				}));
 	}
 
-	public void subtractMatrix(Matrix subtrahend) {
+	public void subtractElement(Matrix subtrahend) {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(matrix.colStart(row), matrix.nColumns())
 				.forEach(column -> {
@@ -460,6 +462,33 @@ public class SimpleOps implements MatrixOps {
 		if (decomp == null)
 			decomp = new DenseDoubleEigenvalueDecomposition(getColtMatrix());
 		return decomp.getV().toArray();
+	}
+
+	public Matrix svdU() {
+		if (svdDecomp == null) {
+			svdDecomp= new DenseDoubleSingularValueDecomposition(getColtMatrix(), true, false);
+		}
+		return wrap(svdDecomp.getU());
+	}
+
+	public Matrix svdS() {
+		if (svdDecomp == null) {
+			svdDecomp= new DenseDoubleSingularValueDecomposition(getColtMatrix(), true, false);
+		}
+		return wrap(svdDecomp.getS());
+	}
+
+	public Matrix svdV() {
+		if (svdDecomp == null) {
+			svdDecomp= new DenseDoubleSingularValueDecomposition(getColtMatrix(), true, false);
+		}
+		return wrap(svdDecomp.getV());
+	}
+
+	private Matrix wrap(DoubleMatrix2D mat) {
+		Matrix result = new SimpleMatrix();
+		result.initialize(mat.rows(), mat.columns(), mat.toArray());
+		return result;
 	}
 
 	public Matrix mult(Matrix b) {

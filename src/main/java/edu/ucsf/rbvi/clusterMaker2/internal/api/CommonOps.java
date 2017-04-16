@@ -6,7 +6,7 @@ import java.util.stream.IntStream;
  * This utility class provides a number of methods that allow short-hand
  * access to the various MatrixOps.  
  */
-public class MatrixUtils {
+public class CommonOps {
 
 	/**
 	 * Return a copy of a matrix
@@ -329,18 +329,8 @@ public class MatrixUtils {
 	 * @param addend the matrix to add
 	 * @return the matrix with the added values
 	 */
-	public static Matrix addScalar(Matrix matrix, Matrix addend) {
-		IntStream.range(0, matrix.nRows()).parallel()
-			.forEach(row -> IntStream.range(0, matrix.nColumns())
-				.forEach(col -> {
-					double value;
-					if (Double.isNaN(matrix.doubleValue(row, col)) && Double.isNaN(addend.doubleValue(row, col)))
-						value = Double.NaN;
-					else
-						value = matrix.doubleValue(row, col)+addend.doubleValue(row, col);
-					matrix.setValue(row, col, value);
-				})
-			);
+	public static Matrix addElement(Matrix matrix, Matrix addend) {
+		matrix.ops().addElement(addend);
 		return matrix;
 	}
 
@@ -364,13 +354,16 @@ public class MatrixUtils {
 	 * @param sub the matrix to subtract
 	 * @return the matrix with the subtracted values
 	 */
-	public static Matrix subtractScalar(Matrix matrix, Matrix sub) {
+	public static Matrix subtractElement(Matrix matrix, Matrix sub) {
+		/*
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(0, matrix.nColumns())
 				.forEach(col -> {
 					matrix.setValue(row, col, (matrix.doubleValue(row, col)-sub.doubleValue(row,col)));
 				})
 			);
+		*/
+		matrix.ops().subtractElement(sub);
 		return matrix;
 	}
 
@@ -394,7 +387,7 @@ public class MatrixUtils {
 	 * @param multiplier the matrix to get the mutipliers from
 	 * @return the matrix multiplied by the values in the multiplier
 	 */
-	public static Matrix multiplyScalar(Matrix matrix, Matrix multiplier) {
+	public static Matrix multiplyElement(Matrix matrix, Matrix multiplier) {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(0, matrix.nColumns())
 				.forEach(col -> {
@@ -424,7 +417,7 @@ public class MatrixUtils {
 	 * @param denom the matrix to get the denominators from
 	 * @return the numerator matrix divided by the denominator
 	 */
-	public static Matrix divideScalar(Matrix numerator, Matrix denom) {
+	public static Matrix divideElement(Matrix numerator, Matrix denom) {
 		IntStream.range(0, numerator.nRows()).parallel()
 			.forEach(row -> IntStream.range(0, numerator.nColumns())
 				.forEach(col -> {
@@ -458,7 +451,7 @@ public class MatrixUtils {
 	 * @param matrix the matrix to get the denominators
 	 * @return the matrix
 	 */
-	public static Matrix divideScalar(double value, Matrix matrix) {
+	public static Matrix divideElement(double value, Matrix matrix) {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(0, matrix.nColumns())
 				.forEach(col -> {
@@ -468,7 +461,7 @@ public class MatrixUtils {
 		return matrix;
 	}
 
-	public static Matrix log(Matrix matrix) {
+	public static Matrix logElement(Matrix matrix) {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(0, matrix.nColumns())
 				.forEach(col -> {
@@ -478,7 +471,7 @@ public class MatrixUtils {
 		return matrix;
 	}
 
-	public static Matrix exp(Matrix matrix) {
+	public static Matrix expElement(Matrix matrix) {
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(0, matrix.nColumns())
 				.forEach(col -> {

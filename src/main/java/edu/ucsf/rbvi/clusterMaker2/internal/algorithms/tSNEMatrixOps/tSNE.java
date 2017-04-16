@@ -20,7 +20,7 @@ public class tSNE extends AbstractNetworkClusterer{
 
 	RuntSNE runtsne;
 	public static String SHORTNAME = "tsnem";
-	public static String NAME = "t-Distributed Stochastic Neighbor (MatrixOps)";
+	public static String NAME = "t-Distributed Stochastic Neighbor";
 	public final static String GROUP_ATTRIBUTE = "__tSNE.SUID";
 	private CyNetworkView networkView;
 

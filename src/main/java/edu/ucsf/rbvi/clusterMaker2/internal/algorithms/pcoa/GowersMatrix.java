@@ -8,7 +8,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
-import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixUtils.subtractScalar;
+import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.subtractElement;
 
 public class GowersMatrix  {
 	private static double EPSILON=Math.sqrt(Math.pow(2, -52));//get tolerance to reduce eigens
@@ -31,7 +31,7 @@ public class GowersMatrix  {
 
 		// Create the subtraction matrix (I-11'/n)
 		// DoubleMatrix2D mat = I.assign(one, DoubleFunctions.minus);
-		Matrix mat = subtractScalar(I, one);
+		Matrix mat = subtractElement(I, one);
 		// mat.writeMatrix("mat");
 
 		// Create our data matrix

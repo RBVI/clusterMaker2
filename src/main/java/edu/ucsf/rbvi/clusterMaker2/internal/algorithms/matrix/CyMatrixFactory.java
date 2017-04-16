@@ -115,7 +115,10 @@ public class CyMatrixFactory {
 			if (minAttribute == 1.0 && maxAttribute == 1.0) {
 				value = 1.0;
 			} else {
-				value = ModelUtils.getNumericValue(network, edge, edgeAttribute);
+				Double val = ModelUtils.getNumericValue(network, edge, edgeAttribute);
+				if (val == null)
+					continue;
+				value = val.doubleValue();
 			}
 
 			double weight = converter.convert(value, minAttribute, maxAttribute);

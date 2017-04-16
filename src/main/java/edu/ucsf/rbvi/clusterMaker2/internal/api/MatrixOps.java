@@ -168,7 +168,7 @@ public interface MatrixOps {
 	 * 
 	 * @param addend the matrix to add to this matrix
 	 */
-	public void addMatrix(Matrix addend);
+	public void addElement(Matrix addend);
 
 	/**
 	 * subtract a value from all cells in this matrix
@@ -184,7 +184,7 @@ public interface MatrixOps {
 	 * 
 	 * @param subtrahend the matrix to add to this matrix
 	 */
-	public void subtractMatrix(Matrix subtrahend);
+	public void subtractElement(Matrix subtrahend);
 
 	/**
 	 * multiple all cells in this matrix by a value
@@ -276,6 +276,26 @@ public interface MatrixOps {
 	public double[][] eigenVectors();
 
 	/**
-	 * Return the Gowers matrix
+	 * Return the U matrix resulting from an Singular Value Decomposition of
+	 * the matrix: C = USV(T).
+	 *
+	 * @return the U matrix
 	 */
+	public Matrix svdU();
+
+	/**
+	 * Return the S matrix resulting from an Singular Value Decomposition of
+	 * the matrix: C = USV(T).
+	 *
+	 * @return the S matrix
+	 */
+	public Matrix svdS();
+
+	/**
+	 * Return the V matrix resulting from an Singular Value Decomposition of
+	 * the matrix: C = USV(T).
+	 *
+	 * @return the V matrix
+	 */
+	public Matrix svdV();
 }

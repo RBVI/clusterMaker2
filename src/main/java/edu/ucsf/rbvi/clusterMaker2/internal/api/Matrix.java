@@ -92,6 +92,18 @@ public interface Matrix {
 	public Matrix like(Matrix initial);
 
 	/**
+	 * Create a new matrix of the same type as this matrix, and use
+	 * the data from an array to initialize it.  The dimensions of
+	 * the array must match the dimensions of the matrix.
+	 *
+	 * @param rows the number of rows
+	 * @param columns the number of columns
+	 * @param initial the other matrix to use to initialize this matrix
+	 * @return the new matrix
+	 */
+	public Matrix like(int rows, int columns, double[][] initial);
+
+	/**
 	 * Return the number of rows in this matrix.
 	 *
 	 * @return number of rows
@@ -225,6 +237,24 @@ public interface Matrix {
 	 * @return the data in the matrix
 	 */
 	public double[][] toArray();
+ 
+	/**
+	 * Return a 1D array with the values from a particular row.  The missing
+	 * values are set to Double.NaN
+	 *
+	 * @param row the row to get the data from
+	 * @return the data in the row
+	 */
+	public double[] getRow(int row);
+ 
+	/**
+	 * Return a 1D array with the values from a particular column.  The missing
+	 * values are set to Double.NaN
+	 *
+	 * @param column the column to get the data from
+	 * @return the data in the matrix
+	 */
+	public double[] getColumn(int column);
 
 	/**
 	 * Return the maximum value in the matrix

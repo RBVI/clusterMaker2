@@ -74,6 +74,7 @@ public class RunPCoA {
 		}
 		CyMatrix components[]=calc.getCoordinates(distanceMatrix);
 		System.out.println("Completed Coordinates Calculation in "+(System.currentTimeMillis()-startTime)+"ms");
+		System.out.println("Found "+components.length+" components");
 		if(context.pcoaResultPanel){
 			ResultPanelPCoA.createAndShowGui(components, network, networkView, distanceMatrix.getRowNodes(), variance);
 
