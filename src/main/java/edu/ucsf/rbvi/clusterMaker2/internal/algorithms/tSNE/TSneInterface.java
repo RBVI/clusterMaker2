@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE;
 
 import org.cytoscape.model.CyNetwork;
 

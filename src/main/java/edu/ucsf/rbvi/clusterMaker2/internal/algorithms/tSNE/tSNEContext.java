@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.ContainsTunables;
@@ -30,14 +30,14 @@ public class tSNEContext {
 			groups={"t-SNE Advanced Settings"}, gravity=66)
 	public boolean ignoreMissing = true;
 
-	@Tunable(description="Initial Dimensions", groups={"t-SNE Advanced Settings"}, gravity=66)
-	public int int_dims=50;
+	@Tunable(description="Initial Dimensions", groups={"t-SNE Advanced Settings"}, gravity=66, format="#0")
+	public int dimensions=-1;
 
 	@Tunable(description="Perplexity", groups={"t-SNE Advanced Settings"}, gravity=67)
 	public double perplixity=20;
 
 	@Tunable(description="Number of Iterations", groups={"t-SNE Advanced Settings"}, gravity=68)
-	public int num_of_iterations=2000;
+	public int iterations=2000;
 
 	/*
 	 * Add at some point

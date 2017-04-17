@@ -39,6 +39,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.TaskMonitor;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
@@ -52,6 +53,7 @@ public class ScatterPlotDialog extends JDialog {
 
 	private static DecimalFormat format = new DecimalFormat("0.##");
 
+	private final ClusterManager manager;
 	private final Matrix loadings;
 	private final CyMatrix[] scores;
 
@@ -73,8 +75,9 @@ public class ScatterPlotDialog extends JDialog {
 	private JLabel labelYVariance;
 	private JComboBox<String> comboXAxis;
 	private JComboBox<String> comboYAxis;
-	private JButton buttonPlot;
+	private JButton buttonColor;
 	private JButton buttonOptions;
+	private JButton buttonPlot;
 	private JButton buttonLegend;
 	private Map<String, Color> loadingsColorMap;
 
@@ -84,11 +87,12 @@ public class ScatterPlotDialog extends JDialog {
 	private boolean useLoadings;
 
 	// Entry point for tSNE and related
-	public ScatterPlotDialog(String title, TaskMonitor monitor, CyMatrix coordinates) {
+	public ScatterPlotDialog(ClusterManager manager, String title, TaskMonitor monitor, CyMatrix coordinates) {
 		super();
 		setTitle(title);
 		monitor.setTitle(title);
 		useLoadings = false;
+		this.manager = manager;
 		this.scores = new CyMatrix[1];
 		this.scores[0] = coordinates;
 
@@ -113,12 +117,14 @@ public class ScatterPlotDialog extends JDialog {
 	}
 
 	// Entry point for PCoA and related
-	public ScatterPlotDialog(String title, TaskMonitor monitor, CyMatrix[] components, double[] varianceArray) {
+	public ScatterPlotDialog(ClusterManager manager, String title, TaskMonitor monitor, 
+	                         CyMatrix[] components, double[] varianceArray) {
 		super();
 		setTitle(title);
 		monitor.setTitle(title);
 		useLoadings = false;
 		this.scores = components;
+		this.manager = manager;
 		this.loadings = CyMatrixFactory.makeSmallMatrix(components[0].getNetwork(), 1, components.length);
 		for (int col=0; col < components.length; col++) {
 			loadings.setColumnLabel(col, "PC "+(col+1));
@@ -143,12 +149,14 @@ public class ScatterPlotDialog extends JDialog {
 	}
 
 	// Entry point for PCA
-	public ScatterPlotDialog(String title, TaskMonitor monitor, CyMatrix[] components, Matrix loading, double[] varianceArray) {
+	public ScatterPlotDialog(ClusterManager manager, String title, TaskMonitor monitor, 
+	                         CyMatrix[] components, Matrix loading, double[] varianceArray) {
 		super();
 		setTitle(title);
 		monitor.setTitle(title);
 
 		this.scores = components;
+		this.manager = manager;
 		loadingsColorMap = new HashMap<String, Color>();
 		this.loadings = loading;
 		useLoadings = true;
@@ -188,11 +196,13 @@ public class ScatterPlotDialog extends JDialog {
 		if (loadings != null)
 			buttonLegend = new JButton("Arrow Legend");
 
+		buttonColor = new JButton("Get Colors");
+
 		container.setLayout(new GridBagLayout());
 		container.removeAll();
 
 		ScatterPlot scatterPlot = 
-		 				new ScatterPlot(scores, loadings, 0, 1, pointColor, 6, loadingsColorMap, useLoadings);
+		 				new ScatterPlot(manager, scores, loadings, 0, 1, pointColor, 6, loadingsColorMap, useLoadings);
 
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.anchor = GridBagConstraints.NORTHWEST;
@@ -386,6 +396,7 @@ public class ScatterPlotDialog extends JDialog {
 		panelButtons.setLayout(new BoxLayout(panelButtons, BoxLayout.X_AXIS));
 		panelButtons.add(buttonOptions);
 		panelButtons.add(buttonPlot);
+		panelButtons.add(buttonColor);
 		if (useLoadings)
 			panelButtons.add(buttonLegend);
 
@@ -433,6 +444,16 @@ public class ScatterPlotDialog extends JDialog {
 
 		});
 
+		buttonColor.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent e)
+			{
+				pointColor = null;
+				repaintScatterPlot();
+			}
+
+		});
+
 		// set border for the panel
 		control.setBorder(BorderFactory.createTitledBorder(
 				BorderFactory.createEtchedBorder(), ""));
@@ -463,7 +484,7 @@ public class ScatterPlotDialog extends JDialog {
 			yAxis = comboYAxis.getSelectedIndex();
 		}
 
-		ScatterPlot scatterPlot = new ScatterPlot(scores, loadings, 
+		ScatterPlot scatterPlot = new ScatterPlot(manager, scores, loadings, 
 		                                          xAxis, 
 																		          yAxis,
 																							pointColor, pointSize, loadingsColorMap,

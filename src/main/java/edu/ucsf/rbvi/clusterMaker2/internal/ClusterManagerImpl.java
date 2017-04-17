@@ -31,6 +31,7 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskFactory;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.NetworkSelectionLinker;
@@ -342,5 +343,12 @@ public class ClusterManagerImpl implements ClusterManager {
 		CyRootNetwork rootNetwork = ((CySubNetwork)network).getRootNetwork();
 		unregisterService(linkedNetworks.get(rootNetwork), RowsSetListener.class);
 		linkedNetworks.remove(rootNetwork);
+	}
+
+	public CyNetworkView getNetworkView(CyNetwork network) {
+		Collection<CyNetworkView> views = serviceRegistrar.getService(CyNetworkViewManager.class).getNetworkViews(network);
+		CyNetworkView currentView = appMgr.getCurrentNetworkView();
+		if (views.contains(currentView)) return currentView;
+		return (CyNetworkView)views.toArray()[0];
 	}
 }

@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE;
 /*
  * Copyright (c) 2009-2014, Peter Abeles. All Rights Reserved.
  *
@@ -19,6 +19,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps;
  * limitations under the License.
  */
 
+import java.util.Arrays;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
@@ -65,7 +66,7 @@ public class PrincipalComponentAnalysis {
     private int sampleIndex;
 
     // mean values of each element across all the samples
-    double mean[];
+    Matrix mean;
 
     public PrincipalComponentAnalysis() {
     }
@@ -77,7 +78,7 @@ public class PrincipalComponentAnalysis {
      * @param sampleSize Number of elements in each sample.
      */
     public void setup( CyMatrix data ) {
-        mean = new double[ data.nColumns() ];
+        mean = data.like(data.nColumns(), 1);
 				A = data.copy();
         sampleIndex = 0;
         numComponents = -1;
@@ -92,55 +93,31 @@ public class PrincipalComponentAnalysis {
     public void computeBasis( int numComponents ) {
         if( numComponents > A.nColumns() )
             throw new IllegalArgumentException("More components requested that the data's length.");
-        if( sampleIndex != A.nRows() )
-            throw new IllegalArgumentException("Not all the data has been added");
-        if( numComponents > sampleIndex )
-            throw new IllegalArgumentException("More data needed to compute the desired number of components");
 
         this.numComponents = numComponents;
 
         // compute the mean of all the samples
-        for( int i = 0; i < A.nRows(); i++ ) {
-            for( int j = 0; j < mean.length; j++ ) {
-                mean[j] += A.doubleValue(i,j);
-            }
-        }
-        for( int j = 0; j < mean.length; j++ ) {
-            mean[j] /= A.nRows();
-        }
+				for (int j = 0; j < mean.nRows(); j++) {
+					mean.setValue(j, 0, CommonOps.columnMean(A, j));
+				}
 
         // subtract the mean from the original data
         for( int i = 0; i < A.nRows(); i++ ) {
-            for( int j = 0; j < mean.length; j++ ) {
-                A.setValue(i,j,A.doubleValue(i,j)-mean[j]);
+            for( int j = 0; j < A.nColumns(); j++ ) {
+                A.setValue(i,j,A.doubleValue(i,j)-mean.doubleValue(j,0));
             }
         }
 
         // Compute SVD
-        V_t = A.ops().getV();
-        Matrix W = A.ops().getS();
+        V_t = CommonOps.transpose(A.ops().svdV());
+        Matrix W = A.ops().svdS();
 
         // Singular values are in an arbitrary order initially
-        SingularOps.descendingOrder(null,false,W,V_t,true);
+        // SingularOps.descendingOrder(null,false,W,V_t,true);
 
         // strip off unneeded components and find the basis
-        V_t.reshape(numComponents,mean.length,true);
-    }
-
-    /**
-     * Returns a vector from the PCA's basis.
-     *
-     * @param which Which component's vector is to be returned.
-     * @return Vector from the PCA basis.
-     */
-    public double[] getBasisVector( int which ) {
-        if( which < 0 || which >= numComponents )
-            throw new IllegalArgumentException("Invalid component");
-
-        Matrix v = A.like(1,A.nCols());
-        CommonOps.extract(V_t,which,which+1,0,A.numCols,v,0,0);
-
-        return v.getRow(0);
+        // V_t.reshape(numComponents,mean.length,true);
+				V_t = reshape(V_t, numComponents, mean.nRows());
     }
 
     /**
@@ -152,99 +129,56 @@ public class PrincipalComponentAnalysis {
     public double[] sampleToEigenSpace( Matrix sampleData, int row ) {
         if( sampleData.nColumns() != A.nColumns() )
             throw new IllegalArgumentException("Unexpected sample length");
-        Matrix mean = A.like(A.nColumns(), 1);
-				for (int col = 0; col < A.nColumns(); col++)
-					mean.setValue(col, 0, this.mean[col]);
 
         Matrix s = A.like(A.nColumns(), 1);
 				for (int col = 0; col < A.nColumns(); col++)
-					mean.setValue(col, 0, sampleData.doubleValue(row, col));
+					s.setValue(col, 0, sampleData.doubleValue(row, col));
 
         CommonOps.subtractElement(s, mean);
+				// s.writeMatrix("s-"+row);
 
-        Matrix r = CommonOps.multiplyMatrix(V_t,s);
+        Matrix r = CommonOps.multiplyMatrix(V_t.copy(),s);
+				// V_t.writeMatrix("V_t"+row);
+				// r.writeMatrix("r-"+row);
 
         return r.getColumn(0);
     }
 
-    /**
-     * Converts a vector from eigen space into sample space.
-     *
-     * @param eigenData Eigen space data.
-     * @return Sample space projection.
-     */
-    public double[] eigenToSampleSpace( double[] eigenData ) {
-        if( eigenData.length != numComponents )
-            throw new IllegalArgumentException("Unexpected sample length");
-
-        DenseMatrix64F s = new DenseMatrix64F(A.nColumns(),1);
-        DenseMatrix64F r = DenseMatrix64F.wrap(numComponents,1,eigenData);
-        
-        CommonOps.multTransA(V_t,r,s);
-
-        DenseMatrix64F mean = DenseMatrix64F.wrap(A.nColumns(),1,this.mean);
-        CommonOps.add(s,mean,s);
-
-        return s.data;
-    }
-
-
-    /**
-     * <p>
-     * The membership error for a sample.  If the error is less than a threshold then
-     * it can be considered a member.  The threshold's value depends on the data set.
-     * </p>
-     * <p>
-     * The error is computed by projecting the sample into eigenspace then projecting
-     * it back into sample space and
-     * </p>
-     * 
-     * @param sampleA The sample whose membership status is being considered.
-     * @return Its membership error.
-     */
-    public double errorMembership( double[] sampleA ) {
-        double[] eig = sampleToEigenSpace(sampleA);
-        double[] reproj = eigenToSampleSpace(eig);
-
-
-        double total = 0;
-        for( int i = 0; i < reproj.length; i++ ) {
-            double d = sampleA[i] - reproj[i];
-            total += d*d;
-        }
-
-        return Math.sqrt(total);
-    }
-
-    /**
-     * Computes the dot product of each basis vector against the sample.  Can be used as a measure
-     * for membership in the training sample set.  High values correspond to a better fit.
-     *
-     * @param sample Sample of original data.
-     * @return Higher value indicates it is more likely to be a member of input dataset.
-     */
-    public double response( double[] sample ) {
-        if( sample.length != A.numCols )
-            throw new IllegalArgumentException("Expected input vector to be in sample space");
-
-        DenseMatrix64F dots = new DenseMatrix64F(numComponents,1);
-        DenseMatrix64F s = DenseMatrix64F.wrap(A.numCols,1,sample);
-
-        CommonOps.mult(V_t,s,dots);
-
-        return NormOps.normF(dots);
-    }
-    
-    public double [][] pca(CyMatrix matrix, int no_dims) {
-		double [][] trafoed = new double[matrix.nRows()][matrix.nColumns()];
+	public CyMatrix pca(CyMatrix matrix, int no_dims) {
+		double [][] trafoed = new double[matrix.nRows()][no_dims];
 		setup(matrix);
 		computeBasis(no_dims);
+		CyMatrix result = CyMatrixFactory.makeLargeMatrix(matrix.getNetwork(), matrix.nRows(), no_dims);
+		result.setRowNodes(matrix.getRowNodes());
+		result.setRowLabels(Arrays.asList(matrix.getRowLabels()));
 		for (int i = 0; i < matrix.nRows(); i++) {
 			trafoed[i] = sampleToEigenSpace(matrix, i);
 			for (int j = 0; j < trafoed[i].length; j++) {
-				trafoed[i][j] *= -1;
+				result.setValue(i, j, trafoed[i][j] *= -1);
+				// trafoed[i][j] *= -1;
 			}
 		}
-		return trafoed;
-    }
+		// result.writeMatrix("pca");
+		return result;
+	}
+
+	private Matrix reshape(Matrix src, int numRows, int numCols) {
+		Matrix result  = src.like(numRows, numCols);
+		long index = 0;
+		long size = src.nRows()*src.nColumns();
+		for (int row = 0; row < numRows; row++) {
+			for (int col = 0; col < numCols; col++) {
+				double value = 0.0;
+				if (index < size) {
+					int srcRow = (int)(index/src.nColumns());
+					int srcCol = (int)(index%src.nColumns());
+					value = src.doubleValue(srcRow, srcCol);
+					index++;
+				}
+				result.setValue(row, col, value);
+			}
+		}
+
+		return result;
+	}
 }

@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE;
 
 import java.util.Collections;
 import java.util.List;
@@ -10,12 +10,12 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
-public class tSNEMatrixOpsTaskFactory extends AbstractClusterTaskFactory{
+public class tSNETaskFactory extends AbstractClusterTaskFactory{
 
 	
 	tSNEContext context = null;
 
-	public tSNEMatrixOpsTaskFactory(ClusterManager clusterManager){
+	public tSNETaskFactory(ClusterManager clusterManager){
 		super(clusterManager);
 		context = new tSNEContext();
 	}

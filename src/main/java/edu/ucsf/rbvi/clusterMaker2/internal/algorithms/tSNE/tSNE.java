@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE;
 
 import java.util.List;
 
@@ -22,6 +22,7 @@ public class tSNE extends AbstractNetworkClusterer{
 	public static String SHORTNAME = "tsnem";
 	public static String NAME = "t-Distributed Stochastic Neighbor";
 	public final static String GROUP_ATTRIBUTE = "__tSNE.SUID";
+	public final ClusterManager manager;
 	private CyNetworkView networkView;
 
 	@Tunable(description="Network to cluster", context="nogui")
@@ -32,6 +33,7 @@ public class tSNE extends AbstractNetworkClusterer{
 	
 	public tSNE(tSNEContext context, ClusterManager manager) {
 		super(manager);
+		this.manager = manager;
 		this.context = context;
 		this.networkView = clusterManager.getNetworkView();
 		if (network == null)
@@ -83,7 +85,7 @@ public class tSNE extends AbstractNetworkClusterer{
 		
 
 		
-		runtsne = new RuntSNE(network, networkView, context, monitor, matrix);
+		runtsne = new RuntSNE(manager, network, networkView, context, monitor, matrix);
 		runtsne.run();
 		//runpcoa.setDebug(false);
 

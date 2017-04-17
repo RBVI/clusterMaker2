@@ -13,6 +13,7 @@ import java.util.stream.IntStream;
 import javax.swing.SwingUtilities;
 
 
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.ColtMatrix;
@@ -27,6 +28,7 @@ import org.cytoscape.work.TaskMonitor;
  * @author root
  */
 public class RunPCA {
+	private final ClusterManager manager;
 	protected CyNetwork network;
 	protected CyNetworkView networkView;
 	protected PCAContext context;
@@ -41,9 +43,10 @@ public class RunPCA {
 
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
 
-	public RunPCA(CyNetwork network, CyNetworkView networkView, 
+	public RunPCA(ClusterManager manager, CyNetwork network, CyNetworkView networkView, 
 	              PCAContext context, TaskMonitor monitor, String[] weightAttributes,
 								String matrixType, boolean standardize){
+		this.manager = manager;
 		this.network = network;
 		this.networkView = networkView;
 		this.context = context;
@@ -85,7 +88,8 @@ public class RunPCA {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					// System.out.println("Scatter plot dialog call");
-					ScatterPlotDialog dialog = new ScatterPlotDialog("PCA Scatter Plot", monitor, components, loadingMatrix, variance);
+					ScatterPlotDialog dialog = 
+									new ScatterPlotDialog(manager, "PCA Scatter Plot", monitor, components, loadingMatrix, variance);
 				}
 			});
 		}

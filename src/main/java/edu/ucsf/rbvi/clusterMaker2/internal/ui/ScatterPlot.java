@@ -34,9 +34,11 @@ import javax.swing.*;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ViewUtils;
 
 /**
  *
@@ -45,8 +47,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 @SuppressWarnings("serial")
 public class ScatterPlot extends JPanel implements MouseListener, MouseMotionListener{
 	private float scale = 1;
-	private static int MAX_SCORE = 1;
-	private static int MIN_SCORE = -1;
+	private int MAX_SCORE = 1;
+	private int MIN_SCORE = -1;
 	private static final int PREF_W = 500;
 	private static final int PREF_H = 500;
 	private static final int BORDER_GAP = 10;
@@ -62,6 +64,7 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 	private final int yIndex;
 	private final Color pointColor;
 	private final int pointWidth;
+	private final ClusterManager manager;
 
 	private List<Point> graphPoints;
 	private Map<String, Color> colorMap;
@@ -76,9 +79,9 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 
 	private boolean useLoadings;
 
-	public ScatterPlot(CyMatrix[] scores, Matrix loadings, 
-	                      int x, int y, Color pointColor, int pointWidth,
-				                Map<String, Color> colorMap, boolean useLoadings) {
+	public ScatterPlot(ClusterManager manager, CyMatrix[] scores, Matrix loadings, 
+	                   int x, int y, Color pointColor, int pointWidth,
+				             Map<String, Color> colorMap, boolean useLoadings) {
 		this.scores = scores;
 		this.loadings = loadings;
 		this.useLoadings = useLoadings;
@@ -88,6 +91,7 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 		this.pointWidth = pointWidth;
 		this.colorMap = colorMap;
 		this.graphPoints = new ArrayList<Point>();
+		this.manager = manager;
 
 		double max = scores[xIndex].getMaxValue();
 		double min = scores[xIndex].getMinValue();
@@ -253,6 +257,7 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 		repaint();
 	}
 
+	// FIXME: add tooltip
 	public void mouseMoved(MouseEvent me){
 	}
 
@@ -316,7 +321,10 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 				boolean selected = ModelUtils.isSelected(network, node);
 				int x1 = (int) (scores[0].getValue(i,0) * xScale + newX);
 				int y1 = (int) (-1 * (scores[0].getValue(i,1) * yScale - newY));
-				drawPoint(g2, x1, y1, pointColor, selected);
+				if (pointColor != null)
+					drawPoint(g2, x1, y1, pointColor, selected);
+				else
+					drawPoint(g2, x1, y1, getColor(scores[0].getNetwork(), scores[0].getRowNode(i)), selected);
 				graphPoints.add(new Point(x1, y1));
 			}
 		} else {
@@ -326,7 +334,10 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 					boolean selected = ModelUtils.isSelected(network, node);
 					int x1 = (int) (scores[xIndex].getValue(i,j) * xScale + newX);
 					int y1 = (int) (-1 * (scores[yIndex].getValue(i,j) * yScale - newY));
-					drawPoint(g2, x1, y1, pointColor, selected);
+					if (pointColor != null)
+						drawPoint(g2, x1, y1, pointColor, selected);
+					else
+						drawPoint(g2, x1, y1, getColor(scores[0].getNetwork(), scores[0].getRowNode(i)), selected);
 					graphPoints.add(new Point(x1, y1));
 				}
 			}
@@ -515,6 +526,10 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 
 		g2.fill(path);
 		g2.setTransform(oldTx);
+	}
+
+	private Color getColor(CyNetwork network, CyNode node) {
+		return ViewUtils.getColor(manager, network, node);
 	}
 
 }

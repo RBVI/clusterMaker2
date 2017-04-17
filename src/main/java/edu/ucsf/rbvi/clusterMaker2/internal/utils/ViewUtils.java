@@ -2,6 +2,8 @@ package edu.ucsf.rbvi.clusterMaker2.internal.utils;
 
 import java.util.HashSet;
 
+import java.awt.Color;
+
 import org.cytoscape.event.CyEventHelper;
 
 import org.cytoscape.model.CyColumn;
@@ -19,6 +21,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
@@ -81,5 +84,17 @@ public class ViewUtils {
 	                                  VisualStyle style) {
 		manager.getService(VisualMappingManager.class).setVisualStyle(style, view);
 		view.updateView();
+	}
+
+	public static Color getColor(ClusterManager manager, CyNetwork network, CyNode node) {
+		CyNetworkView view = manager.getNetworkView(network);
+		View<CyNode> nodeView = view.getNodeView(node);
+		return (Color)nodeView.getVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR);
+	}
+
+	public static String getLabel(ClusterManager manager, CyNetwork network, CyNode node) {
+		CyNetworkView view = manager.getNetworkView(network);
+		View<CyNode> nodeView = view.getNodeView(node);
+		return nodeView.getVisualProperty(BasicVisualLexicon.NODE_LABEL);
 	}
 }

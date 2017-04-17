@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +32,6 @@ import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.multiplyScalar;
 import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.normalize;
 import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.powScalar;
 import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.rowSum;
-// import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.scalarInverse;
 import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.setDiag;
 import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.subtractElement;
 import static edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps.subtractScalar;
@@ -43,31 +42,10 @@ import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixIndexUtils.assignAt
 import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixIndexUtils.assignValuesToRow;
 import static edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixIndexUtils.getValuesFromRow;
 
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.BoolMatrixUtils.abs;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.BoolMatrixUtils.biggerThan;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.BoolMatrixUtils.equal;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.BoolMatrixUtils.negate;
-
-/*
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.CalculationMatrix.abs;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.CalculationMatrix.assignAllLessThan;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.CalculationMatrix.biggerThan;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.CalculationMatrix.concatenate;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.CalculationMatrix.diag;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.CalculationMatrix.equal;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.CalculationMatrix.exp;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.CalculationMatrix.log;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.CalculationMatrix.mean;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.CalculationMatrix.negate;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.CalculationMatrix.range;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.CalculationMatrix.replaceNaN;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.CalculationMatrix.scalarDivide;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.CalculationMatrix.scalarMult;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.CalculationMatrix.scalarPlus;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.CalculationMatrix.sqrt;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.CalculationMatrix.square;
-import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEMatrixOps.CalculationMatrix.tile;
-*/
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.BoolMatrixUtils.abs;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.BoolMatrixUtils.biggerThan;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.BoolMatrixUtils.equal;
+import static edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.BoolMatrixUtils.negate;
 
 import java.util.Arrays;
 
@@ -98,7 +76,7 @@ public class tSNECalculation implements TSneInterface{
 		monitor.setProgress(0.0);
 
 		// For debugging purposes only!
-		matrix.sortByRowLabels(true);
+		// matrix.sortByRowLabels(true);
 
 		String IMPLEMENTATION_NAME = this.getClass().getSimpleName();
 		monitor.showMessage(TaskMonitor.Level.INFO, "Running " + IMPLEMENTATION_NAME + ".");
@@ -111,10 +89,8 @@ public class tSNECalculation implements TSneInterface{
 		if(use_pca && matrix.nColumns() > initial_dims && initial_dims > 0) {
 			//System.out.println("Using pca");
 			monitor.showMessage(TaskMonitor.Level.INFO, "Using pca");
-			// PrincipalComponentAnalysis pca = new PrincipalComponentAnalysis();
-	//		double trmpmatrix[][] = pca.pca(matrix.toArray(), initial_dims);
-
-//			matrix= CalculationMatrix.arrayToCyMatrix(matrix, trmpmatrix);
+			PrincipalComponentAnalysis pca = new PrincipalComponentAnalysis();
+			matrix = pca.pca(matrix, initial_dims);
 
 			//System.out.println("X:Shape after PCA is = " + matrix.nRows() + " x " + matrix.nColumns());
 			monitor.showMessage(TaskMonitor.Level.INFO, 
@@ -168,7 +144,6 @@ public class tSNECalculation implements TSneInterface{
 			// P, Y, num(?), Ysqlmul
 			progress = (double)iter/(double)max_iter;
 			monitor.setProgress(progress);
-
 
 			// Compute pairwise affinities
 			Matrix sqed = powScalar(copy(Y), 2);
@@ -285,7 +260,7 @@ public class tSNECalculation implements TSneInterface{
 				P = divideScalar(P , 4);
 		}
 
-		Y.writeMatrix("Y");
+		// Y.writeMatrix("Y");
 
 		end = System.currentTimeMillis();
 		monitor.showMessage(TaskMonitor.Level.INFO, 
@@ -432,7 +407,7 @@ public class tSNECalculation implements TSneInterface{
 		return matrix;
 	}
 
-  public void writeMatrix(String fileName, double[] vector) {
+  public static void writeMatrix(String fileName, double[] vector) {
     String filePath = "/tmp/" + fileName;
     try{
       File file = new File(filePath);
@@ -447,7 +422,7 @@ public class tSNECalculation implements TSneInterface{
     }
   }
 
-  public String printMatrix(double[] vector) {
+  public static String printMatrix(double[] vector) {
     StringBuilder sb = new StringBuilder();
     int n = vector.length;
     sb.append("OjAlgo Matrix("+n+")\n\t");
@@ -459,7 +434,7 @@ public class tSNECalculation implements TSneInterface{
     return sb.toString();
   }
 
-	public void writeMatrix(String fileName, boolean[][] matrix) {
+	public static void writeMatrix(String fileName, boolean[][] matrix) {
     String filePath = "/tmp/" + fileName + "-m";
     try{
       File file = new File(filePath);
@@ -475,7 +450,7 @@ public class tSNECalculation implements TSneInterface{
   }
 
 
-	public String printMatrix(boolean[][] matrix) {
+	public static String printMatrix(boolean[][] matrix) {
     StringBuilder sb = new StringBuilder();
     int nRows = matrix.length;
     int nColumns = matrix[0].length;

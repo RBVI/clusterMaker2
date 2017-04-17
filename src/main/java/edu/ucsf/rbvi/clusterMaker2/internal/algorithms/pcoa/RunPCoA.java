@@ -11,6 +11,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.ScatterPlotDialog;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
@@ -20,20 +21,24 @@ public class RunPCoA {
 	private boolean canceled = false;
 	protected int clusterCount = 0;
 	
-	private TaskMonitor monitor;
-	private PCoAContext context;
-	private CyMatrix distanceMatrix = null;
-	private CyNetwork network;
-	private CyNetworkView networkView; 
+	private final TaskMonitor monitor;
+	private final PCoAContext context;
+	private final CyMatrix distanceMatrix;
+	private final CyNetwork network;
+	private final CyNetworkView networkView; 
+	private final ClusterManager manager; 
 	
 	
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
 	private int neg;
 	
-	public RunPCoA(CyMatrix dMat,CyNetwork network, CyNetworkView networkView ,PCoAContext context, int neg, TaskMonitor monitor )
+	public RunPCoA(final ClusterManager manager, final CyMatrix dMat, final CyNetwork network, 
+	               final CyNetworkView networkView,
+	               final PCoAContext context, int neg, TaskMonitor monitor )
 	{
 			
 		this.distanceMatrix = dMat;
+		this.manager = manager;
 		this.monitor = monitor;
 		this.neg = neg;
 		this.context=context;
@@ -83,7 +88,7 @@ public class RunPCoA {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					System.out.println("Scatter plot dialog call");
-					ScatterPlotDialog dialog = new ScatterPlotDialog("PCoA Scatter Plot", monitor, components, variance);
+					ScatterPlotDialog dialog = new ScatterPlotDialog(manager, "PCoA Scatter Plot", monitor, components, variance);
 				}
 			});
 		}

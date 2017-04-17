@@ -25,6 +25,7 @@ public class PCoA extends AbstractNetworkClusterer{
 	public static String NAME = "Principal Coordinate Analysis";
 	public final static String GROUP_ATTRIBUTE = "__PCoA.SUID";
 	private CyNetworkView networkView;
+	private final ClusterManager manager;
 
 	@Tunable(description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
@@ -34,6 +35,7 @@ public class PCoA extends AbstractNetworkClusterer{
 	
 	public PCoA(PCoAContext context, ClusterManager manager) {
 		super(manager);
+		this.manager = manager;
 		this.context = context;
 		this.networkView = clusterManager.getNetworkView();
 		if (network == null)
@@ -68,7 +70,7 @@ public class PCoA extends AbstractNetworkClusterer{
 		PCoAContext.NegEigenHandling neg = context.neg.getSelectedValue();
 
 		//Cluster the nodes
-		runpcoa = new RunPCoA(matrix,network,networkView,context, neg.getValue(),monitor);
+		runpcoa = new RunPCoA(manager,matrix,network,networkView,context, neg.getValue(),monitor);
 		runpcoa.run();
 		
 

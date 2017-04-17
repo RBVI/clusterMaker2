@@ -43,6 +43,7 @@ public interface ClusterManager {
 
 	CyNetwork getNetwork();
 	CyNetworkView getNetworkView();
+	CyNetworkView getNetworkView(CyNetwork network);
 	CyTableFactory getTableFactory();
 	CyTableManager getTableManager();
 	CyGroup createGroup(CyNetwork network, String name, List<CyNode> nodeList, List<CyEdge> edgeList, boolean register);

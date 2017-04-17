@@ -20,7 +20,7 @@ import org.cytoscape.work.Tunable;
  * @author root
  */
 public class PCA extends AbstractTask{
-	ClusterManager clusterManager;
+	final ClusterManager manager;
 	public static String SHORTNAME = "pca";
 	public static String NAME = "Principal Component Analysis";
 	private List<String>attrList;	
@@ -34,6 +34,7 @@ public class PCA extends AbstractTask{
 
 	public PCA(PCAContext context, ClusterManager clusterManager){
 		this.context = context;
+		this.manager = clusterManager;
 		this.networkView = clusterManager.getNetworkView();
 		if (network == null)
 				network = clusterManager.getNetwork();
@@ -76,7 +77,7 @@ public class PCA extends AbstractTask{
 
 			String matrixType = context.matrixType.getSelectedValue();
 
-			RunPCA runPCA = new RunPCA(network, networkView, context, monitor, attrArray, 
+			RunPCA runPCA = new RunPCA(manager, network, networkView, context, monitor, attrArray, 
 			                           matrixType, context.standardize);
 			runPCA.runOnNodeToAttributeMatrix();
 			/*
