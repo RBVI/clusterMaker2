@@ -95,7 +95,7 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 
 		double max = scores[xIndex].getMaxValue();
 		double min = scores[xIndex].getMinValue();
-		System.out.println("min = "+min+", max = "+max);
+		// System.out.println("min = "+min+", max = "+max);
 		if(max > MAX_SCORE || min < MIN_SCORE){
 			if(max > Math.abs(min)){
 				MAX_SCORE = (int) Math.ceil(max);
@@ -154,7 +154,7 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 
 		int x = (int)((event.getPoint().x-previousDX)/scale);
 		int y = (int)((event.getPoint().y-previousDY)/scale);
-		int pointWidth = (int)(graph_point_width*scale);
+		int pointWidth = (int)(graph_point_width/scale);
 
 		// System.out.println("getPoint: " + event.getPoint().x + " " + event.getPoint().y);
 		// System.out.println("getXYOnScreen: " + event.getXOnScreen() + " " + event.getYOnScreen());
@@ -257,8 +257,22 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 		repaint();
 	}
 
-	// FIXME: add tooltip
+	// Put up tooltips
 	public void mouseMoved(MouseEvent me){
+		Point tt = me.getPoint();
+		int pointWidth = (int)(graph_point_width/scale);
+		int x = (int)((tt.x-previousDX)/scale);
+		int y = (int)((tt.y-previousDY)/scale);
+		if (!graphPoints.isEmpty()) {
+			for(int i=0;i<graphPoints.size();i++){
+				Point p = graphPoints.get(i);
+				if(Math.abs(p.x - x) <= pointWidth && Math.abs(p.y - y) <= pointWidth){
+					// The mouse is over this circle
+					CyNode node = scores[xIndex].getRowNode(i);
+					setToolTipText(getLabel(scores[xIndex].getNetwork(), node));
+				}
+			}
+		}
 	}
 
 	private void selectRange(int x1, int y1, int x2, int y2) {
@@ -530,6 +544,10 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 
 	private Color getColor(CyNetwork network, CyNode node) {
 		return ViewUtils.getColor(manager, network, node);
+	}
+
+	private String getLabel(CyNetwork network, CyNode node) {
+		return ViewUtils.getLabel(manager, network, node);
 	}
 
 }
