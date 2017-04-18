@@ -81,7 +81,7 @@ public class GowersMatrix  {
 		Matrix mat1 = cMat.ops().multiplyMatrix(cA);
 
 		Matrix G = mat1.ops().multiplyMatrix(cMat);
-		System.out.println("Completed Gowers Matrix");
+		// System.out.println("Completed Gowers Matrix");
 		// G.writeMatrix("Gowers");
 		return G;
 	}

@@ -1,7 +1,7 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa;
 
+import java.util.Arrays;
 import java.util.List;
-
 
 import javax.swing.SwingUtilities;
 
@@ -14,6 +14,9 @@ import edu.ucsf.rbvi.clusterMaker2.internal.ui.ScatterPlotDialog;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
+
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CommonOps;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
 
 public class RunPCoA {
 
@@ -56,42 +59,114 @@ public class RunPCoA {
 		long startTime = System.currentTimeMillis();
 		long time = startTime;
 
-		System.out.println("Calculating values");
+		// System.out.println("Calculating values");
 		// double data[][]=matrix.toArray();
-		System.out.println("Length "+ distanceMatrix.nRows());
+		// System.out.println("Length "+ distanceMatrix.nRows());
+
+		Matrix mean = distanceMatrix.like(distanceMatrix.nColumns(), 1);
+
+		// TODO: center the matrix?
+		for (int j = 0; j < mean.nRows(); j++) {
+			mean.setValue(j, 0, CommonOps.columnMean(distanceMatrix, j));
+		}
+
+		for (int i = 0; i < distanceMatrix.nRows(); i++) {
+			for (int j = 0; j < distanceMatrix.nColumns(); j++) {
+				distanceMatrix.setValue(i, j, distanceMatrix.doubleValue(i, j)-mean.doubleValue(j, 0));
+			}
+		}
 		
 		//System.out.println("Checking CyMatrix symmetrical "+distanceMatrix.isSymmetrical());
 
 		CalculationMatrix calc = new CalculationMatrix();
 
-		// Get the GOwer's Matrix
+		// Get the Gower's Matrix
 		Matrix G = GowersMatrix.getGowersMatrix(distanceMatrix);
 		long delta = System.currentTimeMillis()-time; time = System.currentTimeMillis();
-		System.out.println("Got GowersMatrix in "+delta+"ms");
-		System.out.println("Added data to the matrix ");
-		double eigenValues[]=calc.eigenAnalysis(G);
-		System.out.println("Completed Eigen Analysis, found "+eigenValues.length+" eigenvalues");
-		double variance[]=calc.computeVariance(eigenValues);
-		delta = System.currentTimeMillis()-time; time = System.currentTimeMillis();
-		System.out.println("Completed Variance Calculation in "+delta+"ms");
-		if(neg==2){//corect negative eigen values
-			calc.correctEigenValues();
-		}
-		CyMatrix components[]=calc.getCoordinates(distanceMatrix);
-		System.out.println("Completed Coordinates Calculation in "+(System.currentTimeMillis()-startTime)+"ms");
-		System.out.println("Found "+components.length+" components");
-		if(context.pcoaResultPanel){
-			ResultPanelPCoA.createAndShowGui(components, network, networkView, distanceMatrix.getRowNodes(), variance);
+		monitor.showMessage(TaskMonitor.Level.INFO, "Constructed Gower's Matrix in "+delta+"ms");
+		// System.out.println("Got GowersMatrix in "+delta+"ms");
+		Matrix V_t = CommonOps.transpose(G.ops().svdV());
 
-		}			
+		V_t = reshape(V_t, 2, mean.nRows());
+
+		double [][] trafoed = new double[distanceMatrix.nRows()][2];
+		CyMatrix result = CyMatrixFactory.makeLargeMatrix(distanceMatrix.getNetwork(), distanceMatrix.nRows(), 2);
+		result.setRowNodes(distanceMatrix.getRowNodes());
+		result.setRowLabels(Arrays.asList(distanceMatrix.getRowLabels()));
+		for (int i = 0; i < distanceMatrix.nRows(); i++) {
+			trafoed[i] = sampleToEigenSpace(V_t, distanceMatrix, mean, i);
+			for (int j = 0; j < trafoed[i].length; j++) {
+				result.setValue(i, j, trafoed[i][j] *= -1);
+			}
+		}
+
+		delta = System.currentTimeMillis()-time; time = System.currentTimeMillis();
+		monitor.showMessage(TaskMonitor.Level.INFO, "Completed SVD Analysis in "+delta+"ms");
+		// double eigenValues[]=calc.eigenAnalysis(G);
+		// System.out.println("Completed Eigen Analysis, found "+eigenValues.length+" eigenvalues");
+		// double variance[]=calc.computeVariance(eigenValues);
+		// delta = System.currentTimeMillis()-time; time = System.currentTimeMillis();
+		// System.out.println("Completed Variance Calculation in "+delta+"ms");
+		// if(neg==2){//corect negative eigen values
+		// 	calc.correctEigenValues();
+		// }
+		// CyMatrix components[]=calc.getCoordinates(distanceMatrix);
+		// System.out.println("Completed Coordinates Calculation in "+(System.currentTimeMillis()-startTime)+"ms");
+		// System.out.println("Found "+components.length+" components");
+		// if(context.pcoaResultPanel){
+		// 	ResultPanelPCoA.createAndShowGui(components, network, networkView, distanceMatrix.getRowNodes(), variance);
+
+		// }			
 		if(context.pcoaPlot) {
+			final Matrix vt = V_t;
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					System.out.println("Scatter plot dialog call");
-					ScatterPlotDialog dialog = new ScatterPlotDialog(manager, "PCoA Scatter Plot", monitor, components, variance);
+					// System.out.println("Scatter plot dialog call");
+					final CyMatrix coordinates = distanceMatrix.copy();
+					// System.out.println("vt has "+vt.nRows()+" rows and "+vt.nColumns()+" columns");
+					coordinates.initialize(result.nRows(), result.nColumns(), result.toArray());
+					// ScatterPlotDialog dialog = new ScatterPlotDialog(manager, "PCoA Scatter Plot", monitor, components, variance);
+					ScatterPlotDialog dialog = new ScatterPlotDialog(manager, "PCoA Scatter Plot", monitor, result);
 				}
 			});
 		}
 	}
+
+	private Matrix reshape(Matrix src, int numRows, int numCols) {
+    Matrix result  = src.like(numRows, numCols);
+    long index = 0;
+    long size = src.nRows()*src.nColumns();
+    for (int row = 0; row < numRows; row++) {
+      for (int col = 0; col < numCols; col++) {
+        double value = 0.0;
+        if (index < size) {
+          int srcRow = (int)(index/src.nColumns());
+          int srcCol = (int)(index%src.nColumns());
+          value = src.doubleValue(srcRow, srcCol);
+          index++;
+        }
+        result.setValue(row, col, value);
+      }
+    }
+
+    return result;
+  }
+
+    public double[] sampleToEigenSpace( Matrix V_t, Matrix sampleData, Matrix mean, int row ) {
+        Matrix s = distanceMatrix.like(distanceMatrix.nColumns(), 1);
+				for (int col = 0; col < distanceMatrix.nColumns(); col++)
+					s.setValue(col, 0, sampleData.doubleValue(row, col));
+
+        CommonOps.subtractElement(s, mean);
+				// s.writeMatrix("s-"+row);
+
+        Matrix r = CommonOps.multiplyMatrix(V_t.copy(),s);
+				// V_t.writeMatrix("V_t"+row);
+				// r.writeMatrix("r-"+row);
+
+        return r.getColumn(0);
+    }
+
+
 }
 

@@ -56,7 +56,7 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 	private static final int XSTART = BORDER_GAP+LABEL_GAP;
 	private static final int YSTART = BORDER_GAP;
 	private static final int GRAPH_HATCH_WIDTH = 2;
-	private int graph_point_width = 6;
+	private int graph_point_width = 2;
 
 	private final Matrix loadings;
 	private final CyMatrix[] scores;

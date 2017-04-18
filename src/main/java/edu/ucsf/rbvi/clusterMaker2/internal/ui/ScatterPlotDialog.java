@@ -188,7 +188,7 @@ public class ScatterPlotDialog extends JDialog {
 		labelXAxis = new JLabel("X - Axis: ");
 		labelYAxis = new JLabel("Y - Axis: ");
 		labelPointSize = new JLabel("Size of points: ");
-		textFieldPointSize = new JTextField(3);
+		textFieldPointSize = new JTextField(2);
 		collapsiblePaneOptions = new JXCollapsiblePane();
 		// collapsiblePaneLegend = new JXCollapsiblePane();
 		buttonPlot = new JButton("Plot");
@@ -391,7 +391,7 @@ public class ScatterPlotDialog extends JDialog {
 			}
 		}
 
-		textFieldPointSize.setText("6");
+		textFieldPointSize.setText("2");
 
 		panelButtons.setLayout(new BoxLayout(panelButtons, BoxLayout.X_AXIS));
 		panelButtons.add(buttonOptions);
@@ -462,7 +462,7 @@ public class ScatterPlotDialog extends JDialog {
 	}
 
 	public void repaintScatterPlot() {
-		int pointSize = 6;
+		int pointSize = 2;
 		try{
 			pointSize = Integer.parseInt(textFieldPointSize.getText());
 		}catch (NumberFormatException er) {
