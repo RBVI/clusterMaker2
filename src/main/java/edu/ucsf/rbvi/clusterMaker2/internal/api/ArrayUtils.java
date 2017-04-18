@@ -44,19 +44,27 @@ public class ArrayUtils {
 
 	public static double [] scalarInverse(double [] v1) {
 		double [] vector = new double[v1.length];
+		for (int i=0; i < v1.length; i++)
+			vector[i] = 1/v1[i];
+		/*
 		IntStream.range(0, v1.length).parallel()
 			.forEach(i -> {
 				vector[i] = 1/v1[i];
 			});
+		*/
 		return vector;
 	}
 
 	public static double [] sqrt(double [] v1) {
 		double [] vector = new double[v1.length];
+		for (int i=0; i < v1.length; i++)
+			vector[i] = Math.sqrt(v1[i]);
+		/*
 		IntStream.range(0, v1.length).parallel()
 			.forEach(i -> {
 				vector[i] = Math.sqrt(v1[i]);
 			});
+		*/
 		return vector;
 	}
 

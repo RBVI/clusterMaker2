@@ -149,10 +149,14 @@ public class CommonOps {
 	 */
  	public static Matrix rowSum(Matrix matrix) {
 		Matrix result = matrix.like(matrix.nRows(), 1);
+		for (int row = 0; row < matrix.nRows(); row++)
+			result.setValue(row, 0, rowSum(matrix, row));
+		/*
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> {
 				result.setValue(row, 0, rowSum(matrix, row));
 			});
+		*/
 		return result;
 	}	
 
@@ -186,10 +190,14 @@ public class CommonOps {
 	 */
  	public static Matrix columnSum(Matrix matrix) {
 		Matrix result = matrix.like(1, matrix.nColumns());
+		for (int col = 0; col < matrix.nColumns(); col++)
+			result.setValue(0, col, columnSum(matrix, col));
+		/*
 		IntStream.range(0, matrix.nColumns()).parallel()
 			.forEach(col -> {
 				result.setValue(0, col, columnSum(matrix, col));
 			});
+		*/
 		return result;
 	}
 
@@ -255,10 +263,14 @@ public class CommonOps {
 	 */
 	public static Matrix rowMean(Matrix matrix) {
 		Matrix result = matrix.like(matrix.nRows(), 1);
+		for (int row = 0; row < matrix.nRows(); row++)
+			result.setValue(row, 0, matrix.ops().rowMean(row));
+		/*
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> {
 				result.setValue(row, 0, matrix.ops().rowMean(row));
 			});
+		*/
 		return result;
 	}
 
@@ -281,10 +293,14 @@ public class CommonOps {
 	 */
 	public static Matrix columnMean(Matrix matrix) {
 		Matrix result = matrix.like(1, matrix.nColumns());
+		for (int col=0; col < matrix.nColumns(); col++)
+			result.setValue(0, col, matrix.ops().columnMean(col));
+		/*
 		IntStream.range(0, matrix.nColumns()).parallel()
 			.forEach(col -> {
 				result.setValue(0, col, matrix.ops().columnMean(col));
 			});
+		*/
 		return result;
 	}
 
@@ -388,12 +404,17 @@ public class CommonOps {
 	 * @return the matrix multiplied by the values in the multiplier
 	 */
 	public static Matrix multiplyElement(Matrix matrix, Matrix multiplier) {
+		for (int row = 0; row < matrix.nRows(); row++)
+			for (int col = 0; col < matrix.nColumns(); col++)
+				matrix.setValue(row, col, (matrix.doubleValue(row, col)*multiplier.doubleValue(row,col)));
+		/*
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(0, matrix.nColumns())
 				.forEach(col -> {
 					matrix.setValue(row, col, (matrix.doubleValue(row, col)*multiplier.doubleValue(row,col)));
 				})
 			);
+		*/
 		return matrix;
 	}
 
@@ -418,12 +439,17 @@ public class CommonOps {
 	 * @return the numerator matrix divided by the denominator
 	 */
 	public static Matrix divideElement(Matrix numerator, Matrix denom) {
+		for (int row = 0; row < numerator.nRows(); row++)
+			for (int col = 0; col < numerator.nColumns(); col++)
+				numerator.setValue(row, col, (numerator.doubleValue(row, col)/denom.doubleValue(row,col)));
+		/*
 		IntStream.range(0, numerator.nRows()).parallel()
 			.forEach(row -> IntStream.range(0, numerator.nColumns())
 				.forEach(col -> {
 					numerator.setValue(row, col, (numerator.doubleValue(row, col)/denom.doubleValue(row,col)));
 				})
 			);
+		*/
 		return numerator;
 	}
 
@@ -452,32 +478,47 @@ public class CommonOps {
 	 * @return the matrix
 	 */
 	public static Matrix divideElement(double value, Matrix matrix) {
+		for (int row = 0; row < matrix.nRows(); row++)
+			for (int col = 0; col < matrix.nColumns(); col++)
+				matrix.setValue(row, col, (value/matrix.doubleValue(row, col)));
+		/*
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(0, matrix.nColumns())
 				.forEach(col -> {
 					matrix.setValue(row, col, (value/matrix.doubleValue(row, col)));
 				})
 			);
+		*/
 		return matrix;
 	}
 
 	public static Matrix logElement(Matrix matrix) {
+		for (int row = 0; row < matrix.nRows(); row++)
+			for (int col = 0; col < matrix.nColumns(); col++)
+				matrix.setValue(row, col, (Math.log(matrix.doubleValue(row, col))));
+		/*
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(0, matrix.nColumns())
 				.forEach(col -> {
 					matrix.setValue(row, col, (Math.log(matrix.doubleValue(row, col))));
 				})
 			);
+		*/
 		return matrix;
 	}
 
 	public static Matrix expElement(Matrix matrix) {
+		for (int row = 0; row < matrix.nRows(); row++)
+			for (int col = 0; col < matrix.nColumns(); col++)
+				matrix.setValue(row, col, (Math.exp(matrix.doubleValue(row, col))));
+		/*
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(0, matrix.nColumns())
 				.forEach(col -> {
 					matrix.setValue(row, col, (Math.exp(matrix.doubleValue(row, col))));
 				})
 			);
+		*/
 		return matrix;
 	}
 
@@ -563,6 +604,18 @@ public class CommonOps {
 		boolean isLong = matrix.nRows() > matrix.nColumns();
 		int dim = Math.max(matrix.nRows(), matrix.nColumns());
 		Matrix result = matrix.like(dim, dim);
+		for (int row = 0; row < matrix.nRows(); row++) {
+			for (int col = 0; col < matrix.nColumns(); col++) {
+				if (row == col) {
+					if (isLong) {
+						result.setValue(row, col, matrix.doubleValue(row, 0));
+					} else {
+						result.setValue(row, col, matrix.doubleValue(0, col));
+					}
+				}
+			}
+		}
+		/*
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(0, matrix.nColumns())
 				.forEach(col -> {
@@ -575,6 +628,7 @@ public class CommonOps {
 					}
 				})
 			);
+		*/
 		return result;
 	}
 
@@ -626,12 +680,17 @@ public class CommonOps {
 	 * @return the original matrix with the row vector added
 	 */
 	public static Matrix addRowVector(Matrix matrix, Matrix rowvector) {
+		for (int row = 0; row < matrix.nRows(); row++)
+			for (int col = 0; col < matrix.nColumns(); col++)
+				matrix.setValue(row, col, (matrix.doubleValue(row, col)+rowvector.doubleValue(0, col)));
+		/*
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(0, matrix.nColumns())
 				.forEach(col -> {
 					matrix.setValue(row, col, (matrix.doubleValue(row, col)+rowvector.doubleValue(0, col)));
 				})
 			);
+		*/
 		return matrix;
 	}
 
@@ -644,12 +703,17 @@ public class CommonOps {
 	 * @return the original matrix with the column vector added
 	 */
 	public static Matrix addColumnVector(Matrix matrix, Matrix colvector) {
+		for (int row = 0; row < matrix.nRows(); row++)
+			for (int col = 0; col < matrix.nColumns(); col++)
+				matrix.setValue(row, col, (matrix.doubleValue(row, col)+colvector.doubleValue(row, 0)));
+		/*
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(0, matrix.nColumns())
 				.forEach(col -> {
 					matrix.setValue(row, col, (matrix.doubleValue(row, col)+colvector.doubleValue(row, 0)));
 				})
 			);
+		*/
 		return matrix;
 	}
 }

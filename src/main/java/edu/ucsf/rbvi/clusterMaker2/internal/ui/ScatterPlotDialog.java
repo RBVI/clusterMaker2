@@ -188,7 +188,7 @@ public class ScatterPlotDialog extends JDialog {
 		labelXAxis = new JLabel("X - Axis: ");
 		labelYAxis = new JLabel("Y - Axis: ");
 		labelPointSize = new JLabel("Size of points: ");
-		textFieldPointSize = new JTextField(6);
+		textFieldPointSize = new JTextField(3);
 		collapsiblePaneOptions = new JXCollapsiblePane();
 		// collapsiblePaneLegend = new JXCollapsiblePane();
 		buttonPlot = new JButton("Plot");
@@ -202,7 +202,7 @@ public class ScatterPlotDialog extends JDialog {
 		container.removeAll();
 
 		ScatterPlot scatterPlot = 
-		 				new ScatterPlot(manager, scores, loadings, 0, 1, pointColor, 6, loadingsColorMap, useLoadings);
+		 				new ScatterPlot(manager, scores, loadings, 0, 1, pointColor, 3, loadingsColorMap, useLoadings);
 
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.anchor = GridBagConstraints.NORTHWEST;

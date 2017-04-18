@@ -41,7 +41,7 @@
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Export-Package>!${bundle.namespace}.*</Export-Package>
-						<Private-Package>${bundle.namespace}.*</Private-Package>
+						<Private-Package>${bundle.namespace}.*,com.jujutsu.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
 						<Embed-Dependency>*;scope=!provided</Embed-Dependency>
 						<Embed-Transitive>true</Embed-Transitive>
@@ -228,6 +228,18 @@
 			<groupId>org.ojalgo</groupId>
 			<artifactId>ojalgo</artifactId>
 			<version>42.0.0</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+      <groupId>gov.nist.math</groupId>
+      <artifactId>jama</artifactId>
+      <version>1.0.2</version>
+			<optional>true</optional>
+    </dependency>
+		<dependency>
+			<groupId>org.ejml</groupId>
+			<artifactId>all</artifactId>
+			<version>0.30</version>
 			<optional>true</optional>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/junit/junit -->

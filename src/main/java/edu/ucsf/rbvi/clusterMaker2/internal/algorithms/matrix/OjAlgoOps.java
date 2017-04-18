@@ -2,8 +2,6 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.DoubleStream;
-import java.util.stream.IntStream;
 
 import org.cytoscape.application.CyUserLog;
 import org.apache.log4j.Logger;
@@ -334,13 +332,7 @@ public class OjAlgoOps implements MatrixOps {
 	 * Divide a value to all cells in the matrix
 	 */
 	public void divideScalar(double value) {
-		// matrix.data.modifyAll(PrimitiveFunction.DIVIDE.second(value));
-		IntStream.range(0, matrix.nRows()).parallel()
-			.forEach(row -> IntStream.range(0, matrix.nColumns())
-				.forEach(col -> {
-					matrix.setValue(row, col, matrix.doubleValue(row, col)/value);
-				})
-			);
+		matrix.data.modifyAll(PrimitiveFunction.DIVIDE.second(value));
 	}
 
 	/**

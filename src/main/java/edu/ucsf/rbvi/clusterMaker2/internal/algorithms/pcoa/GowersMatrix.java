@@ -18,10 +18,14 @@ public class GowersMatrix  {
 		// Create the Identity matrix
 		// DoubleMatrix2D I = DoubleFactory2D.sparse.identity(distancematrix.nRows());
 		Matrix I = distanceMatrix.like(distanceMatrix.nRows(), distanceMatrix.nRows(), 0.0);
+		for (int row = 0; row < distanceMatrix.nRows(); row++)
+			I.setValue(row, row, 1.0);
+		/*
 		IntStream.range(0, distanceMatrix.nRows()).parallel()
 			.forEach(row -> {
 					I.setValue(row, row, 1.0);
 				});
+		*/
 
 		// I.writeMatrix("I");
 		// Create the ones matrix.  This is equivalent to 11'/n

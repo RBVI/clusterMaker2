@@ -1,7 +1,5 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.api;
 
-import java.util.stream.IntStream;
-
 /**
  * This utility class provides a number of methods that support accessing
  * Matrix data through indices
@@ -17,10 +15,8 @@ public class MatrixIndexUtils {
 	 * @param value the value to set at those locations
 	 */
 	public static void assignAtIndex(Matrix num, int[] rowRange, int[] columnRange, double value) {
-		IntStream.range(0, rowRange.length)
-			.forEach(index -> {
-				num.setValue(rowRange[index], columnRange[index], value);
-			});
+		for (int index = 0; index < rowRange.length; index++)
+			num.setValue(rowRange[index], columnRange[index], value);
 	}
 
 	/**
@@ -33,10 +29,8 @@ public class MatrixIndexUtils {
 	 */
 	public static Matrix getValuesFromRow(Matrix matrix, int row, int[] indicies) {
 		Matrix values=matrix.like(1,indicies.length);
-		IntStream.range(0, indicies.length)
-			.forEach(index -> {
-				values.setValue(0, index, matrix.getValue(row, indicies[index]));
-			});
+		for (int index = 0; index < indicies.length; index++)
+			values.setValue(0, index, matrix.getValue(row, indicies[index]));
 		return values;
 	}
 
@@ -50,10 +44,8 @@ public class MatrixIndexUtils {
 	 */
 	public static Matrix getValuesFromColumn(Matrix matrix, int col, int[] indicies) {
 		Matrix values=matrix.like(indicies.length,1);
-		IntStream.range(0, indicies.length)
-			.forEach(index -> {
-				values.setValue(index, 0, matrix.getValue(indicies[index], col));
-			});
+		for (int index = 0; index < indicies.length; index++)
+			values.setValue(index, 0, matrix.getValue(indicies[index], col));
 		return values;
 	}
 
@@ -72,12 +64,6 @@ public class MatrixIndexUtils {
 		if( indicies.length != values.length ) {
 			throw new IllegalArgumentException("Length of indicies and values have to be equal");
 		}
-		/*
-		IntStream.range(0, indicies.length)
-			.forEach(index -> {
-				matrix.setValue(row, indicies[index], values[index]);
-			});
-		*/
 		for (int index = 0; index < indicies.length; index++) {
 			matrix.setValue(row, indicies[index], values[index]);
 		}

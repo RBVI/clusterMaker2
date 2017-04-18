@@ -357,6 +357,11 @@ public class tSNECalculation implements TSneInterface{
 	 * some minimum value.
 	 */
 	private Matrix maximum(Matrix matrix, double minvalue) {
+		for (int row = 0; row < matrix.nRows(); row++)
+			for (int col = 0; col < matrix.nColumns(); col++)
+				if (matrix.doubleValue(row, col) < minvalue)
+					matrix.setValue(col, col, minvalue);
+		/*
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(0, matrix.nColumns())
 				.forEach(col -> {
@@ -364,10 +369,17 @@ public class tSNECalculation implements TSneInterface{
 						matrix.setValue(col, col, minvalue);
 				})
 			);
+		*/
 		return matrix;
 	}
 
 	private void assignAllLessThan(Matrix matrix, double lessthan, double assign) {
+		for (int row = 0; row < matrix.nRows(); row++)
+			for (int col = 0; col < matrix.nColumns(); col++)
+				if(matrix.doubleValue(row, col) < lessthan) {
+					matrix.setValue(row, col, assign);
+				}
+		/*
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(0, matrix.nColumns())
 				.forEach(col -> {
@@ -376,9 +388,9 @@ public class tSNECalculation implements TSneInterface{
 					}
 				})
 			);
+		*/
 	}
 
-	// FIXME: should be able to stream this
 	private Matrix tile(Matrix matrix, int rowtimes, int coltimes) {
 		
 		Matrix result=matrix.like(matrix.nRows()*rowtimes,matrix.nColumns()*coltimes);
@@ -396,6 +408,12 @@ public class tSNECalculation implements TSneInterface{
 	}
 
 	private Matrix replaceNaN(Matrix matrix, double repl) {
+		for (int row = 0; row < matrix.nRows(); row++)
+			for (int col = 0; col < matrix.nColumns(); col++)
+				if(Double.isNaN(matrix.doubleValue(row, col))) {
+					matrix.setValue(row, col, repl);
+				}
+		/*
 		IntStream.range(0, matrix.nRows()).parallel()
 			.forEach(row -> IntStream.range(0, matrix.nColumns())
 				.forEach(col -> {
@@ -404,6 +422,7 @@ public class tSNECalculation implements TSneInterface{
 					} 
 				})
 			);
+		*/
 		return matrix;
 	}
 
