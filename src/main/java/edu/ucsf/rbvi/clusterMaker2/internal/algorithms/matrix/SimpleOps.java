@@ -165,7 +165,7 @@ public class SimpleOps implements MatrixOps {
 	 *
 	 * @param row the row to normalize
 	 */
-	public void normalizeRow(int row) {
+	public double normalizeRow(int row) {
 		double sum = Arrays.stream(matrix.data[row])
 									.filter(v -> !Double.isNaN(v))
 									.sum();
@@ -176,6 +176,7 @@ public class SimpleOps implements MatrixOps {
 										if (!Double.isNaN(val))
 											matrix.setValue(row, col, val/sum);
 						});
+		return sum;
 	}
 
 	/**
@@ -183,7 +184,7 @@ public class SimpleOps implements MatrixOps {
 	 *
 	 * @param column the column to normalize
 	 */
-	public void normalizeColumn(int column) {
+	public double normalizeColumn(int column) {
 		double sum = Arrays.stream(matrix.data)
 									.mapToDouble(arr -> arr[column])
 									.filter(v -> !Double.isNaN(v))
@@ -195,6 +196,7 @@ public class SimpleOps implements MatrixOps {
 										if (!Double.isNaN(val))
 											matrix.setValue(row, column, val/sum);
 						});
+		return sum;
 	}
 
 	public void standardizeRow(int row) {

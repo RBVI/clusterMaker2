@@ -24,6 +24,8 @@ import org.ojalgo.matrix.store.PrimitiveDenseStore;
 import org.ojalgo.matrix.task.InverterTask;
 import org.ojalgo.matrix.task.SolverTask;
 import org.ojalgo.matrix.task.TaskException;
+import org.ojalgo.scalar.PrimitiveScalar;
+import org.ojalgo.scalar.Scalar;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
@@ -121,14 +123,16 @@ public class OjAlgoOps implements MatrixOps {
 		matrix.updateMinMax();
 	}
 
-	public void normalizeRow(int row) {
+	public double normalizeRow(int row) {
 		double sum = rowSum(row);
 		matrix.data.modifyRow(row, 0L, PrimitiveFunction.DIVIDE.second(sum));
+		return sum;
 	}
 
-	public void normalizeColumn(int column) {
+	public double normalizeColumn(int column) {
 		double sum = columnSum(column);
 		matrix.data.modifyColumn(0L, column, PrimitiveFunction.DIVIDE.second(sum));
+		return sum;
 	}
 
 	public void standardizeRow(int row) {
@@ -185,32 +189,37 @@ public class OjAlgoOps implements MatrixOps {
 		// This method results in a loss of precision!  Rounding
 		// error somewhere (autoboxing?)
 		// return matrix.data.aggregateAll(Aggregator.SUM);
+		final AggregatorFunction<Double> tmpVisitor = MySUM.get().reset();
+		matrix.data.visitAll(tmpVisitor);
+		return tmpVisitor.doubleValue();
+		/*
 		double sum = 0.0;
 		for (int col = 0; col < matrix.data.countColumns(); col++)
 			sum += columnSum(col);
 		return sum;
+		*/
 	}
 
 	public double columnSum(int column) {
-		final AggregatorFunction<Double> tmpVisitor = matrix.storeFactory.aggregator().sum();
+		final AggregatorFunction<Double> tmpVisitor = MySUM.get().reset();
 		matrix.data.visitColumn(0L, column, tmpVisitor);
 		return tmpVisitor.doubleValue();
 	}
 
 	public double columnSum2(int column) {
-		final AggregatorFunction<Double> tmpVisitor = matrix.storeFactory.aggregator().sum2();
+		final AggregatorFunction<Double> tmpVisitor = MySUM2.get().reset();
 		matrix.data.visitColumn(0L, column, tmpVisitor);
 		return tmpVisitor.doubleValue();
 	}
 
 	public double rowSum(int row) {
-		final AggregatorFunction<Double> tmpVisitor = matrix.storeFactory.aggregator().sum();
+		final AggregatorFunction<Double> tmpVisitor = MySUM.get().reset();
 		matrix.data.visitRow(row, 0L, tmpVisitor);
 		return tmpVisitor.doubleValue();
 	}
 
 	public double rowSum2(int row) {
-		final AggregatorFunction<Double> tmpVisitor = matrix.storeFactory.aggregator().sum2();
+		final AggregatorFunction<Double> tmpVisitor = MySUM2.get().reset();
 		matrix.data.visitRow(row, 0L, tmpVisitor);
 		return tmpVisitor.doubleValue();
 	}
@@ -320,7 +329,7 @@ public class OjAlgoOps implements MatrixOps {
 	}
 	
 	public Matrix multiplyMatrix(Matrix m2) {
-		if (matrix instanceof OjAlgoMatrix) {
+		if (m2 instanceof OjAlgoMatrix) {
 			OjAlgoMatrix m = (OjAlgoMatrix)m2;
 			PhysicalStore<Double> mat = (PhysicalStore<Double>)matrix.data.multiply(m.data);
 			return new OjAlgoMatrix(matrix, mat);
@@ -505,4 +514,71 @@ public class OjAlgoOps implements MatrixOps {
 			return Math.pow(a, power);
 		}
 	}
+
+	public static final ThreadLocal<AggregatorFunction<Double>> MySUM = new ThreadLocal<AggregatorFunction<Double>>() {
+
+		@Override
+		protected AggregatorFunction<Double> initialValue() {
+			return new AggregatorFunction<Double>() {
+
+				private double sum = 0.0;
+
+				public void invoke(final Double anArg) {
+					if (anArg != null) invoke(anArg.doubleValue());
+				}
+				public void invoke(final double anArg) {
+					if (!Double.isNaN(anArg))
+						sum += anArg;
+				}
+
+				public double doubleValue() { return sum; }
+				public Scalar<Double> toScalar() { 
+					return PrimitiveScalar.of(this.doubleValue()); 
+				}
+				public AggregatorFunction<Double> reset() { sum = 0.0; return this; }
+				public void merge(final Double result) {
+					this.invoke(result.doubleValue());
+				}
+				public Double merge(final Double result1, final Double result2) {
+					return result1 + result2;
+				}
+				public Double getNumber() {
+					return Double.valueOf(this.doubleValue());
+				}
+			};
+		}
+	};
+
+	public static final ThreadLocal<AggregatorFunction<Double>> MySUM2 = new ThreadLocal<AggregatorFunction<Double>>() {
+
+		@Override
+		protected AggregatorFunction<Double> initialValue() {
+			return new AggregatorFunction<Double>() {
+
+				private double sum = 0;
+
+				public void invoke(final Double anArg) {
+					if (anArg != null) invoke(anArg.doubleValue());
+				}
+				public void invoke(final double anArg) {
+					if (!Double.isNaN(anArg))
+						sum += anArg*anArg;
+				}
+
+				public double doubleValue() { return sum; }
+				public Scalar<Double> toScalar() { return PrimitiveScalar.of(this.doubleValue()); }
+				public AggregatorFunction<Double> reset() { sum = 0.0; return this; }
+				public void merge(final Double result) {
+					this.invoke(result.doubleValue());
+				}
+				public Double merge(final Double result1, final Double result2) {
+					return result1 + result2;
+				}
+				public Double getNumber() {
+					return Double.valueOf(this.doubleValue());
+				}
+			};
+		}
+	};
+
 }

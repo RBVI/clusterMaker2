@@ -29,16 +29,18 @@ public interface MatrixOps {
 	 * Note: does not update matrix min/max values.  
 	 *
 	 * @param row the row to normalize
+	 * @return the row sum before normalization
 	 */
-	public void normalizeRow(int row);
+	public double normalizeRow(int row);
 
 	/**
 	 * Normalize a matrix column in place (all rows in the column sum to 1.0)
 	 * Note: does not update matrix min/max values.  
 	 *
 	 * @param column the column to normalize
+	 * @return the row sum before normalization
 	 */
-	public void normalizeColumn(int column);
+	public double normalizeColumn(int column);
 
 	/**
 	 * Standardize the data in a row

@@ -153,13 +153,15 @@ public class ColtOps implements MatrixOps {
 		matrix.updateMinMax();
 	}
 
-	public void normalizeRow(int row) {
+	public double normalizeRow(int row) {
 		getData().viewRow(row).normalize();
+		return getData().viewRow(row).zSum();
 		// matrix.updateMinMax();
 	}
 
-	public void normalizeColumn(int column) {
+	public double normalizeColumn(int column) {
 		getData().viewColumn(column).normalize();
+		return getData().viewColumn(column).zSum();
 		// matrix.updateMinMax();
 	}
 

@@ -46,19 +46,43 @@ public class MatrixTest {
 		// First, simpleMatrix
 		timeStart();
 		Matrix resultSimple = simpleMatrix.ops().multiplyMatrix(simpleMatrix2);
+		resultSimple.writeMatrix("simpleTimes.mat");
 		timeEnd("multiply simple matrix");
-		System.out.println("resultSimple: "+resultSimple.printMatrixInfo());
 
 		timeStart();
 		Matrix resultColt = coltMatrix.ops().multiplyMatrix(coltMatrix2);
+		resultColt.writeMatrix("coltTimes.mat");
 		timeEnd("multiply colt matrix");
-		System.out.println("resultColt: "+resultColt.printMatrixInfo());
 
 		assertArrayEquals(resultSimple.toArray(), resultColt.toArray(), DELTA);
 
 		timeStart();
 		Matrix resultAlgo = ojAlgoMatrix.ops().multiplyMatrix(ojAlgoMatrix2);
+		resultAlgo.writeMatrix("ojAlgoTimes.mat");
 		timeEnd("multiply ojAlgo matrix");
+		assertArrayEquals(resultSimple.toArray(), resultAlgo.toArray(), DELTA);
+
+	}
+
+	@Test
+	public void matrixSquareTest() {
+		initialize();
+		// First, simpleMatrix
+		timeStart();
+		Matrix resultSimple = simpleMatrix.ops().multiplyMatrix(simpleMatrix);
+		timeEnd("square multiply simple matrix");
+		System.out.println("resultSimple: "+resultSimple.printMatrixInfo());
+
+		timeStart();
+		Matrix resultColt = coltMatrix.ops().multiplyMatrix(coltMatrix);
+		timeEnd("square multiply colt matrix");
+		System.out.println("resultColt: "+resultColt.printMatrixInfo());
+
+		assertArrayEquals(resultSimple.toArray(), resultColt.toArray(), DELTA);
+
+		timeStart();
+		Matrix resultAlgo = ojAlgoMatrix.ops().multiplyMatrix(ojAlgoMatrix);
+		timeEnd("square multiply ojAlgo matrix");
 		System.out.println("resultOjAlgo: "+ resultAlgo.printMatrixInfo());
 		assertArrayEquals(resultSimple.toArray(), resultAlgo.toArray(), DELTA);
 
@@ -94,33 +118,33 @@ public class MatrixTest {
 		timeEnd("normalize simple matrix");
 
 		timeStart();
-		System.out.println("Sum by rows: "+sumByRows(simpleMatrix));
-		timeEnd("Sum by rows");
+		System.out.println("simple matrix sum by rows: "+sumByRows(simpleMatrix));
+		timeEnd("simple matrix sum by rows");
 		timeStart();
-		System.out.println("Sum by columns: "+sumByColumns(simpleMatrix));
-		timeEnd("Sum by columns");
+		System.out.println("simple matrix sum by columns: "+sumByColumns(simpleMatrix));
+		timeEnd("simple matrix sum by columns");
 
 		timeStart();
 		coltMatrix.ops().normalizeMatrix();
 		timeEnd("normalize colt matrix");
 
 		timeStart();
-		System.out.println("Sum by rows: "+sumByRows(coltMatrix));
-		timeEnd("Sum by rows");
+		System.out.println("colt matrix sum by rows: "+sumByRows(coltMatrix));
+		timeEnd("colt matrix sum by rows");
 		timeStart();
-		System.out.println("Sum by columns: "+sumByColumns(coltMatrix));
-		timeEnd("Sum by columns");
+		System.out.println("colt matrix sum by columns: "+sumByColumns(coltMatrix));
+		timeEnd("colt matrix sum by columns");
 
 		timeStart();
 		ojAlgoMatrix.ops().normalizeMatrix();
 		timeEnd("normalize ojAlgo matrix");
 
 		timeStart();
-		System.out.println("Sum by rows: "+sumByRows(ojAlgoMatrix));
-		timeEnd("Sum by rows");
+		System.out.println("ojAlgo sum by rows: "+sumByRows(ojAlgoMatrix));
+		timeEnd("ojAlgo sum by rows");
 		timeStart();
-		System.out.println("Sum by columns: "+sumByColumns(ojAlgoMatrix));
-		timeEnd("Sum by columns");
+		System.out.println("ojAlgo sum by columns: "+sumByColumns(ojAlgoMatrix));
+		timeEnd("ojAlgo sum by columns");
 	}
 	
 	@Test
@@ -239,8 +263,8 @@ public class MatrixTest {
 
 	private void initialize() {
 		// Arbirary bounding
-		double min = 90;
-		double max = 103;
+		double min = 0.0;
+		double max = 0.02;
 
 		simpleMatrix = new SimpleMatrix(rows, columns);
 		double randomValue;
@@ -251,6 +275,9 @@ public class MatrixTest {
 				simpleMatrix.setValue(row, col, randomValue);
 			}
 		}
+
+		// Now, randomly stick a NaN in to see how it adapts
+		simpleMatrix.setValue(rows/3, columns/5, Double.NaN);
 		coltMatrix = new ColtMatrix((SimpleMatrix)simpleMatrix);
 		ojAlgoMatrix = new OjAlgoMatrix((SimpleMatrix)simpleMatrix);
 
