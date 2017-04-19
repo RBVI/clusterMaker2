@@ -208,6 +208,16 @@ public class CyMatrixFactory {
 		return mat;
 	}
 
+	public static CyMatrix makeSmallMatrix(CyNetwork network, int rows, int columns, double[][] data) {
+		CyMatrix mat = makeTypedMatrix(network, rows, columns, false, MatrixType.SIMPLE);
+		for (int row = 0; row < rows; row++) {
+			for (int col = 0; col < columns; col++) {
+				mat.setValue(row, col, data[row][col]);
+			}
+		}
+		return mat;
+	}
+
 	/**
 	 * Create a small matrix with an initial data set.  Used primarily for test cases
 	 *

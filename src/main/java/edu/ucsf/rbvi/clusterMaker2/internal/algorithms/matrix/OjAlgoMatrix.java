@@ -10,6 +10,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 import org.cytoscape.application.CyUserLog;
 import org.apache.log4j.Logger;
@@ -443,13 +444,13 @@ public class OjAlgoMatrix implements Matrix {
 		mat.rowLabels = Arrays.copyOf(rowLabels, rowLabels.length);
 		mat.columnLabels = Arrays.copyOf(rowLabels, rowLabels.length);
 
-		for (int row = 0; row < nRows; row++) {
-			for (int column = row; column < this.nRows; column++) {
-				mat.setValue(row, column, metric.getMetric(this, this, row, column));
-				if (row != column)
-					mat.setValue(column, row, metric.getMetric(this, this, row, column));
-			}
-		}
+		IntStream.range(0, nRows).parallel()
+			.forEach(row -> IntStream.range(row, nRows)
+				.forEach(column -> {
+						mat.setValue(row, column, metric.getMetric(this, this, row, column));
+						if (row != column)
+							mat.setValue(column, row, metric.getMetric(this, this, row, column));
+				}));
 		return mat;
 	}
  
