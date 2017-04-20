@@ -674,11 +674,17 @@ public class ColtMatrix implements Matrix {
 		sb.append(" cardinality is "+data.cardinality()+"\n\t");
 
 		for (int col = 0; col < nColumns; col++) {
-			sb.append(getColumnLabel(col)+"\t");
+			if (columnLabels != null)
+				sb.append(getColumnLabel(col)+"\t");
+			else
+				sb.append("null\t");
 		}
 		sb.append("\n");
 		for (int row = 0; row < nRows; row++) {
-			sb.append(getRowLabel(row)+":\t"); //node.getIdentifier()
+			if (rowLabels != null)
+				sb.append(getRowLabel(row)+":\t"); //node.getIdentifier()
+			else
+				sb.append("null:\t"); //node.getIdentifier()
 			for (int col = 0; col < nColumns; col++) {
 				double value = doubleValue(row, col);
 				if (value < 0.001)
