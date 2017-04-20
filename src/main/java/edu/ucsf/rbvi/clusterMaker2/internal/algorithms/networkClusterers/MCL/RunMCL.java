@@ -93,10 +93,15 @@ public class RunMCL {
 		debugln("Normalized matrix:",matrix);
 
 		double residual = 1.0;
+		double progress = 1.0;
 		// IntIntDoubleFunction myPow = new MatrixPow(inflationParameter);
 		debugln("residual = "+residual+" maxResidual = "+maxResidual);
-		for (int i=0; (i<number_iterations)&&(residual>maxResidual); i++)
+		for (int i=0; (i<number_iterations)&&(residual>=maxResidual); i++)
 		{
+
+			progress = (double)(i*3)/(double)(number_iterations*3);
+			monitor.setProgress(progress);
+
 			// Expand
 			{
 				long t = System.currentTimeMillis();
@@ -113,6 +118,9 @@ public class RunMCL {
 
 			debugln("^ "+(i+1)+" after expansion");
 
+			progress = (double)(i*3+1)/(double)(number_iterations*3);
+			monitor.setProgress(progress);
+
 			// Inflate
 			// DoubleMatrix2D m = matrix.getColtMatrix();
 			{
@@ -128,7 +136,12 @@ public class RunMCL {
 
 			debugln("^ "+(i+1)+" after inflation");
 
-			residual = calculateResiduals(matrix);
+			progress = (double)(i*3+2)/(double)(number_iterations*3);
+			monitor.setProgress(progress);
+
+			double newResidual  = calculateResiduals(matrix);
+			if (newResidual >= residual) break;
+			residual = newResidual;
 			/*
 			double newResidual = calculateResiduals(matrix);
 			if (newResidual >= residual) break;
@@ -136,6 +149,7 @@ public class RunMCL {
 			*/
 
 			debugln("Iteration: "+(i+1)+" residual: "+residual);
+			monitor.showMessage(TaskMonitor.Level.INFO,"Iteration "+(i+1)+" complete.  Residual="+residual);
 			// System.out.println("Iteration: "+(i+1)+" residual: "+residual);
 
 			if (canceled) {
@@ -227,15 +241,13 @@ public class RunMCL {
 	 */
 	private double calculateResiduals(Matrix matrix) {
 		// Calculate and return the residuals
-		double[] sums = new double[matrix.nColumns()];
-		double [] sumSquares = new double[matrix.nColumns()];
-		for (int column = 0; column < matrix.nColumns(); column++) {
-			sums[column] = matrix.ops().columnSum(column);
-			sumSquares[column] = matrix.ops().columnSum2(column);
-		}
+		double sums = 0.0;
+		double sumSquares = 0.0;
 		double residual = 0.0;
-		for (int i = 0; i < sums.length; i++) {
-			residual = Math.max(residual, sums[i] - sumSquares[i]);
+		for (int column = 0; column < matrix.nColumns(); column++) {
+			sums = matrix.ops().columnSum(column);
+			sumSquares = matrix.ops().columnSum2(column);
+			residual = Math.max(residual, sums - sumSquares);
 		}
 		return residual;
 	}
