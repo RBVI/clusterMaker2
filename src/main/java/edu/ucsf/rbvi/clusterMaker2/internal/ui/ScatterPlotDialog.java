@@ -43,6 +43,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ViewUtils;
 
 /**
  *
@@ -76,10 +77,12 @@ public class ScatterPlotDialog extends JDialog {
 	private JComboBox<String> comboXAxis;
 	private JComboBox<String> comboYAxis;
 	private JButton buttonColor;
+	private JButton buttonLayout;
 	private JButton buttonOptions;
 	private JButton buttonPlot;
 	private JButton buttonLegend;
 	private Map<String, Color> loadingsColorMap;
+	private boolean supportsLayout;
 
 	// For inner classes
 	private final ScatterPlotDialog thisDialog;
@@ -92,6 +95,7 @@ public class ScatterPlotDialog extends JDialog {
 		setTitle(title);
 		monitor.setTitle(title);
 		useLoadings = false;
+		supportsLayout = true;
 		this.manager = manager;
 		this.scores = new CyMatrix[1];
 		this.scores[0] = coordinates;
@@ -123,6 +127,7 @@ public class ScatterPlotDialog extends JDialog {
 		setTitle(title);
 		monitor.setTitle(title);
 		useLoadings = false;
+		supportsLayout = false;
 		this.scores = components;
 		this.manager = manager;
 		this.loadings = CyMatrixFactory.makeSmallMatrix(components[0].getNetwork(), 1, components.length);
@@ -160,6 +165,7 @@ public class ScatterPlotDialog extends JDialog {
 		loadingsColorMap = new HashMap<String, Color>();
 		this.loadings = loading;
 		useLoadings = true;
+		supportsLayout = false;
 		initializeColors();
 
 		this.variances = varianceArray;
@@ -197,6 +203,7 @@ public class ScatterPlotDialog extends JDialog {
 			buttonLegend = new JButton("Arrow Legend");
 
 		buttonColor = new JButton("Get Colors");
+		buttonLayout = new JButton("Copy Layout");
 
 		container.setLayout(new GridBagLayout());
 		container.removeAll();
@@ -397,6 +404,8 @@ public class ScatterPlotDialog extends JDialog {
 		panelButtons.add(buttonOptions);
 		panelButtons.add(buttonPlot);
 		panelButtons.add(buttonColor);
+		if (supportsLayout)
+			panelButtons.add(buttonLayout);
 		if (useLoadings)
 			panelButtons.add(buttonLegend);
 
@@ -453,6 +462,17 @@ public class ScatterPlotDialog extends JDialog {
 			}
 
 		});
+		
+		if (supportsLayout) {
+			buttonLayout.addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e)
+				{
+					copyLayoutToCytoscape();
+				}
+	
+			});
+		}
 
 		// set border for the panel
 		control.setBorder(BorderFactory.createTitledBorder(
@@ -512,5 +532,27 @@ public class ScatterPlotDialog extends JDialog {
 			int clr = Color.HSBtoRGB(hue, saturation, brightness);
 			loadingsColorMap.put(label, new Color(clr));
 		}
+	}
+
+	private void copyLayoutToCytoscape() {
+		CyMatrix coordinates = scores[0];
+		CyNetwork net = coordinates.getNetwork();
+		double scale = 1.0;
+
+		// Get the min and max so we can see if we need to scale
+		double maxValue = coordinates.getMaxValue();
+		double minValue = coordinates.getMinValue();
+		double range = maxValue-minValue;
+		if (range < 2500.0)
+			scale = 2500.0/range;
+
+		for (int row = 0; row < coordinates.nRows(); row++) {
+			CyNode node = coordinates.getRowNode(row);
+			double x = coordinates.doubleValue(row, 0);
+			double y = coordinates.doubleValue(row, 1);
+			ViewUtils.moveNode(manager, net, node, x*scale, -y*scale);
+		}
+
+
 	}
 }

@@ -46,19 +46,19 @@ public class MatrixTest {
 		// First, simpleMatrix
 		timeStart();
 		Matrix resultSimple = simpleMatrix.ops().multiplyMatrix(simpleMatrix2);
-		resultSimple.writeMatrix("simpleTimes.mat");
+		// resultSimple.writeMatrix("simpleTimes.mat");
 		timeEnd("multiply simple matrix");
 
 		timeStart();
 		Matrix resultColt = coltMatrix.ops().multiplyMatrix(coltMatrix2);
-		resultColt.writeMatrix("coltTimes.mat");
+		// resultColt.writeMatrix("coltTimes.mat");
 		timeEnd("multiply colt matrix");
 
 		assertArrayEquals(resultSimple.toArray(), resultColt.toArray(), DELTA);
 
 		timeStart();
 		Matrix resultAlgo = ojAlgoMatrix.ops().multiplyMatrix(ojAlgoMatrix2);
-		resultAlgo.writeMatrix("ojAlgoTimes.mat");
+		// resultAlgo.writeMatrix("ojAlgoTimes.mat");
 		timeEnd("multiply ojAlgo matrix");
 		assertArrayEquals(resultSimple.toArray(), resultAlgo.toArray(), DELTA);
 
@@ -277,7 +277,7 @@ public class MatrixTest {
 		}
 
 		// Now, randomly stick a NaN in to see how it adapts
-		simpleMatrix.setValue(rows/3, columns/5, Double.NaN);
+		// simpleMatrix.setValue(rows/3, columns/5, Double.NaN);
 		coltMatrix = new ColtMatrix((SimpleMatrix)simpleMatrix);
 		ojAlgoMatrix = new OjAlgoMatrix((SimpleMatrix)simpleMatrix);
 
