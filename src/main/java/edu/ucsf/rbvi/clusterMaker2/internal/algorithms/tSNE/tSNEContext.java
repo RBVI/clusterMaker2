@@ -39,6 +39,9 @@ public class tSNEContext {
 	@Tunable(description="Number of Iterations", groups={"t-SNE Advanced Settings"}, gravity=68)
 	public int iterations=2000;
 
+	@Tunable(description="Show scatter plot with results",  gravity=69)
+	public boolean showScatterPlot=true;
+
 	/*
 	 * Add at some point
 	 *

@@ -126,7 +126,7 @@ public class RunPCoA {
 					// System.out.println("vt has "+vt.nRows()+" rows and "+vt.nColumns()+" columns");
 					coordinates.initialize(result.nRows(), result.nColumns(), result.toArray());
 					// ScatterPlotDialog dialog = new ScatterPlotDialog(manager, "PCoA Scatter Plot", monitor, components, variance);
-					ScatterPlotDialog dialog = new ScatterPlotDialog(manager, "PCoA Scatter Plot", monitor, result);
+					ScatterPlotDialog dialog = new ScatterPlotDialog(manager, "PCoA", monitor, result);
 				}
 			});
 		}

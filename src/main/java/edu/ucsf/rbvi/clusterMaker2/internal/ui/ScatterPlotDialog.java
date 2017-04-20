@@ -37,7 +37,9 @@ import org.jdesktop.swingx.JXCollapsiblePane;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.UndoSupport;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
@@ -60,6 +62,7 @@ public class ScatterPlotDialog extends JDialog {
 
 	private final double[] variances;
 	private String[] PCs;
+	private String title;
 	private Color pointColor = Color.BLUE;
 
 	private JPanel container;
@@ -92,8 +95,9 @@ public class ScatterPlotDialog extends JDialog {
 	// Entry point for tSNE and related
 	public ScatterPlotDialog(ClusterManager manager, String title, TaskMonitor monitor, CyMatrix coordinates) {
 		super();
-		setTitle(title);
-		monitor.setTitle(title);
+		this.title = title;
+		setTitle(title+" Scatter Plot");
+		monitor.setTitle(title+" Scatter Plot");
 		useLoadings = false;
 		supportsLayout = true;
 		this.manager = manager;
@@ -124,8 +128,9 @@ public class ScatterPlotDialog extends JDialog {
 	public ScatterPlotDialog(ClusterManager manager, String title, TaskMonitor monitor, 
 	                         CyMatrix[] components, double[] varianceArray) {
 		super();
-		setTitle(title);
-		monitor.setTitle(title);
+		this.title = title;
+		setTitle(title+" Scatter Plot");
+		monitor.setTitle(title+" Scatter Plot");
 		useLoadings = false;
 		supportsLayout = false;
 		this.scores = components;
@@ -157,8 +162,9 @@ public class ScatterPlotDialog extends JDialog {
 	public ScatterPlotDialog(ClusterManager manager, String title, TaskMonitor monitor, 
 	                         CyMatrix[] components, Matrix loading, double[] varianceArray) {
 		super();
-		setTitle(title);
-		monitor.setTitle(title);
+		this.title = title;
+		setTitle(title+" Scatter Plot");
+		monitor.setTitle(title+" Scatter Plot");
 
 		this.scores = components;
 		this.manager = manager;
@@ -536,23 +542,10 @@ public class ScatterPlotDialog extends JDialog {
 
 	private void copyLayoutToCytoscape() {
 		CyMatrix coordinates = scores[0];
-		CyNetwork net = coordinates.getNetwork();
-		double scale = 1.0;
-
-		// Get the min and max so we can see if we need to scale
-		double maxValue = coordinates.getMaxValue();
-		double minValue = coordinates.getMinValue();
-		double range = maxValue-minValue;
-		if (range < 2500.0)
-			scale = 2500.0/range;
-
-		for (int row = 0; row < coordinates.nRows(); row++) {
-			CyNode node = coordinates.getRowNode(row);
-			double x = coordinates.doubleValue(row, 0);
-			double y = coordinates.doubleValue(row, 1);
-			ViewUtils.moveNode(manager, net, node, x*scale, -y*scale);
-		}
-
-
+		CyNetworkView view = manager.getNetworkView(coordinates.getNetwork());
+		UndoSupport undo = manager.getService(UndoSupport.class);
+		ScatterPlotLayoutTask splt = new ScatterPlotLayoutTask(manager, title+" Layout",
+		                                                       view, coordinates, undo);
+		splt.execute();
 	}
 }

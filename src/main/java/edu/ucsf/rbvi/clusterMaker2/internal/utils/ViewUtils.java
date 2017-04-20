@@ -101,6 +101,11 @@ public class ViewUtils {
 	public static void moveNode(ClusterManager manager, CyNetwork network, 
 	                            CyNode node, double x, double y) {
 		CyNetworkView view = manager.getNetworkView(network);
+		moveNode(manager, view, node, x, y);
+	}
+
+	public static void moveNode(ClusterManager manager, CyNetworkView view, 
+	                            CyNode node, double x, double y) {
 		View<CyNode> nodeView = view.getNodeView(node);
 		nodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, x);
 		nodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, y);

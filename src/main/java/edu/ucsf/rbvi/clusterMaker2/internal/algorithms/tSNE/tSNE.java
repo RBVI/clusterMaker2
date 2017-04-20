@@ -19,7 +19,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 public class tSNE extends AbstractNetworkClusterer{
 
 	RuntSNE runtsne;
-	public static String SHORTNAME = "tsnem";
+	public static String SHORTNAME = "tsne";
 	public static String NAME = "t-Distributed Stochastic Neighbor";
 	public final static String GROUP_ATTRIBUTE = "__tSNE.SUID";
 	public final ClusterManager manager;

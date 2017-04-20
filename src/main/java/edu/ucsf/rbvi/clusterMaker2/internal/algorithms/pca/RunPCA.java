@@ -89,7 +89,7 @@ public class RunPCA {
 				public void run() {
 					// System.out.println("Scatter plot dialog call");
 					ScatterPlotDialog dialog = 
-									new ScatterPlotDialog(manager, "PCA Scatter Plot", monitor, components, loadingMatrix, variance);
+									new ScatterPlotDialog(manager, "PCA", monitor, components, loadingMatrix, variance);
 				}
 			});
 		}

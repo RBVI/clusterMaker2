@@ -61,11 +61,13 @@ public class RuntSNE {
 		else
 			Y = tsne.tsne(matrix, 2, dims, perplexity, no_of_iterations, false);
 
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				ScatterPlotDialog dialog = new ScatterPlotDialog(manager, "tSNE Scatter Plot", monitor, Y);
-			}
-		});
+		if (context.showScatterPlot) {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					ScatterPlotDialog dialog = new ScatterPlotDialog(manager, "tSNE", monitor, Y);
+				}
+			});
+		}
 
 	}
 }
