@@ -46,12 +46,8 @@ public class tSNEContext implements TSneConfiguration {
 	@Tunable(description="Theta value for Barnes-Hut", dependsOn="useBarnesHut=true", groups={"t-SNE Advanced Settings"}, gravity=70)
 	public BoundedDouble theta=new BoundedDouble(0.0, 0.9, 1.0, false, false);
 
-	/*
-	 * Add at some point
-	 *
-	 * @Tunable(description="Use Principal Component Analysis to pre-filter data", groups={"t-SNE Advanced Settings"}, gravity=69)
-	 * public boolean usePCA = false;
-	 */
+	@Tunable(description="Show scatter plot with results",  gravity=69)
+	public boolean showScatterPlot=true;
 
 	public tSNEContext(){
 	}

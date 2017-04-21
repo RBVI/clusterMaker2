@@ -1,10 +1,15 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEWrapper;
 
+import java.awt.geom.Point2D;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -14,12 +19,13 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 
-public class tSNE extends AbstractNetworkClusterer{
+public class tSNE extends AbstractNetworkClusterer implements ObservableTask {
 
 	RuntSNE runtsne;
-	public static String SHORTNAME = "tsnem";
+	public static String SHORTNAME = "tsne";
 	public static String NAME = "t-Distributed Stochastic Neighbor";
 	public final static String GROUP_ATTRIBUTE = "__tSNE.SUID";
 	public final ClusterManager manager;
@@ -87,14 +93,36 @@ public class tSNE extends AbstractNetworkClusterer{
 		
 		runtsne = new RuntSNE(manager, network, networkView, context, monitor, matrix);
 		runtsne.run();
-		//runpcoa.setDebug(false);
-
 		
 	}
 
 	public void cancel() {
 		canceled = true;
 		
+	}
+
+	@Override
+	public <R>R getResults(Class<? extends R> type) {
+		CyMatrix results = runtsne.getResult();
+		if (type.equals(String.class)) {
+			results.setColumnLabel(0, "X");
+			results.setColumnLabel(1, "Y");
+			CyNetwork net = results.getNetwork();
+			for (int row = 0; row < results.nRows(); row++) {
+				CyNode node = results.getRowNode(row);
+				results.setRowLabel(row, ModelUtils.getName(net, node));
+			}
+			return (R)results.printMatrix();
+		} else if (type.equals(Map.class)) {
+			Map<CyNode, Point2D> resultsMap = new HashMap<>();
+			for (int row = 0; row < results.nRows(); row++) {
+				CyNode node = results.getRowNode(row);
+				resultsMap.put(node,  
+						new Point2D.Double(results.doubleValue(row, 0), results.doubleValue(row,1)));
+			}
+			return (R) resultsMap;
+		}
+		return (R) results;
 	}
 
 	/*

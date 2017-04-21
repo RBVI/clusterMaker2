@@ -40,6 +40,8 @@ public class RunPCA {
 	protected boolean standardize;
 	double[] eigenValues;
 	double[][] eigenVectors;
+	double[] variance;
+	CyMatrix[] components;
 
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
 
@@ -74,11 +76,9 @@ public class RunPCA {
 		                                                  context.ignoreMissing, false, false);
 
 		// System.out.println("Computing principle components");
-		final CyMatrix[] components = computePCs(matrix);
+		components = computePCs(matrix);
 
 		final Matrix loadingMatrix = calculateLoadingMatrix(matrix);
-
-		final double[] variance = computeVariance(eigenValues);
 
 		if(context.pcaResultPanel)
 			ResultPanelPCA.createAndShowGui(components, network, networkView, 
@@ -107,17 +107,14 @@ public class RunPCA {
 
 		// System.out.println("centralizing columns");
 		matrix.ops().centralizeColumns();
-		// matrix.writeMatrix("centralized.txt");
 
 		if (matrixType.equals("correlation")) {
 			// System.out.println("Creating correlation matrix");
 			C = matrix.ops().correlation();
-			// C.writeMatrix("correlation.txt");
 		} else {
 			// Covariance
 			// System.out.println("Creating covariance matrix");
 			C = matrix.ops().covariance();
-			// C.writeMatrix("covariance.txt");
 		}
 
 		// System.out.println("Finding eigenValues");
@@ -128,32 +125,20 @@ public class RunPCA {
 		monitor.showMessage(TaskMonitor.Level.INFO, "Found "+eigenValues.length+" EigenValues");
 		monitor.showMessage(TaskMonitor.Level.INFO, "Found "+eigenVectors.length+" EigenVectors of length "+eigenVectors[0].length);
 
-		/*
-		loadingMatrix.writeMatrix("loadingMatrix.txt");
+		variance = computeVariance(eigenValues);
 
-		System.out.println("EigenValues: ");
-		for (double v: eigenValues) {
-			System.out.println("     "+v);
-		}
-		*/
+		CyMatrix[] components = new CyMatrix[variance.length];
 
-		CyMatrix[] components = new CyMatrix[eigenValues.length];
-
-		for(int j=eigenValues.length-1, k=0;j>=0;j--,k++){
+		for(int j=eigenValues.length-1, k=0;j>=0&&k<variance.length;j--,k++){
 			// double[] w = new double[vectors.length];
 			CyMatrix result = CyMatrixFactory.makeLargeMatrix(matrix.getNetwork(), eigenValues.length, 1);//vector
 			for(int i=0;i<eigenVectors.length;i++){
 				result.setValue(i,0,eigenVectors[i][j]);
 			}
-			// System.out.println("matrix: "+matrix.printMatrixInfo());
-			// System.out.println("vector: "+result.printMatrixInfo());
 
 			Matrix mat = matrix.ops().multiplyMatrix(result);
 			// System.out.println("After vector multiply: "+mat.printMatrixInfo());
 			components[k] = matrix.copy(mat);
-			// components[k].printMatrixInfo();
-			// components[k].writeMatrix("component_"+k+".txt");
-			// System.out.println("Component matrix "+k+" has "+components[k].getRowNodes().size()+" nodes");
 		}
 
 		return components;
@@ -165,8 +150,14 @@ public class RunPCA {
 		for (int i = 0; i < values.length; i++)
 			total += values[i];
 
-		for (int i = 0, j=values.length-1; j >= 0; j--,i++) {
-			explainedVariance[i] = (values[j] / total) * 100;
+		int component = 0;
+		for (int j=values.length-1; j >= 0; j--,component++) {
+			explainedVariance[component] = (values[j] / total) * 100;
+			if (explainedVariance[component] < context.minVariance)
+				break;
+		}
+		if (component < values.length-1) {
+			return Arrays.copyOf(explainedVariance, component);
 		}
 
 		return explainedVariance;
@@ -186,23 +177,13 @@ public class RunPCA {
 					}
 				});
 
-		/* System.out.print("Eigenvectors:");
-		for (int row = 0; row < rows; row++) {
-			// System.out.print("\n"+matrix.getColumnLabel(row)+"\t");
-			for (int column = columns-1, newCol=0; column >= 0; column--,newCol++) {
-				// System.out.print(""+eigenVectors[row][column]+"\t");
-				loading.setValue(row, newCol, 
-				                 eigenVectors[row][column]*Math.sqrt(Math.abs(eigenValues[column])));
-				// loading.setValue(row, newCol, eigenVectors[row][column]*eigenValues[column]);
-			}
-		}
-		// System.out.println("\n");
-		*/
-
 		loading.setRowLabels(Arrays.asList(matrix.getColumnLabels()));
 		for (int column = 0; column < columns; column++) {
 			loading.setColumnLabel(column, "PC "+(column+1));
 		}
 		return loading;
 	}
+
+	CyMatrix[] getComponents() { return components; }
+	double[] getVariance() { return variance; }
 }

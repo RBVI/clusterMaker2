@@ -30,6 +30,8 @@ public class RuntSNE {
 
 	private final ClusterManager manager;
 
+	private CyMatrix Y;
+
 	public RuntSNE(final ClusterManager manager, final CyNetwork network, final CyNetworkView networkView, 
 	               tSNEContext context, TaskMonitor monitor,CyMatrix matrix) {
 		this.network = network;
@@ -56,15 +58,19 @@ public class RuntSNE {
 
 		double[][] result = tsne.tsne(context, monitor);
 
-		CyMatrix Y = matrix.copy();
+		Y = matrix.copy();
 		Y.initialize(result.length, result[0].length, result);
 
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				ScatterPlotDialog dialog = new ScatterPlotDialog(manager, "tSNE Scatter Plot", monitor, Y);
-			}
-		});
+		if (context.showScatterPlot) {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					ScatterPlotDialog dialog = new ScatterPlotDialog(manager, "tSNE", monitor, Y);
+				}
+			});
+		}
 
 	}
+
+	CyMatrix getResult() { return Y; }
 }
 

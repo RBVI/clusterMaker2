@@ -22,37 +22,11 @@ import org.cytoscape.work.util.ListSingleSelection;
 public class PCAContext {
 	CyNetwork network;
 
-	/*
-	@Tunable(description="Distance Metric", gravity=1.0)
-	public ListSingleSelection<DistanceMetric> distanceMetric = 
-		new ListSingleSelection<DistanceMetric>(DistanceMetric.getDistanceMetricList());
-	*/
-
-	/*
-	@Tunable(description="Input Value", gravity=2.0)
-	public ListSingleSelection<String>inputValue = 
-		new ListSingleSelection<String>("Distance Matrix", "Edge Value");
-	*/
-
-	/*
-	@Tunable(description="PCA Type", gravity=6.0)
-	public ListSingleSelection<String>pcaType = 
-		new ListSingleSelection<String>("PCA of input weight between nodes", "PCA of nodes and attributes");
-	*/
-
 	@Tunable(description = "Only use selected nodes for PCA", groups={"Data Input"}, gravity=7.0)
 	public boolean selectedOnly = false;
 
 	@Tunable(description="Ignore nodes with no data", groups={"Data Input"}, gravity=8.0)
 	public boolean ignoreMissing = true;
-
-	/*
-	@Tunable(description="Node attributes for PCA", groups="Source for Distance Matrix", 
-	         params="displayState=expanded",
-	         tooltip="You must choose at least 2 node columns for an attribute PCA", gravity=9.0,
-				   dependsOn="inputValue!=Edge Value")
-	public ListMultipleSelection<String> nodeAttributeList = null;
-	*/
 
 	@Tunable(description="Node attributes for PCA", groups="Source for Distance Matrix", 
 	         params="displayState=uncollapsed",
@@ -69,18 +43,17 @@ public class PCAContext {
 					 gravity=11.0)
 	public boolean standardize = false;
 
-	/*
-	@ContainsTunables
-	public EdgeAttributeHandler edgeAttributeHandler;
-	*/
-
 	@Tunable(description = "Create Result Panel with Principal Component selection option", 
 	         groups={"Result Options"}, gravity=83.0)
 	public boolean pcaResultPanel = false;
 
 	@Tunable(description = "Create PCA scatter plot with node selection option", 
 	         groups={"Result Options"}, gravity=84.0)
-	public boolean pcaPlot = false;
+	public boolean pcaPlot = true;
+
+	@Tunable(description = "Minimum variance for components (%)",
+	         groups={"Result Options"}, gravity=85.0)
+	public double minVariance = 10.0;
 
 	public PCAContext(){
 
@@ -91,12 +64,6 @@ public class PCAContext {
 			return;
 
 		this.network = network;
-		/*
-		if (edgeAttributeHandler == null)
-			edgeAttributeHandler = new EdgeAttributeHandler(network);
-		else
-			edgeAttributeHandler.setNetwork(network);
-		*/
 
 		if (network != null)
 			nodeAttributeList = ModelUtils.updateNodeAttributeList(network, nodeAttributeList);

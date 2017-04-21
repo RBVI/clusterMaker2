@@ -1,12 +1,16 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa;
 
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -18,8 +22,9 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Abstrac
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
-public class PCoA extends AbstractNetworkClusterer{
+public class PCoA extends AbstractNetworkClusterer implements ObservableTask {
 	RunPCoA runpcoa;
 	public static String SHORTNAME = "pcoa";
 	public static String NAME = "Principal Coordinate Analysis";
@@ -87,6 +92,29 @@ public class PCoA extends AbstractNetworkClusterer{
 		runpcoa.cancel();
 	}
 
+	@Override
+	public <R>R getResults(Class<? extends R> type) {
+		CyMatrix results = runpcoa.getResult();
+		if (type.equals(String.class)) {
+			results.setColumnLabel(0, "X");
+			results.setColumnLabel(1, "Y");
+			CyNetwork net = results.getNetwork();
+			for (int row = 0; row < results.nRows(); row++) {
+				CyNode node = results.getRowNode(row);
+				results.setRowLabel(row, ModelUtils.getName(net, node));
+			}
+			return (R)results.printMatrix();
+		} else if (type.equals(Map.class)) {
+			Map<CyNode, Point2D> resultsMap = new HashMap<>();
+			for (int row = 0; row < results.nRows(); row++) {
+				CyNode node = results.getRowNode(row);
+				resultsMap.put(node,  
+						new Point2D.Double(results.doubleValue(row, 0), results.doubleValue(row,1)));
+			}
+			return (R) resultsMap;
+		}
+		return (R) results;
+	}
 	@Override
 	public void setUIHelper(TunableUIHelper helper) {context.setUIHelper(helper); }
 	

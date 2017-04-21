@@ -122,7 +122,19 @@ public class AbstractClusterResults implements ClusterResults {
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class))
 			return toString();
-		return clusters;
+		else if (requestedType.equals(Map.class)) {
+			Map<String, Object> resultMap = new HashMap<String, Object>();
+			resultMap.put("nclusters", clusterCount);
+			resultMap.put("avgSize", averageSize);
+			resultMap.put("maxSize", maxSize);
+			resultMap.put("minSize", minSize);
+			resultMap.put("modularity", modularity);
+			resultMap.put("clusters", clusters);
+			return resultMap;
+		} else if (requestedType.equals(List.class)) {
+			return clusters;
+		}
+		return toString();
 	}
 
 	private void calculate() {

@@ -30,6 +30,7 @@ public class RunPCoA {
 	private final CyNetwork network;
 	private final CyNetworkView networkView; 
 	private final ClusterManager manager; 
+	private CyMatrix result = null;
 	
 	
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
@@ -90,9 +91,11 @@ public class RunPCoA {
 		V_t = reshape(V_t, 2, mean.nRows());
 
 		double [][] trafoed = new double[distanceMatrix.nRows()][2];
-		CyMatrix result = CyMatrixFactory.makeLargeMatrix(distanceMatrix.getNetwork(), distanceMatrix.nRows(), 2);
+		result = CyMatrixFactory.makeLargeMatrix(distanceMatrix.getNetwork(), distanceMatrix.nRows(), 2);
 		result.setRowNodes(distanceMatrix.getRowNodes());
 		result.setRowLabels(Arrays.asList(distanceMatrix.getRowLabels()));
+		result.setColumnLabel(0, "X");
+		result.setColumnLabel(1, "Y");
 		for (int i = 0; i < distanceMatrix.nRows(); i++) {
 			trafoed[i] = sampleToEigenSpace(V_t, distanceMatrix, mean, i);
 			for (int j = 0; j < trafoed[i].length; j++) {
@@ -102,30 +105,11 @@ public class RunPCoA {
 
 		delta = System.currentTimeMillis()-time; time = System.currentTimeMillis();
 		monitor.showMessage(TaskMonitor.Level.INFO, "Completed SVD Analysis in "+delta+"ms");
-		// double eigenValues[]=calc.eigenAnalysis(G);
-		// System.out.println("Completed Eigen Analysis, found "+eigenValues.length+" eigenvalues");
-		// double variance[]=calc.computeVariance(eigenValues);
-		// delta = System.currentTimeMillis()-time; time = System.currentTimeMillis();
-		// System.out.println("Completed Variance Calculation in "+delta+"ms");
-		// if(neg==2){//corect negative eigen values
-		// 	calc.correctEigenValues();
-		// }
-		// CyMatrix components[]=calc.getCoordinates(distanceMatrix);
-		// System.out.println("Completed Coordinates Calculation in "+(System.currentTimeMillis()-startTime)+"ms");
-		// System.out.println("Found "+components.length+" components");
-		// if(context.pcoaResultPanel){
-		// 	ResultPanelPCoA.createAndShowGui(components, network, networkView, distanceMatrix.getRowNodes(), variance);
 
-		// }			
 		if(context.pcoaPlot) {
-			final Matrix vt = V_t;
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					// System.out.println("Scatter plot dialog call");
-					final CyMatrix coordinates = distanceMatrix.copy();
-					// System.out.println("vt has "+vt.nRows()+" rows and "+vt.nColumns()+" columns");
-					coordinates.initialize(result.nRows(), result.nColumns(), result.toArray());
-					// ScatterPlotDialog dialog = new ScatterPlotDialog(manager, "PCoA Scatter Plot", monitor, components, variance);
 					ScatterPlotDialog dialog = new ScatterPlotDialog(manager, "PCoA", monitor, result);
 				}
 			});
@@ -152,21 +136,19 @@ public class RunPCoA {
     return result;
   }
 
-    public double[] sampleToEigenSpace( Matrix V_t, Matrix sampleData, Matrix mean, int row ) {
-        Matrix s = distanceMatrix.like(distanceMatrix.nColumns(), 1);
-				for (int col = 0; col < distanceMatrix.nColumns(); col++)
-					s.setValue(col, 0, sampleData.doubleValue(row, col));
+	public double[] sampleToEigenSpace( Matrix V_t, Matrix sampleData, Matrix mean, int row ) {
+		Matrix s = distanceMatrix.like(distanceMatrix.nColumns(), 1);
+		for (int col = 0; col < distanceMatrix.nColumns(); col++)
+			s.setValue(col, 0, sampleData.doubleValue(row, col));
 
-        CommonOps.subtractElement(s, mean);
-				// s.writeMatrix("s-"+row);
+		CommonOps.subtractElement(s, mean);
 
-        Matrix r = CommonOps.multiplyMatrix(V_t.copy(),s);
-				// V_t.writeMatrix("V_t"+row);
-				// r.writeMatrix("r-"+row);
+		Matrix r = CommonOps.multiplyMatrix(V_t.copy(),s);
 
-        return r.getColumn(0);
-    }
+		return r.getColumn(0);
+	}
 
+	CyMatrix getResult() { return result; }
 
 }
 
