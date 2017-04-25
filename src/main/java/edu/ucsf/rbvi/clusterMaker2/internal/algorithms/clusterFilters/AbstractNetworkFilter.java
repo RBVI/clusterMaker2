@@ -129,7 +129,7 @@ public abstract class AbstractNetworkFilter extends AbstractNetworkClusterer {
 			monitor.showMessage(TaskMonitor.Level.INFO, 
 		                      "Creating network");
 			insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true,
-			                                               restoreEdges()));
+			                                               restoreEdges(), false));
 		}
 
 	}

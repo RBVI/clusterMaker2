@@ -157,7 +157,7 @@ public class FCMCluster extends AbstractFuzzyNetworkClusterer {
             monitor.showMessage(TaskMonitor.Level.INFO,
                     "Creating network");
             insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true,
-                    context.vizProperties.restoreEdges));
+                    context.vizProperties.restoreEdges, !selectedOnly));
         } else {
             monitor.showMessage(TaskMonitor.Level.INFO, "Done.  FCM results:\n"+results);
         }

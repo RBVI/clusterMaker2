@@ -70,7 +70,7 @@ public class NewNetworkViewFactory implements ClusterVizFactory   {
 		// Not sure why we need to do this, but it looks like
 		// the tunable stuff "remembers" objects that it's already
 		// processed this tunable.  So, we use a copy constructor
-		return new TaskIterator(new NewNetworkView(context, clusterManager, checkAvailable));
+		return new TaskIterator(new NewNetworkView(context, clusterManager, checkAvailable, true));
 	}
 	
 }

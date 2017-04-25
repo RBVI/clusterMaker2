@@ -212,7 +212,7 @@ public class AutoSOMECluster extends AbstractNetworkClusterer  {
 			if (heatmap)
 				insertTasksAfterCurrentTask(new KnnView(clusterManager));
 			else
-				insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true, false));
+				insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true, false, !context.selectedOnly));
 		}
 
 

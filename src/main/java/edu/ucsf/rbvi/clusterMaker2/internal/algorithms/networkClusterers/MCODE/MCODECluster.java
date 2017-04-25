@@ -183,7 +183,8 @@ public class MCODECluster extends AbstractNetworkClusterer  {
 			monitor.showMessage(TaskMonitor.Level.INFO, 
 		                      "Creating network");
 			insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true,
-			                                               context.vizProperties.restoreEdges));
+			                                               context.vizProperties.restoreEdges,
+																										 !currentParamsCopy.getScope().equals(MCODEParameterSet.SELECTION)));
 		}
 
 	}

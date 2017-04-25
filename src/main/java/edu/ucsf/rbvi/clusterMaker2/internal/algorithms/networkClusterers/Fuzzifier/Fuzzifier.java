@@ -166,7 +166,8 @@ public class Fuzzifier extends AbstractFuzzyNetworkClusterer{
 			monitor.showMessage(TaskMonitor.Level.INFO, 
 		                      "Creating network");
 			insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true,
-			                                               context.vizProperties.restoreEdges));
+			                                               context.vizProperties.restoreEdges,
+																										 !context.edgeAttributeHandler.selectedOnly));
 		} else {
 			monitor.showMessage(TaskMonitor.Level.INFO, "Done.  Fizzifier results:\n"+results);
 		}

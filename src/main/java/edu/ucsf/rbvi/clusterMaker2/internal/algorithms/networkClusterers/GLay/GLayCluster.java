@@ -139,7 +139,8 @@ public class GLayCluster extends AbstractNetworkClusterer  {
 			monitor.showMessage(TaskMonitor.Level.INFO, 
 		                      "Creating network");
 			insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true,
-			                                               context.vizProperties.restoreEdges));
+			                                               context.vizProperties.restoreEdges,
+																										 !context.selectedOnly));
 		}
 
 	}

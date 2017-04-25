@@ -85,6 +85,7 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 	private static String appName = "ClusterMaker New Network View";
 	private boolean checkForAvailability = false;
 	private boolean restoreEdges = false;
+	private boolean addSingletons = true;
 	private ClusterManager manager;
 	private String clusterAttribute = null;
 	private EdgeAttributeHandler edgeConverterList = null;
@@ -100,20 +101,21 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 	public NewNetworkViewContext context = null;
 
 	public NewNetworkView(CyNetwork network, ClusterManager manager) {
-		this(null, manager, true);
+		this(null, manager, true, true);
 		this.network = network;
 	}
 
 	public NewNetworkView(CyNetwork network, ClusterManager manager, 
-			              boolean available, boolean restoreEdges) {
-		this(null, manager, true);
+			              boolean available, boolean restoreEdges, boolean addSingletons) {
+		this(null, manager, true, addSingletons);
 		this.network = network;
 		this.restoreEdges = restoreEdges;
 	}
 
-	public NewNetworkView(NewNetworkViewContext context, ClusterManager manager, boolean available) {
+	public NewNetworkView(NewNetworkViewContext context, ClusterManager manager, boolean available, boolean addSingletons) {
 		this.manager = manager;
 		checkForAvailability = available;
+		this.addSingletons = addSingletons;
 		if (network == null)
 			network = manager.getNetwork();
 
@@ -268,7 +270,7 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 
 		// Now, if we're supposed to, restore the inter-cluster edges
 		if (restoreEdges || (context != null && context.restoreEdges)) {
-			for (CyEdge edge: (List<CyEdge>)network.getEdgeList()) {
+			for (CyEdge edge: network.getEdgeList()) {
 				if (!edgeMap.containsKey(edge)) {
 					((CySubNetwork)view.getModel()).addEdge(edge);
 					ModelUtils.createAndSetLocal(view.getModel(), edge, clusterAttribute,
@@ -304,7 +306,7 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 
 		// Create the cluster Map
 		Map<Integer, List<CyNode>> clusterMap = new HashMap<Integer, List<CyNode>>();
-		for (CyNode node: (List<CyNode>)network.getNodeList()) {
+		for (CyNode node: network.getNodeList()) {
 			// For each node -- see if it's in a cluster.  If so, add it to our map
 			if (ModelUtils.hasAttribute(network, node, clusterAttribute)) {
 				if (isFuzzy) {
@@ -316,8 +318,10 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 					Integer cluster = network.getRow(node).get(clusterAttribute, Integer.class);
 					addNodeToMap(clusterMap, cluster, node);
 				}
+				nodeList.add(node);
+			} else if (addSingletons) {
+				nodeList.add(node);
 			}
-			nodeList.add(node);
 		}
 		return clusterMap;
 	}
