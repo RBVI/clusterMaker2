@@ -125,7 +125,7 @@ public class ClusterManagerImpl implements ClusterManager {
 			case DIMRED:
 				dimRedIndex += 1.0;
 				// Override a couple of parameters
-				props.setProperty(COMMAND_NAMESPACE, "clusterdr");
+				props.setProperty(COMMAND_NAMESPACE, "clusterdimreduce");
 				props.setProperty(PREFERRED_MENU, "Apps.clusterMaker Dimensionality Reduction");
 				props.setProperty(MENU_GRAVITY, ""+dimRedIndex);
 				break;
