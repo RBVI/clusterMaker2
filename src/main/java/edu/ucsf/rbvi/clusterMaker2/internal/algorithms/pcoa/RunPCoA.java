@@ -89,10 +89,12 @@ public class RunPCoA {
 		
 		//System.out.println("Checking CyMatrix symmetrical "+distanceMatrix.isSymmetrical());
 
+		monitor.showMessage(TaskMonitor.Level.INFO, "Calculating Gower's Matrix");
 		// Get the Gower's Matrix
 		Matrix G = GowersMatrix.getGowersMatrix(distanceMatrix);
 		long delta = System.currentTimeMillis()-time; time = System.currentTimeMillis();
 		monitor.showMessage(TaskMonitor.Level.INFO, "Constructed Gower's Matrix in "+delta+"ms");
+		monitor.showMessage(TaskMonitor.Level.INFO, "Doing Singlular Value Decomposition (SVD)");
 		// System.out.println("Got GowersMatrix in "+delta+"ms");
 		Matrix V_t = CommonOps.transpose(G.ops().svdV());
 
