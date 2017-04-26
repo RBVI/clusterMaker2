@@ -71,7 +71,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
 
 public class ConnectedComponentsCluster extends AbstractNetworkClusterer  {
 	public static String SHORTNAME = "connectedcomponents";
-	public static String NAME = "ConnectedComponents Cluster";
+	public static String NAME = "Connected components cluster";
 	public final static String GROUP_ATTRIBUTE = "__CCGroups.SUID";
 
 	@Tunable(description="Network to cluster", context="nogui")

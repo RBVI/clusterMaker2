@@ -222,7 +222,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "cluster");
 			props.setProperty(COMMAND, CommandTaskFactory.HASCLUSTER);
-  		props.setProperty(TITLE, "Test to see if this network has a cluster of the requested type");
+  		props.setProperty(COMMAND_DESCRIPTION, "Test to see if this network has a cluster of the requested type");
 			registerService(bc, commandTaskFactory, TaskFactory.class, props);
 		}
 		{
@@ -230,8 +230,8 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "cluster");
 			props.setProperty(COMMAND, CommandTaskFactory.GETNETWORKCLUSTER);
-  		props.setProperty(TITLE,
-				"Get a cluster of the requested type and the requested clustertype (node or attribute)");
+  		props.setProperty(COMMAND_DESCRIPTION,
+				"Get a cluster network cluster result");
 			registerService(bc, commandTaskFactory, TaskFactory.class, props);
 		}
 		{
@@ -239,7 +239,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "cluster");
 			props.setProperty(COMMAND, CommandTaskFactory.GETCLUSTER);
-  		props.setProperty(TITLE, "Get a cluster of the requested clustertype (node or attribute)");
+  		props.setProperty(COMMAND_DESCRIPTION, "Get an attribute cluster result");
 			registerService(bc, commandTaskFactory, TaskFactory.class, props);
 		}
 	}

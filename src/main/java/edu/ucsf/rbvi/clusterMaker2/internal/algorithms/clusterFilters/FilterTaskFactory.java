@@ -19,7 +19,7 @@ public class FilterTaskFactory implements ClusterTaskFactory   {
 		this.clusterManager = clusterManager;
 	}
 	
-	public String getShortName() {return "filter"; }
+	public String getShortName() {return null; }
 	public String getName() {return "--- Network Filter Algorithms ---";}
 
 	public ClusterViz getVisualizer() {

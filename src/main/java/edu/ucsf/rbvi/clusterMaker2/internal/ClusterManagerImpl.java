@@ -1,6 +1,7 @@
 package edu.ucsf.rbvi.clusterMaker2.internal;
 
 import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
 import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
@@ -83,6 +84,7 @@ public class ClusterManagerImpl implements ClusterManager {
         return algMap.get(name);
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void addClusterAlgorithm(ClusterTaskFactory alg, Map props) {
 		addAlgorithm(alg);
 	}
@@ -96,8 +98,11 @@ public class ClusterManagerImpl implements ClusterManager {
 		// Create our wrapper and register the algorithm
 		for (ClusterTaskFactory.ClusterType type: clusterTypes) {
 			Properties props = new Properties();
-			props.setProperty(COMMAND, alg.getShortName());
-			props.setProperty(COMMAND_NAMESPACE, "cluster");
+			if (alg.getShortName() != null) {
+				props.setProperty(COMMAND, alg.getShortName());
+				props.setProperty(COMMAND_NAMESPACE, "cluster");
+				props.setProperty(COMMAND_DESCRIPTION, alg.getName());
+			}
 			props.setProperty(IN_MENU_BAR, "true");
 			props.setProperty(TITLE, alg.getName());
 			props.setProperty(PREFERRED_MENU, "Apps.clusterMaker");
@@ -120,7 +125,7 @@ public class ClusterManagerImpl implements ClusterManager {
 			case DIMRED:
 				dimRedIndex += 1.0;
 				// Override a couple of parameters
-				props.setProperty(COMMAND_NAMESPACE, "reducedim");
+				props.setProperty(COMMAND_NAMESPACE, "clusterdr");
 				props.setProperty(PREFERRED_MENU, "Apps.clusterMaker Dimensionality Reduction");
 				props.setProperty(MENU_GRAVITY, ""+dimRedIndex);
 				break;
@@ -130,6 +135,7 @@ public class ClusterManagerImpl implements ClusterManager {
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void removeClusterAlgorithm(ClusterTaskFactory alg, Map props) {
 		removeAlgorithm(alg);
 	}
@@ -159,6 +165,7 @@ public class ClusterManagerImpl implements ClusterManager {
 		// Create our wrapper and register the algorithm
 		Properties props = new Properties();
 		props.setProperty(COMMAND, viz.getName());
+		props.setProperty(COMMAND_DESCRIPTION, viz.getName());
 		props.setProperty(COMMAND_NAMESPACE, "clusterviz");
 		props.setProperty(IN_MENU_BAR, "true");
 		props.setProperty(PREFERRED_MENU, "Apps.clusterMaker Visualizations");
@@ -168,6 +175,7 @@ public class ClusterManagerImpl implements ClusterManager {
 		serviceRegistrar.registerService(viz, TaskFactory.class, props);
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void addClusterVisualizer(ClusterVizFactory viz, Map props) {
 		addVisualizer(viz);
 	}
@@ -177,17 +185,20 @@ public class ClusterManagerImpl implements ClusterManager {
 	 		vizMap.remove(viz.getName());
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void removeClusterVisualizer(ClusterVizFactory viz, Map props) {
 		removeVisualizer(viz);
 		serviceRegistrar.unregisterService(viz, TaskFactory.class);
 	}
 
 	// Check why we take this road
+	@SuppressWarnings("rawtypes")
 	public void addRankingAlgorithm(RankFactory ranking, Map props) {
 		addRanking(ranking);
 	}
 
 	// Check why we take this road
+	@SuppressWarnings("rawtypes")
 	public void removeRankingAlgorithm(RankFactory ranking, Map props) {
 		removeRanking(ranking);
 		serviceRegistrar.unregisterService(ranking, TaskFactory.class);
@@ -198,8 +209,9 @@ public class ClusterManagerImpl implements ClusterManager {
 		rankMap.put(rankFactory.getName(), rankFactory);
 
 		Properties props = new Properties();
-		props.setProperty(COMMAND, rankFactory.getName());
-		props.setProperty(COMMAND_NAMESPACE, "rankingcluster");
+		props.setProperty(COMMAND, rankFactory.getShortName());
+		props.setProperty(COMMAND_NAMESPACE, "clusterrank");
+		props.setProperty(COMMAND_DESCRIPTION, rankFactory.getName());
 		props.setProperty(IN_MENU_BAR, "true");
 		props.setProperty(PREFERRED_MENU, "Apps.clusterMaker Ranking");
 		props.setProperty(TITLE, rankFactory.getName());
@@ -314,10 +326,12 @@ public class ClusterManagerImpl implements ClusterManager {
 		return serviceRegistrar.getService(clazz, filter);
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void registerService(Object service, Class serviceClass, Properties props) {
 		serviceRegistrar.registerService(service, serviceClass, props);
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void unregisterService(Object service, Class serviceClass) {
 		serviceRegistrar.unregisterService(service, serviceClass);
 	}

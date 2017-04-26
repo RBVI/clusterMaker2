@@ -19,7 +19,7 @@ public class AttributeClusterTaskFactory implements ClusterTaskFactory   {
 		this.clusterManager = clusterManager;
 	}
 	
-	public String getShortName() {return "attribute"; }
+	public String getShortName() {return null; }
 	public String getName() {return "--- Attribute Cluster Algorithms ---";}
 
 	public ClusterViz getVisualizer() {

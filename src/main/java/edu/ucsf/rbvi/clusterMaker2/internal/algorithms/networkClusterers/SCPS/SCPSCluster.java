@@ -61,7 +61,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
 
 public class SCPSCluster extends AbstractNetworkClusterer  {
 	public static String SHORTNAME = "scps";
-	public static String NAME = "SCPS Cluster";
+	public static String NAME = "Spectral Clustering of Protein Sequences";
 	public final static String GROUP_ATTRIBUTE = SHORTNAME;
 	
 	RunSCPS runSCPS = null;

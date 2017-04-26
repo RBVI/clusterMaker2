@@ -19,7 +19,7 @@ public class NetworkClusterTaskFactory implements ClusterTaskFactory   {
 		this.clusterManager = clusterManager;
 	}
 	
-	public String getShortName() {return "network"; }
+	public String getShortName() {return null;}
 	public String getName() {return "--- Network Cluster Algorithms ---";}
 
 	public ClusterViz getVisualizer() {
