@@ -30,7 +30,7 @@ public class NegLogConverter implements EdgeWeightConverter {
 		if (minValue < 0.0) 
 			weight += Math.abs(weight);
 
-		if(weight != 0.0 && weight != Double.MAX_VALUE)
+		if(weight != 0.0 && weight != Double.MAX_VALUE && !Double.isNaN(weight))
 			weight = -Math.log10(weight);
 		else
 			weight = 500; // Assume 1e-500 as a reasonble upper bound

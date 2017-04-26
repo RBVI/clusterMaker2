@@ -29,6 +29,8 @@ public class SCPSConverter implements EdgeWeightConverter {
  	 * @return the converted edge weight
  	 */
 	public double convert(double weight, double minValue, double maxValue) {
+			if (Double.isNaN(weight))
+				return weight;
 
 	    double w = 6.1302;
 	    double b = 1.2112;

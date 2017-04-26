@@ -97,7 +97,7 @@ public class tSNE extends AbstractNetworkClusterer implements ObservableTask {
 	}
 
 	public void cancel() {
-		canceled = true;
+		runtsne.cancel();
 		
 	}
 

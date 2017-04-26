@@ -13,6 +13,7 @@ import com.jujutsu.tsne.barneshut.TSneConfiguration;
 
 public class tSNEContext implements TSneConfiguration {
 	CyNetwork network;
+	public boolean cancelled = false;
 
 	//Tunables
 	@ContainsTunables
@@ -145,7 +146,7 @@ public class tSNEContext implements TSneConfiguration {
 	}
 
 	public boolean printError() {
-		return false;
+		return true;
 	}
 
 	public void setPrintError(boolean print_error) {
@@ -159,6 +160,10 @@ public class tSNEContext implements TSneConfiguration {
 	public int getNrRows() {
 		if (Xin != null) return Xin.length;
 		return 0;
+	}
+
+	public boolean cancelled() {
+		return cancelled;
 	}
 
 }

@@ -41,4 +41,6 @@ public interface TSneConfiguration {
 	int getXStartDim();
 
 	int getNrRows();
+
+	boolean cancelled();
 }

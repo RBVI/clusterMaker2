@@ -91,12 +91,18 @@ public class BHTSne implements BarnesHutTSne {
 			throw new IllegalArgumentException("The Barnes Hut implementation does not support exact inference yet (theta==0.0), if you want exact t-SNE please use one of the standard t-SNE implementations (FastTSne for instance)");
 		}
 
+		if (parameterObject.cancelled())
+			return null;
+
 		if(parameterObject.usePca() && D > parameterObject.getInitialDims() && parameterObject.getInitialDims() > 0) {
 			PrincipalComponentAnalysis pca = new PrincipalComponentAnalysis();
 			Xin = pca.pca(Xin, parameterObject.getInitialDims());
 			D = parameterObject.getInitialDims();
 			monitor.showMessage(TaskMonitor.Level.INFO,"X:Shape after PCA is = " + Xin.length + " x " + Xin[0].length);
 		}
+
+		if (parameterObject.cancelled())
+			return null;
 		
 		double [] X = flatten(Xin);	
 		int N = parameterObject.getNrRows();
@@ -192,6 +198,9 @@ public class BHTSne implements BarnesHutTSne {
 		// Initialize solution (randomly)
 		for(int i = 0; i < N * no_dims; i++) Y[i] = ThreadLocalRandom.current().nextDouble() * 0.0001;
 
+		if (parameterObject.cancelled())
+			return null;
+
 		// Perform main training loop
 		if(exact) 
 			monitor.showMessage(TaskMonitor.Level.INFO,
@@ -202,6 +211,9 @@ public class BHTSne implements BarnesHutTSne {
 		start = System.currentTimeMillis();
 		double progress = 0.0;
 		for(int iter = 0; iter < parameterObject.getMaxIter() && !abort; iter++) {
+			if (parameterObject.cancelled())
+				return null;
+
 			progress = (double)iter/(double)parameterObject.getMaxIter();
 			monitor.setProgress(progress);
 

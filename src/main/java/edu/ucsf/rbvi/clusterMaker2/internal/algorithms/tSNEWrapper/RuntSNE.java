@@ -43,6 +43,7 @@ public class RuntSNE {
 	}
 
 	public void run(){
+		context.cancelled = false;
 		context.setXin(matrix.toArray());
 		TSne tsne;
 
@@ -57,6 +58,10 @@ public class RuntSNE {
 		}
 
 		double[][] result = tsne.tsne(context, monitor);
+		if (result == null && context.cancelled) {
+			monitor.setStatusMessage("Cancelled by user");
+			return;
+		}
 
 		Y = matrix.copy();
 		Y.initialize(result.length, result[0].length, result);
@@ -69,6 +74,10 @@ public class RuntSNE {
 			});
 		}
 
+	}
+
+	public void cancel() { 
+		context.cancelled = true; 
 	}
 
 	CyMatrix getResult() { return Y; }

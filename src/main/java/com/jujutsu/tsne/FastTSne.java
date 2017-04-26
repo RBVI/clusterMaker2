@@ -72,6 +72,7 @@ public class FastTSne implements TSne {
 	MatrixOps mo = new MatrixOps();
 	protected volatile boolean abort = false;
 	TaskMonitor monitor;
+	TSneConfiguration config;
 
 	public static double[][] readBinaryDoubleMatrix(int rows, int columns, String fn) throws FileNotFoundException, IOException {
 		File matrixFile = new File(fn);
@@ -87,7 +88,6 @@ public class FastTSne implements TSne {
 		return matrix;
 	}
 	
-	// TODO: change println's to use monitor
 	//
 	@Override
 	public double [][] tsne(TSneConfiguration config, TaskMonitor monitor) {
@@ -98,6 +98,7 @@ public class FastTSne implements TSne {
 		int max_iter      = config.getMaxIter();
 		boolean use_pca   = config.usePca();
 		this.monitor      = monitor;
+		this.config       = config;
 		
 		String IMPLEMENTATION_NAME = this.getClass().getSimpleName();
 		// System.out.println("X:Shape is = " + X.length + " x " + X[0].length);
@@ -127,9 +128,16 @@ public class FastTSne implements TSne {
 		DenseMatrix64F gains    = new DenseMatrix64F(fillMatrix(n,no_dims,1.0));
 		DenseMatrix64F btNeg    = new DenseMatrix64F(n,no_dims);
 		DenseMatrix64F bt       = new DenseMatrix64F(n,no_dims);
+
+		if (config.cancelled())
+			return null;
 		
 		// Compute P-values
 		DenseMatrix64F P        = new DenseMatrix64F(x2p(X, 1e-5, perplexity).P); // P = n x n
+
+		if (config.cancelled())
+			return null;
+
 		DenseMatrix64F Ptr      = new DenseMatrix64F(P.numRows,P.numCols);
 		DenseMatrix64F L        = new DenseMatrix64F(P); // L = n x n
 		DenseMatrix64F logdivide = new DenseMatrix64F(P.numRows,P.numCols);
@@ -141,6 +149,9 @@ public class FastTSne implements TSne {
 		replaceNaN(P,Double.MIN_VALUE);
 		scale(4.0,P);					// early exaggeration
 		maximize(P, 1e-12);
+
+		if (config.cancelled())
+			return null;
 		
 		monitor.showMessage(TaskMonitor.Level.INFO, "Y:Shape is = " + Y.getNumRows() + " x " + Y.getNumCols());
 
@@ -151,6 +162,8 @@ public class FastTSne implements TSne {
 		
 		double progress = 0.0;
 		for (int iter = 0; iter < max_iter && !abort; iter++) {
+			if (config.cancelled())
+				return null;
 			progress = (double)iter/(double)max_iter;
 			monitor.setProgress(progress);
 
@@ -278,6 +291,8 @@ public class FastTSne implements TSne {
 		double logU         = Math.log(perplexity);
 		// System.out.println("Starting x2p...");
 		for (int i = 0; i < n; i++) {
+			if (config.cancelled())
+				break;
 			if (i % 500 == 0)
 				monitor.showMessage(TaskMonitor.Level.INFO, "Computing P-values for point " + i + " of " + n + "...");
 			double betamin = Double.NEGATIVE_INFINITY;

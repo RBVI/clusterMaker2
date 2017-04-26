@@ -177,6 +177,11 @@ public class TSneConfig implements TSneConfiguration {
 	public int getNrRows() {
 		return xin.length;
 	}
+
+	@Override
+	public boolean cancelled() {
+		return false;
+	}
 	
 	
 }

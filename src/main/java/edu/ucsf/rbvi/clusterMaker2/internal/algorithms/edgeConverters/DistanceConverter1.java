@@ -26,7 +26,7 @@ public class DistanceConverter1 implements EdgeWeightConverter {
  	 * @return the converted edge weight
  	 */
 	public double convert(double weight, double minValue, double maxValue) {
-		if (weight == 0.0)
+		if (weight == 0.0 || Double.isNaN(weight))
 			return Double.MAX_VALUE;
 
 		return 1.0/weight;

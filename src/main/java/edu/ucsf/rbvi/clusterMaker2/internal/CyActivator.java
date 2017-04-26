@@ -183,15 +183,10 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new DestroyRankingPanelTaskFactory(clusterManager, true), ClusterVizFactory.class,
 				new Properties());
 
-		// Principal Component Analysis
-		registerService(bc, new PCAMenuTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+		// Dimensionality Reduction
+		// registerService(bc, new PCAMenuTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new PCATaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
-
-		//Principal Coordinate Analysis
-		//registerService(bc, new PCoAMenuTaskFactory(), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new PCoATaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
-		
-		//tSNE
 		registerService(bc, new tSNETaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		
 		// Link Network Selections

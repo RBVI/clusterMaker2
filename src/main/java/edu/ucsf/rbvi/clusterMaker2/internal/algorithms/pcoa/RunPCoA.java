@@ -48,9 +48,6 @@ public class RunPCoA {
 		this.context=context;
 		this.network=network;
 		this.networkView=networkView;
-		
-		monitor.showMessage(TaskMonitor.Level.INFO,"Threads = "+nThreads);
-		//monitor.showMessage(TaskMonitor.Level.INFO,"Matrix info: = "+distanceMatrix.printMatrixInfo());
 	}
 	
 	public void cancel () { canceled = true; }
@@ -63,6 +60,19 @@ public class RunPCoA {
 		// System.out.println("Calculating values");
 		// double data[][]=matrix.toArray();
 		// System.out.println("Length "+ distanceMatrix.nRows());
+		//
+		distanceMatrix.updateMinMax();
+		double max = distanceMatrix.getMaxValue()*10;
+
+		// At this point, we'll have a bunch of 0 values because of
+		// the way the initial matrix is built.  Set those to Double.MAX.
+		for (int row = 0; row < distanceMatrix.nRows(); row++) {
+			for (int col = 0; col < distanceMatrix.nColumns(); col++) {
+				double value = distanceMatrix.doubleValue(row, col);
+				if (value == 0.0 || Double.isNaN(value))
+					distanceMatrix.setValue(row, col, max);
+			}
+		}
 
 		Matrix mean = distanceMatrix.like(distanceMatrix.nColumns(), 1);
 
@@ -79,14 +89,16 @@ public class RunPCoA {
 		
 		//System.out.println("Checking CyMatrix symmetrical "+distanceMatrix.isSymmetrical());
 
-		CalculationMatrix calc = new CalculationMatrix();
-
 		// Get the Gower's Matrix
 		Matrix G = GowersMatrix.getGowersMatrix(distanceMatrix);
 		long delta = System.currentTimeMillis()-time; time = System.currentTimeMillis();
 		monitor.showMessage(TaskMonitor.Level.INFO, "Constructed Gower's Matrix in "+delta+"ms");
 		// System.out.println("Got GowersMatrix in "+delta+"ms");
 		Matrix V_t = CommonOps.transpose(G.ops().svdV());
+
+		// Get the singular values
+		Matrix S = G.ops().svdS();
+		double[] variances = getVariance(S);
 
 		V_t = reshape(V_t, 2, mean.nRows());
 
@@ -105,6 +117,9 @@ public class RunPCoA {
 
 		delta = System.currentTimeMillis()-time; time = System.currentTimeMillis();
 		monitor.showMessage(TaskMonitor.Level.INFO, "Completed SVD Analysis in "+delta+"ms");
+		monitor.showMessage(TaskMonitor.Level.INFO, 
+										String.format("Variance explained by first three axes: %2.2f%%, %2.2f%%, and %2.2f%%",
+										              variances[0],variances[1],variances[2]));
 
 		if(context.pcoaPlot) {
 			SwingUtilities.invokeLater(new Runnable() {
@@ -146,6 +161,15 @@ public class RunPCoA {
 		Matrix r = CommonOps.multiplyMatrix(V_t.copy(),s);
 
 		return r.getColumn(0);
+	}
+
+	public double[] getVariance(Matrix matrix) {
+		double[] result = new double[matrix.nRows()];
+		double sum = matrix.ops().sum();
+		for (int row = 0; row < matrix.nRows(); row++) {
+			result[row] = (matrix.doubleValue(row, row)/sum)*100.0;
+		}
+		return result;
 	}
 
 	CyMatrix getResult() { return result; }

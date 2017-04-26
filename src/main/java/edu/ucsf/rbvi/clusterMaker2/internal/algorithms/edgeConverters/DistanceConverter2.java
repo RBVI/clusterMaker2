@@ -27,6 +27,7 @@ public class DistanceConverter2 implements EdgeWeightConverter {
  	 * @return the converted edge weight
  	 */
 	public double convert(double weight, double minValue, double maxValue) {
+		if (Double.isNaN(weight)) return weight;
 		return 1.00-weight;
 	}
 }
