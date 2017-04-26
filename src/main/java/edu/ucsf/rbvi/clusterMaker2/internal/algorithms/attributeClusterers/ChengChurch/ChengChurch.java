@@ -186,30 +186,43 @@ public class ChengChurch extends AbstractAttributeClusterer {
 	public void createBiclusterTable(Map<Integer, List<Long>> clusterNodes ,Map<Integer, List<String>> clusterAttrs){
 		CyTable networkTable = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
 		CyTable BiClusterNodeTable = null;
-		CyTable BiClusterAttrTable = null;		
+		CyTable BiClusterAttrTable = null;
+		final String nodeTableSUID = clusterAttributeName + "_NodeTable.SUID";
+		final String attrTableSUID = clusterAttributeName + "_AttrTable.SUID";
 				
-		if(!CyTableUtil.getColumnNames(networkTable).contains(clusterAttributeName + "_NodeTable.SUID")){
+		if(!CyTableUtil.getColumnNames(networkTable).contains(nodeTableSUID)){
 			
-			network.getDefaultNetworkTable().createColumn(clusterAttributeName + "_NodeTable.SUID", Long.class, false);
-			BiClusterNodeTable = tableFactory.createTable(clusterAttributeName + "_NodeTable", "Node.SUID", Long.class, true, true);
+			networkTable.createColumn(nodeTableSUID, Long.class, false);
+		}
+
+		// OK, the column exists -- now, does it have any data?
+		Long BiClusterNodeTableSUID = network.getRow(network).get(nodeTableSUID, Long.class);
+		if (BiClusterNodeTableSUID == null) {
+			// No, set things up.
+			BiClusterNodeTable = tableFactory.createTable(clusterAttributeName + "_NodeTable", 
+			                                              "Node.SUID", Long.class, true, true);
 			BiClusterNodeTable.createListColumn("Bicluster List", Integer.class, false);
+			BiClusterNodeTableSUID = BiClusterNodeTable.getSUID();
+		} else {
+			BiClusterNodeTable = tableManager.getTable(BiClusterNodeTableSUID);
 		}
-		else{
-			long BiClusterTableSUID = network.getRow(network).get(clusterAttributeName + "_NodeTable.SUID", Long.class);
-			BiClusterNodeTable = tableManager.getTable(BiClusterTableSUID);
-			
-		}
+		networkTable.getRow(network.getSUID()).set(nodeTableSUID, BiClusterNodeTableSUID);
 		
-		if(!CyTableUtil.getColumnNames(networkTable).contains(clusterAttributeName + "_AttrTable.SUID")){
+		if(!CyTableUtil.getColumnNames(networkTable).contains(attrTableSUID)){
 			
-			network.getDefaultNetworkTable().createColumn(clusterAttributeName + "_AttrTable.SUID", Long.class, false);
-			BiClusterAttrTable = tableFactory.createTable(clusterAttributeName + "_AttrTable", "BiCluster Number", Integer.class, true, true);
+			network.getDefaultNetworkTable().createColumn(attrTableSUID, Long.class, false);
+		}
+
+		Long BiClusterAttrTableSUID = network.getRow(network).get(attrTableSUID, Long.class);
+		if (BiClusterAttrTableSUID == null) {
+			BiClusterAttrTable = tableFactory.createTable(clusterAttributeName + "_AttrTable", 
+			                                              "BiCluster Number", Integer.class, true, true);
 			BiClusterAttrTable.createListColumn("Bicluster Attribute List", String.class, false);
+			BiClusterAttrTableSUID = BiClusterAttrTable.getSUID();
+		} else {
+			BiClusterAttrTable = tableManager.getTable(BiClusterAttrTableSUID);
 		}
-		else{
-			long BiClusterTableSUID = network.getRow(network).get(clusterAttributeName + "_AttrTable.SUID", Long.class);
-			BiClusterAttrTable = tableManager.getTable(BiClusterTableSUID);
-		}
+		networkTable.getRow(network.getSUID()).set(attrTableSUID, BiClusterAttrTableSUID);
 				
 		Map<Long,List<Integer>> biclusterList = new HashMap<Long,List<Integer>>();
 		for(Integer clust : clusterNodes.keySet()){
@@ -238,8 +251,6 @@ public class ChengChurch extends AbstractAttributeClusterer {
 			TableRow.set("Bicluster Attribute List", clusterAttrs.get(clust));
 		}
 		
-		network.getRow(network).set(clusterAttributeName + "_NodeTable.SUID", BiClusterNodeTable.getSUID());
-		network.getRow(network).set(clusterAttributeName + "_AttrTable.SUID", BiClusterAttrTable.getSUID());
 		tableManager.addTable(BiClusterNodeTable);
 		tableManager.addTable(BiClusterAttrTable);
 	}	
