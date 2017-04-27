@@ -37,9 +37,15 @@ public class ChengChurchContext {
 		this.selectedOnly = sel;
 	}
 
+	@Tunable(description="Normalize data",
+	         groups={"ChengChurch Parameters"}, gravity=101)
+	public boolean normalize = true;
+
+	/*
 	@Tunable(description="Cluster attributes as well as nodes", 
 	         groups={"ChengChurch Parameters"}, gravity=101)
 	public boolean clusterAttributes = false;
+	*/
 	
 	@Tunable(description="Create groups from clusters", groups={"Visualization Options"}, gravity=150)
 	public boolean createGroups = false;
@@ -71,7 +77,7 @@ public class ChengChurchContext {
 		params.add("nodeAttributeList="+attributeList.getNodeAttributeList().toString());
 		params.add("edgeAttribute="+attributeList.getEdgeAttribute());
 		params.add("selectedOnly="+selectedOnly);
-		params.add("clusterAttributes="+clusterAttributes);
+		// params.add("clusterAttributes="+clusterAttributes);
 		params.add("createGroups="+createGroups);
 		return params;
 	}

@@ -64,6 +64,11 @@ public class RunChengChurch {
 		matrix = CyMatrixFactory.makeSmallMatrix(network, weightAttributes, selectedOnly, ignoreMissing, transpose, false);
 		monitor.showMessage(TaskMonitor.Level.INFO,"cluster matrix has "+matrix.nRows()+" rows");
 
+		// TODO: add support to normalize the data.  This really helps guide the user
+		// to choose a reasonable value for the maximum RMS mean
+		if (context.normalize)
+			matrix.ops().normalize();
+
 		if (monitor != null) 
 			monitor.setStatusMessage("Clustering...");
 
