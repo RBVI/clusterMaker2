@@ -159,14 +159,19 @@ public class BiclusterView extends TreeView {
 				attrArrayL, List.class, String.class);
 		
 
+		/*
 		//Using the overlapping and reordering for node and array order attributes
 		mergeBiclusters(clusterNodes,clusterAttrs);
 		ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.NODE_ORDER_ATTRIBUTE, 
                 rowList, List.class, String.class);
 		ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
 				colList, List.class, String.class);
+		*/
 
 		// Get our data model
+		// FIXME: Can't use the KnnViewModel because it's going to
+		// fill in all of the data for each cell and we only want to
+		// fill in the data for the cells within the bicluster
 		dataModel = new KnnViewModel(monitor, myNetwork, myView, manager);
 
 		// Set up the global config

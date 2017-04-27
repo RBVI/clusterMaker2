@@ -3,7 +3,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal;
 
 // Java imports
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.ChengChurch.ChengChurchTaskFactory;
+// import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.ChengChurch.ChengChurchTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.DBSCAN.DBSCANTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.autosome.AutoSOMETaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.featureVector.FeatureVectorTaskFactory;
@@ -37,7 +37,6 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.MAM.MAMTaskFactor
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PR.PRTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PRWP.PRWPTaskFactory;
 
-// import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNE.tSNETaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEWrapper.tSNETaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa.PCoATaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
@@ -126,8 +125,8 @@ public class CyActivator extends AbstractCyActivator {
     //           ClusterTaskFactory.class, new Properties());
 		// registerService(bc, new BiMineTaskFactory(clusterManager),
     //             ClusterTaskFactory.class, new Properties());
-		registerService(bc, new ChengChurchTaskFactory(clusterManager),
-                ClusterTaskFactory.class, new Properties());
+		// registerService(bc, new ChengChurchTaskFactory(clusterManager),
+    //             ClusterTaskFactory.class, new Properties());
 
 		// Network clusterers
 		registerService(bc, new NetworkClusterTaskFactory(clusterManager),
@@ -170,8 +169,8 @@ public class CyActivator extends AbstractCyActivator {
 		                new Properties());
 		registerService(bc, new KnnViewTaskFactory(clusterManager), ClusterVizFactory.class,
 		                new Properties());
-		registerService(bc, new BiclusterViewTaskFactory(clusterManager), ClusterVizFactory.class,
-		                new Properties());
+		// registerService(bc, new BiclusterViewTaskFactory(clusterManager), ClusterVizFactory.class,
+		//                 new Properties());
 		registerService(bc, new TreeViewTaskFactory(clusterManager), ClusterVizFactory.class,
 		                new Properties());
 		registerService(bc, new CreateResultsPanelTaskFactory(clusterManager,true), ClusterVizFactory.class,
