@@ -197,7 +197,7 @@ public abstract class AbstractKClusterAlgorithm {
 
         // FIXME For HOPACH, nClusters is determined by the algorithm, and is neither estimated nor predefined...
 
-        String resultString =  "Created "+nClusters+" clusters with average silhouette = "+sResult.getMean();
+        String resultString =  String.format("Created %d clusters with average silhouette = %.3f",nClusters,sResult.getMean());
         monitor.showMessage(TaskMonitor.Level.INFO,resultString);
 
 		/*

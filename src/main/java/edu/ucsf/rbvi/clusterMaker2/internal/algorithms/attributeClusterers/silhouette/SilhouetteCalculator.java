@@ -79,7 +79,8 @@ public class SilhouetteCalculator {
 				if(bvalues.containsKey(currentclasslabel))
 					distancevalue = bvalues.get(currentclasslabel).doubleValue();
 				// System.out.println("i,j = "+ i +","+ j+"dmatij= " + distancematrix[i][j]);
-				distancevalue = distancevalue + distancematrix[i][j];
+				if (!Double.isNaN(distancematrix[i][j]))
+					distancevalue = distancevalue + distancematrix[i][j];
 				bvalues.put(currentclasslabel, Double.valueOf(distancevalue));
 			}
 			
@@ -149,7 +150,7 @@ public class SilhouetteCalculator {
 			double b = Double.POSITIVE_INFINITY;
 			int nearest = -1;
 			for (int j = 0; j < k; ++j) {
-				if (j != c && S[i][j] < b) {
+				if (j != c && !Double.isNaN(S[i][j]) && S[i][j] < b) {
 					b = S[i][j];
 					nearest = j;
 				}

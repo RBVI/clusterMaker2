@@ -259,7 +259,7 @@ public class Hopach {
 			}
 			
 			int neighbourIndex = rightNeighbour ? i+1 : i-1;
-			
+
 			// split partition
 			// TODO cache sub-partitioner here and in MSS calculator
 			//      or, cache partition and split results
@@ -268,7 +268,7 @@ public class Hopach {
 			
 			int subk = subsplit.getNumberOfClusters();
 			
-			if (subk > 1) {
+			if (subk > 1 && neighbourIndex >= 0) {
 			
 				int[][] subpartitions = subsplit.getPartitions();
 				

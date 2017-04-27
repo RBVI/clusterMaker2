@@ -9,6 +9,8 @@ import javax.swing.JPanel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.util.BoundedDouble;
+import org.cytoscape.work.util.BoundedInteger;
 import org.cytoscape.work.util.ListSingleSelection;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
 
@@ -34,17 +36,18 @@ public class HopachPAMContext{
 	public ListSingleSelection<SummaryMethod> summaryMethod =
 		new ListSingleSelection<SummaryMethod>(SummaryMethod.values());
 
-	@Tunable(description="Maximum number of spliting level",  
+	@Tunable(description="Maximum number of levels",  
 			 groups={"Basic HOPACH Tuning"},gravity=13)
-	public int maxLevel = 9;
+	// public int maxLevel = 9;
+	public BoundedInteger maxLevel = new BoundedInteger(1, 4, 16, false, false);
 	
 	@Tunable(description="Maximum number of clusters at each level",  
 			 groups={"Basic HOPACH Tuning"},gravity=14)
-	public int K = 9;
+	public BoundedInteger K = new BoundedInteger(1, 5, 9, false, false);
 		
 	@Tunable(description="Maximum number of subclusters at each level",  
 			 groups={"Basic HOPACH Tuning"},gravity=15)
-	public int L = 9;
+	public BoundedInteger L = new BoundedInteger(1, 5, 9, false, false);
 	
 	@Tunable(description="Force splitting at initial level",  
 			 groups={"Basic HOPACH Tuning"},gravity=16)
@@ -52,7 +55,7 @@ public class HopachPAMContext{
 	
 	@Tunable(description="Minimum cost reduction for collapse",  
 			 groups={"Basic HOPACH Tuning"},gravity=17)
-	public double minCostReduction = 0.0;
+	public BoundedDouble minCostReduction = new BoundedDouble(0.0, 0.0, 1.0, false, false);
 	
 	@ContainsTunables
 	public AttributeList attributeList = null;

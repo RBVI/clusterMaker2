@@ -25,7 +25,7 @@ public class Numeric {
 		Double t = new Double(0);
 		int n = 0;
 		for (Double v: a) {
-			if (v != null) {
+			if (v != null && !Double.isNaN(v)) {
 				t += v;
 				++n;
 			}
@@ -37,8 +37,10 @@ public class Numeric {
 		double t = 0;
 		int n = 0;
 		for (double v: a) {
-			t += v;
-			++n;
+			if (!Double.isNaN(v)) {
+				t += v;
+				++n;
+			}
 		}
 		return t / n;
 	}

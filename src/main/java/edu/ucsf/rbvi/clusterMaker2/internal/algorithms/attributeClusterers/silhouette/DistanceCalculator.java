@@ -32,7 +32,9 @@ public class DistanceCalculator {
 		for (int i = 0; i < m; ++i) {
 			// accumulate sum, assuming distance to self is 0
 			for (int j = 0; j < m; ++j) {
-				S[i][ clusters.getClusterIndex(j) ] += distances.getValue(i, j);
+				double v = distances.doubleValue(i,j);
+				if (!Double.isNaN(v))
+					S[i][ clusters.getClusterIndex(j) ] += v;
 			}
 			// derive mean via division by cluster sizes
 			for (int jj = 0; jj < k; ++jj) {
@@ -86,7 +88,10 @@ public class DistanceCalculator {
 				int n = 0;
 				for (int c1 = 0; c1 < partitions[i].length; ++c1) {
 					for (int c2 = 0; c2 < partitions[j].length; ++c2) {
-						d += distances.getValue(partitions[i][c1], partitions[j][c2]);
+						double v = distances.doubleValue(partitions[i][c1], 
+						                                 partitions[j][c2]);
+						if (!Double.isNaN(v))
+							d += v;
 						++n;
 					}
 				}
@@ -118,7 +123,9 @@ public class DistanceCalculator {
 		for (int i = 0; i < k; ++i) {
 			for (int j = i+1; j < k; ++j) {
 				// determine inter-medoid distance by subsetting distances
-				S[i][j] = S[j][i] = distances.getValue(medoids[i], medoids[j]);
+				double v = distances.doubleValue(medoids[i], medoids[j]);
+				if (!Double.isNaN(v))
+					S[i][j] = S[j][i] = v;
 			}
 		}
 		
