@@ -106,6 +106,7 @@ public class TreeViewModel extends TVModel {
 		
 		// Gene annotations are just the list of node names
 		List<String>geneList = network.getRow(network).getList(ClusterManager.NODE_ORDER_ATTRIBUTE, String.class);
+		// System.out.println("geneList has "+geneList.size()+" values");
 		String [][] gHeaders = new String[geneList.size()][4];
 		int headerNumber = 0;
 		for (String nodeName: geneList) {
@@ -120,6 +121,7 @@ public class TreeViewModel extends TVModel {
 
 		// Array annotations are the list of attributes we used (note: order matters)
 		List<String>arrayList = network.getRow(network).getList(ClusterManager.ARRAY_ORDER_ATTRIBUTE, String.class);
+		// System.out.println("arrayList has "+geneList.size()+" values");
 		String [][] aHeaders = new String[arrayList.size()][2];
 		headerNumber = 0;
 		for (String attribute: arrayList) {
@@ -238,6 +240,7 @@ public class TreeViewModel extends TVModel {
 
 		if (ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE)) {
 			List<String>groupList = network.getRow(network).getList(ClusterManager.CLUSTER_NODE_ATTRIBUTE, String.class);
+			// System.out.println("groupList has "+groupList.size()+" elements");
 			setGtrPrefix(getClusterHeaders());
 			String [][] gtrHeaders = new String[groupList.size()][getClusterHeaders().length];
 
@@ -252,6 +255,7 @@ public class TreeViewModel extends TVModel {
 		// when we save it
 		if (ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE)) {
 			List<String>groupList = network.getRow(network).getList(ClusterManager.CLUSTER_ATTR_ATTRIBUTE, String.class);
+			// System.out.println("groupList(attr) has "+groupList.size()+" elements");
 			setAtrPrefix(getClusterHeaders());
 			String [][] atrHeaders = new String[groupList.size()][getClusterHeaders().length];
 

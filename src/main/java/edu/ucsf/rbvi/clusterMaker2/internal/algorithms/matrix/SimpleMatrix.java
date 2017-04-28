@@ -364,12 +364,11 @@ public class SimpleMatrix implements Matrix {
 		mat.columnLabels = Arrays.copyOf(rowLabels, rowLabels.length);
 
 		IntStream.range(0, nRows).parallel()
-			.forEach(row -> IntStream.range(0, nColumns)
+			.forEach(row -> IntStream.range(row, nRows)
 				.forEach(column -> {
-					double metValue = metric.getMetric(this, this, row, column);
-					mat.setValue(row, column, metValue);
-					if (row != column)
-						mat.setValue(column, row, metValue);
+						mat.setValue(row, column, metric.getMetric(this, this, row, column));
+						if (row != column)
+							mat.setValue(column, row, metric.getMetric(this, this, row, column));
 				}));
 		return mat;
 	}

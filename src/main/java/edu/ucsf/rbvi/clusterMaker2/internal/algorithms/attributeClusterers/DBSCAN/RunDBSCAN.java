@@ -8,6 +8,7 @@ import org.cytoscape.work.TaskMonitor;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractKClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.fft.FFTContext;
@@ -48,7 +49,7 @@ public class RunDBSCAN  {
 	public int[] cluster(boolean transpose) {
 
 		// Create the matrix
-		CyMatrix cData = CyMatrixFactory.makeSmallMatrix(network, weightAttributes, selectedOnly, ignoreMissing, transpose, false);
+		matrix = CyMatrixFactory.makeSmallMatrix(network, weightAttributes, selectedOnly, ignoreMissing, transpose, false);
 		monitor.showMessage(TaskMonitor.Level.INFO,"cluster matrix has "+matrix.nRows()+" rows");
 		DistanceMetric metric = context.metric.getSelectedValue();
 
@@ -64,6 +65,10 @@ public class RunDBSCAN  {
 		int[] clusters = new int[nelements];
 
 		// calculate the distances and store in distance matrix
+		// Do we want to normalize the matrix?
+		// Matrix normMatrix = matrix.getDistanceMatrix(metric);
+		// normMatrix.ops().normalize();
+		// distanceMatrix = normMatrix.toArray();
 		distanceMatrix = matrix.getDistanceMatrix(metric).toArray();
 
 		unvisited = new ArrayList<Integer>();
@@ -112,7 +117,6 @@ public class RunDBSCAN  {
 
 				//Now fetch new neighboring points
 				ArrayList<Integer> newNeighborPts = regionQuery(np);
-				// System.out.println("Adding "+newNeighborPts.size()+" neighbors of "+np+" to cluster "+currentC);
 
 				if(newNeighborPts.size() >= minPts){
 					//Merge neighboring points
@@ -135,8 +139,10 @@ public class RunDBSCAN  {
 		ArrayList<Integer> neighborPts = new ArrayList<Integer>();
 		int nelements = distanceMatrix[p].length;
 
-		if (!neighborPts.contains(p))
+		// always true (what's the purpose of this test?)
+		// if (!neighborPts.contains(p))
 			neighborPts.add(p);
+
 		for(int i = 0; i < nelements; i++){
 			if (i == p) continue;
 
@@ -144,8 +150,11 @@ public class RunDBSCAN  {
 				// System.out.println("distanceMatrix["+p+"]["+i+"] = "+distanceMatrix[p][i]+"<="+eps);
 				if (!neighborPts.contains(i))
 					neighborPts.add(i);
-			}
+			} // else 
+				// System.out.println("distanceMatrix["+p+"]["+i+"] = "+distanceMatrix[p][i]+">"+eps);
 		}
+
+		// System.out.println("regionQuery returns "+neighborPts.size()+" points for "+p);
 
 		return neighborPts;
 	}

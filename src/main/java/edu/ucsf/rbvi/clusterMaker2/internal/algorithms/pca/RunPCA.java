@@ -6,6 +6,7 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca;
 
 import java.util.Arrays;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -19,7 +20,13 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.ColtMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.matrix.CyMatrixFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.ScatterPlotDialog;
+import org.cytoscape.application.swing.CytoPanel;
+import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.CytoPanelState;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
 
@@ -80,11 +87,23 @@ public class RunPCA {
 
 		final Matrix loadingMatrix = calculateLoadingMatrix(matrix);
 
-		if(context.pcaResultPanel)
-			ResultPanelPCA.createAndShowGui(components, network, networkView, 
-			                                matrix.getRowNodes(), variance);
+		if(context.pcaResultPanel) {
+			CyServiceRegistrar registrar = manager.getService(CyServiceRegistrar.class);
+			CySwingApplication swingApplication = manager.getService(CySwingApplication.class);
+			ResultPanelPCA panel = new ResultPanelPCA(components, variance, network, networkView);
+			CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.EAST);
+			registrar.registerService(panel, CytoPanelComponent.class, new Properties());
+			if (cytoPanel.getState() == CytoPanelState.HIDE)
+				cytoPanel.setState(CytoPanelState.DOCK);
+		}
 
 		if(context.pcaPlot) {
+			if (components.length < 2) {
+				monitor.showMessage(TaskMonitor.Level.ERROR, 
+				                    "Only found "+components.length+" components. Need 2 for scatterplot. "+
+														"Perhaps minimum variance is set too high?");
+				return;
+			}
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					// System.out.println("Scatter plot dialog call");

@@ -9,6 +9,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.ResultsPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -33,6 +35,8 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
@@ -46,142 +50,130 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
  *
  * @author root
  */
-public class ResultPanelPCA extends JPanel{
+public class ResultPanelPCA extends JPanel implements ListSelectionListener, CytoPanelComponent {
 
 	private final CyNetwork network;
 	private CyNetworkView networkView;
 	private final CyMatrix[] components;
+	private final double[] varianceArray;
 
 	// table size parameters
 	private static final int graphPicSize = 80;
 	private static final int defaultRowHeight = graphPicSize + 8;
 
-	private ResultPanelPCA.PCBrowserPanel pcBrowserPanel;
 	private List<Integer> nodeCount = new ArrayList<Integer>();
-	private static double[] varianceArray;
 
-	private static JFrame frame;
+	private final JTable table;
+	private final ResultPanelPCA.PCBrowserTableModel browserModel;
 
 	public ResultPanelPCA(final CyMatrix[] components, 
+		final double[] varianceArray,
 		final CyNetwork network, 
 		final CyNetworkView networkView){
+		super();
 
 		this.network = network;
 		this.networkView = networkView;
 		this.components = components;
+		this.varianceArray = varianceArray;
 
-		this.pcBrowserPanel = new PCBrowserPanel();
-		add(pcBrowserPanel, BorderLayout.CENTER);
+		this.browserModel = new PCBrowserTableModel();
+		this.table = new JTable(browserModel);
+
+		setLayout(new BorderLayout());
+
+		initComponents();
 		this.setSize(this.getMinimumSize());
 	}
 
-	/**
-	 * Panel that contains the browser table with a scroll bar.
-	 */
-	private class PCBrowserPanel extends JPanel implements ListSelectionListener {
-		private final ResultPanelPCA.PCBrowserTableModel browserModel;
-		private final JTable table;
+	private void initComponents() {
+		table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		table.setAutoCreateRowSorter(true);
+		table.setDefaultRenderer(StringBuffer.class, new ResultsPanel.JTextAreaRenderer(defaultRowHeight));
+		table.setIntercellSpacing(new Dimension(0, 4)); // gives a little vertical room between clusters
+		table.setFocusable(false); // removes an outline that appears when the user clicks on the images
 
-		public PCBrowserPanel() {
-			super();
+		// Ask to be notified of selection changes.
+		ListSelectionModel rowSM = table.getSelectionModel();
+		rowSM.addListSelectionListener(this);
 
-			setLayout(new BorderLayout());
+		JScrollPane tableScrollPane = new JScrollPane(table);
+		//System.out.println("CBP: after creating JScrollPane");
+		tableScrollPane.getViewport().setBackground(Color.WHITE);
 
-			// Create the summary panel
-			String title = "Title Here";
-			TitledBorder border = 
-				BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), title);
-			border.setTitlePosition(TitledBorder.TOP);
-			border.setTitleJustification(TitledBorder.LEFT);
-			border.setTitleColor(Color.BLUE);
+		add(tableScrollPane, BorderLayout.CENTER);
+		//System.out.println("CBP: after adding JScrollPane");
+	}
 
-			JLabel summary = new JLabel("<html>"+"here is the summery"+"</html>");
-			summary.setBorder(border);
-			add(summary, BorderLayout.NORTH);
+	public int getSelectedRow() {
+		return table.getSelectedRow();
+	}
 
-			// main data table
-			browserModel = new ResultPanelPCA.PCBrowserTableModel();
+	public void update(final ImageIcon image, final int row) {
+		table.setValueAt(image, row, 0);
+	}
 
-			table = new JTable(browserModel);
-			table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-			table.setAutoCreateRowSorter(true);
-			table.setDefaultRenderer(StringBuffer.class, new ResultsPanel.JTextAreaRenderer(defaultRowHeight));
-			table.setIntercellSpacing(new Dimension(0, 4)); // gives a little vertical room between clusters
-			table.setFocusable(false); // removes an outline that appears when the user clicks on the images
+	public void update(final NodeCluster cluster, final int row) {
+		final String score = "needs score here";
+		table.setValueAt(score, row, 1);
+	}
 
-			// Ask to be notified of selection changes.
-			ListSelectionModel rowSM = table.getSelectionModel();
-			rowSM.addListSelectionListener(this);
+	JTable getTable() { 
+		return table;
+	}
 
-			JScrollPane tableScrollPane = new JScrollPane(table);
-			//System.out.println("CBP: after creating JScrollPane");
-			tableScrollPane.getViewport().setBackground(Color.WHITE);
-
-			add(tableScrollPane, BorderLayout.CENTER);
-			//System.out.println("CBP: after adding JScrollPane");
-
-			JButton dispose = new JButton("Close");
-			dispose.addActionListener(new AbstractAction() {
-				public void actionPerformed(ActionEvent e) {
-					ResultPanelPCA.closeGui();
-				}
-			});
-
-			JPanel buttonPanel = new JPanel();
-			buttonPanel.add(dispose);
-			add(buttonPanel, BorderLayout.SOUTH);
-		}
-
-		public int getSelectedRow() {
-			return table.getSelectedRow();
-		}
-
-		public void update(final ImageIcon image, final int row) {
-			table.setValueAt(image, row, 0);
-		}
-
-		public void update(final NodeCluster cluster, final int row) {
-			final String score = "needs score here";
-			table.setValueAt(score, row, 1);
-		}
-
-		JTable getTable() { 
-			return table;
-		}
-
-		public void valueChanged(ListSelectionEvent e) {
-			ListSelectionModel lsm = (ListSelectionModel) e.getSource();
-			// Get the rows
-			int[] rowIndices = table.getSelectedRows();
-			Map<CyNode, CyNode> selectedMap = new HashMap<CyNode, CyNode>();
-			double threshold = 0.02;
-			// Get the clusters
-			for (int index = 0; index < rowIndices.length; index++) {
-				int row = rowIndices[index];
-				CyMatrix matrix = components[row];
-				for(int i=0;i<matrix.nRows();i++){
-					for(int j=0;j<matrix.nColumns();j++){
-						if(matrix.getValue(i, j) > threshold){
-							CyNode node = matrix.getRowNode(i);
-							selectedMap.put(node, node);
-							break;
-						}
+	public void valueChanged(ListSelectionEvent e) {
+		ListSelectionModel lsm = (ListSelectionModel) e.getSource();
+		// Get the rows
+		int[] rowIndices = table.getSelectedRows();
+		Map<CyNode, CyNode> selectedMap = new HashMap<CyNode, CyNode>();
+		double threshold = 0.02;
+		// Get the clusters
+		for (int index = 0; index < rowIndices.length; index++) {
+			int row = rowIndices[index];
+			CyMatrix matrix = components[row];
+			for(int i=0;i<matrix.nRows();i++){
+				for(int j=0;j<matrix.nColumns();j++){
+					if(matrix.getValue(i, j) > threshold){
+						CyNode node = matrix.getRowNode(i);
+						selectedMap.put(node, node);
+						break;
 					}
 				}
-				System.out.println("PC is selected");
 			}
-			// Select the nodes
-			for (CyNode node: network.getNodeList()) {
-				if (selectedMap.containsKey(node))
-					network.getRow(node).set(CyNetwork.SELECTED, true);
-				else
-					network.getRow(node).set(CyNetwork.SELECTED, false);
-			}
-
-			// I wish we didn't need to do this, but if we don't, the selection
-			// doesn't update
-			networkView.updateView();
+			// System.out.println("PC is selected");
 		}
+		// Select the nodes
+		for (CyNode node: network.getNodeList()) {
+			if (selectedMap.containsKey(node))
+				network.getRow(node).set(CyNetwork.SELECTED, true);
+			else
+				network.getRow(node).set(CyNetwork.SELECTED, false);
+		}
+
+		// I wish we didn't need to do this, but if we don't, the selection
+		// doesn't update
+		networkView.updateView();
+	}
+
+	//@Override
+	public Component getComponent() {
+		return this;
+	}
+
+	//@Override
+	public String getTitle() {
+		return "PCA for "+network;
+	}
+
+	//@Override
+	public CytoPanelName getCytoPanelName() {
+		return CytoPanelName.EAST;
+	}
+
+	//@Override
+	public Icon getIcon() {
+		return null;
 	}
 
 	private class PCBrowserTableModel extends AbstractTableModel {
@@ -242,7 +234,7 @@ public class ResultPanelPCA extends JPanel{
 		double cx = networkView.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION);
 		double cy = networkView.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION);
 		List<Point> nodes = new ArrayList<Point>();
-		System.out.println("createPCImage: "+pc.printMatrixInfo());
+		// System.out.println("createPCImage: "+pc.printMatrixInfo());
 		for(int i=0;i<pc.nRows();i++){
 			for(int j=0;j<pc.nColumns();j++){
 				// System.out.println("Value("+i+","+j+")="+pc.getValue(i,j));
@@ -290,25 +282,5 @@ public class ResultPanelPCA extends JPanel{
 		}
 		nodeCount.add(count);
 		return image;
-	}
-
-	public static void createAndShowGui(final CyMatrix[] components, 
-	                                    final CyNetwork network, 
-	                                    final CyNetworkView networkView,
-	                                    final List<CyNode> nodeList,
-	                                    final double[] varianceArray){
-		ResultPanelPCA.varianceArray = varianceArray;
-		ResultPanelPCA resultPanelPCA = new ResultPanelPCA(components, network, networkView);
-		frame = new JFrame("Result Panel");
-
-		frame.getContentPane().add(resultPanelPCA);
-		frame.pack();
-		frame.setLocationByPlatform(true);
-		frame.setVisible(true);
-	}
-
-	public static void closeGui(){
-		if(frame != null)
-		frame.dispose();
 	}
 }

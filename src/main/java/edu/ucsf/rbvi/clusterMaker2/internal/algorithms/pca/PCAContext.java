@@ -22,32 +22,33 @@ import org.cytoscape.work.util.ListSingleSelection;
 public class PCAContext {
 	CyNetwork network;
 
-	@Tunable(description = "Only use selected nodes for PCA", groups={"Data Input"}, gravity=7.0)
+	@Tunable(description="Node attributes for PCA", groups={"Array Sources"}, 
+	         tooltip="You must choose at least 2 node columns for an attribute PCA", gravity=7.0)
+	public ListMultipleSelection<String> nodeAttributeList = null;
+
+	@Tunable(description = "Only use selected nodes for PCA", groups={"Array Sources"}, gravity=8.0)
 	public boolean selectedOnly = false;
 
-	@Tunable(description="Ignore nodes with no data", groups={"Data Input"}, gravity=8.0)
+	@Tunable(description="Ignore nodes with no data", groups={"Array Sources"}, gravity=9.0)
 	public boolean ignoreMissing = true;
-
-	@Tunable(description="Node attributes for PCA", groups="Source for Distance Matrix", 
-	         params="displayState=uncollapsed",
-	         tooltip="You must choose at least 2 node columns for an attribute PCA", gravity=9.0)
-	public ListMultipleSelection<String> nodeAttributeList = null;
 
 	@Tunable(description="Type of matrix to use for PCA",
 	         tooltip="If all of the data is of the same type, use covariance, otherwise choose correlation",
+					 groups={"PCA Parameters"},
 					 gravity=10.0)
 	public ListSingleSelection<String> matrixType = new ListSingleSelection<String>("covariance", "correlation");
 
 	@Tunable(description="Standardize data?",
 	         tooltip="This will standardize the data such that each column has 0 mean and stdev of 1",
+					 groups={"PCA Parameters"},
 					 gravity=11.0)
 	public boolean standardize = false;
 
-	@Tunable(description = "Create Result Panel with Principal Component selection option", 
+	@Tunable(description = "Create PCA Result Panel", 
 	         groups={"Result Options"}, gravity=83.0)
 	public boolean pcaResultPanel = false;
 
-	@Tunable(description = "Create PCA scatter plot with node selection option", 
+	@Tunable(description = "Create PCA scatter plot", 
 	         groups={"Result Options"}, gravity=84.0)
 	public boolean pcaPlot = true;
 

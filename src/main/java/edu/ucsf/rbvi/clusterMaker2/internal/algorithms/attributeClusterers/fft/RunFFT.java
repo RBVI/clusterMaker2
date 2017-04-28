@@ -16,13 +16,13 @@ public class RunFFT extends AbstractKClusterAlgorithm{
 
 	Random random = null;
 	FFTContext context;
-	
+
 	public RunFFT(CyNetwork network, String weightAttributes[], DistanceMetric metric, 
             TaskMonitor monitor, FFTContext context, AbstractClusterAlgorithm parentTask) {
 		super(network, weightAttributes, metric, monitor, parentTask);
 		this.context = context;
 	}
-	
+
 	@Override
 	public int kcluster(int nClusters, int nIterations, CyMatrix matrix, 
 			DistanceMetric metric, int[] clusterID) {
@@ -37,96 +37,96 @@ public class RunFFT extends AbstractKClusterAlgorithm{
 
 		int[] mapping = new int[nClusters];
 		int[] counts = new int[nClusters];
-		
+
 		HashMap<Integer,Integer> centers = new HashMap<Integer,Integer>();
-		
+
 		double error = Double.MAX_VALUE;
-		
+
 		if (monitor != null)
 			monitor.setProgress(0);
 
-		
+
 		for (int i = 0; i < nelements; i++) 
 			clusterID[i] = 0;
-		
+
 		// the first center
 		Random randomGenerator = new Random();
 		centers.put(0,randomGenerator.nextInt(nelements));
-		
+
 		//now find the remaining centers
 		for (int i = 1; i < nClusters; i++){
 			int y = getMaxMin(centers,matrix);
-			centers.put(i, y);			
+			centers.put(i, y);
 		}
-		
+
 		// assign clusters now
 		int k = centers.get(0);
 		for(int i = 0; i <nelements; i++){
-			double distance;			
-			
+			double distance;
+
 			if (i == k){
 				clusterID[i] = 0;
 				continue;
 			}
-						
+
 			distance = metric.getMetric(matrix, matrix, i, k);
 			clusterID[i] = k;
-			
+
 			for (int j = 1; j < nClusters; j++){
-				double tdistance;			
-				
+				double tdistance;
+
 				if (i == centers.get(j)){
 					clusterID[i] = j;
 					continue;
 				}
-				
+
 				tdistance = metric.getMetric(matrix, matrix, i, centers.get(j));
 				if (tdistance < distance) 
 				{ 
 					distance = tdistance;
 					clusterID[i] = j;
-				}			
+				}
 			}
 		}
-		
-		
+
+
 		return ifound;
 	}
-	
+
 	public int getMaxMin(HashMap<Integer,Integer> centers, CyMatrix matrix){
 		int y = 0;
 		int nelements = matrix.nRows();
 		int numC = centers.size();
 		int k = centers.get(0);
 		double maxD = Double.NEGATIVE_INFINITY;
-		
+
 		for (int i = 0; i < nelements; i++){
 			double minD;
 			if (centers.containsValue(i)) continue;
-			
+
 			minD = metric.getMetric(matrix, matrix, i, k);
-			
+
 			if (numC > 1){
 				for (int j = 1; j < numC; j++){
 					double tminD = metric.getMetric(matrix, matrix, i, centers.get(j));
-					
+
 					if (tminD < minD) 
 					{ 
-						minD = tminD;						
+						minD = tminD;
 					}
-				}				
+				}
 			}
-			
+
 			if (minD > maxD){
 				maxD = minD;
 				y = i;
-			}			
+			}
 		}
-		
-		
+
+
 		return y;
 	}
-	
+
 	/**
 	 * This routine generates a random number between 0 and n inclusive, following
 	 * the binomial distribution with probability p and n trials. The routine is

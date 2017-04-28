@@ -42,7 +42,7 @@ public class PCoAContext {
 	@ContainsTunables
 	public EdgeAttributeHandler edgeAttributeHandler;
 
-	@Tunable (description="Negative eigenvalue handling", groups={"PCoA Advanced Options"})
+	@Tunable (description="Negative eigenvalue handling", groups={"PCoA Parameters"}, gravity=80.0)
 	public ListSingleSelection<NegEigenHandling> neg = 
 		new ListSingleSelection<NegEigenHandling>(NegEigenHandling.DISCARD, NegEigenHandling.KEEP, NegEigenHandling.CORRECT);
 
@@ -52,7 +52,7 @@ public class PCoAContext {
 	public boolean pcoaResultPanel = false;
 	*/
 	
-	@Tunable(description = "Create PCoA scatter plot with node selection option", 
+	@Tunable(description = "Create PCoA scatter plot", 
 	         groups={"Result Options"}, gravity=84.0)
 	public boolean pcoaPlot = true;
 

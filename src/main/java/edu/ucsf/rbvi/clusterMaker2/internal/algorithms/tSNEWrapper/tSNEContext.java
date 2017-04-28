@@ -22,32 +22,33 @@ public class tSNEContext implements TSneConfiguration {
 
 	public boolean selectedOnly = false;
 	@Tunable(description="Use only selected nodes/edges for cluster",
-			groups={"t-SNE Advanced Settings"}, gravity=65)
+			groups={"t-SNE Parameters"}, gravity=65)
 	public boolean getselectedOnly() { return selectedOnly; }
 	public void setselectedOnly(boolean sel) {
 		if (network != null && this.selectedOnly != sel) 
 		this.selectedOnly = sel;
 	}
 
-	@Tunable(description="Ignore nodes with missing data", groups={"t-SNE Advanced Settings"}, gravity=66)
+	@Tunable(description="Ignore nodes with missing data", groups={"t-SNE Parameters"}, gravity=66)
 	public boolean ignoreMissing = true;
 
-	@Tunable(description="Initial Dimensions", groups={"t-SNE Advanced Settings"}, gravity=66, format="#0")
+	@Tunable(description="Initial Dimensions", groups={"t-SNE Parameters"}, gravity=66, format="#0")
 	public int dimensions=-1;
 
-	@Tunable(description="Perplexity", groups={"t-SNE Advanced Settings"}, gravity=67)
+	@Tunable(description="Perplexity", groups={"t-SNE Parameters"}, gravity=67)
 	public double perplexity=20;
 
-	@Tunable(description="Number of Iterations", groups={"t-SNE Advanced Settings"}, gravity=68)
+	@Tunable(description="Number of Iterations", groups={"t-SNE Parameters"}, gravity=68)
 	public int iterations=2000;
 
-	@Tunable(description="Use Barnes-Hut approximation", groups={"t-SNE Advanced Settings"}, gravity=69)
+	@Tunable(description="Use Barnes-Hut approximation", groups={"t-SNE Parameters"}, gravity=69)
 	public boolean useBarnesHut=false;
 
-	@Tunable(description="Theta value for Barnes-Hut", dependsOn="useBarnesHut=true", groups={"t-SNE Advanced Settings"}, gravity=70)
+	@Tunable(description="Theta value for Barnes-Hut", dependsOn="useBarnesHut=true", groups={"t-SNE Parameters"}, gravity=70)
 	public BoundedDouble theta=new BoundedDouble(0.0, 0.9, 1.0, false, false);
 
-	@Tunable(description="Show scatter plot with results",  gravity=69)
+	@Tunable(description="Show scatter plot with results",
+	         groups={"Result Options"}, gravity=69.0)
 	public boolean showScatterPlot=true;
 
 	public tSNEContext(){

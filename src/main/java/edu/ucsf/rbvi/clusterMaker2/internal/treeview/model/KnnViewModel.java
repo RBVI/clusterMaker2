@@ -74,8 +74,8 @@ public class KnnViewModel extends TreeViewModel {
 			HeaderInfo geneHeader = getGeneHeaderInfo();
 			HeaderInfo gtrHeader = getGtrHeaderInfo();
 			geneHeader.addName("GROUP", geneHeader.getNumNames());
-			System.out.println("Number of names = "+geneHeader.getNumNames());
-			System.out.println("Number of headers = "+geneHeader.getNumHeaders());
+			// System.out.println("Number of names = "+geneHeader.getNumNames());
+			// System.out.println("Number of headers = "+geneHeader.getNumHeaders());
 			for (int row = 0; row < geneHeader.getNumHeaders(); row++) {
 				geneHeader.setHeader(row, "GROUP", gtrHeader.getHeader(row, "GROUP"));
 			}
