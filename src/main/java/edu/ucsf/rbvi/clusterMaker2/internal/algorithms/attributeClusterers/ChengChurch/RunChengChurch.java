@@ -217,23 +217,22 @@ public class RunChengChurch {
 		int rowSize = rows.size();
 		int colSize = cols.size();
 
-		Map<Integer,Double> rowSums = getRowSums(rows,cols);
-		Map<Integer,Double> colSums = getColSums(rows,cols);
+		Map<Integer,Double> rowMeans = getRowMeans(rows,cols);
+		Map<Integer,Double> colMeans = getColMeans(rows,cols);
 
 		//normalized sum of all elements of sub matrix
 		double aIJ = 0;
-		for(Integer i: rowSums.keySet()){
-			aIJ += rowSums.get(i);
+		for(Integer i: rowMeans.keySet()){
+			aIJ += rowMeans.get(i);
 		}
 
-		aIJ = aIJ/(rowSize*colSize);
+		aIJ = aIJ/rowSize;
 
 		for(Integer i: rows){
-			double aiJ = rowSums.get(i)/colSize;
-			rowSums.put(i,aiJ);
+			double aiJ = rowMeans.get(i);
 			for(Integer j: cols){
 
-				double aIj = colSums.get(j)/rowSize;
+				double aIj = colMeans.get(j);
 				double residue = arr[i][j] - aiJ - aIj + aIJ;
 
 				msr += Math.pow(residue, 2);
@@ -259,13 +258,14 @@ public class RunChengChurch {
 	
 	public Map<Integer, Double> getRowMeans(List<Integer> rows, List<Integer> cols){
 		Map<Integer,Double> rowMeans = new HashMap<Integer,Double>();
+		int colSize = cols.size();
 
 		for(Integer i : rows){
 			double rowSum = 0;
 			for(Integer j : cols){
 				rowSum += arr[i][j];
 			}
-			rowMeans.put(i, rowSum/cols.size());
+			rowMeans.put(i, rowSum/colSize);
 		}
 		return rowMeans;
 	}
@@ -285,13 +285,14 @@ public class RunChengChurch {
 
 	public Map<Integer,Double> getColMeans(List<Integer> rows, List<Integer> cols){
 		Map<Integer,Double> colMeans = new HashMap<Integer,Double>();
+		int rowSize = rows.size();
 
 		for(Integer j : cols){
 			double colSum = 0;
 			for(Integer i : rows){
 				colSum += arr[i][j];
 			}
-			colMeans.put(j, colSum/rows.size());
+			colMeans.put(j, colSum/rowSize);
 		}
 		return colMeans;
 	}
