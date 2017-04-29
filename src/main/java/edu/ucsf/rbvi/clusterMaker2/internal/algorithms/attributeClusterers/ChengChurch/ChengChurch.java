@@ -130,7 +130,10 @@ public class ChengChurch extends AbstractAttributeClusterer {
 		//createBiclusterGroups(algorithm.getClusterNodes());
 		CyMatrix biclusterMatrix = algorithm.getBiclusterMatrix();
 		int clusters[] = new int[biclusterMatrix.nRows()];
-		createGroups(network,biclusterMatrix,1, clusters, "cheng&hurch");
+		for (int row=0; row < rowOrder.length; row++) {
+			clusters[row] = rowOrder[row];
+		}
+		createGroups(network, biclusterMatrix, context.nClusters, clusters, "cheng&church");
 		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, getAttributeList(), 
 		                 algorithm.getBiclusterMatrix());
 		

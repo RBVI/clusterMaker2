@@ -22,7 +22,7 @@ public class RunChengChurch {
 	//protected DistanceMetric metric;
 	protected CyMatrix matrix;
 	protected CyMatrix biclusterMatrix;
-	protected Double arr[][];
+	protected double arr[][];
 	protected int[] clusters;
 	protected TaskMonitor monitor;
 	protected boolean ignoreMissing = true;
@@ -76,15 +76,15 @@ public class RunChengChurch {
 		int nattrs = matrix.nColumns();
 
 		//System.out.println("nelements = "+nelements+", nattrs = "+nattrs);
-		arr = new Double[nelements][nattrs];
+		arr = new double[nelements][nattrs];
 
 		Random generator = new Random();
 		double range = MatrixMax - MatrixMin;
 
 		for(int i= 0 ;i < nelements; i++){
 			for(int j = 0; j < nattrs; j++){
-				arr[i][j] = matrix.getValue(i, j);
-				if(arr[i][j] == null){
+				arr[i][j] = matrix.doubleValue(i, j);
+				if(Double.isNaN(arr[i][j])) {
 					arr[i][j] = generator.nextDouble()*range + MatrixMin;
 				}
 			}
@@ -116,16 +116,12 @@ public class RunChengChurch {
 				cols.add(j);
 			}
 
-			System.out.println("Iteration: "+iter);
-			System.out.println("multipleNodeDeletion: "+iter);
 			boolean changed = multipleNodeDeletion(rows,cols);
 
 			if(changed == false){
-				System.out.println("singleNodeDeletion: "+iter);
 				singleNodeDeletion(rows,cols);
 			}
 
-			System.out.println("nodeAddition: "+iter);
 			nodeAddition(rows,cols);
 
 			List<Long> nodes = new ArrayList<Long>();
@@ -172,9 +168,10 @@ public class RunChengChurch {
 		}
 
 		biclusterMatrix.setRowNodes(rowNodes);
-		biclusterMatrix.writeMatrix("biclusterMatrix");
-		Integer[] rowOrder;
-		rowOrder = MatrixUtils.indexSort(clusters, clusters.length);
+		Integer[] rowOrder = new Integer[clusters.length];
+		for (int i = 0; i < clusters.length; i++)
+			rowOrder[i] = clusters[i];
+		// rowOrder = MatrixUtils.indexSort(clusters, clusters.length);
 		return rowOrder;
 	}
 
@@ -486,7 +483,6 @@ public class RunChengChurch {
 
 	public boolean multipleNodeDeletion(List<Integer> rows, List<Integer> cols){
 		double msr = calcMSR(rows,cols);
-		System.out.println("initial msr = "+msr);
 		boolean changed = false;
 
 		while(msr > delta){
@@ -526,13 +522,11 @@ public class RunChengChurch {
 			msr = calcMSR(rows,cols);
 
 		}
-		System.out.println("final msr = "+msr);
 		return changed;
 	}
 
 	public void singleNodeDeletion(List<Integer> rows, List<Integer> cols){
 		double msr = calcMSR(rows,cols);
-		System.out.println("singleNodeDeletion initial msr = "+msr);
 
 		while(msr > delta){
 			Map<Integer,Double> rowMSRs = calcRowMSR(rows,cols);
@@ -549,7 +543,6 @@ public class RunChengChurch {
 			}
 			msr = calcMSR(rows,cols);
 		}
-		System.out.println("singleNodeDeletion final msr = "+msr);
 	}
 
 	public void nodeAddition(List<Integer> rows, List<Integer> cols){
