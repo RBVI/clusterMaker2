@@ -96,6 +96,7 @@ public class RunPCoA {
 		monitor.showMessage(TaskMonitor.Level.INFO, "Constructed Gower's Matrix in "+delta+"ms");
 		monitor.showMessage(TaskMonitor.Level.INFO, "Doing Singlular Value Decomposition (SVD)");
 		// System.out.println("Got GowersMatrix in "+delta+"ms");
+		G.ops().svdInit();
 		Matrix V_t = CommonOps.transpose(G.ops().svdV());
 
 		// Get the singular values

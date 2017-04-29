@@ -136,6 +136,7 @@ public class RunPCA {
 			C = matrix.ops().covariance();
 		}
 
+		C.ops().eigenInit();
 		// System.out.println("Finding eigenValues");
 		eigenValues = C.ops().eigenValues(true);
 		// System.out.println("Finding eigenVectors");

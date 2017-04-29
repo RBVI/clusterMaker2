@@ -438,6 +438,10 @@ public class SimpleOps implements MatrixOps {
 		return matrix.copyDataFromMatrix(matrix2D);
 	}
 
+	public void eigenInit() {
+		decomp = null;
+	}
+
 	public double[] eigenValues(boolean nonZero){
 		if (decomp == null)
 			decomp = new DenseDoubleEigenvalueDecomposition(getColtMatrix());
@@ -464,6 +468,10 @@ public class SimpleOps implements MatrixOps {
 		if (decomp == null)
 			decomp = new DenseDoubleEigenvalueDecomposition(getColtMatrix());
 		return decomp.getV().toArray();
+	}
+
+	public void svdInit() {
+		svdDecomp = null;
 	}
 
 	public Matrix svdU() {

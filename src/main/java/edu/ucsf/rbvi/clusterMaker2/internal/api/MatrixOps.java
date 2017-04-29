@@ -263,6 +263,12 @@ public interface MatrixOps {
 	public Matrix transpose();
 
 	/**
+	 * Initialize the eigen decomposition
+	 *
+	 */
+	public void eigenInit();
+
+	/**
 	 * Return the eigenvalues of a matrix
 	 *
 	 * @param nonZero if true, only return the non-zero eigenvalues
@@ -276,6 +282,12 @@ public interface MatrixOps {
 	 * @return the eigenvectors of the matrix
 	 */
 	public double[][] eigenVectors();
+
+	/**
+	 * Initialize the eigen decomposition
+	 *
+	 */
+	public void svdInit();
 
 	/**
 	 * Return the U matrix resulting from an Singular Value Decomposition of

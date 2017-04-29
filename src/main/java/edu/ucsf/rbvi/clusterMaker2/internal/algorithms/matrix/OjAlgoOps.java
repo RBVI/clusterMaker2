@@ -24,6 +24,7 @@ import org.ojalgo.matrix.store.PrimitiveDenseStore;
 import org.ojalgo.matrix.task.InverterTask;
 import org.ojalgo.matrix.task.SolverTask;
 import org.ojalgo.matrix.task.TaskException;
+import org.ojalgo.scalar.ComplexNumber;
 import org.ojalgo.scalar.PrimitiveScalar;
 import org.ojalgo.scalar.Scalar;
 
@@ -40,7 +41,7 @@ public class OjAlgoOps implements MatrixOps {
 	final Logger logger = Logger.getLogger(CyUserLog.NAME);
 
 	// This is used for Eigenvalue deomposition, which is faster with Colt
-	ColtMatrix cMat;
+	// ColtMatrix cMat;
 
 	public OjAlgoOps(OjAlgoMatrix matrix) {
 		nThreads = Runtime.getRuntime().availableProcessors()-1;
@@ -75,7 +76,7 @@ public class OjAlgoOps implements MatrixOps {
 		}
 
 		final InverterTask<Double> tmpInverter = InverterTask.PRIMITIVE.make(matrix.data, false, false);
-		final DecompositionStore<Double> tmpAlloc = tmpInverter.preallocate(matrix.data);
+		final PhysicalStore<Double> tmpAlloc = tmpInverter.preallocate(matrix.data);
 
 		try {
 			MatrixStore<Double> inv = tmpInverter.invert(matrix.data, tmpAlloc);
@@ -409,16 +410,16 @@ public class OjAlgoOps implements MatrixOps {
 		return stdev;
 	}
 
-	// For whatever reason, Eigenvalue decomposition
-	// is very slow for OjAlgo, so we use Colt
-	public double[] eigenValues(boolean nonZero){
-		if (cMat == null) {
-			cMat = new ColtMatrix();
-			cMat.initialize(matrix.nRows(), matrix.nColumns(), matrix.toArray());
-		}
-		return cMat.ops().eigenValues(nonZero);
+	public void eigenInit(){
+		decomp = null;
+	}
 
-		/*
+	public double[] eigenValues(boolean nonZero){
+		if (decomp == null) {
+			decomp = Eigenvalue.make(matrix.data);
+			decomp.decompose(matrix.data);
+		}
+
 		double[] allValues = decomp.getD().toRawCopy1D();
 		if (!nonZero)
 			return allValues;
@@ -435,24 +436,21 @@ public class OjAlgoOps implements MatrixOps {
 		}
 
 		return nonZ;
-		*/
 	}
 
 	public double[][] eigenVectors(){
-		if (cMat == null) {
-			cMat = new ColtMatrix();
-			cMat.initialize(matrix.nRows(), matrix.nColumns(), matrix.toArray());
-		}
-		return cMat.ops().eigenVectors();
-		/*
 		if (decomp == null) {
 			decomp = Eigenvalue.make(matrix.data);
 			decomp.decompose(matrix.data);
 		}
 
 		MatrixStore<Double> eigv = decomp.getV();
+
 		return eigv.toRawCopy2D();
-		*/
+	}
+
+	public void svdInit(){
+		svdDecomp = null;
 	}
 
 	public Matrix svdU() {

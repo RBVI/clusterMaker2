@@ -71,19 +71,19 @@ public class MatrixTest {
 		timeStart();
 		Matrix resultSimple = simpleMatrix.ops().multiplyMatrix(simpleMatrix);
 		timeEnd("square multiply simple matrix");
-		System.out.println("resultSimple: "+resultSimple.printMatrixInfo());
+		// System.out.println("resultSimple: "+resultSimple.printMatrixInfo());
 
 		timeStart();
 		Matrix resultColt = coltMatrix.ops().multiplyMatrix(coltMatrix);
 		timeEnd("square multiply colt matrix");
-		System.out.println("resultColt: "+resultColt.printMatrixInfo());
+		// System.out.println("resultColt: "+resultColt.printMatrixInfo());
 
 		assertArrayEquals(resultSimple.toArray(), resultColt.toArray(), DELTA);
 
 		timeStart();
 		Matrix resultAlgo = ojAlgoMatrix.ops().multiplyMatrix(ojAlgoMatrix);
 		timeEnd("square multiply ojAlgo matrix");
-		System.out.println("resultOjAlgo: "+ resultAlgo.printMatrixInfo());
+		// System.out.println("resultOjAlgo: "+ resultAlgo.printMatrixInfo());
 		assertArrayEquals(resultSimple.toArray(), resultAlgo.toArray(), DELTA);
 
 	}
@@ -236,6 +236,15 @@ public class MatrixTest {
 		timeStart();
 		double[][] simpleVectors = simpleMatrix.ops().eigenVectors();
 		double[]  simpleValues = simpleMatrix.ops().eigenValues(false);
+		/*
+		System.out.println("simple EigenVectors:");
+		for (int row = 0; row < simpleVectors.length; row++) {
+			System.out.printf("%d: ",row);
+			for (int col = 0; col < simpleVectors[0].length; col++)
+				System.out.printf("%.4f\t",simpleVectors[row][col]);
+			System.out.println();
+		}
+		*/
 		timeEnd("simple matrix eigen");
 
 		timeStart();
@@ -248,6 +257,15 @@ public class MatrixTest {
 		timeStart();
 		double[][] ojAlgoVectors = ojAlgoMatrix.ops().eigenVectors();
 		double[]  ojAlgoValues = ojAlgoMatrix.ops().eigenValues(false);
+		/*
+		System.out.println("ojAlgo EigenVectors = ");
+		for (int row = 0; row < ojAlgoVectors.length; row++) {
+			System.out.printf("%d: ",row);
+			for (int col = 0; col < ojAlgoVectors[0].length; col++)
+				System.out.printf("%.4f\t",ojAlgoVectors[row][col]);
+			System.out.println();
+		}
+		*/
 		timeEnd("ojAlgo matrix eigen");
 
 		assertArrayEquals(simpleVectors, ojAlgoVectors, DELTA);

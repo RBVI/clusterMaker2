@@ -527,6 +527,10 @@ public class ColtOps implements MatrixOps {
 		return matrix.copyDataFromMatrix(matrix2D);
 	}
 
+	public void eigenInit(){
+		decomp = null;
+	}
+
 	public double[] eigenValues(boolean nonZero){
 		if (decomp == null) {
 			decomp = new DenseDoubleEigenvalueDecomposition(getData());
@@ -557,6 +561,10 @@ public class ColtOps implements MatrixOps {
 		DoubleMatrix2D eigv = decomp.getV();
 		System.out.println("Found "+eigv.columns()+" eigenvectors");
 		return eigv.toArray();
+	}
+
+	public void svdInit(){
+		svdDecomp = null;
 	}
 
 	public Matrix svdU() {
