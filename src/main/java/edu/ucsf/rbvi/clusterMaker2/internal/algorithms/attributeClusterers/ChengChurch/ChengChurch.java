@@ -29,7 +29,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 public class ChengChurch extends AbstractAttributeClusterer {
 
-	public static String SHORTNAME = "cheng&church";
+	public static String SHORTNAME = "ccbicluster";
 	public static String NAME = "Cheng & Church's  bi-cluster";
 	public static String GROUP_ATTRIBUTE = SHORTNAME+"Group.SUID";
 	
@@ -116,28 +116,25 @@ public class ChengChurch extends AbstractAttributeClusterer {
 		
 		// Create a new clusterer
 		RunChengChurch algorithm = new RunChengChurch(network, attributeArray, monitor, context);
-						
+
 		String resultsString = "ChengChurch results:";
 
 		// Cluster the nodes
 		monitor.setStatusMessage("Clustering nodes");
 		Integer[] rowOrder = algorithm.cluster(false);
-		//System.out.println("Nclusters: "+algorithm.getNClusters());
-		//if (algorithm.getMatrix()==null)System.out.println("get matrix returns null : ");
-		//if (!algorithm.getMatrix().isTransposed())
-			//createGroups(network,algorithm.getMatrix(),algorithm.getNClusters(), clusters, "cheng&hurch");
-		
-		//createBiclusterGroups(algorithm.getClusterNodes());
+
 		CyMatrix biclusterMatrix = algorithm.getBiclusterMatrix();
-		int clusters[] = new int[biclusterMatrix.nRows()];
-		for (int row=0; row < rowOrder.length; row++) {
-			clusters[row] = rowOrder[row];
-		}
-		createGroups(network, biclusterMatrix, context.nClusters, clusters, "cheng&church");
+
+		createGroups(network, biclusterMatrix, context.nClusters, algorithm.getRowClustersArray(), SHORTNAME);
 		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, getAttributeList(), 
 		                 algorithm.getBiclusterMatrix());
-		
-		createBiclusterTable(algorithm.getClusterNodes(),algorithm.getClusterAttrs());
+
+		// Build our attribute clustesrs
+		List<String> arrayList = buildClusterHeaders(algorithm.getColClustersArray(), algorithm.getBiclusterMatrix(), true);
+    ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE,
+                    arrayList, List.class, String.class);
+
+		updateParams(network, context.getParams());
 		
 		// System.out.println(resultsString);
 		if (context.showUI) {
@@ -145,6 +142,19 @@ public class ChengChurch extends AbstractAttributeClusterer {
 		}
 	}
 	
+	List<String> buildClusterHeaders(int[] clusters, CyMatrix matrix, boolean transpose) {
+		List<String> headers = new ArrayList<>();
+		String[] labels;
+		if (transpose) {
+			labels = matrix.getColumnLabels();
+		} else {
+			labels = matrix.getRowLabels();
+		}
+		for (int i = 0; i < clusters.length; i++) {
+			headers.add(labels[i]+"\t"+clusters[i]);
+		}
+		return headers;
+	}
 	
 	protected void createBiclusterGroups(Map<Integer, List<Long>> clusterNodes){
 		

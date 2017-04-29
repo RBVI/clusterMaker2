@@ -79,6 +79,7 @@ public class ChengChurchContext {
 		params.add("selectedOnly="+selectedOnly);
 		// params.add("clusterAttributes="+clusterAttributes);
 		params.add("createGroups="+createGroups);
+		params.add("bicluster=true");
 		return params;
 	}
 

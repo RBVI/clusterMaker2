@@ -133,6 +133,7 @@ public class BiclusterView extends TreeView {
 		CyProperty cyProperty = manager.getService(CyProperty.class, 
                 "(cyPropertyName=cytoscape3.props)");
 
+		/*
 		Map<Integer, List<String>> clusterNodes = getBiclusterNodes();
 		Map<Integer, List<String>> clusterAttrs = getBiclusterAttributes();
 		
@@ -145,8 +146,8 @@ public class BiclusterView extends TreeView {
 			}			
 		}
 		
-		ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.NODE_ORDER_ATTRIBUTE, 
-                nodeArrayL, List.class, String.class);
+		// ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.NODE_ORDER_ATTRIBUTE, 
+    //             nodeArrayL, List.class, String.class);
 		
 		ArrayList<String> attrArrayL = new ArrayList<String>();
 		for(Integer key:clusterAttrs.keySet()){
@@ -155,8 +156,9 @@ public class BiclusterView extends TreeView {
 				attrArrayL.add(attr);
 			}			
 		}
-		ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
-				attrArrayL, List.class, String.class);
+		// ModelUtils.createAndSetLocal(myNetwork, myNetwork, ClusterManager.ARRAY_ORDER_ATTRIBUTE, 
+		// 		attrArrayL, List.class, String.class);
+		*/
 		
 
 		/*
@@ -340,7 +342,7 @@ public class BiclusterView extends TreeView {
 			// System.out.println("CLUSTER_TYPE_ATTRIBUTE = "+type);
 			if (!type.equals("BicFinder") &&
 			    !type.equals("BiMine") &&
-			    !type.equals("cheng&church"))
+			    !type.equals("ccbicluster"))
 				return false;
 		}
 

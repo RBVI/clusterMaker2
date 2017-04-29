@@ -66,6 +66,7 @@ public class TreeViewModel extends TVModel {
 	boolean isSymmetrical = false;
 	boolean zeroMissing = false;
 	boolean assymetric = false;
+	boolean bicluster = false;
 	Double diagonalValue = null;
 	List<String> clusterParams = null;
 
@@ -101,6 +102,8 @@ public class TreeViewModel extends TVModel {
 					diagonalValue = Double.valueOf(pair[1]);
 				else if (pair[0].equals("assymetric"))
 					assymetric = Boolean.valueOf(pair[1]);
+				else if (pair[0].equals("bicluster"))
+					bicluster = Boolean.valueOf(pair[1]);
 			}
 		}
 		
@@ -209,6 +212,41 @@ public class TreeViewModel extends TVModel {
 				} else {
 					exprData[gene*nExpr + expr] = val.doubleValue();
 				}
+			}
+		} else if (bicluster) {
+			// Get the node clusters
+			if (!ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE) ||
+			    !ModelUtils.hasAttribute(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE)) {
+				throw new RuntimeException("Missing attribute");
+			}
+			List<String> genes = network.getRow(network).getList(ClusterManager.CLUSTER_NODE_ATTRIBUTE, String.class);
+			List<String> arrays = network.getRow(network).getList(ClusterManager.CLUSTER_ATTR_ATTRIBUTE, String.class);
+			int clusterNumber = 0;
+			int gene = 0;
+			for (String row: genes) {
+				String[] split = row.split("\t");
+				String nodeName = split[0];
+				int cluster = Integer.parseInt(split[1]);
+				if (cluster != clusterNumber)
+					clusterNumber = cluster;
+				CyNode node = (CyNode)ModelUtils.getNetworkObjectWithName(network, nodeName, CyNode.class);
+				int expr = 0;
+				for (String attribute: arrays) {
+					String[] splitA = attribute.split("\t");
+					String attrName = splitA[0];
+					int clusterA = Integer.parseInt(splitA[1]);
+					Double val = null;
+					if (clusterA == clusterNumber) {
+						val = ModelUtils.getNumericValue(network, node, attrName);
+					}
+					if (val == null) {
+						exprData[gene*nExpr + expr] = DataModel.NODATA;
+					} else {
+						exprData[gene*nExpr + expr] = val.doubleValue();
+					}
+					expr++;
+				}
+				gene++;
 			}
 		} else {
 			// Get the data

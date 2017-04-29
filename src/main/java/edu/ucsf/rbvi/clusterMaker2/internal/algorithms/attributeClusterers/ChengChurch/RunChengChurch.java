@@ -23,7 +23,8 @@ public class RunChengChurch {
 	protected CyMatrix matrix;
 	protected CyMatrix biclusterMatrix;
 	protected double arr[][];
-	protected int[] clusters;
+	protected int[] rowClusters;
+	protected int[] colClusters;
 	protected TaskMonitor monitor;
 	protected boolean ignoreMissing = true;
 	protected boolean selectedOnly = false;
@@ -57,7 +58,8 @@ public class RunChengChurch {
 	public CyMatrix getMatrix() { return matrix; }
 	public CyMatrix getBiclusterMatrix() { return biclusterMatrix; }
 	public int getNClusters() {return nClusters;}
-	public int[] getClustersArray() {return clusters;}
+	public int[] getRowClustersArray() {return rowClusters;}
+	public int[] getColClustersArray() {return colClusters;}
 
 	public Integer[] cluster(boolean transpose) {
 		// Create the matrix
@@ -143,8 +145,10 @@ public class RunChengChurch {
 			maskMatrix(rows,cols);
 		}
 
-		clusters = new int[totalRows];
+		rowClusters = new int[totalRows];
+		colClusters = new int[totalCols];
 		CyNode rowNodes[] = new CyNode[totalRows];
+		Integer rowOrder[] = new Integer[totalRows];
 		biclusterMatrix = CyMatrixFactory.makeSmallMatrix(network, totalRows, totalCols);
 
 		int row = 0;
@@ -159,18 +163,17 @@ public class RunChengChurch {
 				for(Integer attr: clusterCols.get(biclust)) {
 					biclusterMatrix.setValue(row, col,matrix.getValue(node, attr));
 					biclusterMatrix.setColumnLabel(col, matrix.getColumnLabel(attr));
+					colClusters[col] = biclust;
 					col++;
 				}
-				clusters[row] = biclust;
+				rowClusters[row] = biclust;
+				rowOrder[row] = row;
 				row++;
 			}
 			colStart += clusterCols.get(biclust).size();
 		}
 
 		biclusterMatrix.setRowNodes(rowNodes);
-		Integer[] rowOrder = new Integer[clusters.length];
-		for (int i = 0; i < clusters.length; i++)
-			rowOrder[i] = clusters[i];
 		// rowOrder = MatrixUtils.indexSort(clusters, clusters.length);
 		return rowOrder;
 	}
