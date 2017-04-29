@@ -114,8 +114,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new PAMTaskFactory(clusterManager),
                 ClusterTaskFactory.class, new Properties());
 		// FIXME: FFT is seriously broken!
-		// registerService(bc, new FFTTaskFactory(clusterManager),
-    //                 ClusterTaskFactory.class, new Properties());
+		registerService(bc, new FFTTaskFactory(clusterManager),
+                    ClusterTaskFactory.class, new Properties());
 		registerService(bc, new DBSCANTaskFactory(clusterManager),
                ClusterTaskFactory.class, new Properties());
 		/*

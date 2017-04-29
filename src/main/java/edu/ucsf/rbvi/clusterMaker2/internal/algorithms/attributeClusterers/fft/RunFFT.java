@@ -29,7 +29,6 @@ public class RunFFT extends AbstractKClusterAlgorithm{
 
 		random = null;
 		int nelements = matrix.nRows();
-		int ifound = 1;
 
 		int[] tclusterid = new int[nelements];
 
@@ -37,6 +36,8 @@ public class RunFFT extends AbstractKClusterAlgorithm{
 
 		int[] mapping = new int[nClusters];
 		int[] counts = new int[nClusters];
+
+		CyMatrix distanceMatrix = matrix.getDistanceMatrix(metric);
 
 		HashMap<Integer,Integer> centers = new HashMap<Integer,Integer>();
 
@@ -55,42 +56,36 @@ public class RunFFT extends AbstractKClusterAlgorithm{
 
 		//now find the remaining centers
 		for (int i = 1; i < nClusters; i++){
-			int y = getMaxMin(centers,matrix);
+			int y = getMaxMin(centers,distanceMatrix);
 			centers.put(i, y);
+			clusterID[y] = i;
 		}
+
+		/*
+		for (int i = 0; i < nClusters; i++)
+			System.out.printf("Center for %d = %d\n", i, centers.get(i));
+		*/
 
 		// assign clusters now
 		int k = centers.get(0);
-		for(int i = 0; i <nelements; i++){
-			double distance;
-
-			if (i == k){
-				clusterID[i] = 0;
+		for(int i = 0; i <nelements; i++) {
+			// Is this one of our centers?
+			if (centers.containsValue(i))
 				continue;
-			}
 
-			distance = metric.getMetric(matrix, matrix, i, k);
-			clusterID[i] = k;
-
-			for (int j = 1; j < nClusters; j++){
-				double tdistance;
-
-				if (i == centers.get(j)){
-					clusterID[i] = j;
-					continue;
-				}
-
-				tdistance = metric.getMetric(matrix, matrix, i, centers.get(j));
-				if (tdistance < distance) 
-				{ 
-					distance = tdistance;
-					clusterID[i] = j;
+			double minDistance = Double.MAX_VALUE;
+			int center = 0;
+			for (int cluster = 0; cluster < nClusters; cluster++) {
+				double dist = distanceMatrix.doubleValue(i, centers.get(cluster));
+				if (dist < minDistance) {
+					center = cluster;
+					minDistance = dist;
 				}
 			}
+			clusterID[i] = center;
 		}
 
-
-		return ifound;
+		return nClusters;
 	}
 
 	public int getMaxMin(HashMap<Integer,Integer> centers, CyMatrix matrix){
@@ -100,15 +95,13 @@ public class RunFFT extends AbstractKClusterAlgorithm{
 		int k = centers.get(0);
 		double maxD = Double.NEGATIVE_INFINITY;
 
-		for (int i = 0; i < nelements; i++){
-			double minD;
+		for (int i = 0; i < nelements; i++) {
 			if (centers.containsValue(i)) continue;
-
-			minD = metric.getMetric(matrix, matrix, i, k);
+			double minD = matrix.doubleValue(i, k);
 
 			if (numC > 1){
 				for (int j = 1; j < numC; j++){
-					double tminD = metric.getMetric(matrix, matrix, i, centers.get(j));
+					double tminD = matrix.doubleValue(i, centers.get(j));
 
 					if (tminD < minD) 
 					{ 
@@ -117,7 +110,7 @@ public class RunFFT extends AbstractKClusterAlgorithm{
 				}
 			}
 
-			if (minD > maxD){
+			if (minD > maxD) {
 				maxD = minD;
 				y = i;
 			}

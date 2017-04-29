@@ -103,11 +103,12 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
         ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE,
                 cluster_type, String.class, null);
 
+				// System.out.println("Matrix: "+matrix.printMatrixInfo());
         if (matrix.isTransposed()) {
             ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTR_ATTRIBUTE,
                     attrList, List.class, String.class);
         } else {
-            //System.out.println("attrList's size: " + attrList.size());
+            // System.out.println("attrList's size: " + attrList.size());
             ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_NODE_ATTRIBUTE,
                     attrList, List.class, String.class);
             if (matrix.isSymmetrical() || matrix.isAssymetricalEdge()) {
@@ -152,6 +153,7 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
         } else {
             ModelUtils.createAndSetLocal(network, network, ClusterManager.NODE_ORDER_ATTRIBUTE,
                     orderList, List.class, String.class);
+						// System.out.println("orderList.size() = "+orderList.size());
             // Don't override the columnlist if a node order already exists
             if (!ModelUtils.hasAttributeLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE))
                 ModelUtils.createAndSetLocal(network, network, ClusterManager.ARRAY_ORDER_ATTRIBUTE,
