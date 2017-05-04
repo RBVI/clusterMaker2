@@ -105,14 +105,12 @@ public class RunHierarchical {
 
 		// If we have a symmetric matrix, and our weightAttribute is an edge attribute
 		// then we need to force the distance metric to be "none"
-		/*
 		if (matrix.isSymmetrical() && weightAttributes.length == 1 && 
 		    weightAttributes[0].startsWith("edge.")) {
 			if (!metric.equals(DistanceMetric.VALUE_IS_CORRELATION) &&
 					!metric.equals(DistanceMetric.VALUE_IS_DISTANCE))
 				metric = DistanceMetric.VALUE_IS_CORRELATION;
 		}
-		*/
 
 		if (monitor != null) 
 			monitor.setStatusMessage("Clustering...");
