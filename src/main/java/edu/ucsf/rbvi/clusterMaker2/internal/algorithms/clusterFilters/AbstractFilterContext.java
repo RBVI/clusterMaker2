@@ -69,8 +69,11 @@ public abstract class AbstractFilterContext implements ClusterAlgorithmContext {
  	 * @return the list of INTEGER node attributes
  	 */
 	public List<String> getClusterAttributeList (CyNetwork network) {
-		Collection<CyColumn> columns = network.getDefaultNodeTable().getColumns();
 		List<String> intList = new ArrayList<String>();
+		if (network == null)
+			return intList;
+
+		Collection<CyColumn> columns = network.getDefaultNodeTable().getColumns();
 		for (CyColumn column: columns) {
 			if (column.getType().equals(Integer.class)) {
 				intList.add(column.getName());

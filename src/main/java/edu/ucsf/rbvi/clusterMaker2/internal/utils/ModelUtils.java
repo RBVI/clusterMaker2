@@ -167,6 +167,9 @@ public class ModelUtils {
 
 	public static ListMultipleSelection<String> updateAttributeList(CyNetwork network, 
 	                                                                ListMultipleSelection<String> attributes) {
+		if (network == null)
+			return new ListMultipleSelection<String>();
+
 		List<String> attributeArray = getAllAttributes(network, network.getDefaultNodeTable());
 		attributeArray.addAll(getAllAttributes(network, network.getDefaultEdgeTable()));
 		ListMultipleSelection<String> newAttribute = new ListMultipleSelection<String>(attributeArray);	
@@ -184,6 +187,9 @@ public class ModelUtils {
 
 	public static ListMultipleSelection<String> updateNodeAttributeList(CyNetwork network, 
 	                                                                    ListMultipleSelection<String> attribute) {
+		if (network == null)
+			return new ListMultipleSelection<String>();
+
 		List<String> attributeArray = getAllAttributes(network, network.getDefaultNodeTable());
 		if (attributeArray.size() > 0){
 			ListMultipleSelection<String> newAttribute = new ListMultipleSelection<String>(attributeArray);	
@@ -203,6 +209,9 @@ public class ModelUtils {
 
 	public static ListSingleSelection<String> updateEdgeAttributeList(CyNetwork network, 
 	                                                                  ListSingleSelection<String> attribute) {
+		if (network == null)
+			return new ListSingleSelection<String>();
+
 		List<String> attributeArray = getAllAttributes(network, network.getDefaultEdgeTable());
 		if (attributeArray.size() > 0){
 			ListSingleSelection<String> newAttribute = new ListSingleSelection<String>(attributeArray);	
@@ -222,6 +231,9 @@ public class ModelUtils {
 
 	public static ListMultipleSelection<String> updateEdgeMultiAttributeList(CyNetwork network,
 	                                                                         ListMultipleSelection<String> attribute) {
+		if (network == null)
+			return new ListMultipleSelection<String>();
+
 		List<String> attributeArray = getAllAttributes(network, network.getDefaultEdgeTable());
 		if (attributeArray.size() > 0) {
 			ListMultipleSelection<String> newAttribute = new ListMultipleSelection<>(attributeArray);
