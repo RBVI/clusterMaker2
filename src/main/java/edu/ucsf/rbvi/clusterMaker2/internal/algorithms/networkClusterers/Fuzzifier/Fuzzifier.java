@@ -94,8 +94,6 @@ public class Fuzzifier extends AbstractFuzzyNetworkClusterer{
 			tableFactory = clusterManager.getTableFactory();
 			tableManager = clusterManager.getTableManager();
 		}
-		this.Clusters = getClusters();
-		this.cNumber = Clusters.size();
 		context.setNetwork(network);
 		super.network = network;
 	}
@@ -118,6 +116,9 @@ public class Fuzzifier extends AbstractFuzzyNetworkClusterer{
 		if (network == null)
 			network = clusterManager.getNetwork();
 		super.network = network;
+
+		this.Clusters = getClusters();
+		this.cNumber = Clusters.size();
 
 		// Make sure to update the context
 		context.setNetwork(network);

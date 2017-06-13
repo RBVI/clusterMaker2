@@ -37,7 +37,8 @@ public class HierarchicalTaskFactory extends AbstractClusterTaskFactory {
 		// Not sure why we need to do this, but it looks like
 		// the tunable stuff "remembers" objects that it's already
 		// processed this tunable.  So, we use a copy constructor
-		return new TaskIterator(new HierarchicalCluster(context, clusterManager));
+		// return new TaskIterator(new HierarchicalCluster(context, clusterManager));
+		return new TaskIterator(new HierarchicalCluster(new HierarchicalContext(), clusterManager));
 	}
 	
 }

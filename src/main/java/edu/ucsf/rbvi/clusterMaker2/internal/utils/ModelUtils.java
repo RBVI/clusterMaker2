@@ -313,6 +313,9 @@ public class ModelUtils {
 	}
 
 	private static void getAttributesList(List<String>attributeList, CyTable attributes) {
+		if (attributes == null)
+			return;
+
 		Collection<CyColumn> names = attributes.getColumns();
 		java.util.Iterator<CyColumn> itr = names.iterator();
 		for (CyColumn column: attributes.getColumns()) {

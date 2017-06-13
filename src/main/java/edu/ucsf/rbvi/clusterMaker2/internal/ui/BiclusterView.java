@@ -80,8 +80,13 @@ public class BiclusterView extends TreeView {
 		else
 			myNetwork = network;
 		
-		clusterAttribute =
-				myNetwork.getRow(myNetwork, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
+		try {
+			clusterAttribute =
+				myNetwork.getRow(myNetwork, CyNetwork.LOCAL_ATTRS).
+					get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
+		} catch (NullPointerException npe) {
+			clusterAttribute = null;
+		}
 		//System.out.println("Cluster Attribute Name: "+clusterAttribute);
 	}
 
@@ -107,6 +112,8 @@ public class BiclusterView extends TreeView {
 	public ClusterResults getResults() { return null; }
 	
 	public void run(TaskMonitor monitor) {
+		if (clusterAttribute == null)
+			return;
 		monitor.setTitle("Creating heat map");
 		myNetwork = manager.getNetwork();
 		myView = manager.getNetworkView();
