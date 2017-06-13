@@ -193,6 +193,8 @@ public class Fuzzifier extends AbstractFuzzyNetworkClusterer{
 
 		List<NodeCluster> nodeClusters = new ArrayList<NodeCluster>();
 		HashMap<Integer,List<CyNode>> clusterMap = new HashMap<Integer,List<CyNode>>();
+		if (network == null) return nodeClusters;
+
 		List<CyNode> nodeList = network.getNodeList();
 		clusterAttributeName = network.getRow(network).get("__clusterAttribute", String.class);
 
