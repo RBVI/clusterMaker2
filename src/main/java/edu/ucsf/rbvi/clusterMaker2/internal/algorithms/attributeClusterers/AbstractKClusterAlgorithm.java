@@ -186,6 +186,8 @@ public abstract class AbstractKClusterAlgorithm {
 
 		if (!matrix.isTransposed())
 		   createGroups(clusterManager, nClusters, clusters, algorithm, createGroups);
+		else
+		   createAttrList(clusterManager, nClusters, clusters, algorithm);
 
 	/*
  		Ideally, we would sort our clusters based on size, but for some reason
@@ -217,6 +219,20 @@ public abstract class AbstractKClusterAlgorithm {
 	public CyMatrix getMatrix() { return matrix; }
 	public List<String> getAttributeList() { return attrList; }
 
+	protected void createAttrList(ClusterManager clusterManager, int nClusters, int[] clusters,
+								String algorithm) {
+
+		// Create the attribute list
+		attrList = new ArrayList<String>(matrix.nRows());
+		for (int cluster = 0; cluster < nClusters; cluster++) {
+			for (int i = 0; i < matrix.nRows(); i++) {
+				if (clusters[i] == cluster) {
+					attrList.add(matrix.getRowLabel(i)+"\t"+cluster);
+				}
+			}
+		}
+	}
+
 	/**
 	 * This protected method is called to create all of our groups (if desired).
 	 * It is used by all of the k-clustering algorithms.
@@ -224,7 +240,6 @@ public abstract class AbstractKClusterAlgorithm {
 	 * @param nClusters the number of clusters we created
 	 * @param cluster the list of values and the assigned clusters
 	 */
-
 	protected void createGroups(ClusterManager clusterManager, int nClusters, int[] clusters,
 								String algorithm, boolean createGroups) {
 		if (matrix.isTransposed()) {
