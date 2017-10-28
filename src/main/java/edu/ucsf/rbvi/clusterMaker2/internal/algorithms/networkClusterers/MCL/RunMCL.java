@@ -96,7 +96,7 @@ public class RunMCL {
 		double progress = 1.0;
 		// IntIntDoubleFunction myPow = new MatrixPow(inflationParameter);
 		debugln("residual = "+residual+" maxResidual = "+maxResidual);
-		for (int i=0; (i<number_iterations)&&(residual>=maxResidual); i++)
+		for (int i=0; (i<number_iterations)&&(residual>maxResidual); i++)
 		{
 
 			progress = (double)(i*3)/(double)(number_iterations*3);
@@ -139,14 +139,13 @@ public class RunMCL {
 			progress = (double)(i*3+2)/(double)(number_iterations*3);
 			monitor.setProgress(progress);
 
+			/*
 			double newResidual  = calculateResiduals(matrix);
 			if (newResidual >= residual) break;
 			residual = newResidual;
-			/*
-			double newResidual = calculateResiduals(matrix);
-			if (newResidual >= residual) break;
-			residual = newResidual;
 			*/
+
+			residual = calculateResiduals(matrix);
 
 			debugln("Iteration: "+(i+1)+" residual: "+residual);
 			monitor.showMessage(TaskMonitor.Level.INFO,"Iteration "+(i+1)+" complete.  Residual="+residual);
