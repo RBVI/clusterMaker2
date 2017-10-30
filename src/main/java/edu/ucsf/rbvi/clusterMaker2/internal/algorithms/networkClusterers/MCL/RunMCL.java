@@ -43,11 +43,13 @@ public class RunMCL {
 	private CyMatrix distanceMatrix = null;
 	private CyMatrix matrix = null;
 	private List<CyNode> nodes = null;
+	private boolean forceDecliningResidual = true;
 	private boolean debug = true;
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
 	
 	public RunMCL(CyMatrix dMat, double inflationParameter, int num_iterations, 
-            double clusteringThresh, double maxResidual, int maxThreads, TaskMonitor monitor )
+                double clusteringThresh, double maxResidual, int maxThreads, 
+                boolean forceDecliningResidual, TaskMonitor monitor )
 	{
 			
 		this.distanceMatrix = dMat;
@@ -56,6 +58,7 @@ public class RunMCL {
 		this.number_iterations = num_iterations;
 		this.clusteringThresh = clusteringThresh;
 		this.maxResidual = maxResidual;
+		this.forceDecliningResidual = forceDecliningResidual;
 		nodes = distanceMatrix.getRowNodes();
 		if (maxThreads > 0)
 			nThreads = maxThreads;
@@ -145,7 +148,10 @@ public class RunMCL {
 			residual = newResidual;
 			*/
 
-			residual = calculateResiduals(matrix);
+			double newResidual = calculateResiduals(matrix);
+			if (forceDecliningResidual && newResidual >= residual) break;
+
+			residual = newResidual;
 
 			debugln("Iteration: "+(i+1)+" residual: "+residual);
 			monitor.showMessage(TaskMonitor.Level.INFO,"Iteration "+(i+1)+" complete.  Residual="+residual);

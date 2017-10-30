@@ -31,7 +31,10 @@ public class MCLContext implements ClusterAlgorithmContext {
 	@Tunable(description = "Maximum residual value", groups={"MCL Advanced Settings"}, gravity=22.0)
 	public double maxResidual = 0.001;
 	
-	@Tunable(description = "Maximum number of threads", groups={"MCL Advanced Settings"}, gravity=23.0)
+	@Tunable(description = "Stop if residual increases", groups={"MCL Advanced Settings"}, gravity=23.0)
+	public boolean forceDecliningResidual = true;
+	
+	@Tunable(description = "Maximum number of threads", groups={"MCL Advanced Settings"}, gravity=24.0)
 	public int maxThreads = 0;
     
 	@ContainsTunables
