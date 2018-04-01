@@ -91,9 +91,13 @@ public class RunHierarchical {
 		if (monitor != null) 
 			monitor.setStatusMessage("Creating initial matrix");
 
+		// System.out.println("Creating the initial matrix");
+
 		// Create the matrix
 		matrix = CyMatrixFactory.makeSmallMatrix(network, weightAttributes, context.selectedOnly, 
 		                                         context.ignoreMissing, transpose, context.isAssymetric());
+
+		// System.out.println("Done");
 
 		// Handle special cases
 		if (context.zeroMissing)
@@ -224,7 +228,11 @@ public class RunHierarchical {
 		if (monitor != null)
 			monitor.showMessage(TaskMonitor.Level.INFO,"Getting distance matrix");
 
+		// System.out.println("Getting the distance matrix");
+
 		double[][] distanceMatrix = matrix.getDistanceMatrix(metric).toArray();
+
+		// System.out.println("Done");
 
 		TreeNode[] result = null;
 		// For debugging purposes, output the distance matrix

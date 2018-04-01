@@ -19,6 +19,8 @@ public class CySimpleMatrix extends SimpleMatrix implements CyMatrix {
 	protected CyNode[] rowNodes;
 	protected CyNode[] columnNodes;
 	protected boolean assymetricalEdge = false;
+	protected CySimpleMatrix dist = null;
+	protected DistanceMetric distanceMetric = null;
 
 	public CySimpleMatrix(CyNetwork network) {
 		super();
@@ -173,13 +175,31 @@ public class CySimpleMatrix extends SimpleMatrix implements CyMatrix {
 	}
 
 	public CyMatrix getDistanceMatrix(DistanceMetric metric) {
-		CySimpleMatrix dist = new CySimpleMatrix(network, nRows, nRows);
+		if (dist != null && metric == distanceMetric)
+			return dist;
+
+		distanceMetric = metric;
+		Matrix cMatrix = super.getDistanceMatrix(metric);
+
+		// System.out.println("CyMatrix got Matrix distance matrix -- making copy");
+		dist = new CySimpleMatrix(this.network);
+		SimpleMatrix sMatrix = (SimpleMatrix)cMatrix;
+		dist.data = sMatrix.data;
+		dist.transposed = sMatrix.transposed;
+		dist.symmetric = sMatrix.symmetric;
+		dist.minValue = sMatrix.minValue;
+		dist.maxValue = sMatrix.maxValue;
+		// System.out.println("Copying labels");
+		dist.rowLabels = sMatrix.rowLabels;
+		dist.columnLabels = sMatrix.columnLabels;
+		dist.nRows = sMatrix.nRows;
+		dist.nColumns = sMatrix.nColumns;
 		if (rowNodes != null) {
 			dist.rowNodes = Arrays.copyOf(rowNodes, nRows);
 			dist.columnNodes = Arrays.copyOf(rowNodes, nRows);
 		}
-		Matrix cMatrix = super.getDistanceMatrix(metric);
-		return dist.copy(cMatrix);
+		// System.out.println("CyMatrix got Matrix distance matrix -- done");
+		return dist;
 	}
 
 	/**

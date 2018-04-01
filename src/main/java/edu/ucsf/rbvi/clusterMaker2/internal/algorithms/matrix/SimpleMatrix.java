@@ -24,6 +24,8 @@ import cern.colt.matrix.tdouble.algo.SmpDoubleBlas;
 
 public class SimpleMatrix implements Matrix {
 	protected double[][] data;
+	protected SimpleMatrix distanceMatrix = null;
+	protected DistanceMetric distanceMetric = null;
 	protected int[] index;
 	protected int nRows;
 	protected int nColumns;
@@ -47,7 +49,10 @@ public class SimpleMatrix implements Matrix {
 		symmetric = mat.symmetric;
 		minValue = mat.minValue;
 		maxValue = mat.maxValue;
-		index = Arrays.copyOf(mat.index, mat.index.length);
+		if (mat.index != null)
+			index = Arrays.copyOf(mat.index, mat.index.length);
+		else
+			mat.index = null;
 		data = Arrays.stream(mat.data).map(e1->e1.clone()).toArray($->data.clone());
 		/*
 		for (int row = 0; row < nRows; row++) {
@@ -62,6 +67,8 @@ public class SimpleMatrix implements Matrix {
 
 	public SimpleMatrix(int rows, int columns) {
 		this();
+		// System.out.println("rows="+rows+", columns="+columns);
+		Thread.dumpStack();
 		data = new double[rows][columns];
 		nRows = rows;
 		nColumns = columns;
@@ -357,6 +364,10 @@ public class SimpleMatrix implements Matrix {
 	 * @return a new Matrix of the distances between the rows
 	 */
 	public Matrix getDistanceMatrix(DistanceMetric metric) {
+		// First, see if we've already got the distance matrix
+		if (distanceMatrix != null && metric == distanceMetric)
+			return distanceMatrix;
+
 		SimpleMatrix mat = new SimpleMatrix(nRows, nRows);
 		mat.transposed = false;
 		mat.symmetric = true;
@@ -370,6 +381,8 @@ public class SimpleMatrix implements Matrix {
 						if (row != column)
 							mat.setValue(column, row, metric.getMetric(this, this, row, column));
 				}));
+		distanceMatrix = mat;
+		distanceMetric = metric;
 		return mat;
 	}
  

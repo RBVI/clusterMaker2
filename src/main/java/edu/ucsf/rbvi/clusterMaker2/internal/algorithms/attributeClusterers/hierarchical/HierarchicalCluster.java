@@ -132,7 +132,7 @@ public class HierarchicalCluster extends AbstractAttributeClusterer {
 		}
 
 		monitor.showMessage(TaskMonitor.Level.INFO, "Initializing");
-		System.out.println("Initializing");
+		// System.out.println("Initializing");
 
 		resetAttributes(network, SHORTNAME);
 
@@ -145,6 +145,7 @@ public class HierarchicalCluster extends AbstractAttributeClusterer {
 		if (context.clusterAttributes && (attributeArray.length > 1 || context.isAssymetric())) {
 			monitor.setStatusMessage("Clustering attributes");
 
+			// System.out.println("Clustering attributes");
 			Integer[] rowOrder = algorithm.cluster(true);
 			updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
 			                 algorithm.getMatrix());
@@ -153,6 +154,7 @@ public class HierarchicalCluster extends AbstractAttributeClusterer {
 		monitor.setStatusMessage("Clustering nodes");
 
 		// Cluster the nodes
+		// System.out.println("Clustering nodes");
 		Integer[] rowOrder = algorithm.cluster(false);
 		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
 		                 algorithm.getMatrix());
