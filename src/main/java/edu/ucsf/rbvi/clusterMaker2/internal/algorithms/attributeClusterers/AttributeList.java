@@ -49,7 +49,7 @@ public class AttributeList {
 	         tooltip="You must choose at least 2 node columns for an attribute cluster", gravity=50 )
 	public ListMultipleSelection<String> nodeAttributeList = null;
 
-	@Tunable(description="Edge column for cluster", groups="Array sources",
+	@Tunable(description="Edge column for cluster", groups="Array sources", params="decorate=begins",
 	         tooltip="You may only chose 1 edge column for an attribute cluster" , gravity=51)
 	public ListSingleSelection<String> edgeAttributeList = null;
 

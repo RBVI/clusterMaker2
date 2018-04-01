@@ -68,7 +68,7 @@ public class SimpleMatrix implements Matrix {
 	public SimpleMatrix(int rows, int columns) {
 		this();
 		// System.out.println("rows="+rows+", columns="+columns);
-		Thread.dumpStack();
+		// Thread.dumpStack();
 		data = new double[rows][columns];
 		nRows = rows;
 		nColumns = columns;
