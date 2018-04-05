@@ -73,7 +73,7 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 
 	public List<NodeCluster> getClusters(){
 		List<NodeCluster> clusters = new ArrayList<NodeCluster>();
-		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>();
+		// List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>();
 		/*
 		System.out.println(network.NAME);
 		System.out.println(CyNetwork.LOCAL_ATTRS);
@@ -103,22 +103,21 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 
 		for(int clustNum : clusterMap.keySet()){
 			NodeCluster cluster = new NodeCluster(clusterMap.get(clustNum));
-			clusterList.add(clusterMap.get(clustNum));
-
 			cluster.setClusterNumber(clustNum);
-			//System.out.println("Adding cluster number "+clustNum);
+			if (scores != null)
+				cluster.setClusterScore(scores.get(clustNum-1));
 			clusters.add(cluster);
 		}
 
 		//calculating the scores for each cluster
-		clusterResults = new AbstractClusterResults(network,clusterList, scores, null);
+		clusterResults = new AbstractClusterResults(network, clusters);
 		List<Double> modularityList;
 
 		if (scores == null) {
-            modularityList = clusterResults.getModularityList();
-        } else {
+			modularityList = clusterResults.getModularityList();
+		} else {
 			modularityList = scores;
-        }
+		}
 
 		for(int i = 0; i < clusters.size() ;i++){
 			clusters.get(i).setClusterScore(modularityList.get(i));

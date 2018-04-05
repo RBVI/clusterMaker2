@@ -186,7 +186,7 @@ public class AutoSOMECluster extends AbstractNetworkClusterer  {
 		if(!settings.distMatrix) {
 			nodeClusters =
 				createGroups(network, nodeCluster, GROUP_ATTRIBUTE);		   
-			ClusterResults results = new AbstractClusterResults(network, nodeClusters);
+			ClusterResults results = new AbstractClusterResults(network, nodeCluster);
 			monitor.setStatusMessage("Done.  AutoSOME results:\n"+results);
 			System.out.println("Done.  AutoSOME results:\n"+results);
 		} else {

@@ -45,7 +45,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 public class AbstractClusterResults implements ClusterResults {
 	
-	private List<List<CyNode>> clusters;
+	// private List<List<CyNode>> clusters;
+	private List<? extends NodeCluster> clusters;
 	private CyNetwork network;
 	private int clusterCount;
 	private double averageSize;
@@ -57,21 +58,18 @@ public class AbstractClusterResults implements ClusterResults {
 	private double modularity;
 	private String extraText = null;
 
-	public AbstractClusterResults(CyNetwork network, List<List<CyNode>> cl, 
+	public AbstractClusterResults(CyNetwork network, List<? extends NodeCluster> cl, 
 	                              List<Double> algorithmScores, String extraInformation) { 
 		this.network = network;
 		clusters = cl; 
+		NodeCluster.sortClusterList((List<NodeCluster>)clusters);
 		extraText = extraInformation;
 		modularityList = new ArrayList<Double>();
 		calculate();
 		scoreList = algorithmScores;
 	}
 
-	public AbstractClusterResults(CyNetwork network, List<List<CyNode>> cl, String extraInformation) { 
-		this(network, cl, null, extraInformation);
-	}
-
-	public AbstractClusterResults(CyNetwork network, List<List<CyNode>> cl) { 
+	public AbstractClusterResults(CyNetwork network, List<? extends NodeCluster> cl) { 
 		this(network, cl, null, null);
 	}
 
@@ -106,7 +104,11 @@ public class AbstractClusterResults implements ClusterResults {
 	public double getScore() { return modularity; }
 
 	public List<List<CyNode>> getClusters() {
-		return clusters;
+		List<List<CyNode>> clusterList = new ArrayList<>();
+		for (NodeCluster cluster: clusters) {
+			clusterList.add(cluster);
+		}
+		return clusterList;
 	}
 
 	public List<Double> getModularityList(){
@@ -144,8 +146,6 @@ public class AbstractClusterResults implements ClusterResults {
 				strRes += "\"maxSize\": "+maxSize+",";
 				strRes += "\"minSize\": "+minSize+",";
 				strRes += "\"modularity\": "+modularity+",";
-				strRes += "\"modularityList\":["+toList(modularityList)+"],";
-				strRes += "\"scoreList\":["+toList(scoreList)+"],";
 				strRes += "\"clusters\":["+getClusterList()+"]}";
 				return strRes;
 			};
@@ -160,6 +160,40 @@ public class AbstractClusterResults implements ClusterResults {
 		return Arrays.asList(JSONResult.class, Map.class, List.class, String.class);
 	}
 
+	public static String getRankExampleJSON() {
+		String strRes = "{";
+		strRes += "\"nclusters\": 2,\n";
+		strRes += "\"avgSize\": 3.3,\n";
+		strRes += "\"maxSize\": 6,\n";
+		strRes += "\"minSize\": 1,\n";
+		strRes += "\"modularity\": 3.0,\n";
+		strRes += "\"clusters\":[\n";
+		strRes += "{\"clusterNumber\":0,\"modularity\":0.01,\"score\":0.5,"+
+		          "\"clusterRank\": 5, \"clusterRankScore\": 0.1,"+
+		          "\"nodes\":[101,102]},";
+		strRes += "{\"clusterNumber\":1,\"modularity\":0.01,\"score\":0.5,"+
+		          "\"clusterRank\": 5, \"clusterRankScore\": 0.1,"+
+		          "\"nodes\":[103,104]},";
+		strRes += "]}";
+		return strRes;
+	}
+
+	public static String getFuzzyExampleJSON() {
+		String strRes = "{";
+		strRes += "\"nclusters\": 2,\n";
+		strRes += "\"avgSize\": 3.3,\n";
+		strRes += "\"maxSize\": 6,\n";
+		strRes += "\"minSize\": 1,\n";
+		strRes += "\"modularity\": 3.0,\n";
+		strRes += "\"clusters\":[\n";
+		strRes += "{\"clusterNumber\":0,\"modularity\":0.01,\"score\":0.5,"+
+		          "\"nodes\":[{\"node\":101,\"membership\":0.6},{\"node\":102,\"membership\":0.7}]},";
+		strRes += "{\"clusterNumber\":1,\"modularity\":0.01,\"score\":0.5,"+
+		          "\"nodes\":[{\"node\":103,\"membership\":0.6},{\"node\":104,\"membership\":0.7}]},";
+		strRes += "]}";
+		return strRes;
+	}
+
 	public static String getExampleJSON() {
 		String strRes = "{";
 		strRes += "\"nclusters\": 2,\n";
@@ -167,10 +201,9 @@ public class AbstractClusterResults implements ClusterResults {
 		strRes += "\"maxSize\": 6,\n";
 		strRes += "\"minSize\": 1,\n";
 		strRes += "\"modularity\": 3.0,\n";
-		strRes += "\"modularityList\":[3.0,3.0],\n";
-		strRes += "\"scoreList\":[1.2,1.2],\n";
 		strRes += "\"clusters\":[\n";
-		strRes += "{\"clusterNumber\":0,\"nodes\":[101,102]},";
+		strRes += "{\"clusterNumber\":0,\"modularity\":0.01,\"score\":0.5,\"nodes\":[101,102]},";
+		strRes += "{\"clusterNumber\":0,\"modularity\":0.01,\"score\":0.5,\"nodes\":[101,102]},";
 		strRes += "{\"clusterNumber\":1,\"nodes\":[105,108]}";
 		strRes += "]}";
 		return strRes;
@@ -190,23 +223,42 @@ public class AbstractClusterResults implements ClusterResults {
 	private String getClusterList() {
 		String restStr = "";
 		if (clusters == null || clusters.size() == 0) return "";
-		restStr += getCluster(0, clusters.get(0));
+		restStr += getCluster(clusters.get(0));
 		for (int cluster=1; cluster < clusters.size(); cluster++) {
-			restStr += ","+getCluster(cluster, clusters.get(cluster));
+			restStr += ","+getCluster(clusters.get(cluster));
 		}
 		return restStr;
 	}
 
-	private String getCluster(int clusterNumber, List<CyNode> nodes) {
+	private String getCluster(NodeCluster cluster) {
 		String restStr = "";
-		restStr += "{\"clusterNumber\": "+clusterNumber+",";
+		restStr += "{\"clusterNumber\": "+cluster.getClusterNumber()+",";
+		if (cluster.hasScore()) {
+			restStr += "\"clusterScore\": "+cluster.getClusterScore()+",";
+		}
+		if (cluster.hasRank()) {
+			restStr += "\"clusterRank\": "+cluster.getRank()+",";
+			restStr += "\"clusterRankScore\": "+cluster.getRankScore()+",";
+		}
+		restStr += "\"modularity\": "+modularityList.get(cluster.getClusterNumber()-1)+",";
 		restStr += "\"nodes\":";
-		restStr += "["+nodes.get(0).getSUID();
-		for (int node = 1; node < nodes.size(); node++) {
-			restStr += ","+nodes.get(1).getSUID();
+		restStr += "["+getNode(0, cluster);
+		for (int node = 1; node < cluster.size(); node++) {
+			restStr += ","+getNode(node, cluster);
 		}
 		restStr += "]}\n";
 		return restStr;
+	}
+
+	private String getNode(int index, NodeCluster cluster) {
+		if (cluster instanceof FuzzyNodeCluster) {
+			FuzzyNodeCluster fuzzyCluster = (FuzzyNodeCluster)cluster;
+			CyNode node = fuzzyCluster.get(index);
+			return "{\"node\":"+node.getSUID()+","+
+			       "\"membership\":"+fuzzyCluster.getMembership(node)+"}";
+		} else {
+			return ""+cluster.get(index).getSUID();
+		}
 	}
 
 	private void calculate() {

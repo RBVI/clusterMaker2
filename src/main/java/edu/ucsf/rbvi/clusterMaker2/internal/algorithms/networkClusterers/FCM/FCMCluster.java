@@ -150,7 +150,7 @@ public class FCMCluster extends AbstractFuzzyNetworkClusterer {
 
         List<List<CyNode>> nodeClusters = createFuzzyGroups(network, clusters, GROUP_ATTRIBUTE);
 
-        results = new AbstractClusterResults(network, nodeClusters);
+        results = new AbstractClusterResults(network, clusters);
         monitor.showMessage(TaskMonitor.Level.INFO, "Done.  FCM results:\n"+results);
 
         if (context.vizProperties.showUI) {

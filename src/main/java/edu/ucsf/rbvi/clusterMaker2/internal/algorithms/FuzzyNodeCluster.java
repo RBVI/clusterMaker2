@@ -20,35 +20,35 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster.ScoreComparat
  *
  */
 
-public class FuzzyNodeCluster extends NodeCluster{
-	
+public class FuzzyNodeCluster extends NodeCluster {
+
 	private HashMap<CyNode, Double> membershipMap = null;
-	public static int fuzzyClusterCount = 0;	
+	public static int fuzzyClusterCount = 0;
 	public FuzzyNodeCluster() {
 		super();
 		fuzzyClusterCount++;
 		clusterNumber = fuzzyClusterCount;
-		
+
 	}
-	
+
 	public FuzzyNodeCluster(Collection<CyNode> collection, HashMap<CyNode, Double> clusterMemberships) {
 		super(collection);
-		
+
 		membershipMap = new HashMap<CyNode, Double>();
 		fuzzyClusterCount++;
 		clusterNumber = fuzzyClusterCount;
-		
+
 		for(CyNode element : clusterMemberships.keySet()){
-			
+
 			if(contains(element)){
-				membershipMap.put(element,clusterMemberships.get(element));				
+				membershipMap.put(element,clusterMemberships.get(element));
 			}
 		}
-		
+
 	}
-	
+
 	public boolean add(List<CyNode>nodeList, int index, double membershipValue) {
-		
+
 		boolean retval = add(nodeList.get(index));
 		if(retval){
 			membershipMap.put(nodeList.get(index), membershipValue);
@@ -56,39 +56,39 @@ public class FuzzyNodeCluster extends NodeCluster{
 		return retval;
 	}
 	public static void init() { fuzzyClusterCount = 0; hasScore = false; }
-	public Object getMembership(CyNode node){
-		return membershipMap.get(node);	
+	public Double getMembership(CyNode node){
+		return membershipMap.get(node);
 
 		/*if(membershipMap.containsKey(node)){
-			return membershipMap.get(node);	
+			return membershipMap.get(node);
 		}
 		else{
 		return null;
 		}*/
 	}
-	
+
 	public void setMembership(CyNode node, double membership){
-		
-		membershipMap.put(node,membership);		
+
+		membershipMap.put(node,membership);
 	}
-	
+
 	@Override
 	public boolean isFuzzy(){
 		return true;
 	}
-	
+
 }
 
 /*
 public class FuzzyNodeCluster extends ArrayList<CyNode> {
-	
+
 	int clusterNumber = 0;
 	static int clusterCount = 0;
 	static boolean hasScore = false;
 	protected double score = 0.0;
-	
+
 	private HashMap<CyNode, Double> membershipMap = null;
-	
+
 	public FuzzyNodeCluster() {
 		super();
 		clusterCount++;
@@ -100,18 +100,18 @@ public class FuzzyNodeCluster extends ArrayList<CyNode> {
 		clusterCount++;
 		clusterNumber = clusterCount;
 		membershipMap = new HashMap<CyNode, Double>();
-		
+
 		for(CyNode element : clusterMemberships.keySet()){
-			
+
 			if(contains(element)){
-				membershipMap.put(element,clusterMemberships.get(element)[clusterNumber -1]);				
+				membershipMap.put(element,clusterMemberships.get(element)[clusterNumber -1]);
 			}
 		}
-		
+
 	}
-	
+
 	public boolean add(List<CyNode>nodeList, int index, double membershipValue) {
-		
+
 		boolean retval = add(nodeList.get(index));
 		if(retval){
 			membershipMap.put(nodeList.get(index), membershipValue);
@@ -132,7 +132,7 @@ public class FuzzyNodeCluster extends ArrayList<CyNode> {
 		this.score = score; 
 		hasScore = true;
 	}
-	
+
 	public double getClusterScore() { return score; }
 
 
@@ -142,13 +142,13 @@ public class FuzzyNodeCluster extends ArrayList<CyNode> {
 			str += i.toString();
 		return str+")";
 	}
-	
+
 	public static List<FuzzyNodeCluster> sortMap(Map<Integer, FuzzyNodeCluster> map) {
 		FuzzyNodeCluster[] clusterArray = map.values().toArray(new FuzzyNodeCluster[1]);
 		Arrays.sort(clusterArray, new LengthComparator());
 		return Arrays.asList(clusterArray);
 	}
-	
+
 	public static List<FuzzyNodeCluster> rankListByScore(List<FuzzyNodeCluster> list) {
 		FuzzyNodeCluster[] clusterArray = list.toArray(new FuzzyNodeCluster[1]);
 		Arrays.sort(clusterArray, new ScoreComparator());
@@ -157,7 +157,7 @@ public class FuzzyNodeCluster extends ArrayList<CyNode> {
 		}
 		return Arrays.asList(clusterArray);
 	}
-	
+
 	static class LengthComparator implements Comparator {
 		public int compare (Object o1, Object o2) {
 			List c1 = (List)o1;
@@ -177,15 +177,15 @@ public class FuzzyNodeCluster extends ArrayList<CyNode> {
 			return 0;
 		}
 	}
-	
+
 	public double getMembership(CyNode node){
-		
-		return membershipMap.get(node);		
+
+		return membershipMap.get(node);
 	}
-	
+
 	public void setMembership(CyNode node, double membership){
-		
-		membershipMap.put(node,membership);		
+
+		membershipMap.put(node,membership);
 	}
 
 }

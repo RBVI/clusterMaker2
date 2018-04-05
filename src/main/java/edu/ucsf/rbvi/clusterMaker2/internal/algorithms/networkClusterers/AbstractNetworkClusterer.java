@@ -33,7 +33,7 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 	//TODO: add group support
 
 	@SuppressWarnings("unchecked")
-	public static List<List<CyNode>> getNodeClusters(CyNetwork net) {
+	public static List<NodeCluster> getNodeClusters(CyNetwork net) {
 		String clusterAttribute = 
 			net.getRow(net, CyNetwork.LOCAL_ATTRS).get(ClusterManager.CLUSTER_ATTRIBUTE, String.class);
 		return getNodeClusters(net, clusterAttribute);
@@ -41,21 +41,29 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 
 
 	@SuppressWarnings("unchecked")
-	public static List<List<CyNode>> getNodeClusters(CyNetwork net, String clusterAttribute) {
-		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
+	public static List<NodeCluster> getNodeClusters(CyNetwork net, String clusterAttribute) {
+		List<NodeCluster> clusterList = new ArrayList<NodeCluster>(); // List of node lists
 
 		// Create the cluster Map
-		HashMap<Integer, List<CyNode>> clusterMap = new HashMap<Integer, List<CyNode>>();
-		for (CyNode node: (List<CyNode>)net.getNodeList()) {
+		HashMap<Integer, NodeCluster> clusterMap = new HashMap<Integer, NodeCluster>();
+		for (CyNode node: net.getNodeList()) {
 			// For each node -- see if it's in a cluster.  If so, add it to our map
 			if (net.getRow(node).get(clusterAttribute, Integer.class) != null) {
-				Integer cluster = net.getRow(node).get(clusterAttribute, Integer.class);
-				if (!clusterMap.containsKey(cluster)) {
-					List<CyNode> nodeList = new ArrayList<CyNode>();
-					clusterMap.put(cluster, nodeList);
-						clusterList.add(nodeList);
+				Integer clusterNumber = net.getRow(node).get(clusterAttribute, Integer.class);
+				if (!clusterMap.containsKey(clusterNumber)) {
+					NodeCluster cluster = new NodeCluster();
+					cluster.setClusterNumber(clusterNumber);
+					clusterMap.put(clusterNumber, cluster);
 				}
-				clusterMap.get(cluster).add(node);
+				clusterMap.get(clusterNumber).add(node);
+			}
+		}
+		for (int i = 0; i < clusterMap.size(); i++) {
+			if (clusterMap.containsKey(i+1))
+				clusterList.add(clusterMap.get(i+1));
+			else {
+				// This shouldn't happen, but...
+				clusterList.add(new NodeCluster(i+1, new ArrayList<CyNode>()));
 			}
 		}
 		return clusterList;

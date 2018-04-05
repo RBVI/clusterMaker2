@@ -84,14 +84,12 @@ public abstract class AbstractNetworkFilter extends AbstractNetworkClusterer {
 		clusterAttributeName = getClusterAttributeName();
 
 		// get the cluster list
-		List<List<CyNode>> clusterList = AbstractNetworkClusterer.getNodeClusters(network, getClusterAttribute());
+		List<NodeCluster> clusterList = AbstractNetworkClusterer.getNodeClusters(network, getClusterAttribute());
 		List<NodeCluster> newClusterList = new ArrayList<NodeCluster>();
-
-		System.out.println("ClusterList has "+clusterList.size()+" clusters");
 
 		Map<NodeCluster, List<CyNode>> addedNodeMap = new HashMap<NodeCluster, List<CyNode>>();
 		// Iterate over clusters and build a new clusterList
-		for (List<CyNode>nodeList: clusterList) {
+		for (NodeCluster nodeList: clusterList) {
 			NodeCluster newCluster = doFilter(nodeList, addedNodeMap);
 			if (newCluster != null && newCluster.size() > 0)
 				newClusterList.add(newCluster);
@@ -119,10 +117,9 @@ public abstract class AbstractNetworkFilter extends AbstractNetworkClusterer {
 		monitor.showMessage(TaskMonitor.Level.INFO,"Creating groups");
 
 		List<List<CyNode>> nodeClusters = createGroups(network, newClusterList, groupAttribute);
-		System.out.println("nodeClusters has "+nodeClusters.size()+" clusters");
 
 		results = new AbstractClusterResults(network, clusterList);
-		ClusterResults results2 = new AbstractClusterResults(network, nodeClusters);
+		ClusterResults results2 = new AbstractClusterResults(network, newClusterList);
 		monitor.showMessage(TaskMonitor.Level.INFO, "Done.  Results:\n\nBefore Filter:\n"+results+"\n\nAfter Filter:\n"+results2);
 
 		if (showUI()) {

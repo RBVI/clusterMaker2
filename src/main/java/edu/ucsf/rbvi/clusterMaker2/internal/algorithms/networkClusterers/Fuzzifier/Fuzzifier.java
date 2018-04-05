@@ -160,7 +160,7 @@ public class Fuzzifier extends AbstractFuzzyNetworkClusterer{
 
 		List<List<CyNode>> nodeClusters = createFuzzyGroups(network, FuzzyClusters, GROUP_ATTRIBUTE);
 
-		results = new AbstractClusterResults(network, nodeClusters);
+		results = new AbstractClusterResults(network, FuzzyClusters);
 		monitor.showMessage(TaskMonitor.Level.INFO, "Done.  Fuzzifier results:\n"+results);
 
 		if (context.vizProperties.showUI) {

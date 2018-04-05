@@ -137,7 +137,7 @@ public class APCluster extends AbstractNetworkClusterer  {
 
 		List<List<CyNode>> nodeClusters = createGroups(network, clusters, GROUP_ATTRIBUTE);
 
-		results = new AbstractClusterResults(network, nodeClusters);
+		results = new AbstractClusterResults(network, clusters);
 		monitor.showMessage(TaskMonitor.Level.INFO, "Done.  AP results:\n"+results);
 
 		if (context.vizProperties.showUI) {

@@ -176,7 +176,7 @@ public class MCODECluster extends AbstractNetworkClusterer  {
 
 		List<List<CyNode>> nodeClusters = createGroups(network, clusters, GROUP_ATTRIBUTE);
 
-		results = new AbstractClusterResults(network, nodeClusters, scoreList, null);
+		results = new AbstractClusterResults(network, clusters);
 		monitor.setStatusMessage("Done.  MCODE results:\n"+results);
 
 		if (context.vizProperties.showUI) {

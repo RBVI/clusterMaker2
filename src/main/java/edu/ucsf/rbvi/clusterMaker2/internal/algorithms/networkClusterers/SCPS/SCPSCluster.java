@@ -134,7 +134,7 @@ public class SCPSCluster extends AbstractNetworkClusterer  {
 
 		List<List<CyNode>> nodeClusters = createGroups(network, clusterList, GROUP_ATTRIBUTE);
 
-		results = new AbstractClusterResults(network, nodeClusters);
+		results = new AbstractClusterResults(network, clusterList);
 		monitor.showMessage(TaskMonitor.Level.INFO,"Done.  SCPS results:\n"+results);
 
 		if (context.vizProperties.showUI) {

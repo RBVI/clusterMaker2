@@ -152,7 +152,7 @@ public class ConnectedComponentsCluster extends AbstractNetworkClusterer  {
 
 		List<List<CyNode>> nodeClusters = createGroups(network, clusters, GROUP_ATTRIBUTE);
 
-		results = new AbstractClusterResults(network, nodeClusters);
+		results = new AbstractClusterResults(network, clusters);
 
 		monitor.showMessage(TaskMonitor.Level.INFO, 
 		                    "ConnectedComponent results:\n"+results);

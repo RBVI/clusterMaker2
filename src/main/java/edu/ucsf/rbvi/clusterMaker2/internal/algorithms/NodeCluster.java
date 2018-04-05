@@ -20,8 +20,8 @@ import java.util.*;
  */
 public class NodeCluster extends ArrayList<CyNode> {
 	int clusterNumber = 0;
-    private int rank = 0;
-    private double rankScore = 0;
+	private int rank = -1;
+	private double rankScore = 0;
 	static int clusterCount = 0;
 	static boolean hasScore = false;
 	protected double score = 0.0;
@@ -34,6 +34,11 @@ public class NodeCluster extends ArrayList<CyNode> {
 		super();
 		clusterCount++;
 		clusterNumber = clusterCount;
+	}
+
+	public NodeCluster(int clusterNumber, Collection<CyNode> collection) {
+		super(collection);
+		this.clusterNumber = clusterNumber;
 	}
 
 	public NodeCluster(Collection<CyNode> collection) {
@@ -66,17 +71,19 @@ public class NodeCluster extends ArrayList<CyNode> {
 
 	public double getClusterScore() { return score; }
 
-    public int getRank() { return rank; }
+	public boolean hasRank() { return (rank >= 0); }
 
-    public void setRank(int rank) {
-        this.rank = rank;
-    }
+	public int getRank() { return rank; }
 
-    public double getRankScore() { return rankScore; }
+	public void setRank(int rank) {
+		this.rank = rank;
+	}
 
-    public void setRankScore(double rankScore) {
-        this.rankScore = rankScore;
-    }
+	public double getRankScore() { return rankScore; }
+
+	public void setRankScore(double rankScore) {
+		this.rankScore = rankScore;
+	}
 
 	public void addScoreToAvg(double increase) {
 		if (increase > 0.0) {
@@ -104,16 +111,16 @@ public class NodeCluster extends ArrayList<CyNode> {
 		return nodeScores;
 	}
 
-    public static void setClusterRanks(List<NodeCluster> list) {
-        int rank = 1;
-        double previousScore = getMaxRankScore(list);
-        for (NodeCluster cluster : list) {
-            if (previousScore > cluster.getRankScore()) {
-                rank++;
-            }
-            cluster.setRank(rank);
-        }
-    }
+	public static void setClusterRanks(List<NodeCluster> list) {
+		int rank = 1;
+		double previousScore = getMaxRankScore(list);
+		for (NodeCluster cluster : list) {
+			if (previousScore > cluster.getRankScore()) {
+				rank++;
+			}
+			cluster.setRank(rank);
+		}
+	}
 
 	public static void normalizeScores(List<NodeCluster> clusters) {
 		double min = getMinRankScore(clusters);
@@ -172,6 +179,10 @@ public class NodeCluster extends ArrayList<CyNode> {
 		return Arrays.asList(clusterArray);
 	}
 
+	public static void sortClusterList(List<NodeCluster> list) {
+		Collections.sort(list, new ClusterNumberComparator());
+	}
+
 	public static List<NodeCluster> rankListByScore(List<NodeCluster> list) {
 		NodeCluster[] clusterArray = list.toArray(new NodeCluster[1]);
 		Arrays.sort(clusterArray, new ScoreComparator());
@@ -191,12 +202,18 @@ public class NodeCluster extends ArrayList<CyNode> {
 		}
 	}
 
-	static class ScoreComparator implements Comparator {
-		public int compare (Object o1, Object o2) {
-			NodeCluster c1 = (NodeCluster)o1;
-			NodeCluster c2 = (NodeCluster)o2;
+	static class ScoreComparator implements Comparator<NodeCluster> {
+		public int compare (NodeCluster c1, NodeCluster c2) {
 			if (c1.getClusterScore() > c2.getClusterScore()) return -1;
 			if (c1.getClusterScore() < c2.getClusterScore()) return 1;
+			return 0;
+		}
+	}
+
+	static class ClusterNumberComparator implements Comparator<NodeCluster> {
+		public int compare (NodeCluster c1, NodeCluster c2) {
+			if (c1.getClusterNumber() < c2.getClusterNumber()) return -1;
+			if (c1.getClusterNumber() > c2.getClusterNumber()) return 1;
 			return 0;
 		}
 	}
