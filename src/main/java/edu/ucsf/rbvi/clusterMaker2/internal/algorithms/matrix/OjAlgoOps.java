@@ -23,7 +23,6 @@ import org.ojalgo.matrix.store.PhysicalStore;
 import org.ojalgo.matrix.store.PrimitiveDenseStore;
 import org.ojalgo.matrix.task.InverterTask;
 import org.ojalgo.matrix.task.SolverTask;
-import org.ojalgo.matrix.task.TaskException;
 import org.ojalgo.scalar.ComplexNumber;
 import org.ojalgo.scalar.PrimitiveScalar;
 import org.ojalgo.scalar.Scalar;
@@ -540,7 +539,12 @@ public class OjAlgoOps implements MatrixOps {
 				public Double merge(final Double result1, final Double result2) {
 					return result1 + result2;
 				}
+				/*
 				public Double getNumber() {
+					return Double.valueOf(this.doubleValue());
+				}
+				*/
+				public Double get() {
 					return Double.valueOf(this.doubleValue());
 				}
 			};
@@ -572,7 +576,7 @@ public class OjAlgoOps implements MatrixOps {
 				public Double merge(final Double result1, final Double result2) {
 					return result1 + result2;
 				}
-				public Double getNumber() {
+				public Double get() {
 					return Double.valueOf(this.doubleValue());
 				}
 			};

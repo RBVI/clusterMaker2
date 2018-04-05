@@ -45,10 +45,22 @@ public class FilterTaskFactory implements ClusterTaskFactory   {
 		// processed this tunable.  So, we use a copy constructor
 		return null;
 	}
-	
+
+	@Override
+	public String getSupportsJSON() {
+		return "false";
+	}
+
+	@Override
+	public String getExampleJSON() {
+		return "{}";
+	}
+
+	@Override
+	public String getLongDescription() {
+		return "";
+	}
 }
-	
-	
 
 
 

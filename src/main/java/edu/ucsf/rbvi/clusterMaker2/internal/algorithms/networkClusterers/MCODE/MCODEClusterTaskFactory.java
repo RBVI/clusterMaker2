@@ -39,6 +39,16 @@ public class MCODEClusterTaskFactory extends AbstractClusterTaskFactory {
 		// processed this tunable.  So, we use a copy constructor
 		return new TaskIterator(new MCODECluster(context, clusterManager));
 	}
+
+	@Override
+	public String getLongDescription() {
+		return "'Molecular Complex Detection' (MCODE) is an algorithm that "+
+		       "detects densely connected regions in large protein-protein "+
+		       "interaction networks that may represent molecular complexes. "+
+		       "The method is based on vertex weighting by local neighborhood "+
+		       "density and outward traversal from a locally dense seed protein "+
+		       "to isolate the dense regions according to given parameters.";
+	}
 	
 }
 	

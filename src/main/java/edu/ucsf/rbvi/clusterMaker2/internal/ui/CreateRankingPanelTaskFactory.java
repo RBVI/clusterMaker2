@@ -71,4 +71,22 @@ public class CreateRankingPanelTaskFactory implements ClusterVizFactory {
 
         return RankingPanelTask.isReady(clusterManager.getNetwork());
     }
+
+	@Override
+	public String getSupportsJSON() {
+		return "false";
+	}
+
+	@Override
+	public String getExampleJSON() {
+		return "{}";
+	}
+
+	@Override
+	public String getLongDescription() {
+		return "Create a results panel for the currently defined ranking results.  "+
+		       "The ranking results panel "+
+		       "provides a thumbnail of the cluster and the score for that cluster as provided "+
+		       "by the algorithm itself.";
+	}
 }

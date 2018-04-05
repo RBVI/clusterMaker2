@@ -72,6 +72,18 @@ public class NewNetworkViewFactory implements ClusterVizFactory   {
 		// processed this tunable.  So, we use a copy constructor
 		return new TaskIterator(new NewNetworkView(context, clusterManager, checkAvailable, true));
 	}
+
+	@Override
+	public String getSupportsJSON() { return "true"; }
+
+	@Override
+	public String getExampleJSON() { return "{\"view\": 101}"; }
+
+	@Override
+	public String getLongDescription() { 
+		return "Create a new network from the results of a network partition cluster algorithm. "+
+		       "Edges between clusters are suppressed before the layout is applied and optionally redrawn afterwards.";
+	}
 	
 }
 	

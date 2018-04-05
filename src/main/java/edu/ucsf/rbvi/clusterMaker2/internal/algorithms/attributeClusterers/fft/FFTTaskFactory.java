@@ -39,11 +39,10 @@ public class FFTTaskFactory extends AbstractClusterTaskFactory {
 		// processed this tunable.  So, we use a copy constructor
 		return new TaskIterator(new FFT(context, clusterManager));
 	}
-	
+
+	@Override
+	public String getLongDescription() {
+		return "This algorithm is a k-cluster algorithm that chooses the k centroids by finding "+
+		       "the point that is the farthest point from all of the centoids chosen so far.";
+	}
 }
-	
-	
-
-
-
-

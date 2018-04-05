@@ -35,7 +35,14 @@ public interface ClusterResults {
  	 * @return the list of clusters with each cluster consisting of a list of nodes.
  	 * If this is a fuzzy cluster, nodes may appear in multiple lists.
  	 */
-	public Object getResults(Class requestedType);
+  public <R> R getResults(Class<? extends R> clzz);
+
+	/**
+	 * Return the list of supported types for this cluster result.
+	 *
+	 * @return a list of classes that this cluster result supports.
+	 */
+  public List<Class<?>> getResultClasses();
 
 	/**
  	 * The calculated "score" of the clustering.  This might be a silhouette, a

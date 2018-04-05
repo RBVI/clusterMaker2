@@ -66,4 +66,18 @@ public class DestroyRankingPanelTaskFactory implements ClusterVizFactory {
         return clusterManager.getRankingResults(clusterManager.getNetwork()) != null;
 
     }
+
+	@Override
+	public String getSupportsJSON() {
+		return "false";
+	}
+
+	@Override
+	public String getExampleJSON() {
+		return "{}";
+	}
+	@Override
+	public String getLongDescription() {
+		return "Remove the ranking results panel";
+	}
 }

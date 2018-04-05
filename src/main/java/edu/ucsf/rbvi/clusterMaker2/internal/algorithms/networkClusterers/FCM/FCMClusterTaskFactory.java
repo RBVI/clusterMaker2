@@ -39,11 +39,17 @@ public class FCMClusterTaskFactory extends AbstractClusterTaskFactory {
 		// processed this tunable.  So, we use a copy constructor
 		return new TaskIterator(new FCMCluster(context, clusterManager));
 	}
-	
+
+	@Override
+	public String getLongDescription() {
+		return "The fuzzy c-means algorithm is very similar to the k-means algorithm:"+
+		       "<br/><br/>"+
+		       "* Choose a number of clusters."+
+		       "* Assign coefficients randomly to each data point for being in the clusters."+
+		       "* Repeat until the algorithm has converged (that is, the coefficients' "+
+		       "change between two iterations is no more than some epsilon, the given "+
+		       "sensitivity threshold) :"+
+		       " * Compute the centroid for each cluster (shown below)."+
+		       " * For each data point, compute its coefficients of being in the clusters.";
+	}
 }
-	
-	
-
-
-
-

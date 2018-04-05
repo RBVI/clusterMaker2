@@ -3,6 +3,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms;
 import java.text.NumberFormat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -14,6 +15,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.work.json.JSONResult;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
@@ -119,9 +121,10 @@ public class AbstractClusterResults implements ClusterResults {
 		return scoreList;
 	}
 
-	public Object getResults(Class requestedType) {
+	@Override
+  public <R> R getResults(Class<? extends R> requestedType) {
 		if (requestedType.equals(String.class))
-			return toString();
+			return (R)toString();
 		else if (requestedType.equals(Map.class)) {
 			Map<String, Object> resultMap = new HashMap<String, Object>();
 			resultMap.put("nclusters", clusterCount);
@@ -130,11 +133,80 @@ public class AbstractClusterResults implements ClusterResults {
 			resultMap.put("minSize", minSize);
 			resultMap.put("modularity", modularity);
 			resultMap.put("clusters", clusters);
-			return resultMap;
+			return (R)resultMap;
 		} else if (requestedType.equals(List.class)) {
-			return clusters;
+			return (R)clusters;
+		} else if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				String strRes = "{";
+				strRes += "\"nclusters\": "+clusterCount+",";
+				strRes += "\"avgSize\": "+averageSize+",";
+				strRes += "\"maxSize\": "+maxSize+",";
+				strRes += "\"minSize\": "+minSize+",";
+				strRes += "\"modularity\": "+modularity+",";
+				strRes += "\"modularityList\":["+toList(modularityList)+"],";
+				strRes += "\"scoreList\":["+toList(scoreList)+"],";
+				strRes += "\"clusters\":["+getClusterList()+"]}";
+				return strRes;
+			};
+      return (R)res;
+
 		}
-		return toString();
+		return (R)toString();
+	}
+
+	@Override
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(JSONResult.class, Map.class, List.class, String.class);
+	}
+
+	public static String getExampleJSON() {
+		String strRes = "{";
+		strRes += "\"nclusters\": 2,\n";
+		strRes += "\"avgSize\": 3.3,\n";
+		strRes += "\"maxSize\": 6,\n";
+		strRes += "\"minSize\": 1,\n";
+		strRes += "\"modularity\": 3.0,\n";
+		strRes += "\"modularityList\":[3.0,3.0],\n";
+		strRes += "\"scoreList\":[1.2,1.2],\n";
+		strRes += "\"clusters\":[\n";
+		strRes += "{\"clusterNumber\":0,\"nodes\":[101,102]},";
+		strRes += "{\"clusterNumber\":1,\"nodes\":[105,108]}";
+		strRes += "]}";
+		return strRes;
+	}
+
+	private String toList(List<Double> list) {
+		String restStr = "";
+		if (list == null || list.size() == 0)
+			return "";
+		restStr += list.get(0);
+		for (int i = 1; i < list.size(); i++)
+			restStr += ","+list.get(i);
+
+		return restStr;
+	}
+
+	private String getClusterList() {
+		String restStr = "";
+		if (clusters == null || clusters.size() == 0) return "";
+		restStr += getCluster(0, clusters.get(0));
+		for (int cluster=1; cluster < clusters.size(); cluster++) {
+			restStr += ","+getCluster(cluster, clusters.get(cluster));
+		}
+		return restStr;
+	}
+
+	private String getCluster(int clusterNumber, List<CyNode> nodes) {
+		String restStr = "";
+		restStr += "{\"clusterNumber\": "+clusterNumber+",";
+		restStr += "\"nodes\":";
+		restStr += "["+nodes.get(0).getSUID();
+		for (int node = 1; node < nodes.size(); node++) {
+			restStr += ","+nodes.get(1).getSUID();
+		}
+		restStr += "]}\n";
+		return restStr;
 	}
 
 	private void calculate() {

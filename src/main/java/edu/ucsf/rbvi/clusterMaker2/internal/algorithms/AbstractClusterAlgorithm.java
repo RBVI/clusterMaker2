@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.swing.RequestsUIHelper;
 import org.cytoscape.work.swing.TunableUIHelper;
@@ -14,7 +15,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 
 public abstract class AbstractClusterAlgorithm extends AbstractTask 
-                                               implements RequestsUIHelper, ClusterAlgorithm {
+                                               implements RequestsUIHelper, ClusterAlgorithm,
+                                                          ObservableTask {
 	
 	// Common class values
 	protected boolean debug = false;
@@ -72,5 +74,15 @@ public abstract class AbstractClusterAlgorithm extends AbstractTask
 	}
 
   public void setUIHelper(TunableUIHelper helper) { }
+
+	@Override
+  public List<Class<?>> getResultClasses() {
+		return results.getResultClasses();
+	}
+
+	@Override
+  public <R> R getResults(Class<? extends R> clzz) {
+		return results.getResults(clzz);
+	}
 
 }

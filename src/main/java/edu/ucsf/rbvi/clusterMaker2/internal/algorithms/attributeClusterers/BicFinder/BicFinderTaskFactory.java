@@ -36,4 +36,12 @@ public class BicFinderTaskFactory extends AbstractClusterTaskFactory {
 		return new TaskIterator(new BicFinder(context, clusterManager));
 	}
 
+	@Override
+	public String getLongDescription() {
+		return "BicFinder is an algorithm the discovers biclusters in attribute data.  "+
+		       "BicFinder relies on an evaluation function called Average Correspondence "+
+		       "Similarity Index (ACSI) to assess the coherence of a given bicluster and "+
+		       "utilizes a directed acyclic graph to construct its biclusters.";
+	}
+
 }

@@ -61,9 +61,11 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 // ClusterMaker imports
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
@@ -80,7 +82,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ViewUtils;
  * The ClusterViz class provides the primary interface to the
  * Cytoscape plugin mechanism
  */
-public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterAlgorithm {
+public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterAlgorithm, ObservableTask {
 
 	private static String appName = "ClusterMaker New Network View";
 	private boolean checkForAvailability = false;
@@ -99,6 +101,8 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 
 	@ContainsTunables
 	public NewNetworkViewContext context = null;
+
+	private CyNetworkView networkView = null;;
 
 	public NewNetworkView(CyNetwork network, ClusterManager manager) {
 		this(null, manager, true, true);
@@ -203,6 +207,28 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 	public void cancel() { }
 
 	@SuppressWarnings("unchecked")
+	@Override
+  public <R> R getResults(Class<? extends R> requestedType) {
+		if (requestedType.equals(String.class))
+			return (R)("Created new network view: "+networkView.toString());
+		else if (requestedType.equals(CyNetwork.class)) {
+			return (R)networkView;
+		} else if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				if (networkView == null) return "{}";
+				return "{\"view\":"+networkView.getSUID()+"}";
+			};
+			return (R)res;
+		}
+		return (R)networkView.toString();
+	}
+
+	@Override
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(JSONResult.class, CyNetworkView.class, String.class);
+	}
+
+	@SuppressWarnings("unchecked")
 	private void createClusteredNetwork(String clusterAttribute, TaskMonitor monitor) {
 
 		boolean isFuzzy = isFuzzy(clusterAttribute);
@@ -264,23 +290,23 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 		}
 
 		// System.out.println("Getting the view");
-		CyNetworkView view = ViewUtils.createView(manager, newNetwork, false);
+		networkView = ViewUtils.createView(manager, newNetwork, false);
 
-		ViewUtils.doLayout(manager, view, monitor, "force-directed");
+		ViewUtils.doLayout(manager, networkView, monitor, "force-directed");
 
 		// Now, if we're supposed to, restore the inter-cluster edges
 		if (restoreEdges || (context != null && context.restoreEdges)) {
 			for (CyEdge edge: network.getEdgeList()) {
 				if (!edgeMap.containsKey(edge)) {
-					((CySubNetwork)view.getModel()).addEdge(edge);
-					ModelUtils.createAndSetLocal(view.getModel(), edge, clusterAttribute,
+					((CySubNetwork)networkView.getModel()).addEdge(edge);
+					ModelUtils.createAndSetLocal(networkView.getModel(), edge, clusterAttribute,
 							                     new Integer(0), Integer.class, null);
 				}
 			}
 			style = styleNewView(style, clusterAttribute);
 		}
 		// System.out.println("Setting the style");
-		ViewUtils.setVisualStyle(manager, view, style);
+		ViewUtils.setVisualStyle(manager, networkView, style);
 
 		if(isFuzzy){
 
@@ -290,10 +316,10 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 			//System.out.println("Fuzzy Table SUID: " + fuzzyClusterTableSUID );
 			CyTable fuzzyClusterTable = manager.getTableManager().getTable(fuzzyClusterTableSUID);
 			// System.out.println("Creating membership edges");
-			createMembershipEdges(newNetwork,view,manager,fuzzyClusterTable);
+			createMembershipEdges(newNetwork,networkView,manager,fuzzyClusterTable);
 		}
 
-		ViewUtils.registerView(manager, view);
+		ViewUtils.registerView(manager, networkView);
 
 		return;
 	}

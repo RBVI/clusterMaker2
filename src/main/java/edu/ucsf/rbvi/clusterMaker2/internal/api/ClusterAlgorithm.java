@@ -9,7 +9,7 @@ import java.lang.Math;
 import java.util.Arrays;
 
 public interface ClusterAlgorithm extends Task {
-	
+
 	// Property change
 	public static String CLUSTER_COMPUTED = "CLUSTER_COMPUTED";
 

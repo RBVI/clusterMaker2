@@ -39,7 +39,13 @@ public class ConnectedComponentsTaskFactory extends AbstractClusterTaskFactory {
 		// processed this tunable.  So, we use a copy constructor
 		return new TaskIterator(new ConnectedComponentsCluster(context, clusterManager));
 	}
-	
+
+	@Override
+	public String getLongDescription() {
+		return "This algorithm simply numbers the connected components in a network "+
+		       "(nodes that are connected in some way by edges).";
+	}
+
 }
 	
 	

@@ -39,10 +39,16 @@ public class DensityFilterTaskFactory extends AbstractClusterTaskFactory {
 		// processed this tunable.  So, we use a copy constructor
 		return new TaskIterator(new DensityFilter(context, clusterManager));
 	}
-	
+
+	@Override
+	public String getLongDescription() {
+		return "This filter drops clusters which have an edge density beneath "+
+		       "the user-defined threshold. A fully connected network (all nodes "+
+		       "are connected to all other nodes) will have an edge density of 1. "+
+		       "A completely disconnected network will have an edge density of 0."; 
+	}
+
 }
-	
-	
 
 
 

@@ -39,10 +39,12 @@ public class HairCutFilterTaskFactory extends AbstractClusterTaskFactory {
 		// processed this tunable.  So, we use a copy constructor
 		return new TaskIterator(new HairCutFilter(context, clusterManager));
 	}
-	
+
+	@Override
+	public String getLongDescription() {
+		return "The haircut filter removes nodes from a cluster that have a degree "+
+		       "(number of incident edges) below a specified value. The idea is that "+
+		       "the lower the connectivity of a node, the lower the probability for "+
+		       "this node to really belong to the cluster it is in.";
+	}
 }
-	
-	
-
-
-

@@ -46,6 +46,14 @@ public class NetworkClusterTaskFactory implements ClusterTaskFactory   {
 		return null;
 	}
 	
+	@Override
+	public String getSupportsJSON() { return "false"; }
+
+	@Override
+	public String getLongDescription() { return ""; }
+
+	@Override
+	public String getExampleJSON() { return ""; }
 }
 	
 	

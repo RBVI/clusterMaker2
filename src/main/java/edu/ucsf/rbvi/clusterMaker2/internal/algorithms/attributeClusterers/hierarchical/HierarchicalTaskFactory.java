@@ -40,10 +40,11 @@ public class HierarchicalTaskFactory extends AbstractClusterTaskFactory {
 		// return new TaskIterator(new HierarchicalCluster(context, clusterManager));
 		return new TaskIterator(new HierarchicalCluster(new HierarchicalContext(), clusterManager));
 	}
-	
+
+	@Override
+	public String getLongDescription() {
+		return "This is the standard agglomerative clustering that builds a tree of clusters. "+
+           "The options include the ability to choose the linkage and distance metric.";
+	}
+
 }
-	
-	
-
-
-

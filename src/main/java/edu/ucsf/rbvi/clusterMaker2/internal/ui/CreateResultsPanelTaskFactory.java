@@ -68,5 +68,20 @@ public class CreateResultsPanelTaskFactory implements ClusterVizFactory {
         return ResultsPanelTask.isReady(clusterManager.getNetwork(), clusterManager);
 	}
 
+	@Override
+	public String getSupportsJSON() {
+		return "false";
+	}
 
+	@Override
+	public String getExampleJSON() {
+		return "{}";
+	}
+
+	@Override
+	public String getLongDescription() {
+		return "Create a results panel from the currently defined clusters.  The results panel "+
+		       "provides a thumbnail of the cluster and the score for that cluster as provided "+
+		       "by the algorithm itself.";
+	}
 }

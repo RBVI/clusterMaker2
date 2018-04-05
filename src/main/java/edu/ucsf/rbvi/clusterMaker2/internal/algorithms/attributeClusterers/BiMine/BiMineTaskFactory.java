@@ -36,4 +36,16 @@ public class BiMineTaskFactory extends AbstractClusterTaskFactory {
 		return new TaskIterator(new BiMine(context, clusterManager));
 	}
 
+	@Override
+	public String getLongDescription() {
+		return "BiMine is an enumeration algorithm for biclustering of attribute data. "+
+		       "The algorithm is based on three original features. First, BiMine relies "+
+		       "on an evaluation function called Average Spearman's rho (ASR). Second, BiMine "+
+		       "uses a tree structure, called Bicluster Enumeration Tree (BET), to represent the "+
+		       "different biclusters discovered during the enumeration process. Third, to avoid "+
+		       "the combinatorial explosion of the search tree, BiMine introduces a parametric "+
+		       "rule that allows the enumeration process to cut tree branches that cannot "+
+		       "lead to good biclusters.";
+	}
+
 }

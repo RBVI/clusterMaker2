@@ -35,10 +35,13 @@ public class SCPSClusterTaskFactory extends AbstractClusterTaskFactory {
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new SCPSCluster(context, clusterManager));
 	}
-	
+
+	@Override
+	public String getLongDescription() {
+		return "SCPS (Spectral Clustering of Protein Sequences) is an efficient "+
+		       "and user-friendly implementation of a spectral method for inferring "+
+		       "protein families. The method uses only pairwise sequence similarities, "+
+		       "and is therefore practical when only sequence information is available."; 
+	}
+
 }
-	
-	
-
-
-

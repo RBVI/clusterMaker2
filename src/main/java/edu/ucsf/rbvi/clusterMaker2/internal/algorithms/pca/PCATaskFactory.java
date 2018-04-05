@@ -41,5 +41,22 @@ public class PCATaskFactory extends AbstractClusterTaskFactory{
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new PCA(context, clusterManager));
 	}
-    
+
+	@Override
+	public String getLongDescription() {
+		return "Principal component analysis (PCA) is a statistical "+
+		       "procedure that uses an orthogonal transformation to convert "+
+		       "a set of observations of possibly correlated variables into "+
+		       "a set of values of linearly uncorrelated variables called principal "+
+		       "components. The number of distinct principal components is equal "+
+		       "to the smaller of the number of original variables or the number of "+
+		       "observations minus one. This transformation is defined in such a way "+
+		       "that the first principal component has the largest possible variance "+
+		       "(that is, accounts for as much of the variability in the data as "+
+		       "possible), and each succeeding component in turn has the highest "+
+		       "variance possible under the constraint that it is orthogonal to "+
+		       "the preceding components. The resulting vectors are an uncorrelated "+
+		       "orthogonal basis set. PCA is sensitive to the relative scaling of "+
+		       "the original variables.";
+	}
 }

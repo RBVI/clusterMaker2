@@ -39,10 +39,11 @@ public class PAMTaskFactory extends AbstractClusterTaskFactory {
 		// processed this tunable.  So, we use a copy constructor
 		return new TaskIterator(new PAMClusterer(context, clusterManager));
 	}
-	
+
+	@Override
+	public String getLongDescription() {
+		return "Partitioning around medoids (PAM) is a k-medoid clustering algorithm that "+
+		       "uses a greedy search to find a good, but not necessarily optimum solution "+
+		       "k-cluster problem.";
+	}
 }
-	
-	
-
-
-

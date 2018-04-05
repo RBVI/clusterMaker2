@@ -34,10 +34,14 @@ public class APClusterTaskFactory extends AbstractClusterTaskFactory {
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new APCluster(context, clusterManager));
 	}
-	
+
+	@Override
+	public String getLongDescription() {
+		return "Affinity propagation (AP) is a clustering algorithm based on the concept of "+
+		       "'message passing' between data points. Unlike clustering algorithms such "+
+		       "as k-means or k-medoids, affinity propagation does not require the number "+
+		       "of clusters to be determined or estimated before running the algorithm. "+
+		       "Similar to k-medoids, affinity propagation finds 'exemplars', members of "+
+		       "the input set that are representative of clusters";
+	}
 }
-	
-	
-
-
-

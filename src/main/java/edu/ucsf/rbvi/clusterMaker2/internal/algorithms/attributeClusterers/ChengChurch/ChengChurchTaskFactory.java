@@ -14,12 +14,12 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 
 public class ChengChurchTaskFactory extends AbstractClusterTaskFactory {
 	ChengChurchContext context = null;
-	
+
 	public ChengChurchTaskFactory(ClusterManager clusterManager) {
 		super(clusterManager);
 		context = new ChengChurchContext();
 	}
-	
+
 	public String getShortName() {return ChengChurch.SHORTNAME;};
 	public String getName() {return ChengChurch.NAME;};
 
@@ -38,6 +38,11 @@ public class ChengChurchTaskFactory extends AbstractClusterTaskFactory {
 		// processed this tunable.  So, we use a copy constructor
 		return new TaskIterator(new ChengChurch(context, clusterManager));
 	}
-	
 
+	@Override
+	public String getLongDescription() {
+		return "The Cheng & Church algorithm is a bicluster algorithm that attempts to "+
+		       "reduce the mean squared residue, which is an indication of how an element "+
+		       "differs from the row mean, the column mean and the overall mean.";
+	}
 }

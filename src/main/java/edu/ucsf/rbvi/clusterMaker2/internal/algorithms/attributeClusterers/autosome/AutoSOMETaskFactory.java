@@ -55,10 +55,27 @@ public class AutoSOMETaskFactory extends AbstractClusterTaskFactory {
 		// processed this tunable.  So, we use a copy constructor
 		return new TaskIterator(new AutoSOMECluster(context, clusterManager, heatmap));
 	}
-	
+
+	@Override
+	public String getLongDescription() {
+		return "AutoSOME clustering is a cluster algorithm that functions both as an "+
+		       "attribute cluster algorithm as well as a network cluster algorithm. "+
+		       "The AutoSOME algorithm revolves around the use of a Self-Organizing "+
+		       "Map (SOM). Unsupervised training of the SOM produces a low-dimensional "+
+		       "reprentation of input space. In AutoSOME, that dimensionally reduced "+
+		       "spaced is compresed into a 2D representation of similarities between "+
+		       "neighboring nodes across the SOM network. These nodes are further "+
+		       "distorted in 2D space based on their density of similarity to each "+
+		       "other.  Afterwards, a minimum spanning tree is built from rescaled "+
+		       "node coordinates. Monte-Carlo sampling is used to calculate p-values "+
+		       "for all edges in the tree. Edges below an inputed P-value Threshold are "+
+		       "then deleted, leaving behind the clustering results. AutoSOME clustering "+
+		       "may be repeated multiple times to minimize stochastic-based output variation. "+
+		       "The clustering results stabilize at maximum quality with an increasing Number "+
+		       "of Ensemble Runs, which is one of the input parameters. Statistically, 25-50 "+
+		       "ensemble runs is enough to generate stable clustering.";
+	}
 }
-	
-	
 
 
 

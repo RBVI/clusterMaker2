@@ -47,6 +47,28 @@ public interface ClusterTaskFactory extends TaskFactory {
  	 * @return the list of cluster types
  	 */
 	public List<ClusterType> getTypeList();
+
+	/**
+	 * Returns the long description for this cluster algorithm.
+	 *
+	 * @return the long description
+	 */
+	public String getLongDescription();
+
+	/**
+	 * Returns a string that represents an example of what the JSON return
+	 * for this task factory is.
+	 *
+	 * @return example JSON string
+	 */
+	public String getExampleJSON();
+
+	/**
+	 * Returns "true" if this task factory supports returns.
+	 *
+	 * @return "true" if this task factory support JSON, "false" otherwise.
+	 */
+	default public String getSupportsJSON() { return "true"; }
 }
 
 

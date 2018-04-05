@@ -41,5 +41,15 @@ public class FuzzifierTaskFactory extends AbstractClusterTaskFactory {
 		// processed this tunable.  So, we use a copy constructor
 		return new TaskIterator(new Fuzzifier(context, clusterManager));
 	}
-	
+
+	@Override
+	public String getLongDescription() {
+		return "This algorithm will take the output of a network clusterer and 'fuzzify' it "+
+		       "by finding the centroid of each cluster as determined by the previous algorithm "+
+		       "and then calculating the distance between every node and that centroid.  "+
+		       "Each node is then assigned a proportional membership to each cluster.  A cutoff "+
+		       "value determines the minimum proportion required to be considered as part of "+
+		       "a cluster.";
+	}
+
 }

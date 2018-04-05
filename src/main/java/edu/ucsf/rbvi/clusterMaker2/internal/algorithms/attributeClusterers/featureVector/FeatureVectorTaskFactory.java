@@ -39,10 +39,12 @@ public class FeatureVectorTaskFactory extends AbstractClusterTaskFactory {
 		// processed this tunable.  So, we use a copy constructor
 		return new TaskIterator(new FeatureVectorCluster(context, clusterManager));
 	}
-	
+
+	@Override
+	public String getLongDescription() {
+		return "This algorithm creates a distance matrix based on the feature distance "+
+		       "between each of the nodes and then creates a network with edge weights "+
+		       "corresponding to the calculated feature distances.";
+	}
+
 }
-	
-	
-
-
-

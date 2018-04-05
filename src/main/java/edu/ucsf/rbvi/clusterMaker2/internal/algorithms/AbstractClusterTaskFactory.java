@@ -22,6 +22,8 @@ public abstract class AbstractClusterTaskFactory implements ClusterTaskFactory {
 		return true;
 	}
 
+	public String getExampleJSON() { return AbstractClusterResults.getExampleJSON(); }
+
 	public boolean isAvailable(CyNetwork network) {
 		if (network == null) 
 			return false;

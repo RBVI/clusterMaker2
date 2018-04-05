@@ -38,10 +38,14 @@ public class CuttingEdgeFilterTaskFactory extends AbstractClusterTaskFactory {
 		// processed this tunable.  So, we use a copy constructor
 		return new TaskIterator(new CuttingEdgeFilter(context, clusterManager));
 	}
-	
+
+	@Override
+	public String getLongDescription() {
+		return "Cutting Edge is a relatively coarse filter that discards clusters "+
+		       "that don't meet the criteria. The criteria is defined as a density "+
+		       "value where the cluster density is equal to the number of intra-cluster "+
+		       "edges divided by the total number of edges (both intra-cluster and "+
+		       "inter-cluster) that connect to nodes belonging to this cluster. If the "+
+		       "density is less than the value, the cluster is dropped.";
+	}
 }
-	
-	
-
-
-

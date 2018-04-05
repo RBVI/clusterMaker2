@@ -55,6 +55,15 @@ public class TreeViewTaskFactory implements ClusterVizFactory   {
 		// processed this tunable.  So, we use a copy constructor
 		return new TaskIterator(new TreeView(clusterManager));
 	}
+
+	@Override
+	public String getSupportsJSON() { return "false"; }
+
+	@Override
+	public String getExampleJSON() { return ""; }
+
+	@Override
+	public String getLongDescription() { return "Display the tree view for hierarchical clusters"; }
 	
 }
 	

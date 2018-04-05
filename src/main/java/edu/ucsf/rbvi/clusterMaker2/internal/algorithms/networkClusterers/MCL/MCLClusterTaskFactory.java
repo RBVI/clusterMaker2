@@ -38,10 +38,21 @@ public class MCLClusterTaskFactory extends AbstractClusterTaskFactory {
 		// processed this tunable.  So, we use a copy constructor
 		return new TaskIterator(new MCLCluster(context, clusterManager));
 	}
-	
+
+	@Override
+	public String getLongDescription() {
+		return "The MCL algorithm is short for the Markov Cluster Algorithm, a fast and "+
+		       "scalable unsupervised cluster algorithm for graphs (also known as networks) "+
+		       "based on simulation of (stochastic) flow in graphs. "+
+		       "The MCL algorithm simulates random walks within a graph by "+
+		       "alternation of two operators called expansion and inflation . Expansion "+
+		       "coincides with taking the power of a stochastic matrix using the normal matrix "+
+		       "product (i.e. matrix squaring). Inflation corresponds with taking the Hadamard "+
+		       "power of a matrix (taking powers entrywise), followed by a scaling step, such "+
+		       "that the resulting matrix is stochastic again, i.e. the matrix elements (on each "+
+		       "column) correspond to probability values.";
+	}
 }
-	
-	
 
 
 

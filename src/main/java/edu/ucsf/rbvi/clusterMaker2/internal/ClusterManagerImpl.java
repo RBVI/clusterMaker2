@@ -2,7 +2,11 @@ package edu.ucsf.rbvi.clusterMaker2.internal;
 
 import static org.cytoscape.work.ServiceProperties.COMMAND;
 import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
+import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
+
 import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
@@ -102,6 +106,9 @@ public class ClusterManagerImpl implements ClusterManager {
 				props.setProperty(COMMAND, alg.getShortName());
 				props.setProperty(COMMAND_NAMESPACE, "cluster");
 				props.setProperty(COMMAND_DESCRIPTION, alg.getName());
+				props.setProperty(COMMAND_LONG_DESCRIPTION, alg.getLongDescription());
+				props.setProperty(COMMAND_EXAMPLE_JSON, alg.getExampleJSON());
+				props.setProperty(COMMAND_SUPPORTS_JSON, alg.getSupportsJSON());
 			}
 			props.setProperty(IN_MENU_BAR, "true");
 			props.setProperty(TITLE, alg.getName());

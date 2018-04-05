@@ -54,6 +54,15 @@ public class HeatMapViewTaskFactory implements ClusterVizFactory   {
 		// processed this tunable.  So, we use a copy constructor
 		return new TaskIterator(new HeatMapView(context, clusterManager));
 	}
+
+	@Override
+	public String getSupportsJSON() { return "false"; }
+
+	@Override
+	public String getExampleJSON() { return ""; }
+
+	@Override
+	public String getLongDescription() { return "Display a heat map.  Neighter the rows or columns or sorted in any way.";}
 	
 }
 	

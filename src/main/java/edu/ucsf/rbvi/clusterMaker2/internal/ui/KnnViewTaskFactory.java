@@ -54,6 +54,15 @@ public class KnnViewTaskFactory implements ClusterVizFactory   {
 		// processed this tunable.  So, we use a copy constructor
 		return new TaskIterator(new KnnView(clusterManager));
 	}
+
+	@Override
+	public String getSupportsJSON() { return "false"; }
+
+	@Override
+	public String getExampleJSON() { return ""; }
+
+	@Override
+	public String getLongDescription() { return "Display the heat map for k-means or k-medoid clusters."; }
 	
 }
 	

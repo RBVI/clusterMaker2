@@ -40,9 +40,9 @@ public class BestNeighborFilterTaskFactory extends AbstractClusterTaskFactory {
 		return new TaskIterator(new BestNeighborFilter(context, clusterManager));
 	}
 	
+	@Override
+	public String getLongDescription() {
+		return "This filtering algorithms looks for nodes that are not part of a cluster "+
+		       "but are tightly connected to the cluster";
+	}
 }
-	
-	
-
-
-

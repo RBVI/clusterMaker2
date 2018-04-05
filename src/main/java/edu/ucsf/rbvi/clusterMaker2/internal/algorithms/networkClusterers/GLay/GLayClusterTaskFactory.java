@@ -39,10 +39,14 @@ public class GLayClusterTaskFactory extends AbstractClusterTaskFactory {
 		// processed this tunable.  So, we use a copy constructor
 		return new TaskIterator(new GLayCluster(context, clusterManager));
 	}
-	
+	@Override
+	public String getLongDescription() {
+		return "This is an implementation of the fast-greedy optimization of "+
+		       "of the modularity score, with different corrections on edge "+
+		       "density and cluster size.";
+	}
+
 }
-	
-	
 
 
 
