@@ -12,6 +12,8 @@ import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.SmpDoubleBlas;
 
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.apache.log4j.Logger;
 
@@ -19,8 +21,9 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 
 public class MatrixUtils {
 
+	/*
 	public static Map<Integer, List<CyNode>> findConnectedComponents(CyMatrix matrix) {
-		// Get the colt matrix
+		// Get the matrix
 		Map<Integer, List<CyNode>> cmap = new HashMap<Integer, List<CyNode>>();
 		Map<CyNode, Integer> nodeToCluster = new HashMap<CyNode, Integer>();
 		int clusterNumber = 0;
@@ -51,38 +54,49 @@ public class MatrixUtils {
 		}
 		return cmap;
 	}
+	*/
 
-	private static void addNodeToCluster(Map<CyNode, Integer> nodeToCluster, 
-	                                     Map<Integer, List<CyNode>> clusterMap,
-	                                     Integer cluster, CyNode node) {
-		List<CyNode> nodeList = clusterMap.get(cluster);
-		nodeList.add(node);
-		nodeToCluster.put(node, cluster);
-	}
+	/**
+	 * Depth first search of graph to find connected components
+	 */
+	public static Map<Integer, List<CyNode>> findConnectedComponents(CyMatrix matrix) {
+		Map<CyNode, Integer> nodeToCluster = new HashMap<CyNode, Integer>();
+		Map<Integer, List<CyNode>> cmap = new HashMap<Integer, List<CyNode>>();
+		int component = -1;
 
-	private static void createCluster(Map<CyNode, Integer> nodeToCluster, 
-	                                  Map<Integer, List<CyNode>> clusterMap,
-																		int clusterNumber,
-																		CyNode node1, CyNode node2) {
-		List<CyNode> nodeList = new ArrayList<CyNode>();
-		clusterMap.put(clusterNumber, nodeList);
-		addNodeToCluster(nodeToCluster, clusterMap, clusterNumber, node1);
-		addNodeToCluster(nodeToCluster, clusterMap, clusterNumber, node2);
-	}
-
-	private static void combineClusters(Map<CyNode, Integer> nodeToCluster, 
-	                                    Map<Integer, List<CyNode>> clusterMap,
-	                                    Integer cluster1, Integer cluster2) {
-		if (cluster1.intValue() == cluster2.intValue())
-			return;
-		// System.out.println("Combining cluster "+cluster1+" and "+cluster2);
-		List<CyNode> list1 = clusterMap.get(cluster1);
-		List<CyNode> list2 = clusterMap.get(cluster2);
-		clusterMap.remove(cluster2);
-		for (CyNode node: list2) {
-			nodeToCluster.put(node, cluster1);
+		CyNetwork network = matrix.getNetwork();
+		for (CyNode node: network.getNodeList()) {
+			if (!nodeToCluster.containsKey(node)) {
+				component += 1;
+				addNodeToMaps(nodeToCluster, cmap, node, component);
+				dfs(nodeToCluster, cmap, network, node, component);
+			}
 		}
-		list1.addAll(list2);
+		return cmap;
+	}
+
+	private static void dfs(Map<CyNode, Integer> nodeToCluster, 
+	                        Map<Integer, List<CyNode>> cmap, CyNetwork net, 
+	                        CyNode u, int component) {
+
+		for (CyNode v: net.getNeighborList(u, CyEdge.Type.ANY)) {
+			if (!nodeToCluster.containsKey(v)) {
+				addNodeToMaps(nodeToCluster, cmap, v, component);
+				dfs(nodeToCluster, cmap, net, v, component);
+			}
+		}
+	}
+
+	private static void addNodeToMaps(Map<CyNode, Integer> nodeToCluster, 
+	                                  Map<Integer, List<CyNode>> cmap, 
+	                                  CyNode node, int component) {
+
+		nodeToCluster.put(node, component);
+
+		if (!cmap.containsKey(component)) {
+			cmap.put(component, new ArrayList<CyNode>());
+		}
+		cmap.get(component).add(node);
 	}
 
 	public static Integer[] indexSort(double[] tData,int nVals) {
