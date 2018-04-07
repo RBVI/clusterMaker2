@@ -177,6 +177,9 @@ public class ClusterManagerImpl implements ClusterManager {
 		props.setProperty(IN_MENU_BAR, "true");
 		props.setProperty(PREFERRED_MENU, "Apps.clusterMaker Visualizations");
 		props.setProperty(TITLE, viz.getName());
+		props.setProperty(COMMAND_LONG_DESCRIPTION, viz.getLongDescription());
+		props.setProperty(COMMAND_EXAMPLE_JSON, viz.getExampleJSON());
+		props.setProperty(COMMAND_SUPPORTS_JSON, viz.getSupportsJSON());
 		vizClusterIndex += 1.0;
 		props.setProperty(MENU_GRAVITY, ""+vizClusterIndex);
 		serviceRegistrar.registerService(viz, TaskFactory.class, props);
@@ -222,6 +225,9 @@ public class ClusterManagerImpl implements ClusterManager {
 		props.setProperty(IN_MENU_BAR, "true");
 		props.setProperty(PREFERRED_MENU, "Apps.clusterMaker Ranking");
 		props.setProperty(TITLE, rankFactory.getName());
+		props.setProperty(COMMAND_LONG_DESCRIPTION, rankFactory.getLongDescription());
+		props.setProperty(COMMAND_EXAMPLE_JSON, rankFactory.getExampleJSON());
+		props.setProperty(COMMAND_SUPPORTS_JSON, rankFactory.getSupportsJSON());
 		rankingIndex += 1.0;
 		props.setProperty(MENU_GRAVITY, ""+rankingIndex);
 		serviceRegistrar.registerService(rankFactory, TaskFactory.class, props);

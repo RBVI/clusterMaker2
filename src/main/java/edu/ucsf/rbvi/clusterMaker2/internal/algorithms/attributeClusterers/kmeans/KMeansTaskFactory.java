@@ -55,4 +55,9 @@ public class KMeansTaskFactory extends AbstractClusterTaskFactory {
 		       "approach, for larger clusters, it can take a very long time, even though "+
 		       "the process is multi-threaded.";
 	}
+
+	@Override
+	public String getExampleJSON() { 
+		return KMeansCluster.getExampleJSON();
+	}
 }

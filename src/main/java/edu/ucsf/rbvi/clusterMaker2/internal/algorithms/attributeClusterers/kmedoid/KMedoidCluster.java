@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 // Cytoscape imports
 import org.cytoscape.model.CyNetwork;
@@ -45,6 +46,7 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 // clusterMaker imports
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
@@ -54,6 +56,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.KnnView;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractAttributeClusterer;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.Silhouettes;
 
 public class KMedoidCluster extends AbstractAttributeClusterer {
 	public static String SHORTNAME = "kmedoid";
@@ -64,6 +67,13 @@ public class KMedoidCluster extends AbstractAttributeClusterer {
 
 	@ContainsTunables
 	public KMedoidContext context = null;
+
+	private List<String> attributeOrder = null;
+	private List<String> attributeList = null;
+	private Silhouettes attributeSilhouette = null;
+	private List<String> nodeOrder = null;
+	private List<String> nodeList = null;
+	private Silhouettes nodeSilhouette = null;
 
 	public KMedoidCluster(KMedoidContext context, ClusterManager clusterManager) {
 		super(clusterManager);
@@ -138,8 +148,11 @@ public class KMedoidCluster extends AbstractAttributeClusterer {
 			// System.out.println("Clustering attributes");
 			Integer[] rowOrder = algorithm.cluster(clusterManager, context.kcluster.kNumber, 
 			                                       context.iterations, true, SHORTNAME, context.kcluster, false);
-			updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
+			attributeList = algorithm.getAttributeList();
+			updateAttributes(network, SHORTNAME, rowOrder, attributeArray, attributeList, 
 			                 algorithm.getMatrix());
+			attributeSilhouette = algorithm.getSilhouettes();
+			attributeOrder = getOrder(rowOrder, algorithm.getMatrix());
 		}
 
 		// Cluster the nodes
@@ -148,13 +161,28 @@ public class KMedoidCluster extends AbstractAttributeClusterer {
 		Integer[] rowOrder = algorithm.cluster(clusterManager, context.kcluster.kNumber, 
 			                                     context.iterations, false, SHORTNAME, context.kcluster, 
 																		       createGroups);
+		nodeList = algorithm.getAttributeList();
 		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
 		                 algorithm.getMatrix());
+		nodeSilhouette = algorithm.getSilhouettes();
+		nodeOrder = getOrder(rowOrder, algorithm.getMatrix());
 
 		// System.out.println(resultsString);
 		if (context.showUI) {
 			insertTasksAfterCurrentTask(new KnnView(clusterManager));
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <R> R getResults(Class<? extends R> requestedType) {
+		if (requestedType.equals(Map.class))
+			return (R)getMapResults(nodeOrder, nodeList, nodeSilhouette, attributeOrder, attributeList, attributeSilhouette);
+		else if (requestedType.equals(String.class)) 
+			return (R)getStringResults(nodeOrder, nodeList, nodeSilhouette, attributeOrder, attributeList, attributeSilhouette);
+		else if (requestedType.equals(JSONResult.class)) 
+			return (R)getJSONResults(nodeOrder, nodeList, nodeSilhouette, attributeOrder, attributeList, attributeSilhouette);
+		return (R)"";
 	}
 
 }

@@ -7,6 +7,7 @@ import java.util.List;
 import org.cytoscape.work.TaskIterator;
 
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM.FCMCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM.FCMContext;
@@ -50,6 +51,11 @@ public class FuzzifierTaskFactory extends AbstractClusterTaskFactory {
 		       "Each node is then assigned a proportional membership to each cluster.  A cutoff "+
 		       "value determines the minimum proportion required to be considered as part of "+
 		       "a cluster.";
+	}
+
+	@Override
+	public String getExampleJSON() {
+		return AbstractClusterResults.getFuzzyExampleJSON();
 	}
 
 }

@@ -7,6 +7,7 @@ import java.util.List;
 import org.cytoscape.work.TaskIterator;
 
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
@@ -51,5 +52,10 @@ public class FCMClusterTaskFactory extends AbstractClusterTaskFactory {
 		       "sensitivity threshold) :"+
 		       " * Compute the centroid for each cluster (shown below)."+
 		       " * For each data point, compute its coefficients of being in the clusters.";
+	}
+
+	@Override
+	public String getExampleJSON() {
+		return AbstractClusterResults.getFuzzyExampleJSON();
 	}
 }

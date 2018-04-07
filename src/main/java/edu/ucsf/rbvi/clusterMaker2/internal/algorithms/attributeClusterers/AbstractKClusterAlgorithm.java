@@ -77,7 +77,8 @@ public abstract class AbstractKClusterAlgorithm {
 	protected boolean selectedOnly = false;
 	protected boolean useSilhouette = false;
 	protected Integer[] rowOrder;
-		protected Random random = null;
+	protected Random random = null;
+	protected Silhouettes sResult;
 	private AbstractClusterAlgorithm parentTask = null;
 	private Silhouettes[] silhouetteResults = null;
 
@@ -180,7 +181,7 @@ public abstract class AbstractKClusterAlgorithm {
 		if (nClusters == 0) nClusters = nClustersFound;
 
 		// OK, now run our silhouette on our final result
-		Silhouettes sResult = SilhouetteCalculator.calculate(matrix, metric, clusters);
+		sResult = SilhouetteCalculator.calculate(matrix, metric, clusters);
 		// System.out.println("Average silhouette = "+sResult.getAverageSilhouette());
 		// SilhouetteUtil.printSilhouette(sResult, clusters);
 
@@ -215,6 +216,8 @@ public abstract class AbstractKClusterAlgorithm {
 
 		return rowOrder;
 	}
+
+	public Silhouettes getSilhouettes() { return sResult; }
 
 	public CyMatrix getMatrix() { return matrix; }
 	public List<String> getAttributeList() { return attrList; }

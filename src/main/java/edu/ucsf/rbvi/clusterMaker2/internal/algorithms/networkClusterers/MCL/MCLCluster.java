@@ -35,10 +35,10 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 
 	@Tunable(description="Network to cluster", context="nogui")
 	public CyNetwork network = null;
-	
+
 	@ContainsTunables
 	public MCLContext context = null;
-	
+
 	public MCLCluster(MCLContext context, ClusterManager manager) {
 		super(manager);
 		this.context = context;
@@ -51,7 +51,7 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 
 	@ProvidesTitle
 	public String getName() { return NAME; }
-	
+
 	public void run(TaskMonitor monitor) {
 		monitor.setTitle("Performing MCL cluster");
 		this.monitor = monitor;
@@ -63,13 +63,11 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 		NodeCluster.init();
 
 		CyMatrix matrix = context.edgeAttributeHandler.getMatrix();
-		
+
 		if (matrix == null) {
 			monitor.showMessage(TaskMonitor.Level.ERROR,"Can't get distance matrix: no attribute value?");
 			return;
 		}
-		
-		
 
 		// Update our tunable results
 		clusterAttributeName = context.getClusterAttribute();
@@ -125,6 +123,6 @@ public class MCLCluster extends AbstractNetworkClusterer   {
 
 	@Override
 	public void setUIHelper(TunableUIHelper helper) {context.setUIHelper(helper); }
-	
+
 }
-	
+

@@ -1,5 +1,6 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.MAM;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Rank;
@@ -7,15 +8,17 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ClusterUtils;
 import org.cytoscape.model.*;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 import java.util.List;
 
-public class MultipleAttributeMultiplicative extends AbstractTask implements Rank {
+public class MultipleAttributeMultiplicative extends AbstractTask implements Rank, ObservableTask {
     private ClusterManager manager;
     final public static String NAME = "Create rank from multiple nodes and edges (multiply sum)";
     final public static String SHORTNAME = "MAM";
+    private AbstractClusterResults results;
 
     @Tunable(description = "Network", context = "nogui")
     public CyNetwork network;
@@ -75,11 +78,22 @@ public class MultipleAttributeMultiplicative extends AbstractTask implements Ran
         NodeCluster.setClusterRanks(clusters);
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Insert cluster information in tables");
         ClusterUtils.insertResultsInColumns(network, clusters, SHORTNAME);
+        results = new AbstractClusterResults(network, clusters);
         taskMonitor.setProgress(1.0);
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Done...");
     }
 
     public static boolean isReady(CyNetwork network, ClusterManager manager) {
         return true;
+    }
+
+    @Override
+    public List<Class<?>> getResultClasses() {
+        return results.getResultClasses();
+    }
+
+    @Override
+    public <R> R getResults(Class<? extends R> clzz) {
+        return results.getResults(clzz);
     }
 }

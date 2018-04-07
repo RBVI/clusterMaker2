@@ -6,6 +6,7 @@ import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Hypergraph;
 import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.graph.util.Pair;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.units.PREdge;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.units.PRNode;
@@ -18,13 +19,14 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 import java.util.HashMap;
 import java.util.List;
 
-public class PRWP extends AbstractTask implements Rank {
+public class PRWP extends AbstractTask implements Rank, ObservableTask {
     private ClusterManager manager;
     final public static String NAME = "Create rank from the PageRankWithPriors algorithm";
     final public static String SHORTNAME = "PRWP";
@@ -42,6 +44,7 @@ public class PRWP extends AbstractTask implements Rank {
     private CyTable edgeTable;
     private List<String> nodeAttributes;
     private List<String> edgeAttributes;
+    private AbstractClusterResults results;
 
     public PRWP(PRWPContext context, ClusterManager manager) {
         this.context = context;
@@ -100,9 +103,20 @@ public class PRWP extends AbstractTask implements Rank {
 
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Insert cluster information in tables");
         ClusterUtils.insertResultsInColumns(network, clusters, SHORTNAME);
+        results = new AbstractClusterResults(network, clusters);
 
         taskMonitor.setProgress(1.0);
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Done...");
+    }
+
+    @Override
+    public List<Class<?>> getResultClasses() {
+        return results.getResultClasses();
+    }
+
+    @Override
+    public <R> R getResults(Class<? extends R> clzz) {
+        return results.getResults(clzz);
     }
 
     private void insertScores(List<NodeCluster> clusters, PageRankWithPriors<PRNode, PREdge> pageRank) {

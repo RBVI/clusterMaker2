@@ -7,4 +7,7 @@ public interface RankFactory extends TaskFactory {
     String getShortName();
     String getName();
     Object getContext();
+		String getLongDescription();
+		String getExampleJSON();
+		String getSupportsJSON();
 }

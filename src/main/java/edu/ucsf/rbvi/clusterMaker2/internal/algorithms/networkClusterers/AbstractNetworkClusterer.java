@@ -115,7 +115,7 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 			}
 			clusterList.add(nodeList);
 		}
-		
+
 		if (haveScores)
 			ModelUtils.createAndSetLocal(network, network, clusterAttributeName+"_Scores", clusterScores, List.class, Double.class);
 
@@ -131,13 +131,13 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 
 		return clusterList;
 	}
-	
+
 	protected List<List<CyNode>> createFuzzyGroups(CyNetwork network, 
 	                                               List<FuzzyNodeCluster> clusters, String group_attr){
-		
+
 		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
 		List<Long>groupList = new ArrayList<Long>(); // keep track of the groups we create
-		
+
 		for (FuzzyNodeCluster cluster: clusters) {
 			int clusterNumber = cluster.getClusterNumber();
 			String groupName = clusterAttributeName+"_"+clusterNumber;
@@ -161,10 +161,10 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 			}
 			clusterList.add(nodeList);
 		}
-		
+
 		// Adding a column per node by the clusterAttributeName, which will store a list of all the clusters to which the node belongs
 		List<CyNode> nodeList = network.getNodeList();
-		
+
 		for(int i = 0; i < nodeList.size(); i++ ){
 			CyNode node = nodeList.get(i);
 			List<Integer> listOfClusters = new ArrayList<Integer>();
@@ -174,10 +174,10 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 				}
 			}
 			ModelUtils.createAndSetLocal(network, node, clusterAttributeName, listOfClusters , List.class, Integer.class);
-			
+
 		}
-		
-		
+
+
 		ModelUtils.createAndSetLocal(network, network, group_attr, groupList, List.class, Long.class);
 		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, 
 		                             getShortName(), String.class, null);
@@ -186,12 +186,12 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 		if (params != null)
 			ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, 
 		                               params, List.class, String.class);
-				
+
 		return clusterList;
 	}
 
-	
-	
+
+
 	protected void removeGroups(CyNetwork network, String group_attr) {
 		if (network.getDefaultNetworkTable().getColumn(group_attr) != null) {
 			List<Long> groupList = network.getRow(network, CyNetwork.LOCAL_ATTRS).getList(group_attr, Long.class);

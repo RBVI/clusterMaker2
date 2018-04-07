@@ -38,6 +38,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.auto
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -47,9 +48,11 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractAttributeClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.autosome.launch.Settings;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
@@ -98,6 +101,7 @@ public class AutoSOMECluster extends AbstractNetworkClusterer  {
 
 		if (network == null)
 			network = clusterManager.getNetwork();
+
 		context.setNetwork(network);
 
 		if (heatmap)
@@ -124,16 +128,16 @@ public class AutoSOMECluster extends AbstractNetworkClusterer  {
 		monitor.setTitle("Performing "+getName());
 
 		String networkID = ModelUtils.getNetworkName(network);
-		
+
 		// Update settings from our context
 		settings = context.getSettings();
-               
+
 		//got back to parent to cluster again
 		if(networkID.contains("--AutoSOME")){
 			String[] tokens = networkID.split("--AutoSOME");
 			networkID = tokens[0];
 			network = ModelUtils.getNetworkWithName(clusterManager, networkID);
-		} 
+		}
 
 		List<String> dataAttributes = context.attributeList.getNodeAttributeList();
 
@@ -162,7 +166,7 @@ public class AutoSOMECluster extends AbstractNetworkClusterer  {
 		removeGroups(network, getShortName());
 
 		monitor.setStatusMessage("Creating groups");
-		
+
 		if(settings.distMatrix)
 			runAutoSOME.getEdges(context.maxEdges);
 
@@ -184,11 +188,9 @@ public class AutoSOMECluster extends AbstractNetworkClusterer  {
 		List<List<CyNode>> nodeClusters;
 
 		if(!settings.distMatrix) {
-			nodeClusters =
-				createGroups(network, nodeCluster, GROUP_ATTRIBUTE);		   
-			ClusterResults results = new AbstractClusterResults(network, nodeCluster);
+			nodeClusters = createGroups(network, nodeCluster, GROUP_ATTRIBUTE);
+			results = new AbstractClusterResults(network, nodeCluster);
 			monitor.setStatusMessage("Done.  AutoSOME results:\n"+results);
-			System.out.println("Done.  AutoSOME results:\n"+results);
 		} else {
 			nodeClusters = new ArrayList<List<CyNode>>();
 			/*
@@ -202,7 +204,6 @@ public class AutoSOMECluster extends AbstractNetworkClusterer  {
 			}
 	   */
 			monitor.setStatusMessage("Done.  AutoSOME results:\n"+nodeCluster.size()+" clusters found.");
-			System.out.println("Done.  AutoSOME results:\n"+nodeCluster.size()+" clusters found.");
 		}
 
 		// List<String> params = context.getParams(runAutoSOME.getMatrix());
@@ -222,4 +223,21 @@ public class AutoSOMECluster extends AbstractNetworkClusterer  {
 		runAutoSOME.cancel();
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public <R> R getResults(Class<? extends R> requestedType) {
+		if(!settings.distMatrix) {
+			return super.getResults(requestedType);
+		}
+		if (requestedType.equals(Map.class))
+			return (R)AbstractAttributeClusterer.getMapResults(nodeOrderList, attrList, null, 
+			                                                   attrOrderList, null, null);
+		else if (requestedType.equals(String.class)) 
+			return (R)AbstractAttributeClusterer.getStringResults(nodeOrderList, attrList, null, 
+			                                                      attrOrderList, null, null);
+		else if (requestedType.equals(JSONResult.class)) 
+			return (R)AbstractAttributeClusterer.getJSONResults(nodeOrderList, attrList, null, 
+			                                                    attrOrderList, null, null);
+		return (R)"";
+	}
 }

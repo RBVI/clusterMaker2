@@ -5,6 +5,7 @@ import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.graph.util.Pair;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.units.PREdge;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.units.PRNode;
@@ -16,13 +17,14 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 import java.util.HashMap;
 import java.util.List;
 
-public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank {
+public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank, ObservableTask {
     private ClusterManager manager;
     public static final String NAME = "Create rank from the HyperlinkInducedTopicSearch algorithm with priors";
     public static final String SHORTNAME = "HITS";
@@ -30,6 +32,8 @@ public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank {
     private List<CyNode> nodeList;
     private HashMap<Long, PRNode> idToNode;
     private List<CyEdge> edgeList;
+    private List<NodeCluster> clusters;
+    private AbstractClusterResults results;
 
     @Tunable(description = "Network", context = "nogui")
     public CyNetwork network;
@@ -69,7 +73,7 @@ public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank {
         taskMonitor.setTitle("Hyperlink-Induced Topic Search ranking of clusters");
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Fetching clusters...");
         taskMonitor.setProgress(0.1);
-        List<NodeCluster> clusters = ClusterUtils.fetchClusters(network);
+        clusters = ClusterUtils.fetchClusters(network);
         taskMonitor.setProgress(0.5);
 
         initVariables();
@@ -93,6 +97,8 @@ public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank {
 
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Insert cluster information in tables");
         ClusterUtils.insertResultsInColumns(network, clusters, SHORTNAME);
+
+        results = new AbstractClusterResults(network, clusters);
 
         taskMonitor.setProgress(1.0);
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Done...");
@@ -139,5 +145,16 @@ public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank {
             graph.addVertex(prNode);
             idToNode.put(node.getSUID(), prNode);
         }
+    }
+
+
+    @Override
+    public List<Class<?>> getResultClasses() {
+        return results.getResultClasses();
+    }
+
+    @Override
+    public <R> R getResults(Class<? extends R> clzz) {
+        return results.getResults(clzz);
     }
 }

@@ -53,6 +53,3 @@ public class MCLClusterTaskFactory extends AbstractClusterTaskFactory {
 		       "column) correspond to probability values.";
 	}
 }
-
-
-

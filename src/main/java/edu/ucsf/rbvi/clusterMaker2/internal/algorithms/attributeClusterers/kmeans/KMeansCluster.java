@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 // Cytoscape imports
 import org.cytoscape.model.CyNetwork;
@@ -45,15 +46,18 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 // clusterMaker imports
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.KnnView;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractAttributeClusterer;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.Silhouettes;
 
 public class KMeansCluster extends AbstractAttributeClusterer {
 	public static String SHORTNAME = "kmeans";
@@ -64,6 +68,13 @@ public class KMeansCluster extends AbstractAttributeClusterer {
 
 	@ContainsTunables
 	public KMeansContext context = null;
+
+	private List<String> attributeOrder = null;
+	private List<String> attributeList = null;
+	private Silhouettes attributeSilhouette = null;
+	private List<String> nodeOrder = null;
+	private List<String> nodeList = null;
+	private Silhouettes nodeSilhouette = null;
 
 	public KMeansCluster(KMeansContext context, ClusterManager clusterManager) {
 		super(clusterManager);
@@ -138,23 +149,43 @@ public class KMeansCluster extends AbstractAttributeClusterer {
 			monitor.setStatusMessage("Clustering attributes");
 			//System.out.println("Clustering attributes: k="+context.kcluster.kNumber);
 			Integer[] rowOrder = algorithm.cluster(clusterManager, context.kcluster.kNumber, 
-			                                       context.iterations, true, "kmeans", context.kcluster, false);
-			updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
+			                                       context.iterations, true, "kmeans", 
+			                                       context.kcluster, false);
+			attributeList = algorithm.getAttributeList();
+			updateAttributes(network, SHORTNAME, rowOrder, attributeArray, attributeList, 
 			                 algorithm.getMatrix());
+			attributeSilhouette = algorithm.getSilhouettes();
+			attributeOrder = getOrder(rowOrder, algorithm.getMatrix());
 		}
 
 		// Cluster the nodes
 		monitor.setStatusMessage("Clustering nodes");
 		Integer[] rowOrder = algorithm.cluster(clusterManager, context.kcluster.kNumber, 
-			                                     context.iterations, false, "kmeans", context.kcluster, createGroups);
-		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algorithm.getAttributeList(), 
-		                 algorithm.getMatrix());
+			                                     context.iterations, false, "kmeans", 
+		                                       context.kcluster, createGroups);
+		nodeList = algorithm.getAttributeList();
+		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, nodeList, algorithm.getMatrix());
+		nodeSilhouette = algorithm.getSilhouettes();
+		nodeOrder = getOrder(rowOrder, algorithm.getMatrix());
 
 		// System.out.println(resultsString);
 		if (context.showUI) {
 			insertTasksAfterCurrentTask(new KnnView(clusterManager));
 		}
-		
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public <R> R getResults(Class<? extends R> requestedType) {
+		if (requestedType.equals(Map.class))
+			return (R)getMapResults(nodeOrder, nodeList, nodeSilhouette, attributeOrder, 
+			                        attributeList, attributeSilhouette);
+		else if (requestedType.equals(String.class)) 
+			return (R)getStringResults(nodeOrder, nodeList, nodeSilhouette, attributeOrder, 
+			                           attributeList, attributeSilhouette);
+		else if (requestedType.equals(JSONResult.class)) 
+			return (R)getJSONResults(nodeOrder, nodeList, nodeSilhouette, attributeOrder, 
+			                         attributeList, attributeSilhouette);
+		return (R)"";
+	}
 }

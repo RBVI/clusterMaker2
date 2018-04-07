@@ -3,6 +3,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.pam;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JPanel;
 
@@ -12,10 +13,13 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AbstractAttributeClusterer;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.silhouette.Silhouettes;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.KnnView;
 
 
@@ -34,6 +38,13 @@ public class PAMClusterer extends AbstractAttributeClusterer {
 
 	@ContainsTunables
 	public PAMContext context = null;
+
+	private List<String> attributeOrder = null;
+	private List<String> attributeList = null;
+	private Silhouettes attributeSilhouette = null;
+	private List<String> nodeOrder = null;
+	private List<String> nodeList = null;
+	private Silhouettes nodeSilhouette = null;
 
 	public PAMClusterer(PAMContext context, ClusterManager clusterManager) {
 		super(clusterManager);
@@ -125,8 +136,11 @@ public class PAMClusterer extends AbstractAttributeClusterer {
 			Integer[] rowOrder = algo.cluster(clusterManager, context.kcluster.kNumber,  
 				                                nIterations,  true, getShortName(), context.kcluster, false);
 
-			updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algo.getAttributeList(),
+			attributeList = algo.getAttributeList();
+			updateAttributes(network, SHORTNAME, rowOrder, attributeArray, attributeList,
 			                 algo.getMatrix());
+			attributeSilhouette = algo.getSilhouettes();
+			attributeOrder = getOrder(rowOrder, algo.getMatrix());
 		}
 
 		if (cancelled()) {
@@ -140,11 +154,26 @@ public class PAMClusterer extends AbstractAttributeClusterer {
 		                                  nIterations, false, getShortName(),
 		                                  context.kcluster, createGroups);
 
+		nodeList = algo.getAttributeList();
 		updateAttributes(network, SHORTNAME, rowOrder, attributeArray, algo.getAttributeList(),
 		                 algo.getMatrix());
+		nodeSilhouette = algo.getSilhouettes();
+		nodeOrder = getOrder(rowOrder, algo.getMatrix());
 
 		if (context.showUI)
 			insertTasksAfterCurrentTask(new KnnView(clusterManager));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <R> R getResults(Class<? extends R> requestedType) {
+		if (requestedType.equals(Map.class))
+			return (R)getMapResults(nodeOrder, nodeList, nodeSilhouette, attributeOrder, attributeList, attributeSilhouette);
+		else if (requestedType.equals(String.class)) 
+			return (R)getStringResults(nodeOrder, nodeList, nodeSilhouette, attributeOrder, attributeList, attributeSilhouette);
+		else if (requestedType.equals(JSONResult.class)) 
+			return (R)getJSONResults(nodeOrder, nodeList, nodeSilhouette, attributeOrder, attributeList, attributeSilhouette);
+		return (R)"";
 	}
 
 }
