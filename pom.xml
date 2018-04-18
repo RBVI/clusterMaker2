@@ -99,6 +99,12 @@
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
+			<artifactId>command-executor-api</artifactId>
+			<version>${cytoscape.api.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
 			<artifactId>model-api</artifactId>
 			<version>${cytoscape.api.version}</version>
 			<scope>provided</scope>

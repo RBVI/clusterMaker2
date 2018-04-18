@@ -56,17 +56,7 @@ public class KnnViewTaskFactory implements ClusterVizFactory   {
 	}
 
 	@Override
-	public String getSupportsJSON() { return "false"; }
-
-	@Override
-	public String getExampleJSON() { return ""; }
-
-	@Override
-	public String getLongDescription() { return "Display the heat map for k-means or k-medoid clusters."; }
-	
+	public String getLongDescription() { 
+		return "Display the heat map for k-means, k-medoid, or PAM clusters using the JTreeView KnnView widget."; 
+	}
 }
-	
-	
-
-
-

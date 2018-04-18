@@ -73,9 +73,11 @@ import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 // ClusterMaker imports
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
@@ -102,7 +104,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.treeview.model.TreeViewModel;
  * The ClusterViz class provides the primary interface to the
  * Cytoscape plugin mechanism
  */
-public class HeatMapView extends TreeViewApp implements Observer, 
+public class HeatMapView extends TreeViewApp implements Observer, ObservableTask,
                                                         RowsSetListener,
                                                         ClusterViz, ClusterAlgorithm {
 	public static String SHORTNAME = "heatmapview";
@@ -474,5 +476,23 @@ public class HeatMapView extends TreeViewApp implements Observer,
 		geneSelection.deleteObserver(this);
 		geneSelection.notifyObservers();
 		geneSelection.addObserver(this);
+	}
+
+	@Override
+  public List<Class<?>> getResultClasses() {
+		return Arrays.asList(JSONResult.class, String.class);
+	}
+
+	@Override
+  public <R> R getResults(Class<? extends R> requestedType) {
+		if (requestedType.equals(String.class))
+			return (R)"Heatmap is shown";
+		else if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				return "{}";
+			};
+			return (R)res;
+		}
+		return (R)"";
 	}
 }

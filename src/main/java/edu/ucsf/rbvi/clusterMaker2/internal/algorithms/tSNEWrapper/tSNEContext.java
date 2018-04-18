@@ -22,32 +22,63 @@ public class tSNEContext implements TSneConfiguration {
 
 	public boolean selectedOnly = false;
 	@Tunable(description="Use only selected nodes/edges for cluster",
-			groups={"t-SNE Parameters"}, gravity=65)
+	         longDescription="If this is set to ```true```, only the selected nodes will be "+
+	                         "included in the resulting tSNE plot",
+	         exampleStringValue="false",
+	         groups={"t-SNE Parameters"}, gravity=65)
 	public boolean getselectedOnly() { return selectedOnly; }
 	public void setselectedOnly(boolean sel) {
 		if (network != null && this.selectedOnly != sel) 
 		this.selectedOnly = sel;
 	}
 
-	@Tunable(description="Ignore nodes with missing data", groups={"t-SNE Parameters"}, gravity=66)
+	@Tunable(description="Ignore nodes with missing data", 
+	         longDescription="Ignore any nodes that have missing data.  If this is not selected, "+
+	                         "missing values will be set to 0.",
+	         exampleStringValue="true",
+	         groups={"t-SNE Parameters"}, gravity=66)
 	public boolean ignoreMissing = true;
 
-	@Tunable(description="Initial Dimensions", groups={"t-SNE Parameters"}, gravity=66, format="#0")
+	@Tunable(description="Initial Dimensions", 
+	         longDescription="The number of dimensions to reduce the data set to before running "+
+	                         "tSNE.  If the dimensionality of the data exceeds this number, "+
+	                         "Principal Component Analysis (pca) will be used to do an initial "+
+	                         "dimensionality reduction.  Settings this value to -1 ensures that "+
+	                         "pca is not called.",
+	         exampleStringValue="30",
+	         groups={"t-SNE Parameters"}, gravity=66, format="#0")
 	public int dimensions=-1;
 
-	@Tunable(description="Perplexity", groups={"t-SNE Parameters"}, gravity=67)
+	@Tunable(description="Perplexity", 
+	         longDescription="Perplexity is the balance between the local and global aspects of the data.",
+	         exampleStringValue="20",
+	         groups={"t-SNE Parameters"}, gravity=67)
 	public double perplexity=20;
 
-	@Tunable(description="Number of Iterations", groups={"t-SNE Parameters"}, gravity=68)
+	@Tunable(description="Number of Iterations", 
+	         longDescription="The number of iterations of the algorithm to perform",
+	         exampleStringValue="2000",
+	         groups={"t-SNE Parameters"}, gravity=68)
 	public int iterations=2000;
 
-	@Tunable(description="Use Barnes-Hut approximation", groups={"t-SNE Parameters"}, gravity=69)
+	@Tunable(description="Use Barnes-Hut approximation", 
+	         longDescription="The Barnes-Hut approximation is a way to reduce the computational complexity "+
+	                         "of an algorithm by replacing a group of distant nodes with a single node at the "+
+	                         "center of mass of all of those nodes",
+	         exampleStringValue="false",
+	         groups={"t-SNE Parameters"}, gravity=69)
 	public boolean useBarnesHut=false;
 
-	@Tunable(description="Theta value for Barnes-Hut", dependsOn="useBarnesHut=true", groups={"t-SNE Parameters"}, gravity=70)
-	public BoundedDouble theta=new BoundedDouble(0.0, 0.9, 1.0, false, false);
+	@Tunable(description="Theta value for Barnes-Hut", 
+	         longDescription="The threshold value to activate Barnes-Hut.  This value reflects the accuracy "+
+	                         "of the simulation.  If theta=0 then the approximation is never used",
+	         exampleStringValue="0.9",
+	         dependsOn="useBarnesHut=true", groups={"t-SNE Parameters"}, gravity=70)
+	public BoundedDouble theta=new BoundedDouble(0.0, 0.9, 2.0, false, false);
 
 	@Tunable(description="Show scatter plot with results",
+	         longDescription="If this is set to ```true```, show the tSNE scatterplot after the calculation is complete",
+	         exampleStringValue="true",
 	         groups={"Result Options"}, gravity=69.0)
 	public boolean showScatterPlot=true;
 

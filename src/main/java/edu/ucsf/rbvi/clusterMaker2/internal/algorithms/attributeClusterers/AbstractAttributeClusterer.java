@@ -65,6 +65,8 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 	protected DistanceMetric distanceMetric = DistanceMetric.EUCLIDEAN;
 	protected List<String>attrList;
 
+	public enum ClusterType { NODE, ARRAY };
+
 	public AbstractAttributeClusterer(ClusterManager clusterManager) {
 		super(clusterManager);
 	}
@@ -99,9 +101,9 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 	                                        Silhouettes attributeSil) {
 		JSONResult res = () -> {
 			String strRes = "{";
-			strRes += "\"nodeCluster\":"+jsonCluster(nodeOrder, nodeList, nodeSil);
+			strRes += "\"nodeCluster\":{"+jsonCluster(nodeOrder, nodeList, nodeSil)+"}";
 			if (attributeOrder != null && attributeList != null) {
-				strRes += ",\"attributeCluster\":"+jsonCluster(attributeOrder, attributeList, attributeSil);
+				strRes += ",\"attributeCluster\":{"+jsonCluster(attributeOrder, attributeList, attributeSil)+"}";
 			}
 			strRes += "}";
 			return strRes;
@@ -180,10 +182,10 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 	protected void updateKEstimates(CyNetwork network) {
 	}
 
-	private static String jsonCluster(List<String> order, List<String> attrList, Silhouettes sil) {
+	public static String jsonCluster(List<String> order, List<String> attrList, Silhouettes sil) {
 		Map<Integer, List<String>> clusterMap = makeClusterMap(attrList);
 
-		String strRes = "{";
+		String strRes = "";
 		if (sil != null)
 			strRes += "\"silhouette\": "+sil.getMean()+",";
 		strRes += "\"order\":";
@@ -202,7 +204,6 @@ public abstract class AbstractAttributeClusterer extends AbstractClusterAlgorith
 			}
 			strRes += "]";
 		}
-		strRes += "}";
 		return strRes;
 	}
 

@@ -41,6 +41,17 @@ public class CommandTaskFactory implements TaskFactory   {
 	public boolean isReady() {
 		return true;
 	}
+
+	public String getExampleJSON() {
+		if (command.equals(GETCLUSTER)) {
+			return GetClusterTask.getExampleJSON();
+		} else if (command.equals(HASCLUSTER)) {
+			return HasClusterTask.getExampleJSON();
+		} else if (command.equals(GETNETWORKCLUSTER)) {
+			return GetNetworkClusterTask.getExampleJSON();
+		}
+		return "";
+	}
 }
 	
 	

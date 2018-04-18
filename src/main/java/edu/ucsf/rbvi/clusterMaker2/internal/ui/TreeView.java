@@ -40,6 +40,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -74,8 +75,10 @@ import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.json.JSONResult;
 
 // ClusterMaker imports
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
@@ -101,7 +104,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.treeview.model.TreeViewModel;
  * The ClusterViz class provides the primary interface to the
  * Cytoscape plugin mechanism
  */
-public class TreeView extends TreeViewApp implements Observer, 
+public class TreeView extends TreeViewApp implements Observer, ObservableTask,
                                                      RowsSetListener,
                                                      ClusterViz, ClusterAlgorithm {
 	public static String SHORTNAME = "treeview";
@@ -495,5 +498,23 @@ public class TreeView extends TreeViewApp implements Observer,
 		geneSelection.deleteObserver(this);
 		geneSelection.notifyObservers();
 		geneSelection.addObserver(this);
+	}
+
+	@Override
+  public List<Class<?>> getResultClasses() {
+		return Arrays.asList(JSONResult.class, String.class);
+	}
+
+	@Override
+  public <R> R getResults(Class<? extends R> requestedType) {
+		if (requestedType.equals(String.class))
+			return (R)"TreeView is shown";
+		else if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				return "{}";
+			};
+			return (R)res;
+		}
+		return (R)"";
 	}
 }

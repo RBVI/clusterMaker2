@@ -46,14 +46,24 @@ public class AttributeList {
 	boolean nodesOnly = false;
 
 	@Tunable(description="Node attributes for cluster", groups="Array sources", 
+	         longDescription="Select the node table columns to be used for calculating the cluster.  "+
+	                         "Note that at least 2 node columns are usually required.",
+	         exampleStringValue="gal1RGexp,gal4RGExp,gal80Rexp",
 	         tooltip="You must choose at least 2 node columns for an attribute cluster", gravity=50 )
 	public ListMultipleSelection<String> nodeAttributeList = null;
 
 	@Tunable(description="Edge column for cluster", groups="Array sources", params="decorate=begins",
+	         longDescription="Select the edge table column to be used for calculating the cluster.  "+
+	                         "Only one column may be chosen.  Also note that you may either choose "+
+	                         "Node attributes or an Edge column, but not both.",
+	         exampleStringValue="weight",
 	         tooltip="You may only chose 1 edge column for an attribute cluster" , gravity=51)
 	public ListSingleSelection<String> edgeAttributeList = null;
 
-	@Tunable(description="Edges are assymetric (not common)", groups="Array sources", gravity=52)
+	@Tunable(description="Edges are assymetric (not common)", 
+	         longDescription="Under rare circumstances, the edges might be assymetric (i.e. directed)",
+	         exampleStringValue="false",
+	         groups="Array sources", gravity=52)
 	public boolean assymetric = false;
 
 	public AttributeList(CyNetwork network) {

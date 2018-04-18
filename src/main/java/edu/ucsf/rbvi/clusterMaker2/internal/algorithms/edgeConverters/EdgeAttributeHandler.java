@@ -60,21 +60,37 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 	private TunableUIHelper helper = null;
 
 	private ListSingleSelection<String> attribute ;
-	@Tunable(description = "Array Sources", groups={"Source for array data"}, params="displayState=uncollapsed", gravity=10.0)
+	@Tunable(description = "Array Source", groups={"Source for array data"}, params="displayState=uncollapsed", 
+	         longDescription = "The column containing the data to be used for the clustering. "+
+	                           "If no weight column is used, select ```--NONE---```",
+	         exampleStringValue = "score",
+	         gravity=10.0)
 	public ListSingleSelection<String> getattribute(){
 		attribute = ModelUtils.updateEdgeAttributeList(network, attribute);
 		return attribute;
 	}
 	public void setattribute(ListSingleSelection<String> attr) { }
 
-	@Tunable(description = "Cluster only selected nodes", groups={"Source for array data"}, gravity=11.0)
+	@Tunable(description = "Cluster only selected nodes", 
+	         longDescription = "Only provide the selected nodes (and their edges) to the clustering algorithm",
+	         exampleStringValue = "false",
+	        groups={"Source for array data"}, gravity=11.0)
 	public boolean selectedOnly = false;
 
-	@Tunable(description = "Edge weight conversion", groups={"Source for array data"}, gravity=12.0)
+	@Tunable(description = "Edge weight conversion", 
+	         longDescription = "Convert the edge weights read from the ```Array Source``` column specified above "+
+	                           "using the specified algorithm.  This will allow distances to be converted to "+
+	                           "similarities, to log scale weights, and provide special scaling for particular "+
+	                           "algorithms (e.g. SCPS).",
+	         exampleStringValue = "1-value",
+	         groups={"Source for array data"}, gravity=12.0)
 	public ListSingleSelection<EdgeWeightConverter> edgeWeighter;
 
 	public BoundedDouble edgeCutOff;
 	@Tunable(description="Edge cut off", 
+	         longDescription = "The cutoff value for edge weights.  Edges with weights less than the cutoff "+
+	                           "will be excluded from the cluster calculation",
+	         exampleStringValue = "score",
 	         listenForChange={"selectedOnly", "attribute", "edgeWeighter", "EdgeHistogram"},
 	         groups={"Source for array data", "Edge weight cutoff"}, 
 	         params="slider=true", gravity=13.0, 
@@ -102,10 +118,18 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 	}
 
 	@Tunable(description = "Assume edges are undirected", 
+	         longDescription = "Most clustering algorithms will assume edges are undirected, "+
+	                           "this provides an opportunity to only create 1/2 of the matrix, preserving "+
+	                           "space.  Don't set this to ```false``` unless you really need to.",
+	         exampleStringValue = "true",
 	         groups={"Source for array data", "Array data adjustments"}, gravity=15.0)
 	public boolean undirectedEdges = true;
 
 	@Tunable(description = "Adjust loops before clustering", 
+	         longDescription = "In certain algorithms (e.g. hierarchical clustering of edges, "+
+	                           "we may want to adjust the diagonal in the matrix to account "+
+	                           "for implicit self-edges.",
+	         exampleStringValue = "true",
 	         groups={"Source for array data", "Array data adjustments"}, gravity=16.0)
 	public boolean adjustLoops = true;
 

@@ -49,12 +49,12 @@ public class HierarchicalTaskFactory extends AbstractClusterTaskFactory {
 
 	@Override
 	public String getExampleJSON() {
-		return "{ \"nodeOrder\": [ {\"nodeName\": \"TP53\", \"suid\": 101 }, ...],"+
+		return "{ \"nodeOrder\": [ {\"nodeName\": \"TP53\", \"suid\": 101 } ],"+
 		       "\"nodeTree\": [ {\"name\": \"GROUPX1\", \"left\": \"TP53\", "+
-		       "\"right\": \"EGFR\", \"distance\": 0.54}, ...],"+
-		       "\"attributeOrder\": [ \"column1\", \"column2\", ...],"+
+		       "\"right\": \"EGFR\", \"distance\": 0.54}],"+
+		       "\"attributeOrder\": [ \"column1\", \"column2\"],"+
 		       "\"attributeTree\": [ {\"name\": \"GROUPX1\", "+
-		       "\"left\": \"TP53\", \"right\": \"EGFR\", \"distance\": 0.54}, ...]}";
+		       "\"left\": \"TP53\", \"right\": \"EGFR\", \"distance\": 0.54}]}";
 	}
 
 	@Override

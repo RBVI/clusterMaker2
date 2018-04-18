@@ -230,6 +230,11 @@ public class CyActivator extends AbstractCyActivator {
 			linkSelectionProps.setProperty(ENABLE_FOR, "networkAndView");
 			linkSelectionProps.setProperty(IN_MENU_BAR, "true");
 			linkSelectionProps.setProperty(MENU_GRAVITY, "100.0");
+			linkSelectionProps.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+			linkSelectionProps.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			linkSelectionProps.setProperty(COMMAND_LONG_DESCRIPTION, 
+			                               "This command causes selection to be reflected across all open networks.  This "+
+			                               "is particularly useful when examining various different clsuter results");
 			registerService(bc, linkTaskFactory, NetworkTaskFactory.class, linkSelectionProps);
 		}
 
@@ -244,6 +249,10 @@ public class CyActivator extends AbstractCyActivator {
 			unlinkSelectionProps.setProperty(ENABLE_FOR, "networkAndView");
 			unlinkSelectionProps.setProperty(IN_MENU_BAR, "true");
 			unlinkSelectionProps.setProperty(MENU_GRAVITY, "100.0");
+			unlinkSelectionProps.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+			unlinkSelectionProps.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			unlinkSelectionProps.setProperty(COMMAND_LONG_DESCRIPTION, 
+			                                 "Disable the linking of selection across networks");
 			registerService(bc, unlinkTaskFactory, NetworkTaskFactory.class, unlinkSelectionProps);
 		}
 
@@ -251,29 +260,45 @@ public class CyActivator extends AbstractCyActivator {
 		// These task factories provide useful commands that only make sense in the context of REST or
 		// the command interface
 		{
-			TaskFactory commandTaskFactory = new CommandTaskFactory(clusterManager, "hascluster");
+			CommandTaskFactory commandTaskFactory = new CommandTaskFactory(clusterManager, "hascluster");
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "cluster");
 			props.setProperty(COMMAND, CommandTaskFactory.HASCLUSTER);
   		props.setProperty(COMMAND_DESCRIPTION, "Test to see if this network has a cluster of the requested type");
+			props.setProperty(COMMAND_EXAMPLE_JSON, commandTaskFactory.getExampleJSON());
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, 
+			                  "Test to see if the current network has a cluster of the requested type.");
 			registerService(bc, commandTaskFactory, TaskFactory.class, props);
 		}
 
 		{
-			TaskFactory commandTaskFactory = new CommandTaskFactory(clusterManager, "getnetworkcluster");
+			CommandTaskFactory commandTaskFactory = new CommandTaskFactory(clusterManager, "getnetworkcluster");
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "cluster");
 			props.setProperty(COMMAND, CommandTaskFactory.GETNETWORKCLUSTER);
   		props.setProperty(COMMAND_DESCRIPTION, "Get a cluster network cluster result");
+			props.setProperty(COMMAND_EXAMPLE_JSON, commandTaskFactory.getExampleJSON());
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, 
+			                                 "Disable the linking of selection across networks");
 			registerService(bc, commandTaskFactory, TaskFactory.class, props);
 		}
 
 		{
-			TaskFactory commandTaskFactory = new CommandTaskFactory(clusterManager, "getcluster");
+			CommandTaskFactory commandTaskFactory = new CommandTaskFactory(clusterManager, "getcluster");
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "cluster");
 			props.setProperty(COMMAND, CommandTaskFactory.GETCLUSTER);
   		props.setProperty(COMMAND_DESCRIPTION, "Get an attribute cluster result");
+			props.setProperty(COMMAND_EXAMPLE_JSON, commandTaskFactory.getExampleJSON());
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, 
+			                  "Return the attribute cluster results for the ```algorithm``` and ```type``` (node or attribute) provided as arguments. "+
+			                  "Note that the JSON return syntax is highly dependent on the algorithm and type requested.  "+
+			                  "In any case, to ease parsing, all of the JSON returns include the algorithm and type as top-level "+
+			                  "keys.  The sample JSON return is for the hierarchical cluster of nodes, which is the most complicated "+
+			                  "type.");
 			registerService(bc, commandTaskFactory, TaskFactory.class, props);
 		}
 	}

@@ -57,17 +57,7 @@ public class TreeViewTaskFactory implements ClusterVizFactory   {
 	}
 
 	@Override
-	public String getSupportsJSON() { return "false"; }
-
-	@Override
-	public String getExampleJSON() { return ""; }
-
-	@Override
-	public String getLongDescription() { return "Display the tree view for hierarchical clusters"; }
-	
+	public String getLongDescription() { 
+		return "Display the tree view for hierarchical clusters using the JTreeView widget."; 
+	}
 }
-	
-	
-
-
-

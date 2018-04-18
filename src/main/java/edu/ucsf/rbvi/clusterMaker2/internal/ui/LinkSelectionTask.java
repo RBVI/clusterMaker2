@@ -32,9 +32,14 @@
  */
 package edu.ucsf.rbvi.clusterMaker2.internal.ui;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.json.JSONResult;
 
 //clusterMaker imports
 import edu.ucsf.rbvi.clusterMaker2.internal.ClusterManagerImpl;
@@ -44,7 +49,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
  * The ClusterViz class provides the primary interface to the
  * Cytoscape plugin mechanism
  */
-public class LinkSelectionTask extends AbstractNetworkTask {
+public class LinkSelectionTask extends AbstractNetworkTask implements ObservableTask {
 	ClusterManager manager;
 
 	public LinkSelectionTask(CyNetwork network, ClusterManager clusterManager) {
@@ -55,5 +60,23 @@ public class LinkSelectionTask extends AbstractNetworkTask {
 	public void run(TaskMonitor monitor) {
 		// Enable listener
 		((ClusterManagerImpl)manager).linkNetworkSelection(network);
+	}
+
+	@Override
+  public List<Class<?>> getResultClasses() {
+		return Arrays.asList(JSONResult.class, String.class);
+	}
+
+	@Override
+  public <R> R getResults(Class<? extends R> requestedType) {
+		if (requestedType.equals(String.class))
+			return (R)"Network selection is now linked";
+		else if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				return "{}";
+			};
+			return (R)res;
+		}
+		return (R)"Network selection is now linked";
 	}
 }

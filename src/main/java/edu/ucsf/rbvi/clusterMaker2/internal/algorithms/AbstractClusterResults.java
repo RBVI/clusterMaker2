@@ -170,10 +170,10 @@ public class AbstractClusterResults implements ClusterResults {
 		strRes += "\"clusters\":[\n";
 		strRes += "{\"clusterNumber\":0,\"modularity\":0.01,\"score\":0.5,"+
 		          "\"clusterRank\": 5, \"clusterRankScore\": 0.1,"+
-		          "\"nodes\":[101,102]},";
+		          "\"nodes\":[{\"name\":\"abc\", \"suid\":101},{\"name\":\"def\", \"suid\":102}]},";
 		strRes += "{\"clusterNumber\":1,\"modularity\":0.01,\"score\":0.5,"+
 		          "\"clusterRank\": 5, \"clusterRankScore\": 0.1,"+
-		          "\"nodes\":[103,104]},";
+		          "\"nodes\":[{\"name\":\"lmn\", \"suid\":103},{\"name\":\"xyz\", \"suid\":104}]},";
 		strRes += "]}";
 		return strRes;
 	}
@@ -187,9 +187,9 @@ public class AbstractClusterResults implements ClusterResults {
 		strRes += "\"modularity\": 3.0,\n";
 		strRes += "\"clusters\":[\n";
 		strRes += "{\"clusterNumber\":0,\"modularity\":0.01,\"score\":0.5,"+
-		          "\"nodes\":[{\"node\":101,\"membership\":0.6},{\"node\":102,\"membership\":0.7}]},";
+		          "\"nodes\":[{\"suid\":101,\"name\": \"abc\", \"membership\":0.6},{\"suid\":102,\"name\": \"def\", \"membership\":0.7}]},";
 		strRes += "{\"clusterNumber\":1,\"modularity\":0.01,\"score\":0.5,"+
-		          "\"nodes\":[{\"node\":103,\"membership\":0.6},{\"node\":104,\"membership\":0.7}]},";
+		          "\"nodes\":[{\"suid\":103,\"name\":\"lmn\",\"membership\":0.6},{\"suid\":104,\"name\":\"xyz\",\"membership\":0.7}]},";
 		strRes += "]}";
 		return strRes;
 	}
@@ -202,8 +202,10 @@ public class AbstractClusterResults implements ClusterResults {
 		strRes += "\"minSize\": 1,\n";
 		strRes += "\"modularity\": 3.0,\n";
 		strRes += "\"clusters\":[\n";
-		strRes += "{\"clusterNumber\":0,\"modularity\":0.01,\"score\":0.5,\"nodes\":[101,102]},";
-		strRes += "{\"clusterNumber\":0,\"modularity\":0.01,\"score\":0.5,\"nodes\":[101,102]},";
+		strRes += "{\"clusterNumber\":0,\"modularity\":0.01,\"score\":0.5,\"nodes\":"+
+		          "[{\"name\":\"abc\",\"suid\":101},{\"name\":\"def\",\"suid\":102}]},";
+		strRes += "{\"clusterNumber\":0,\"modularity\":0.01,\"score\":0.5,\"nodes\":"+
+		          "[{\"name\":\"abc\",\"suid\":101},{\"name\":\"def\",\"suid\":102}]},";
 		strRes += "{\"clusterNumber\":1,\"nodes\":[105,108]}";
 		strRes += "]}";
 		return strRes;
@@ -254,10 +256,11 @@ public class AbstractClusterResults implements ClusterResults {
 		if (cluster instanceof FuzzyNodeCluster) {
 			FuzzyNodeCluster fuzzyCluster = (FuzzyNodeCluster)cluster;
 			CyNode node = fuzzyCluster.get(index);
-			return "{\"node\":"+node.getSUID()+","+
+			return "{\"suid\":"+node.getSUID()+", \"name\": \""+ModelUtils.getName(network, node)+"\","+
 			       "\"membership\":"+fuzzyCluster.getMembership(node)+"}";
 		} else {
-			return ""+cluster.get(index).getSUID();
+			CyNode node = cluster.get(index);
+			return "{\"suid\":"+cluster.get(index).getSUID()+",\"name\":\""+ModelUtils.getName(network, node)+"\"}";
 		}
 	}
 

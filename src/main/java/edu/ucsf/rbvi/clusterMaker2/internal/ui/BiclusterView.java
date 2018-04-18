@@ -32,9 +32,11 @@ import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmeans.KMeansCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.kmedoid.KMedoidCluster;
@@ -53,7 +55,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.treeview.model.KnnViewModel;
 import edu.ucsf.rbvi.clusterMaker2.internal.treeview.model.TreeViewModel;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
-public class BiclusterView extends TreeView {
+public class BiclusterView extends TreeView implements ObservableTask {
 
 	public static String SHORTNAME = "biclusterview";
 	public static String NAME =  "JTree BiclusterView";
@@ -361,5 +363,23 @@ public class BiclusterView extends TreeView {
 		}
 
 		return false;
+	}
+
+	@Override
+  public List<Class<?>> getResultClasses() {
+		return Arrays.asList(JSONResult.class, String.class);
+	}
+
+	@Override
+  public <R> R getResults(Class<? extends R> requestedType) {
+		if (requestedType.equals(String.class))
+			return (R)"Bicluster view is now shown";
+		else if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				return "{}";
+			};
+			return (R)res;
+		}
+		return (R)"";
 	}
 }

@@ -19,16 +19,19 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-public class RankingPanelTask extends AbstractTask implements ClusterViz, ClusterAlgorithm {
+public class RankingPanelTask extends AbstractTask implements ClusterViz, ClusterAlgorithm, ObservableTask {
 
     private static String appName = "Ranklust Ranking Panel";
     public static String RANKLUSTNAME = "Show results from ranking clusters";
@@ -175,4 +178,25 @@ public class RankingPanelTask extends AbstractTask implements ClusterViz, Cluste
 
         return true;
     }
+
+	@Override
+  public List<Class<?>> getResultClasses() {
+		return Arrays.asList(JSONResult.class, String.class);
+	}
+
+	@Override
+  public <R> R getResults(Class<? extends R> requestedType) {
+		if (requestedType.equals(String.class))
+			if (createFlag)
+				return (R)"Ranking panel is now shown";
+			else
+				return (R)"Ranking panel is now hidden";
+		else if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				return "{}";
+			};
+			return (R)res;
+		}
+		return (R)"";
+	}
 }

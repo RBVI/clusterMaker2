@@ -72,16 +72,6 @@ public class DestroyResultsPanelTaskFactory implements ClusterVizFactory {
 	}
 
 	@Override
-	public String getSupportsJSON() {
-		return "false";
-	}
-
-	@Override
-	public String getExampleJSON() {
-		return "{}";
-	}
-
-	@Override
 	public String getLongDescription() {
 		return "This command erases all of the existing cluster results panels";
 	}

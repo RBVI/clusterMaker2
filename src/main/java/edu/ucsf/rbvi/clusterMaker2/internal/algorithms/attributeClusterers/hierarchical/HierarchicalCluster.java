@@ -36,7 +36,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 // Cytoscape imports
 import org.cytoscape.model.CyNode;
@@ -198,16 +200,17 @@ public class HierarchicalCluster extends AbstractAttributeClusterer implements O
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
   public <R> R getResults(Class<? extends R> requestedType) {
 		if (requestedType.equals(String.class)) {
 			return (R)toString();
 		} else if (requestedType.equals(JSONResult.class)) {
 			JSONResult res = () -> {
 				String strRes = "{";
-				strRes += "\"nodeOrder\": "+getNodeOrder()+",";
+				strRes += "\"nodeOrder\": "+getNodeOrder(network, nodeOrder)+",";
 				strRes += "\"nodeTree\": "+getTree(nodeTree);
 				if (attributeOrder != null) {
-					strRes += ",\"attributeOrder\": "+getAttributeOrder()+",";
+					strRes += ",\"attributeOrder\": "+getAttributeOrder(attributeOrder)+",";
 					strRes += "\"attributeTree\": "+getTree(attributeTree);
 				}
 				strRes += "}";
@@ -219,24 +222,42 @@ public class HierarchicalCluster extends AbstractAttributeClusterer implements O
 		return (R)toString();
 	}
 
-	private String getNodeOrder() {
-		String res = "["+getNode(nodeOrder.get(0));
-		for (int i = 1; i < nodeOrder.size(); i++) {
-			res += ","+getNode(nodeOrder.get(i));
+	public static String getJSONResult(CyNetwork network, List<String> order, List<String> tree, ClusterType type) {
+		if (type.equals(ClusterType.ARRAY)) {
+			return "\"order\": "+getAttributeOrder(order)+", \"tree\": "+getTree(tree);
+		} else {
+			// Convert our list of names to a list of nodes
+			List<CyNode> nodeList = new ArrayList<>();
+			Map<String, CyNode> nodeMap = new HashMap<>();
+			for (CyNode node: network.getNodeList()) {
+				nodeMap.put(network.getRow(node).get(CyNetwork.NAME, String.class), node);
+			}
+			for (String name: order) {
+				if (nodeMap.containsKey(name))
+					nodeList.add(nodeMap.get(name));
+			}
+			return "\"order\": "+getNodeOrder(network, nodeList)+", \"tree\": "+getTree(tree);
+		}
+	}
+
+	private static String getNodeOrder(CyNetwork network, List<CyNode> order) {
+		String res = "["+getNode(network, order.get(0));
+		for (int i = 1; i < order.size(); i++) {
+			res += ","+getNode(network, order.get(i));
 		}
 		res += "]";
 		return res;
 	}
 
-	private String getNode(CyNode node) {
-		return "{\"nodeName\": \""+getName(node)+"\", \"suid\":"+node.getSUID()+"}";
+	private static String getNode(CyNetwork network, CyNode node) {
+		return "{\"nodeName\": \""+getName(network, node)+"\", \"suid\":"+node.getSUID()+"}";
 	}
 
-	private String getName(CyNode node) {
+	private static String getName(CyNetwork network, CyNode node) {
 		return network.getRow(node).get(CyNetwork.NAME, String.class);
 	}
 
-	private String getTree(List<String> tree) {
+	private static String getTree(List<String> tree) {
 		String res = "["+getTreeNode(tree.get(0));
 		for (int i = 1; i < tree.size(); i++) {
 			res += ","+getTreeNode(tree.get(i));
@@ -245,17 +266,17 @@ public class HierarchicalCluster extends AbstractAttributeClusterer implements O
 		return res;
 	}
 
-	private String getTreeNode(String treeNode) {
+	private static String getTreeNode(String treeNode) {
 		String[] parts = treeNode.split("\t");
 		String res = "{\"name\": \""+parts[0]+"\", \"left\": \""+parts[1]+
 		             "\", \"right\": \""+parts[2]+"\", \"distance\": "+parts[3]+"}";
 		return res;
 	}
 
-	private String getAttributeOrder() {
-		String res = "[\""+attributeOrder.get(0)+"\"";
-		for (int i = 1; i < attributeOrder.size(); i++) {
-			res += ",\""+attributeOrder.get(i)+"\"";
+	private static String getAttributeOrder(List<String> order) {
+		String res = "[\""+order.get(0)+"\"";
+		for (int i = 1; i < order.size(); i++) {
+			res += ",\""+order.get(i)+"\"";
 		}
 		res += "]";
 		return res;

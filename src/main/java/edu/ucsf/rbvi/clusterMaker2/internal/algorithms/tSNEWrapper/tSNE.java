@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
@@ -31,7 +32,10 @@ public class tSNE extends AbstractNetworkClusterer implements ObservableTask {
 	public final ClusterManager manager;
 	private CyNetworkView networkView;
 
-	@Tunable(description="Network to cluster", context="nogui")
+	@Tunable(description="Network to cluster", 
+	         longDescription = StringToModel.CY_NETWORK_LONG_DESCRIPTION,
+	         exampleStringValue = StringToModel.CY_NETWORK_EXAMPLE_STRING,
+	         context="nogui")
 	public CyNetwork network = null;
 	
 	@ContainsTunables

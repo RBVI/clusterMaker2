@@ -158,9 +158,12 @@ public class ClusterUtils {
     }
 
     public static List<NodeCluster> fetchClusters(CyNetwork network) {
-        List<NodeCluster> clusters = new ArrayList<>();
         String clusterAttribute = getClusterAttribute(network);
+				return fetchClusters(network, clusterAttribute);
+		}
 
+    public static List<NodeCluster> fetchClusters(CyNetwork network, String clusterAttribute) {
+        List<NodeCluster> clusters = new ArrayList<>();
         Map<Integer, ArrayList<CyNode>> clusterMap = new HashMap<>();
 
         for (CyNode node : network.getNodeList()) {

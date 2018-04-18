@@ -1,5 +1,6 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.commands;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -9,6 +10,7 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 //clusterMaker imports
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
@@ -49,10 +51,26 @@ public class HasClusterTask extends AbstractTask implements ObservableTask {
 		}
 	}
 
-	public Object getResults(Class type) {
-		if (type.equals(Boolean.class)) {
-			return Boolean.valueOf(hasCluster);
+	@Override
+  public List<Class<?>> getResultClasses() {
+		return Arrays.asList(JSONResult.class, Boolean.class, String.class);
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+  public <R> R getResults(Class<? extends R> requestedType) {
+		if (requestedType.equals(Boolean.class)) {
+			return (R)Boolean.valueOf(hasCluster);
+		} else if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				return "{\"network\": "+network.getSUID()+", \"algorithm\": \""+algorithm+"\", \"hascluster\": "+(Boolean.toString(hasCluster)).toLowerCase()+"}";
+			};
+			return (R)res;
 		}
-		return Boolean.toString(hasCluster);
+		return (R)Boolean.toString(hasCluster);
+	}
+
+	public static String getExampleJSON() {
+		return "{\"network\": 101, \"algorithm\": \"myalgorithm\", \"hascluster\": true }";
 	}
 }

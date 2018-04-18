@@ -171,7 +171,7 @@ public class ClusterManagerImpl implements ClusterManager {
 
 		// Create our wrapper and register the algorithm
 		Properties props = new Properties();
-		props.setProperty(COMMAND, viz.getName());
+		props.setProperty(COMMAND, viz.getShortName());
 		props.setProperty(COMMAND_DESCRIPTION, viz.getName());
 		props.setProperty(COMMAND_NAMESPACE, "clusterviz");
 		props.setProperty(IN_MENU_BAR, "true");

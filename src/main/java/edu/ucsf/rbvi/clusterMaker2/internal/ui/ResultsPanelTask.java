@@ -1,6 +1,7 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.ui;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,8 +19,10 @@ import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
@@ -30,7 +33,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
-public class ResultsPanelTask extends AbstractTask implements ClusterViz, ClusterAlgorithm {
+public class ResultsPanelTask extends AbstractTask implements ClusterViz, ClusterAlgorithm, ObservableTask {
 
 	private static String appName = "ClusterMaker Results Panel";
 	private boolean checkForAvailability = false;
@@ -214,4 +217,24 @@ public class ResultsPanelTask extends AbstractTask implements ClusterViz, Cluste
 		return false;
 	}
 
+	@Override
+  public List<Class<?>> getResultClasses() {
+		return Arrays.asList(JSONResult.class, String.class);
+	}
+
+	@Override
+  public <R> R getResults(Class<? extends R> requestedType) {
+		if (requestedType.equals(String.class))
+			if (createFlag)
+				return (R)"Results panel is now shown";
+			else
+				return (R)"Results panel is now hidden";
+		else if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				return "{}";
+			};
+			return (R)res;
+		}
+		return (R)"";
+	}
 }

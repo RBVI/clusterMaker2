@@ -68,15 +68,6 @@ public class DestroyRankingPanelTaskFactory implements ClusterVizFactory {
     }
 
 	@Override
-	public String getSupportsJSON() {
-		return "false";
-	}
-
-	@Override
-	public String getExampleJSON() {
-		return "{}";
-	}
-	@Override
 	public String getLongDescription() {
 		return "Remove the ranking results panel";
 	}

@@ -6,6 +6,8 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskFactory;
 
 public interface ClusterVizFactory extends ClusterTaskFactory {
+	@Override
+	default public String getExampleJSON() { return "{}"; }
 }
 
 

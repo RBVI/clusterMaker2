@@ -8,6 +8,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca;
 import java.util.Arrays;
 import java.util.List;
 
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTask;
@@ -33,7 +34,10 @@ public class PCA extends AbstractTask implements ObservableTask {
 	private CyNetworkView networkView;
 	private CyMatrix resultsMatrix;
 
-	@Tunable(description="Network to cluster", context="nogui")
+	@Tunable(description="Network to cluster", 
+	         longDescription = StringToModel.CY_NETWORK_LONG_DESCRIPTION,
+	         exampleStringValue = StringToModel.CY_NETWORK_EXAMPLE_STRING,
+	         context="nogui")
 	public CyNetwork network = null;
 
 	@ContainsTunables

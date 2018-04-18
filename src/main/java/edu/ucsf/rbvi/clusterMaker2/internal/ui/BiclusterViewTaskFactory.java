@@ -56,12 +56,6 @@ public class BiclusterViewTaskFactory implements ClusterVizFactory   {
 	}
 
 	@Override
-	public String getSupportsJSON() { return "false"; }
-
-	@Override
-	public String getExampleJSON() { return ""; }
-
-	@Override
 	public String getLongDescription() { return "Display the results for bi-cluster calculations"; }
 
 }

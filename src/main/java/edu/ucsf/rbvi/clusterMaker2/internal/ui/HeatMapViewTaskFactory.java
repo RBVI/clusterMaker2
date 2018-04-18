@@ -56,17 +56,6 @@ public class HeatMapViewTaskFactory implements ClusterVizFactory   {
 	}
 
 	@Override
-	public String getSupportsJSON() { return "false"; }
-
-	@Override
-	public String getExampleJSON() { return ""; }
-
-	@Override
-	public String getLongDescription() { return "Display a heat map.  Neighter the rows or columns or sorted in any way.";}
-	
+	public String getLongDescription() { return "Display an unclustered heatmap using the JTreeView heatmap viewer.  Neighter the rows or columns or sorted in any way.";}
 }
-	
-	
-
-
 

@@ -40,6 +40,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Observer;
@@ -68,8 +69,10 @@ import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.json.JSONResult;
 
 // ClusterMaker imports
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithm;
@@ -96,7 +99,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.treeview.model.KnnViewModel;
  * The ClusterViz class provides the primary interface to the
  * Cytoscape plugin mechanism
  */
-public class KnnView extends TreeView {
+public class KnnView extends TreeView implements ObservableTask {
 	public static String SHORTNAME = "knnview";
 	public static String NAME =  "JTree KnnView";
 
@@ -177,5 +180,23 @@ public class KnnView extends TreeView {
 		arraySelection = frame.getArraySelection();
 		arraySelection.addObserver(this);
 		manager.registerService(this, RowsSetListener.class, new Properties());
+	}
+
+	@Override
+  public List<Class<?>> getResultClasses() {
+		return Arrays.asList(JSONResult.class, String.class);
+	}
+
+	@Override
+  public <R> R getResults(Class<? extends R> requestedType) {
+		if (requestedType.equals(String.class))
+			return (R)"KnnView is shown";
+		else if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				return "{}";
+			};
+			return (R)res;
+		}
+		return (R)"";
 	}
 }

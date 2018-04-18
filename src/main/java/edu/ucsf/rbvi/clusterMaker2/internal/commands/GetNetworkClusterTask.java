@@ -1,6 +1,7 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.commands;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -13,17 +14,21 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.util.ListSingleSelection;
 
 //clusterMaker imports
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ClusterUtils;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 public class GetNetworkClusterTask extends AbstractTask implements ObservableTask {
 	ClusterManager clusterManager;
-	Map<Integer, List<CyNode>>clusterMap;
+	List<NodeCluster> nodeClusters;
 	String algName;
 
 	@Tunable(description="Network to look for cluster in", context="nogui")
@@ -70,6 +75,10 @@ public class GetNetworkClusterTask extends AbstractTask implements ObservableTas
 		boolean isFuzzy = 
 			network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS).getColumn(clusterAttribute).getType().equals(List.class);
 
+		nodeClusters = ClusterUtils.fetchClusters(network, clusterAttribute);
+		NodeCluster.sortClusterList(nodeClusters);
+
+		/*
 		clusterMap = new HashMap<Integer, List<CyNode>>();
 		for (CyNode node: (List<CyNode>)network.getNodeList()) {
 			// For each node -- see if it's in a cluster.  If so, add it to our map
@@ -85,6 +94,7 @@ public class GetNetworkClusterTask extends AbstractTask implements ObservableTas
 				}
 			}
 		}
+		*/
 	}
 
 	private void addNodeToMap(Map<Integer, List<CyNode>> map, Integer cluster, CyNode node) {
@@ -93,25 +103,43 @@ public class GetNetworkClusterTask extends AbstractTask implements ObservableTas
 		map.get(cluster).add(node);
 	}
 
-	public Object getResults(Class clzz) {
-		if (clusterMap == null) return null;
-		if (clzz.equals(Map.class)) {
+	@Override
+  public List<Class<?>> getResultClasses() {
+		return Arrays.asList(JSONResult.class, Map.class, String.class);
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+  public <R> R getResults(Class<? extends R> requestedType) {
+		if (nodeClusters == null) return null;
+		if (requestedType.equals(Map.class)) {
 			Map<String, Object> resultMap = new HashMap<String, Object>();
 			resultMap.put("type", algName);
-			resultMap.put("networkclusters", clusterMap.values());
-			return resultMap;			
+			resultMap.put("networkclusters", nodeClusters);
+			return (R)resultMap;
+		} else if (requestedType.equals(JSONResult.class)) {
+			AbstractClusterResults results = new AbstractClusterResults(network, nodeClusters);
+			JSONResult res = () -> {
+				String strRes = "{\"algorithm\": \""+algName+"\",";
+				strRes += "\"results\": "+results.getResults(JSONResult.class).getJSON()+"}";
+				return strRes;
+			};
+			return (R)res;
 		}
 
 		String resultString = "Network clusters: \n";
-		for (Integer clusterNumber: clusterMap.keySet()) {
-			List<CyNode> nodeList = clusterMap.get(clusterNumber);
-			String out = "   "+clusterNumber+": [";
-			for (CyNode node: nodeList) {
+		for (NodeCluster cluster: nodeClusters) {
+			String out = "   "+cluster.getClusterNumber()+": [";
+			for (CyNode node: cluster) {
 				out += node.getSUID()+",";
 			}
 			resultString += out.substring(0, out.length()-1)+"]\n";
 		}
-		return resultString;
+		return (R)resultString;
+	}
+
+	public static String getExampleJSON() {
+		return AbstractClusterResults.getExampleJSON();
 	}
 }
 

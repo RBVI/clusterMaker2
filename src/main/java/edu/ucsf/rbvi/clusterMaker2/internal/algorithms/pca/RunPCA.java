@@ -171,12 +171,14 @@ public class RunPCA {
 			total += values[i];
 
 		int component = 0;
-		for (int j=values.length-1; j >= 0; j--,component++) {
+		for (int j = 0; j < values.length; j++) {
 			explainedVariance[component] = (values[j] / total) * 100;
 			if (explainedVariance[component] < context.minVariance)
 				break;
+			component++;
 		}
-		if (component < values.length-1) {
+
+		if (component < values.length) {
 			return Arrays.copyOf(explainedVariance, component);
 		}
 

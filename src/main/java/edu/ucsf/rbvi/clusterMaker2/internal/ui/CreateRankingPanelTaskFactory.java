@@ -73,16 +73,6 @@ public class CreateRankingPanelTaskFactory implements ClusterVizFactory {
     }
 
 	@Override
-	public String getSupportsJSON() {
-		return "false";
-	}
-
-	@Override
-	public String getExampleJSON() {
-		return "{}";
-	}
-
-	@Override
 	public String getLongDescription() {
 		return "Create a results panel for the currently defined ranking results.  "+
 		       "The ranking results panel "+
