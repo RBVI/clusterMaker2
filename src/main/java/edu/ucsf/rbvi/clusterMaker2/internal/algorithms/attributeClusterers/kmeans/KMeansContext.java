@@ -63,10 +63,16 @@ public class KMeansContext {
 	@ContainsTunables
 	public KClusterAttributes kcluster = new KClusterAttributes();
 
-	@Tunable (description="Number of iterations", gravity=10)
+	@Tunable (description="Number of iterations", 
+	          longDescription = "The number of iterations of the K-Means algorithm to run.",
+	          exampleStringValue = "50",
+	          gravity=10)
 	public int iterations = 50;
 
-	@Tunable(description="Distance Metric", gravity=11)
+	@Tunable(description="Distance Metric", 
+	         longDescription = "The method to use to calculate distances in the matrix.",
+	         exampleStringValue = "Euclidean",
+	         gravity=11)
 	public ListSingleSelection<DistanceMetric> metric = 
 		new ListSingleSelection<DistanceMetric>(DistanceMetric.values());
 	
@@ -75,6 +81,8 @@ public class KMeansContext {
 
 	public boolean selectedOnly = false;
 	@Tunable(description="Use only selected nodes/edges for cluster", 
+	         longDescription = "If nodes are edges are selected, only cluster those nodes or edges.",
+	         exampleStringValue = "false",
 	         groups={"K-Means Parameters"}, gravity=100)
 	public boolean getselectedOnly() { return selectedOnly; }
 	public void setselectedOnly(boolean sel) {
@@ -83,13 +91,22 @@ public class KMeansContext {
 	}
 
 	@Tunable(description="Cluster attributes as well as nodes", 
+	         longDescription = "If this is set to true, but column-wise and row-wise clusters will be calculated.  Note that the same value for ```k``` "+
+	                           "will be used for each",
+	         exampleStringValue = "false",
 	         groups={"K-Means Parameters"}, gravity=101)
 	public boolean clusterAttributes = false;
 	
-	@Tunable(description="Create groups from clusters", groups={"Visualization Options"}, gravity=150)
+	@Tunable(description="Create groups from clusters", 
+	         longDescription = "If this is set to true, Cytoscape groups will be created out of each cluster.",
+	         exampleStringValue = "false",
+	         groups={"Visualization Options"}, gravity=150)
 	public boolean createGroups = false;
 
-	@Tunable(description="Show HeatMap when complete", groups={"Visualization Options"}, gravity=151)
+	@Tunable(description="Show HeatMap when complete", 
+	         longDescription = "If this is set to true, a heatmap showing the resulting clusters will be shown.",
+	         exampleStringValue = "false",
+	         groups={"Visualization Options"}, gravity=151)
 	public boolean showUI = false;
 
 

@@ -59,21 +59,33 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
  * clusterMaker.  Fundamentally, an attribute clusterer is an algorithm which functions to
  * partition nodes or node attributes based on properties of the attributes.
  */
+/// FIXME: should consider different values of k for nodes and attributes?
 public class KClusterAttributes {
 
 	@Tunable (description="Estimate k using silhouette", 
+	          longDescription = "If set to ```true``` then the value for ```k``` will be estimated by iterating over a range of ```k``` values "+
+	                            "and choosing the one with the smallest silhouette.",
+	          exampleStringValue = "false",
 	          groups={"K-Cluster parameters"}, gravity=1.0)
 	public boolean useSilhouette = false;
 
 	@Tunable (description="Maximum number of clusters", 
+	          longDescription = "If ```useSilhouette``` is ```true``` then this value represents the maximum value of ```k``` to try",
+	          exampleStringValue = "50",
 	          groups={"K-Cluster parameters"}, dependsOn="useSilhouette=true", gravity=2.0)
 	public int kMax = 0;
 
 	@Tunable (description="Number of clusters", 
+	          longDescription = "The number of clusters (```k```) to produce.  Note that this value is set automatically "+
+	                            "if ```useSilhouette``` is set to ```true```",
+	          exampleStringValue = "5",
 	          groups={"K-Cluster parameters"}, dependsOn="useSilhouette=false", gravity=3.0)
 	public int kNumber = 0;
 
 	@Tunable (description="Initialize cluster centers from most central elements", 
+	          longDescription = "If this is set to ```true``` then the cluster centers will be initialized based on the most central elements "+
+	                            "rather than chosen randomly.",
+	          exampleStringValue = "false",
 	          groups={"K-Cluster parameters"}, gravity=4.0)
 	public boolean initializeNearCenter = false;
 
