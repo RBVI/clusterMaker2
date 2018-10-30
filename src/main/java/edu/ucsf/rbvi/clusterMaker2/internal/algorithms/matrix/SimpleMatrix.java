@@ -482,7 +482,7 @@ public class SimpleMatrix implements Matrix {
 		IntStream.range(0, nRows).parallel()
 			.forEach(row -> IntStream.range(colStart(row), nColumns)
 				.forEach(column -> {
-					if (data[row][column] == Double.NaN) {
+					if (Double.isNaN(data[row][column])) {
 						data[row][column] = 0.0d;
 						if (symmetric && row != column)
 							data[column][row] = 0.0d;
