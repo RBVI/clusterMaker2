@@ -54,11 +54,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
-import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
-
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
@@ -79,6 +74,11 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.TaskMonitor;
+
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 
 public class ResultsPanel extends JPanel implements CytoPanelComponent{
@@ -516,7 +516,6 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 		}
 
 		final Image image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-		final Graphics2D g = (Graphics2D) image.getGraphics();
 
 		SwingUtilities.invokeLater(new Runnable() {
 			//@Override
@@ -542,9 +541,9 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent{
 					window.pack();
 					window.repaint();
 
-					re.createImage(width, height);
-					re.printCanvas(g);
-					g.dispose();
+					final Image tmpImage = re.createImage(width, height);
+					final Graphics2D g = (Graphics2D) image.getGraphics();
+					g.drawImage(tmpImage, 0, 0, null);
 
 					if (clusterView.getNodeViews().size() > 0) {
 						cluster.setView(clusterView);
