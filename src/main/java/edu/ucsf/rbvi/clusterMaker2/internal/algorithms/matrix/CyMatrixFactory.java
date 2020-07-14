@@ -50,7 +50,7 @@ public class CyMatrixFactory {
 	}
 
 	/**
-	 * Create a large, possibly sparse matrix populated with data from
+	 * Create a large, dense matrix populated with data from
 	 * the indicated edge attribute
 	 *
 	 * @param network the network that will be the source of the data
@@ -64,6 +64,26 @@ public class CyMatrixFactory {
 	public static CyMatrix makeLargeMatrix(CyNetwork network, String edgeAttribute, 
 	                                        boolean selectedOnly, EdgeWeightConverter converter,
 																					boolean unDirected, double cutOff) {
+		return makeLargeMatrix(network, edgeAttribute, selectedOnly, converter, unDirected, cutOff, false);
+	}
+
+	/**
+	 * Create a large, possibly sparse matrix populated with data from
+	 * the indicated edge attribute.  Note that the sparse matrix implementation
+	 * uses COLT, which is significantly slower than the ojAlgo routines.
+	 *
+	 * @param network the network that will be the source of the data
+	 * @param edgeAttribute the edge attribute to pull the data from
+	 * @param selectedOnly only include selected edges
+	 * @param converter the edge weight converter to use
+	 * @param unDirected if true, the edges are undirected
+	 * @param cutOff the minimum edge value to consider
+	 * @param isSparse make this a sparse matrix.  Note that sparse matrices are *MUCH* slower
+	 * @return the resulting matrix
+	 */
+	public static CyMatrix makeLargeMatrix(CyNetwork network, String edgeAttribute, 
+	                                        boolean selectedOnly, EdgeWeightConverter converter,
+																					boolean unDirected, double cutOff, boolean isSparse) {
 		List<CyNode> nodes;
 		List<CyEdge> edges;
 		double maxAttribute = Double.MIN_VALUE;
@@ -78,7 +98,12 @@ public class CyMatrixFactory {
 			edges.addAll(ModelUtils.getConnectingEdges(network,nodes));
 		}
 
-		CyMatrix matrix = makeTypedMatrix(network, nodes.size(), nodes.size(), false, MatrixType.LARGE);
+		CyMatrix matrix;
+	 	if (isSparse)
+			matrix = makeTypedMatrix(network, nodes.size(), nodes.size(), false, MatrixType.SPARSE);
+		else
+			matrix = makeTypedMatrix(network, nodes.size(), nodes.size(), false, MatrixType.LARGE);
+
 		matrix.setRowNodes(nodes);
 		matrix.setColumnNodes(nodes);
 		Map<CyNode, Integer> nodeMap = new HashMap<CyNode, Integer>(nodes.size());

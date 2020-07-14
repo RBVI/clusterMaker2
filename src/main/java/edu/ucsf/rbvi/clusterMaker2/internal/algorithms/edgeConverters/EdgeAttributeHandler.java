@@ -44,6 +44,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelper {
 
 	private CyMatrix matrix = null;
+	private boolean isSparse = false;
 	private CyNetwork network = null;
 
 	// Remember all of our state so we can avoid unnecessary calls
@@ -273,12 +274,28 @@ public class EdgeAttributeHandler implements HistoChangeListener, RequestsUIHelp
 		histo.addHistoChangeListener(this);
 	}
 
-	public CyMatrix getMatrix() {
-		if (this.matrix == null) {
+	public CyMatrix getSparseMatrix() {
+		if (this.matrix == null || this.isSparse == false) {
 			if (attribute.getSelectedValue() == null) return null;
 			this.matrix = CyMatrixFactory.makeLargeMatrix(network, attribute.getSelectedValue(), 
 			                                              selectedOnly, edgeWeighter.getSelectedValue(),
-																										undirectedEdges, edgeCutOff.getValue());
+																										undirectedEdges, edgeCutOff.getValue(), true);
+			this.isSparse = true;
+		}
+
+		if (adjustLoops)
+			this.matrix.adjustDiagonals();
+
+		return this.matrix;
+	}
+
+	public CyMatrix getMatrix() {
+		if (this.matrix == null || this.isSparse == true) {
+			if (attribute.getSelectedValue() == null) return null;
+			this.matrix = CyMatrixFactory.makeLargeMatrix(network, attribute.getSelectedValue(), 
+			                                              selectedOnly, edgeWeighter.getSelectedValue(),
+																										undirectedEdges, edgeCutOff.getValue(), false);
+			this.isSparse = false;
 		}
 
 		if (adjustLoops)
