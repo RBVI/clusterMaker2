@@ -2,9 +2,12 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leiden
 
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.TunableUIHelper;
@@ -30,7 +33,7 @@ public class LeidenContext implements ClusterAlgorithmContext {
 			 longDescription = "Edge weights to be used. Can be a sequence or iterable or even an edge attribute name.",
 			 exampleStringValue = "None",
 			 groups = {"Leiden Advanced Settings"}, gravity = 2.0)
-	public ListSingleSelection<String> weights = getColumnNames();
+	public ListSingleSelection<String> weights = new ListSingleSelection<>();
 	
 	@Tunable(description = "Resolution parameter",
 			 longDescription = "The resolution parameter to use. "
@@ -101,12 +104,12 @@ public class LeidenContext implements ClusterAlgorithmContext {
 		edgeAttributeHandler.setUIHelper(helper);
 	}
 	
-	private ListSingleSelection<String> getColumnNames() {
-		List<String> names = new ArrayList<>();
-		network.getDefaultEdgeTable().getColumns().forEach(column -> names.add(column.getName()));
-		ListSingleSelection<String> weights = new ListSingleSelection<>();
-		weights.setPossibleValues(names);
-		return weights;
-	}
+//	private ListSingleSelection<String> getColumnNames() {
+//		List<String> names = new ArrayList<>();
+//		network.getDefaultEdgeTable().getColumns().forEach(column -> names.add(column.getName()));
+//		ListSingleSelection<String> weights = new ListSingleSelection<>();
+//		weights.setPossibleValues(names);
+//		return weights;
+//	}
 	
 }

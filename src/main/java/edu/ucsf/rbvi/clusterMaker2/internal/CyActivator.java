@@ -274,7 +274,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "cluster");
 			props.setProperty(COMMAND, CommandTaskFactory.HASCLUSTER);
-  		props.setProperty(COMMAND_DESCRIPTION, "Test to see if this network has a cluster of the requested type");
+			props.setProperty(COMMAND_DESCRIPTION, "Test to see if this network has a cluster of the requested type");
 			props.setProperty(COMMAND_EXAMPLE_JSON, commandTaskFactory.getExampleJSON());
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, 
@@ -287,7 +287,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "cluster");
 			props.setProperty(COMMAND, CommandTaskFactory.GETNETWORKCLUSTER);
-  		props.setProperty(COMMAND_DESCRIPTION, "Get a cluster network cluster result");
+			props.setProperty(COMMAND_DESCRIPTION, "Get a cluster network cluster result");
 			props.setProperty(COMMAND_EXAMPLE_JSON, commandTaskFactory.getExampleJSON());
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, 
@@ -300,7 +300,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "cluster");
 			props.setProperty(COMMAND, CommandTaskFactory.GETCLUSTER);
-  		props.setProperty(COMMAND_DESCRIPTION, "Get an attribute cluster result");
+			props.setProperty(COMMAND_DESCRIPTION, "Get an attribute cluster result");
 			props.setProperty(COMMAND_EXAMPLE_JSON, commandTaskFactory.getExampleJSON());
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, 
