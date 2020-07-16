@@ -1,6 +1,7 @@
 package edu.ucsf.rbvi.clusterMaker2.internal;
 
 
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobExecutionService;
 // Java imports
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.ChengChurch.ChengChurchTaskFactory;
@@ -28,6 +29,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCODE.M
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.NetworkClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.SCPS.SCPSClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.TransClustClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leiden.LeidenClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.PCAMenuTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.PCATaskFactory;
 
@@ -48,6 +50,8 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.jobs.CyJobExecutionService;
+import org.cytoscape.jobs.CyJobManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -97,6 +101,10 @@ public class CyActivator extends AbstractCyActivator {
 		CyGroupFactory groupFactory = getService(bc, CyGroupFactory.class);
 		CyTableFactory tableFactory = getService(bc, CyTableFactory.class);
 		CyTableManager tableManager = getService(bc, CyTableManager.class);
+		
+		//from clusterJob
+		CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
+		CyJobManager cyJobManager = getService(bc, CyJobManager.class);
 
 		// Create our context object.  This will probably keep track of all of the
 		// registered clustering algorithms, settings, etc.
@@ -168,6 +176,8 @@ public class CyActivator extends AbstractCyActivator {
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new TransClustClusterTaskFactory(clusterManager),
 		                ClusterTaskFactory.class, new Properties());
+		registerService(bc, new LeidenClusterTaskFactory(clusterManager, registrar),
+						ClusterTaskFactory.class, new Properties());
 
 		// Cluster ranking
 		registerService(bc, new MAATaskFactory(clusterManager), RankFactory.class, new Properties());
@@ -301,5 +311,15 @@ public class CyActivator extends AbstractCyActivator {
 			                  "type.");
 			registerService(bc, commandTaskFactory, TaskFactory.class, props);
 		}
+		
+		//for clusterJob	
+//		{
+//			ClusterJobExecutionService clusterJobService = 
+//							new ClusterJobExecutionService(cyJobManager, registrar);
+//			Properties props = new Properties();
+//			props.setProperty(TITLE, "ClusterJobExecutor");
+//			registerService(bc, clusterJobService, CyJobExecutionService.class, props);
+//		}
+//
 	}
 }
