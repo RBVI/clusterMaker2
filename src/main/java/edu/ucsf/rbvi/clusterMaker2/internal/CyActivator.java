@@ -102,7 +102,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyTableFactory tableFactory = getService(bc, CyTableFactory.class);
 		CyTableManager tableManager = getService(bc, CyTableManager.class);
 		
-		//from clusterJob
+		// clusterJob
 		CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
 		CyJobManager cyJobManager = getService(bc, CyJobManager.class);
 
@@ -176,8 +176,25 @@ public class CyActivator extends AbstractCyActivator {
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new TransClustClusterTaskFactory(clusterManager),
 		                ClusterTaskFactory.class, new Properties());
-		registerService(bc, new LeidenClusterTaskFactory(clusterManager, registrar),
-						ClusterTaskFactory.class, new Properties());
+		
+		//Leiden cluster job
+		{
+			ClusterJobExecutionService clusterJobService = 
+							new ClusterJobExecutionService(cyJobManager, registrar);
+			Properties props = new Properties();
+			props.setProperty(TITLE, "ClusterJobExecutor");
+			registerService(bc, clusterJobService, CyJobExecutionService.class, props);
+		}
+
+		{
+			Properties props = new Properties();
+			LeidenClusterTaskFactory factory = new LeidenClusterTaskFactory(clusterManager, registrar);
+			props.setProperty(TITLE, "Cluster");
+			props.setProperty(PREFERRED_MENU, "Apps.clusterMaker.LeidenCluster");
+			registerService(bc, factory, NetworkTaskFactory.class, props);
+		}
+		
+		
 
 		// Cluster ranking
 		registerService(bc, new MAATaskFactory(clusterManager), RankFactory.class, new Properties());
@@ -312,14 +329,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, commandTaskFactory, TaskFactory.class, props);
 		}
 		
-		//for clusterJob	
-//		{
-//			ClusterJobExecutionService clusterJobService = 
-//							new ClusterJobExecutionService(cyJobManager, registrar);
-//			Properties props = new Properties();
-//			props.setProperty(TITLE, "ClusterJobExecutor");
-//			registerService(bc, clusterJobService, CyJobExecutionService.class, props);
-//		}
-//
+
+
 	}
 }
