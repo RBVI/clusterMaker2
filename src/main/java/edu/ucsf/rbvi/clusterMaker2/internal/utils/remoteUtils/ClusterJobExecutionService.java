@@ -5,19 +5,25 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.jobs.CyJob;
 import org.cytoscape.jobs.CyJobData;
 import org.cytoscape.jobs.CyJobDataService;
 import org.cytoscape.jobs.CyJobStatus;
 import org.cytoscape.jobs.CyJobStatus.Status;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.jobs.CyJobExecutionService;
 import org.cytoscape.jobs.CyJobMonitor;
 import org.cytoscape.jobs.CyJobManager;
@@ -28,6 +34,10 @@ import org.cytoscape.work.TaskMonitor;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJob;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobDataService;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterAlgorithm;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leiden.LeidenCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 
 /**
  * The main interface to the RBVI network cluster REST service.  The
@@ -71,6 +81,7 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 	final ClusterJobDataService dataService;
 	final CyJobManager cyJobManager; //responsible for managing all the running ClusterJobs: polls the changes in the Status, calls some methods in this class
 	final CyServiceRegistrar cyServiceRegistrar;
+	
 
 	public enum Command {
 		CANCEL("cancel"),
@@ -148,7 +159,6 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		} catch (ParseException e1) {
 			System.out.println("Data to JSONObject conversion failed: " + e1.getMessage());
 		}
-		System.out.println("JSON Data: " + jsonData);
 		
 		Object value = null;
 		try {
@@ -183,8 +193,9 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 	@Override
 	public CyJobStatus fetchResults(CyJob job, CyJobData data) {
 		if (job instanceof ClusterJob) {
+			ClusterJob clusterJob = (ClusterJob) job;
 			//handleCommand gives whatever HttpGET gives.
-			JSONObject result = handleCommand((ClusterJob)job, Command.FETCH, null); //handles command FETCH --> argMap is null --> JSON object runs the command
+			JSONObject result = handleCommand(clusterJob, Command.FETCH, null); //handles command FETCH --> argMap is null --> JSON object runs the command
 			
 			// Get the unserialized data, dataService deserializes the data (the JSON object), CyJobData is basically a HashMap
 			CyJobData newData = dataService.deserialize(result); 
@@ -194,9 +205,23 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 			for (String key: newData.keySet()) {
 				data.put(key, newData.get(key));
 			}
+
+			Map<String, Object> clusterData = clusterJob.getClusterData().getAllValues();
+			String clusterAttributeName = (String) clusterData.get("clusterAttributeName");
+			CyNetwork network = (CyNetwork) clusterData.get("network");
+			ClusterManager clusterManager = (ClusterManager) clusterData.get("clusterManager");
+			Boolean createGroups = (Boolean) clusterData.get("createGroups");
+			String group_attr = (String) clusterData.get("group_attr");
+			List<NodeCluster> nodeClusters = LeidenCluster.createClusters(data, clusterAttributeName, network);
+			System.out.println("NodeCLusters: " + nodeClusters);
+			
+			LeidenCluster.createGroups(network, nodeClusters, group_attr, clusterAttributeName, 
+					clusterManager, createGroups);
+			
 			CyJobStatus resultStatus = getStatus(result, null);
 			if (resultStatus == null)
 				return new CyJobStatus(Status.FINISHED, "Data fetched"); //returns status FINISHED if succesfull
+
 		}
 		return new CyJobStatus(Status.ERROR, "CyJob is not a ClusterJob"); //if not a clusterjob
 	}
@@ -305,6 +330,10 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 			map.put(key, config.get(key).toString());
 		}
 		return map;
+	}
+	
+	public CyNetwork getNetwork() {
+		return null;
 	}
 }
 

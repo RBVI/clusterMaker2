@@ -14,12 +14,14 @@ import org.cytoscape.work.swing.TunableUIHelper;
 import org.cytoscape.work.util.ListSingleSelection;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithmContext;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AdvancedProperties;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.NetworkVizProperties;
 
 public class LeidenContext implements ClusterAlgorithmContext {
 	CyNetwork network;
+	TunableUIHelper helper;
 	
 	//Tunables
 	
@@ -29,11 +31,23 @@ public class LeidenContext implements ClusterAlgorithmContext {
 			 groups = {"Leiden Advanced Settings"}, gravity = 1.0)
 	public ListSingleSelection<String> objective_function = new ListSingleSelection<>("CPM", "modularity");
 	
-	@Tunable(description = "Edge weights",
-			 longDescription = "Edge weights to be used. Can be a sequence or iterable or even an edge attribute name.",
-			 exampleStringValue = "None",
-			 groups = {"Leiden Advanced Settings"}, gravity = 2.0)
-	public ListSingleSelection<String> weights = new ListSingleSelection<>();
+//	@Tunable(description = "Edge weights",
+//			 longDescription = "Edge weights to be used. Can be a sequence or iterable or even an edge attribute name.",
+//			 exampleStringValue = "None",
+//			 groups = {"Leiden Advanced Settings"}, gravity = 2.0)
+//	public ListSingleSelection<String> weights = new ListSingleSelection<>();
+	
+	private ListSingleSelection<String> attribute ;
+	@Tunable(description = "Attribute", groups={"Source for array data"}, params="displayState=uncollapsed", 
+	         longDescription = "The column containing the data to be used for the clustering. "+
+	                           "If no weight column is used, select ```--NONE---```",
+	         exampleStringValue = "weight",
+	         gravity=2.0)
+	public ListSingleSelection<String> getattribute(){
+		attribute = ModelUtils.updateEdgeAttributeList(network, attribute);
+		return attribute;
+	}
+	public void setattribute(ListSingleSelection<String> attr) { }
 	
 	@Tunable(description = "Resolution parameter",
 			 longDescription = "The resolution parameter to use. "
@@ -56,8 +70,8 @@ public class LeidenContext implements ClusterAlgorithmContext {
 	public int n_iterations = 2;
 	
 
-	@ContainsTunables
-	public EdgeAttributeHandler edgeAttributeHandler;
+//	@ContainsTunables //comment this out, replace with in LeidenContext 
+//	public EdgeAttributeHandler edgeAttributeHandler; //call getAttribute() --> returns the ListSingleSelection<String> 
 	
 	@ContainsTunables
 	public AdvancedProperties advancedAttributes;
@@ -66,7 +80,7 @@ public class LeidenContext implements ClusterAlgorithmContext {
 	public NetworkVizProperties vizProperties = new NetworkVizProperties();
 
 	public LeidenContext() {
-		advancedAttributes = new AdvancedProperties("__leidenCluster", false);
+		advancedAttributes = new AdvancedProperties("__leidenCluster", false); //this is the name of the column Integer that is created when click LOAD
 	}
 
 	public LeidenContext(LeidenContext origin) {
@@ -74,11 +88,11 @@ public class LeidenContext implements ClusterAlgorithmContext {
 			advancedAttributes = new AdvancedProperties(origin.advancedAttributes);
 		else
 			advancedAttributes = new AdvancedProperties("__leidenCluster", false);
-		if (origin.edgeAttributeHandler != null)
-			edgeAttributeHandler = new EdgeAttributeHandler(origin.edgeAttributeHandler);
+//		if (origin.edgeAttributeHandler != null)
+//			edgeAttributeHandler = new EdgeAttributeHandler(origin.edgeAttributeHandler);
 
 		objective_function = origin.objective_function;
-		weights = origin.weights;
+		attribute = origin.attribute;
 		resolution_parameter = origin.resolution_parameter;
 		beta = origin.beta;
 		n_iterations = origin.n_iterations;
@@ -90,10 +104,10 @@ public class LeidenContext implements ClusterAlgorithmContext {
 
 		this.network = network;
 
-		if (edgeAttributeHandler == null)
-			edgeAttributeHandler = new EdgeAttributeHandler(network);
-		else
-			edgeAttributeHandler.setNetwork(network);
+//		if (edgeAttributeHandler == null)
+//			edgeAttributeHandler = new EdgeAttributeHandler(network);
+//		else
+//			edgeAttributeHandler.setNetwork(network);
 	}
 
 	public CyNetwork getNetwork() { return network; }
@@ -101,15 +115,8 @@ public class LeidenContext implements ClusterAlgorithmContext {
 	public String getClusterAttribute() { return advancedAttributes.clusterAttribute;}
 
 	public void setUIHelper(TunableUIHelper helper) {
-		edgeAttributeHandler.setUIHelper(helper);
+		this.helper = helper;
+		
 	}
-	
-//	private ListSingleSelection<String> getColumnNames() {
-//		List<String> names = new ArrayList<>();
-//		network.getDefaultEdgeTable().getColumns().forEach(column -> names.add(column.getName()));
-//		ListSingleSelection<String> weights = new ListSingleSelection<>();
-//		weights.setPossibleValues(names);
-//		return weights;
-//	}
 	
 }
