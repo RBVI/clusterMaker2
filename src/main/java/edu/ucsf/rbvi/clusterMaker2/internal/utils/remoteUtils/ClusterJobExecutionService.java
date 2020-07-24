@@ -36,6 +36,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobDataServ
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterAlgorithm;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leiden.LeidenCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 
@@ -212,11 +213,13 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 			ClusterManager clusterManager = (ClusterManager) clusterData.get("clusterManager");
 			Boolean createGroups = (Boolean) clusterData.get("createGroups");
 			String group_attr = (String) clusterData.get("group_attr");
+			List<String> params  = (List<String>) clusterData.get("params");
+			String shortName = (String) clusterData.get("shortName");
 			List<NodeCluster> nodeClusters = LeidenCluster.createClusters(data, clusterAttributeName, network);
 			System.out.println("NodeCLusters: " + nodeClusters);
 			
-			LeidenCluster.createGroups(network, nodeClusters, group_attr, clusterAttributeName, 
-					clusterManager, createGroups);
+			AbstractNetworkClusterer.createGroups(network, nodeClusters, group_attr, clusterAttributeName, 
+					clusterManager, createGroups, params, shortName);
 			
 			CyJobStatus resultStatus = getStatus(result, null);
 			if (resultStatus == null)

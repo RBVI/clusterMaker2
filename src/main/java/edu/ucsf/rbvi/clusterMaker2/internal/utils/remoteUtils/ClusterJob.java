@@ -1,5 +1,6 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils;
 
+import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.jobs.AbstractCyJob;
@@ -39,12 +40,15 @@ public class ClusterJob extends AbstractCyJob {
 		return this.path;
 	}
 	
-	public void storeClusterData(String clusterAttributeName, CyNetwork network, ClusterManager manager, Boolean createGroups, String group_attr) {
+	public void storeClusterData(String clusterAttributeName, CyNetwork network, ClusterManager manager, Boolean createGroups, String group_attr,
+			List<String> params, String shortName) {
 		dataService.addData(clusterData, "clusterAttributeName", clusterAttributeName);
 		dataService.addData(clusterData, "network", network);
 		dataService.addData(clusterData, "manager", manager);
 		dataService.addData(clusterData, "createGroups", createGroups);
 		dataService.addData(clusterData, "group_attr", group_attr);
+		dataService.addData(clusterData, "params", params);
+		dataService.addData(clusterData, "shortName", shortName);
 	}
 	
 	public CyJobData getClusterData() {

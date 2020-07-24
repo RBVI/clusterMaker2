@@ -1,6 +1,7 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers;
 
 import org.cytoscape.group.CyGroup;
+import org.cytoscape.jobs.CyJobData;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -11,6 +12,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableHandler;
+import org.json.simple.JSONArray;
 import org.cytoscape.work.TaskMonitor;
 
 import java.awt.Window;
@@ -74,7 +76,39 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 		tableManager = clusterManager.getTableManager();
 	}
 
+
+	public static List<NodeCluster> createClusters(CyJobData data, String clusterAttributeName, CyNetwork network) {
+		JSONArray partitions = (JSONArray) data.get("partitions");
+		
+		List<NodeCluster> nodeClusters = new ArrayList<>();
+		int i = 1;
+		for (Object partition : partitions) {
+			List<String> cluster = (ArrayList<String>) partition;
+			List<CyNode> cyNodes = new ArrayList<>();
+			for (String nodeName : cluster) {
+				for (CyNode cyNode : network.getNodeList())
+					if (network.getRow(cyNode).get(CyNetwork.NAME, String.class).equals(nodeName)) {
+						cyNodes.add(cyNode);
+					}
+			}
+			
+			//how to get the CyNodes with their names?
+			
+			NodeCluster nodeCluster = new NodeCluster(i, cyNodes);
+			nodeClusters.add(nodeCluster);
+			i++;
+		}
+		return nodeClusters;
+	}
+	
 	protected List<List<CyNode>> createGroups(CyNetwork network, List<NodeCluster> clusters, String group_attr) {
+		String shortName = getShortName();
+		return createGroups(network, clusters, group_attr, clusterAttributeName, clusterManager, createGroups, params, shortName);
+	}
+
+	public static List<List<CyNode>> createGroups(CyNetwork network, List<NodeCluster> clusters, String group_attr, String clusterAttributeName, 
+			ClusterManager clusterManager, Boolean createGroups, List<String> params, String shortName) {
+		
 		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
 		List<Long>groupList = new ArrayList<Long>(); // keep track of the groups we create
 
@@ -121,7 +155,7 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 
 		ModelUtils.createAndSetLocal(network, network, group_attr, groupList, List.class, Long.class);
 
-		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, getShortName(), 
+		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, shortName, 
 		                             String.class, null);
 		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTRIBUTE, clusterAttributeName, 
 		                             String.class, null);
@@ -131,6 +165,7 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 
 		return clusterList;
 	}
+
 
 	protected List<List<CyNode>> createFuzzyGroups(CyNetwork network, 
 	                                               List<FuzzyNodeCluster> clusters, String group_attr){

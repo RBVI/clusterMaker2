@@ -90,7 +90,7 @@ public class LeidenCluster extends AbstractNetworkClusterer {
 				// Add our data
 		CyJobData jobData = dataService.addData(null, "nodes", nodeArray);
 		jobData = dataService.addData(jobData, "edges", edgeArray);
-		job.storeClusterData(clusterAttributeName, currentNetwork, clusterManager, createGroups, GROUP_ATTRIBUTE);
+		job.storeClusterData(clusterAttributeName, currentNetwork, clusterManager, createGroups, GROUP_ATTRIBUTE, null, getShortName());
 				// Create our handler
 		ClusterJobHandler jobHandler = new ClusterJobHandler(job, network);
 		job.setJobMonitor(jobHandler);	
@@ -155,92 +155,6 @@ public class LeidenCluster extends AbstractNetworkClusterer {
 		return edgeArray;
 	}
 
-	public static List<NodeCluster> createClusters(CyJobData data, String clusterAttributeName, CyNetwork network) {
-		JSONArray partitions = (JSONArray) data.get("partitions");
-		
-		List<NodeCluster> nodeClusters = new ArrayList<>();
-		int i = 1;
-		for (Object partition : partitions) {
-			List<String> cluster = (ArrayList<String>) partition;
-			List<CyNode> cyNodes = new ArrayList<>();
-			for (String nodeName : cluster) {
-				for (CyNode cyNode : network.getNodeList())
-					if (network.getRow(cyNode).get(CyNetwork.NAME, String.class).equals(nodeName)) {
-						cyNodes.add(cyNode);
-					}
-			}
-			
-			//how to get the CyNodes with their names?
-			
-			NodeCluster nodeCluster = new NodeCluster(i, cyNodes);
-			nodeClusters.add(nodeCluster);
-			i++;
-		}
-		return nodeClusters;
-	}
 	
-	public List<List<CyNode>> createGroups(CyNetwork network, List<NodeCluster> clusters, String group_attr) {
-		return createGroups(network, clusters, group_attr, clusterAttributeName, clusterManager, createGroups);
-	}
-
-	public static List<List<CyNode>> createGroups(CyNetwork network, List<NodeCluster> clusters, String group_attr, String clusterAttributeName, 
-			ClusterManager clusterManager, Boolean createGroups) {
-		
-		List<List<CyNode>> clusterList = new ArrayList<List<CyNode>>(); // List of node lists
-		List<Long>groupList = new ArrayList<Long>(); // keep track of the groups we create
-
-		List<Double>clusterScores = new ArrayList<Double>(clusters.size());
-		// Initialize
-		for (NodeCluster cluster: clusters) {
-			clusterScores.add(null);
-		}
-		boolean haveScores = NodeCluster.getScoreList(clusters) != null;
-
-		// Remove the old column, if it's there.  Some of the algorithms don't put
-		// all nodes into clusters, so we might wind up with old data lingering
-		ModelUtils.deleteColumnLocal(network, CyNode.class, clusterAttributeName);
-
-		for (NodeCluster cluster: clusters) {
-			int clusterNumber = cluster.getClusterNumber();
-			if (cluster.hasScore()) {
-				clusterScores.set(clusterNumber-1, cluster.getClusterScore());
-				haveScores = true;
-			}
-			String groupName = clusterAttributeName+"_"+clusterNumber;
-			List<CyNode>nodeList = new ArrayList<CyNode>();
-
-			for (CyNode node: cluster) {
-				nodeList.add(node);
-				ModelUtils.createAndSetLocal(network, node, clusterAttributeName, clusterNumber, Integer.class, null);
-			}
-
-			if (createGroups) {
-        CyGroup group = clusterManager.createGroup(network, clusterAttributeName+"_"+clusterNumber, nodeList, null, true);
-				if (group != null) {
-					groupList.add(group.getGroupNode().getSUID());
-					if (NodeCluster.hasScore()) {
-						ModelUtils.createAndSetLocal(network, group.getGroupNode(), 
-						                             clusterAttributeName+"_Score", cluster.getClusterScore(), Double.class, null);
-					}
-				}
-			}
-			clusterList.add(nodeList);
-		}
-
-		if (haveScores)
-			ModelUtils.createAndSetLocal(network, network, clusterAttributeName+"_Scores", clusterScores, List.class, Double.class);
-
-		ModelUtils.createAndSetLocal(network, network, GROUP_ATTRIBUTE, groupList, List.class, Long.class);
-
-		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_TYPE_ATTRIBUTE, SHORTNAME, 
-		                             String.class, null);
-		ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_ATTRIBUTE, clusterAttributeName, 
-		                             String.class, null);
-//		if (params != null)
-//			ModelUtils.createAndSetLocal(network, network, ClusterManager.CLUSTER_PARAMS_ATTRIBUTE, params, 
-//		                               List.class, String.class);
-
-		return clusterList;
-	}
-
+	
 }
