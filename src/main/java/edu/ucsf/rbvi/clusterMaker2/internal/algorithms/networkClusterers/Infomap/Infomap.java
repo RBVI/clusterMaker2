@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leiden;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Infomap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,17 +37,17 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobExecutio
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
 
-public class LeidenCluster extends AbstractNetworkClusterer {
-	public static String NAME = "Leiden Clusterer";
-	public static String SHORTNAME = "leiden";
+public class Infomap extends AbstractNetworkClusterer {
+	public static String NAME = "Infomap";
+	public static String SHORTNAME = "infomap";
 	final CyServiceRegistrar registrar;
-	public final static String GROUP_ATTRIBUTE = "__LeidenGroups.SUID";
+	public final static String GROUP_ATTRIBUTE = "__InfomapGroups.SUID";
 	
 
 	@ContainsTunables
-	public LeidenContext context = null;
+	public InfomapContext context = null;
 	
-	public LeidenCluster(LeidenContext context, ClusterManager manager, CyServiceRegistrar registrar) {
+	public Infomap(InfomapContext context, ClusterManager manager, CyServiceRegistrar registrar) {
 		super(manager);
 		this.context = context;
 		if (network == null)

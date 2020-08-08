@@ -3,6 +3,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.jobs.CyJobData;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterAlgorithm;
@@ -238,5 +240,49 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 			}
 			network.getRow(network, CyNetwork.LOCAL_ATTRS).set(group_attr, null);
 		}
+	}
+	
+	protected HashMap<Long, String> getNetworkNodes(CyNetwork currentNetwork) {
+		List<CyNode> cyNodeList = currentNetwork.getNodeList();
+		
+		HashMap<Long, String> nodeMap = new HashMap<>();
+		for (CyNode node : cyNodeList) {
+			String nodeName = currentNetwork.getRow(node).get(CyNetwork.NAME, String.class);
+			nodeMap.put(node.getSUID(), nodeName);
+		}
+		
+		return nodeMap;
+	}
+	
+	protected List<String[]> getNetworkEdges(CyNetwork currentNetwork, Map<Long, String> nodeMap, String attribute) {
+		CyTable edgeTable = currentNetwork.getDefaultEdgeTable();
+		List<CyEdge> cyEdgeList = currentNetwork.getEdgeList();
+		
+		List<String[]> edgeArray = new ArrayList<>();
+		for (CyEdge edge : cyEdgeList) {
+			
+			String[] sourceTargetWeight = new String[3];
+			
+			CyNode source = edge.getSource();
+			CyNode target = edge.getTarget();
+			String sourceName = nodeMap.get(source.getSUID());
+			sourceTargetWeight[0] = sourceName;
+			String targetName = nodeMap.get(target.getSUID());
+			sourceTargetWeight[1] = targetName;
+			
+			Double weight = currentNetwork.getRow(edge).get(attribute, Double.class); // pull the "weight" value from the Context. If it's null --> then 1.0
+			
+			if (attribute == "None") weight = null;
+			
+			if (weight == null) {
+				sourceTargetWeight[2] = "1.0";
+			} else {
+				sourceTargetWeight[2] = String.valueOf(weight);
+			}
+			
+			edgeArray.add(sourceTargetWeight);
+		}
+		
+		return edgeArray;
 	}
 }
