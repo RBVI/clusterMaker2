@@ -77,31 +77,6 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 		super(clusterManager); 
 		tableManager = clusterManager.getTableManager();
 	}
-
-
-	public static List<NodeCluster> createClusters(CyJobData data, String clusterAttributeName, CyNetwork network) {
-		JSONArray partitions = (JSONArray) data.get("partitions");
-		
-		List<NodeCluster> nodeClusters = new ArrayList<>();
-		int i = 1;
-		for (Object partition : partitions) {
-			List<String> cluster = (ArrayList<String>) partition;
-			List<CyNode> cyNodes = new ArrayList<>();
-			for (String nodeName : cluster) {
-				for (CyNode cyNode : network.getNodeList())
-					if (network.getRow(cyNode).get(CyNetwork.NAME, String.class).equals(nodeName)) {
-						cyNodes.add(cyNode);
-					}
-			}
-			
-			//how to get the CyNodes with their names?
-			
-			NodeCluster nodeCluster = new NodeCluster(i, cyNodes);
-			nodeClusters.add(nodeCluster);
-			i++;
-		}
-		return nodeClusters;
-	}
 	
 	protected List<List<CyNode>> createGroups(CyNetwork network, List<NodeCluster> clusters, String group_attr) {
 		String shortName = getShortName();

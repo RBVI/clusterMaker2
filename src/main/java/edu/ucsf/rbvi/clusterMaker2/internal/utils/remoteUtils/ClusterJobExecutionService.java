@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
@@ -23,6 +24,7 @@ import org.cytoscape.jobs.CyJobDataService;
 import org.cytoscape.jobs.CyJobStatus;
 import org.cytoscape.jobs.CyJobStatus.Status;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.jobs.CyJobExecutionService;
 import org.cytoscape.jobs.CyJobMonitor;
@@ -177,6 +179,8 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 			return new CyJobStatus(Status.ERROR, "Server didn't return an ID!");
 		}
 
+		System.out.println("JSONObject postFile(): " + json);
+		
 		String jobId = json.get(JOBID).toString(); //gets the job ID from the JSON Object
 		clJob.setJobId(jobId); //...and sets it to the ClusterJob 
 		System.out.println("ClusterJob jobID: " + clJob.getJobId());
@@ -187,7 +191,33 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		
 		//getting status
 		
-		return new CyJobStatus(Status.FINISHED, "Data posted");
+		// check for the status every 5 seconds How do I get the status??? Which Status?? of the job... the first one from postFile().
+		for (int i = 0; i < 4; i++) {
+			CyJobStatus.Status status = checkJobStatus(clJob).getStatus();
+
+			// if any of these below, fetchResults(), return the status, no need to go through the loop again
+			if (status == Status.FINISHED) return new CyJobStatus(status, "Job finished");
+			else if (status == Status.QUEUED) return new CyJobStatus(status, "Job queued");
+			else if (status == Status.RUNNING) return new CyJobStatus(status, "Job running");
+			else if (status == Status.SUBMITTED) return new CyJobStatus(status, "Job submitted");
+			
+			if (i == 3) {
+				if (status == Status.CANCELED) return new CyJobStatus(status, "Job canceled");
+				else if (status == Status.ERROR) return new CyJobStatus(status, "Error");
+				else if (status == Status.FAILED) return new CyJobStatus(status, "Job failed");
+				else if (status == Status.TERMINATED) return new CyJobStatus(status, "Job terminated");
+				else if (status == Status.PURGED) return new CyJobStatus(status, "Job purged");
+			}
+
+			try {
+				TimeUnit.SECONDS.sleep(5);
+			} catch (InterruptedException e) {
+				System.out.println("Exception in TimeUnit sleep method: " + e.getMessage());
+			}
+		
+		}
+		
+		return new CyJobStatus(Status.UNKNOWN, "Unknown status");
 	}
 
 	//fetches JSON object, deserializes the data and puts it to CyJobData
@@ -215,8 +245,8 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 			String group_attr = (String) clusterData.get("group_attr");
 			List<String> params  = (List<String>) clusterData.get("params");
 			String shortName = (String) clusterData.get("shortName");
-			List<NodeCluster> nodeClusters = LeidenCluster.createClusters(data, clusterAttributeName, network);
-			System.out.println("NodeCLusters: " + nodeClusters);
+			List<NodeCluster> nodeClusters = createClusters(data, clusterAttributeName, network); //move this to remote utils
+			System.out.println("NodeClusters: " + nodeClusters);
 			
 			AbstractNetworkClusterer.createGroups(network, nodeClusters, group_attr, clusterAttributeName, 
 					clusterManager, createGroups, params, shortName);
@@ -227,6 +257,28 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 
 		}
 		return new CyJobStatus(Status.ERROR, "CyJob is not a ClusterJob"); //if not a clusterjob
+	}
+	
+	public static List<NodeCluster> createClusters(CyJobData data, String clusterAttributeName, CyNetwork network) {
+		JSONArray partitions = (JSONArray) data.get("partitions");
+		
+		List<NodeCluster> nodeClusters = new ArrayList<>();
+		int i = 1;
+		for (Object partition : partitions) {
+			List<String> cluster = (ArrayList<String>) partition;
+			List<CyNode> cyNodes = new ArrayList<>();
+			for (String nodeName : cluster) {
+				for (CyNode cyNode : network.getNodeList())
+					if (network.getRow(cyNode).get(CyNetwork.NAME, String.class).equals(nodeName)) {
+						cyNodes.add(cyNode);
+					}
+			}
+
+			NodeCluster nodeCluster = new NodeCluster(i, cyNodes);
+			nodeClusters.add(nodeCluster);
+			i++;
+		}
+		return nodeClusters;
 	}
 
 	@Override
@@ -274,6 +326,9 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		}
 	}
 
+	
+	
+	
 	//compare f ex "done" and map that to the status ENUM
 	//added return new CyJobStatus
 	private CyJobStatus getStatus(JSONObject obj, String message) {

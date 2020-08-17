@@ -31,12 +31,6 @@ public class LeidenContext implements ClusterAlgorithmContext {
 			 groups = {"Leiden Advanced Settings"}, gravity = 1.0)
 	public ListSingleSelection<String> objective_function = new ListSingleSelection<>("CPM", "modularity");
 	
-//	@Tunable(description = "Edge weights",
-//			 longDescription = "Edge weights to be used. Can be a sequence or iterable or even an edge attribute name.",
-//			 exampleStringValue = "None",
-//			 groups = {"Leiden Advanced Settings"}, gravity = 2.0)
-//	public ListSingleSelection<String> weights = new ListSingleSelection<>();
-	
 	private ListSingleSelection<String> attribute ;
 	@Tunable(description = "Attribute", groups={"Source for array data"}, params="displayState=uncollapsed", 
 	         longDescription = "The column containing the data to be used for the clustering. "+
@@ -69,10 +63,6 @@ public class LeidenContext implements ClusterAlgorithmContext {
 			 groups = {"Leiden Advanced Settings"}, gravity = 5.0)
 	public int n_iterations = 2;
 	
-
-//	@ContainsTunables //comment this out, replace with in LeidenContext 
-//	public EdgeAttributeHandler edgeAttributeHandler; //call getAttribute() --> returns the ListSingleSelection<String> 
-	
 	@ContainsTunables
 	public AdvancedProperties advancedAttributes;
 
@@ -88,9 +78,7 @@ public class LeidenContext implements ClusterAlgorithmContext {
 			advancedAttributes = new AdvancedProperties(origin.advancedAttributes);
 		else
 			advancedAttributes = new AdvancedProperties("__leidenCluster", false);
-//		if (origin.edgeAttributeHandler != null)
-//			edgeAttributeHandler = new EdgeAttributeHandler(origin.edgeAttributeHandler);
-
+		
 		objective_function = origin.objective_function;
 		attribute = origin.attribute;
 		resolution_parameter = origin.resolution_parameter;
@@ -100,14 +88,9 @@ public class LeidenContext implements ClusterAlgorithmContext {
 
 	public void setNetwork(CyNetwork network) {
 		if (this.network != null && this.network.equals(network))
-			return; // Nothing to see here....
+			return;
 
 		this.network = network;
-
-//		if (edgeAttributeHandler == null)
-//			edgeAttributeHandler = new EdgeAttributeHandler(network);
-//		else
-//			edgeAttributeHandler.setNetwork(network);
 	}
 
 	public CyNetwork getNetwork() { return network; }

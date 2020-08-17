@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.group.CyGroup;
@@ -22,6 +23,7 @@ import org.cytoscape.jobs.CyJobDataService;
 import org.cytoscape.jobs.CyJobExecutionService;
 import org.cytoscape.jobs.CyJobManager;
 import org.cytoscape.jobs.CyJobStatus;
+import org.cytoscape.jobs.CyJobStatus.Status;
 import org.cytoscape.jobs.SUIDUtil;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
@@ -43,7 +45,7 @@ public class Infomap extends AbstractNetworkClusterer {
 	final CyServiceRegistrar registrar;
 	public final static String GROUP_ATTRIBUTE = "__InfomapGroups.SUID";
 	
-
+	
 	@ContainsTunables
 	public InfomapContext context = null;
 	
@@ -97,17 +99,19 @@ public class Infomap extends AbstractNetworkClusterer {
 		job.setJobMonitor(jobHandler);	
 				// Submit the job
 		CyJobStatus exStatus = executionService.executeJob(job, basePath, null, jobData);
-		if (exStatus.getStatus().equals(CyJobStatus.Status.ERROR) ||
-					exStatus.getStatus().equals(CyJobStatus.Status.UNKNOWN)) {
-			monitor.showMessage(TaskMonitor.Level.ERROR, exStatus.toString());
-			return;
+		
+		CyJobStatus.Status status = exStatus.getStatus();
+		System.out.println("Status: " + status);
+		if (status == Status.ERROR || status == Status.UNKNOWN  || status == Status.CANCELED || status == Status.FAILED || status == Status.ERROR 
+				|| status == Status.TERMINATED || status == Status.PURGED) {
+			CyJobManager manager = registrar.getService(CyJobManager.class);
+			manager.addJob(job, jobHandler, 5); //this one shows the load button
+		} else if (status == Status.FINISHED || status == Status.RUNNING || status == Status.SUBMITTED || status == Status.QUEUED) {
+			executionService.fetchResults(job, dataService.getDataInstance());
 		}
 		
-				// Save our SUIDs in case we get saved and restored
+		// Save our SUIDs in case we get saved and restored
 		SUIDUtil.saveSUIDs(job, currentNetwork, currentNetwork.getNodeList());
-
-		CyJobManager manager = registrar.getService(CyJobManager.class);
-		manager.addJob(job, jobHandler, 5);
 	}	
 	
 }
