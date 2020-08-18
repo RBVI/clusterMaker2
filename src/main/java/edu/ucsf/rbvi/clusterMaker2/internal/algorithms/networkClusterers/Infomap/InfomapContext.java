@@ -36,7 +36,7 @@ public class InfomapContext implements ClusterAlgorithmContext {
 	         longDescription = "The column containing the data to be used for the clustering. "+
 	                           "If no weight column is used, select ```--NONE---```",
 	         exampleStringValue = "weight",
-	         gravity=2.0)
+	         gravity = 2.0)
 	public ListSingleSelection<String> getattribute(){
 		attribute = ModelUtils.updateEdgeAttributeList(network, attribute);
 		return attribute;

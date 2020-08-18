@@ -102,12 +102,20 @@ public class Infomap extends AbstractNetworkClusterer {
 		
 		CyJobStatus.Status status = exStatus.getStatus();
 		System.out.println("Status: " + status);
-		if (status == Status.ERROR || status == Status.UNKNOWN  || status == Status.CANCELED || status == Status.FAILED || status == Status.ERROR 
-				|| status == Status.TERMINATED || status == Status.PURGED) {
+		if (status == Status.FINISHED) {
+			executionService.fetchResults(job, dataService.getDataInstance()); 
+		} else if (status == Status.RUNNING 
+				|| status == Status.SUBMITTED 
+				|| status == Status.QUEUED) {
 			CyJobManager manager = registrar.getService(CyJobManager.class);
 			manager.addJob(job, jobHandler, 5); //this one shows the load button
-		} else if (status == Status.FINISHED || status == Status.RUNNING || status == Status.SUBMITTED || status == Status.QUEUED) {
-			executionService.fetchResults(job, dataService.getDataInstance());
+		} else if (status == Status.ERROR 
+				|| status == Status.UNKNOWN  
+				|| status == Status.CANCELED 
+				|| status == Status.FAILED
+				|| status == Status.TERMINATED 
+				|| status == Status.PURGED) {
+			monitor.setStatusMessage("Job status: " + status);
 		}
 		
 		// Save our SUIDs in case we get saved and restored

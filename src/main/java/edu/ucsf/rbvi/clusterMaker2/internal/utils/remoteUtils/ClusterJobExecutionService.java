@@ -190,34 +190,34 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		System.out.println("ClusterJob BasePath: " + clJob.getBasePath());
 		
 		//getting status
-		
-		// check for the status every 5 seconds How do I get the status??? Which Status?? of the job... the first one from postFile().
-		for (int i = 0; i < 4; i++) {
-			CyJobStatus.Status status = checkJobStatus(clJob).getStatus();
+		int loopCount = 4;
+		CyJobStatus status;
+		for (int i = 0; i < loopCount; i++) {
+		    status = checkJobStatus(clJob);
+		    if (jobDone(status)) return status;
+		    
+		    if (i == loopCount - 1) return status;
 
-			// if any of these below, fetchResults(), return the status, no need to go through the loop again
-			if (status == Status.FINISHED) return new CyJobStatus(status, "Job finished");
-			else if (status == Status.QUEUED) return new CyJobStatus(status, "Job queued");
-			else if (status == Status.RUNNING) return new CyJobStatus(status, "Job running");
-			else if (status == Status.SUBMITTED) return new CyJobStatus(status, "Job submitted");
-			
-			if (i == 3) {
-				if (status == Status.CANCELED) return new CyJobStatus(status, "Job canceled");
-				else if (status == Status.ERROR) return new CyJobStatus(status, "Error");
-				else if (status == Status.FAILED) return new CyJobStatus(status, "Job failed");
-				else if (status == Status.TERMINATED) return new CyJobStatus(status, "Job terminated");
-				else if (status == Status.PURGED) return new CyJobStatus(status, "Job purged");
-			}
-
-			try {
-				TimeUnit.SECONDS.sleep(5);
-			} catch (InterruptedException e) {
-				System.out.println("Exception in TimeUnit sleep method: " + e.getMessage());
-			}
+		    try {
+		        TimeUnit.SECONDS.sleep(5);
+		    } catch (InterruptedException e) {
+		        return new CyJobStatus(Status.ERROR, "Interrupted");
+		    }
 		
 		}
 		
 		return new CyJobStatus(Status.UNKNOWN, "Unknown status");
+	}
+	
+	private boolean jobDone(CyJobStatus status) {
+	    CyJobStatus.Status st = status.getStatus();
+	    if (st == Status.FINISHED ||
+	      st == Status.CANCELED ||
+	      st == Status.FAILED ||
+	      st == Status.TERMINATED ||
+	      st == Status.PURGED)
+	        return true;
+	    return false;
 	}
 
 	//fetches JSON object, deserializes the data and puts it to CyJobData
