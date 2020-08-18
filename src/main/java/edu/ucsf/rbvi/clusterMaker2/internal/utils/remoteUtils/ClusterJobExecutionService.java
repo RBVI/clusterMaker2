@@ -190,20 +190,21 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		System.out.println("ClusterJob BasePath: " + clJob.getBasePath());
 		
 		//getting status
-		int loopCount = 4;
+		int waitTime = 20;
 		CyJobStatus status;
-		for (int i = 0; i < loopCount; i++) {
+		for (int i = 0; i < waitTime; i++) {
 		    status = checkJobStatus(clJob);
 		    if (jobDone(status)) return status;
 		    
-		    if (i == loopCount - 1) return status;
+		    if (i == waitTime - 1) return status;
 
 		    try {
 		        TimeUnit.SECONDS.sleep(5);
 		    } catch (InterruptedException e) {
 		        return new CyJobStatus(Status.ERROR, "Interrupted");
 		    }
-		
+		    
+		    i = i + 4;
 		}
 		
 		return new CyJobStatus(Status.UNKNOWN, "Unknown status");
