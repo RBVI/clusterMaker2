@@ -30,6 +30,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJob;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobData;
@@ -103,6 +104,10 @@ public class LeidenCluster extends AbstractNetworkClusterer {
 		System.out.println("Status: " + status);
 		if (status == Status.FINISHED) {
 			executionService.fetchResults(job, dataService.getDataInstance()); 
+			if (context.vizProperties.showUI) {
+				monitor.showMessage(TaskMonitor.Level.INFO, "Creating network");
+				insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true, context.vizProperties.restoreEdges, false));
+			}
 		} else if (status == Status.RUNNING 
 				|| status == Status.SUBMITTED 
 				|| status == Status.QUEUED) {
