@@ -23,6 +23,7 @@ import org.cytoscape.jobs.CyJobExecutionService;
 import org.cytoscape.jobs.CyJobManager;
 import org.cytoscape.jobs.CyJobStatus;
 import org.cytoscape.jobs.SUIDUtil;
+import org.cytoscape.jobs.CyJobStatus.Status;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
@@ -97,17 +98,28 @@ public class LeidenCluster extends AbstractNetworkClusterer {
 		job.setJobMonitor(jobHandler);	
 				// Submit the job
 		CyJobStatus exStatus = executionService.executeJob(job, basePath, null, jobData);
-		if (exStatus.getStatus().equals(CyJobStatus.Status.ERROR) ||
-					exStatus.getStatus().equals(CyJobStatus.Status.UNKNOWN)) {
-			monitor.showMessage(TaskMonitor.Level.ERROR, exStatus.toString());
-			return;
+		
+		CyJobStatus.Status status = exStatus.getStatus();
+		System.out.println("Status: " + status);
+		if (status == Status.FINISHED) {
+			executionService.fetchResults(job, dataService.getDataInstance()); 
+		} else if (status == Status.RUNNING 
+				|| status == Status.SUBMITTED 
+				|| status == Status.QUEUED) {
+			CyJobManager manager = registrar.getService(CyJobManager.class);
+			manager.addJob(job, jobHandler, 5); //this one shows the load button
+		} else if (status == Status.ERROR 
+				|| status == Status.UNKNOWN  
+				|| status == Status.CANCELED 
+				|| status == Status.FAILED
+				|| status == Status.TERMINATED 
+				|| status == Status.PURGED) {
+			monitor.setStatusMessage("Job status: " + status);
 		}
 		
 				// Save our SUIDs in case we get saved and restored
 		SUIDUtil.saveSUIDs(job, currentNetwork, currentNetwork.getNodeList());
 
-		CyJobManager manager = registrar.getService(CyJobManager.class);
-		manager.addJob(job, jobHandler, 5);
 	}	
 	
 }
