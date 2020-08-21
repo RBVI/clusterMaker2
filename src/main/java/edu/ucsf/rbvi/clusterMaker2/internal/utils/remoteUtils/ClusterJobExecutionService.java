@@ -191,12 +191,9 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		
 		//getting status
 		int waitTime = 20;
-		CyJobStatus status;
-		for (int i = 0; i < waitTime; i++) {
-		    status = checkJobStatus(clJob);
+		CyJobStatus status = checkJobStatus(clJob);
+		for (int i = 0; i < waitTime; i += 5) {
 		    if (jobDone(status)) return status;
-		    
-		    if (i == waitTime - 1) return status;
 
 		    try {
 		        TimeUnit.SECONDS.sleep(5);
@@ -204,10 +201,10 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		        return new CyJobStatus(Status.ERROR, "Interrupted");
 		    }
 		    
-		    i = i + 4;
+		    status = checkJobStatus(clJob);
 		}
 		
-		return new CyJobStatus(Status.UNKNOWN, "Unknown status");
+		return status;
 	}
 	
 	private boolean jobDone(CyJobStatus status) {
