@@ -22,6 +22,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.HairCut.Ha
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AP.APClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.ConnectedComponents.ConnectedComponentsTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM.FCMClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FastGreedy.FastGreedyTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Fuzzifier.FuzzifierTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.GLay.GLayClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Infomap.InfomapTaskFactory;
@@ -180,6 +181,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new LeidenClusterTaskFactory(clusterManager, registrar),
 						ClusterTaskFactory.class, new Properties());
 		registerService(bc, new InfomapTaskFactory(clusterManager, registrar),
+						ClusterTaskFactory.class, new Properties());
+		registerService(bc, new FastGreedyTaskFactory(clusterManager, registrar),
 						ClusterTaskFactory.class, new Properties());
 
 		

@@ -1,22 +1,10 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leiden;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FastGreedy;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.group.CyGroup;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.TaskMonitor;
-import org.json.simple.JSONArray;
-import org.cytoscape.jobs.CyJob;
 import org.cytoscape.jobs.CyJobData;
 import org.cytoscape.jobs.CyJobDataService;
 import org.cytoscape.jobs.CyJobExecutionService;
@@ -24,32 +12,30 @@ import org.cytoscape.jobs.CyJobManager;
 import org.cytoscape.jobs.CyJobStatus;
 import org.cytoscape.jobs.SUIDUtil;
 import org.cytoscape.jobs.CyJobStatus.Status;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.TaskMonitor;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leiden.LeidenContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
-import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJob;
-import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobData;
-import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobDataService;
-import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobExecutionService;
-import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
 
-public class LeidenCluster extends AbstractNetworkClusterer {
-	public static String NAME = "Leiden Clusterer";
-	public static String SHORTNAME = "leiden";
+public class FastGreedy extends AbstractNetworkClusterer {
+
+	public static String NAME = "Fast Greedy";
+	public static String SHORTNAME = "fastGreedy";
 	final CyServiceRegistrar registrar;
-	public final static String GROUP_ATTRIBUTE = "__LeidenGroups.SUID";
+	public final static String GROUP_ATTRIBUTE = "__FastGreedyGroups.SUID";
 	
-
 	@ContainsTunables
-	public LeidenContext context = null;
+	public FastGreedyContext context = null;
 	
-	public LeidenCluster(LeidenContext context, ClusterManager manager, CyServiceRegistrar registrar) {
+	public FastGreedy(FastGreedyContext context, ClusterManager manager, CyServiceRegistrar registrar) {
 		super(manager);
 		this.context = context;
 		if (network == null)
@@ -128,5 +114,4 @@ public class LeidenCluster extends AbstractNetworkClusterer {
 		SUIDUtil.saveSUIDs(job, currentNetwork, currentNetwork.getNodeList());
 
 	}	
-	
 }
