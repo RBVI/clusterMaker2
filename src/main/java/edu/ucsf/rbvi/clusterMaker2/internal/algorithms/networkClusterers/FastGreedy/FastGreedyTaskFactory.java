@@ -7,8 +7,8 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskIterator;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Infomap.Infomap;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Infomap.InfomapContext;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FastGreedy.FastGreedy;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FastGreedy.FastGreedyContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;

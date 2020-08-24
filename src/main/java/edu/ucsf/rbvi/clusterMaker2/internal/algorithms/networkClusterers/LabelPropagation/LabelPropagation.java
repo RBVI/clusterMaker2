@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FastGreedy;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.LabelPropagation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,17 +25,17 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJob;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
 
-public class FastGreedy extends AbstractNetworkClusterer {
+public class LabelPropagation extends AbstractNetworkClusterer {
 
-	public static String NAME = "Fast Greedy";
-	public static String SHORTNAME = "fastGreedy";
+	public static String NAME = "Label Propagation";
+	public static String SHORTNAME = "labelPropagation";
 	final CyServiceRegistrar registrar;
-	public final static String GROUP_ATTRIBUTE = "__FastGreedyGroups.SUID";
+	public final static String GROUP_ATTRIBUTE = "__LabelPropagationGroups.SUID";
 	
 	@ContainsTunables
-	public FastGreedyContext context = null;
+	public LabelPropagationContext context = null;
 	
-	public FastGreedy(FastGreedyContext context, ClusterManager manager, CyServiceRegistrar registrar) {
+	public LabelPropagation(LabelPropagationContext context, ClusterManager manager, CyServiceRegistrar registrar) {
 		super(manager);
 		this.context = context;
 		if (network == null)

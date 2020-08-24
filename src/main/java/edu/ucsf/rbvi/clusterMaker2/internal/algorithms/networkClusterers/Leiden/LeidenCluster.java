@@ -105,7 +105,7 @@ public class LeidenCluster extends AbstractNetworkClusterer {
 		if (status == Status.FINISHED) {
 			executionService.fetchResults(job, dataService.getDataInstance()); 
 			if (context.vizProperties.showUI) {
-				monitor.showMessage(TaskMonitor.Level.INFO, "Creating network");
+				taskMonitor.showMessage(TaskMonitor.Level.INFO, "Creating network");
 				insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true, context.vizProperties.restoreEdges, false));
 			}
 			
