@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.group.CyGroup;
@@ -23,8 +22,8 @@ import org.cytoscape.jobs.CyJobDataService;
 import org.cytoscape.jobs.CyJobExecutionService;
 import org.cytoscape.jobs.CyJobManager;
 import org.cytoscape.jobs.CyJobStatus;
-import org.cytoscape.jobs.CyJobStatus.Status;
 import org.cytoscape.jobs.SUIDUtil;
+import org.cytoscape.jobs.CyJobStatus.Status;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
