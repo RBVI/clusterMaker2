@@ -7,18 +7,18 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Multil
 	import org.cytoscape.work.TaskIterator;
 
 	import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterTaskFactory;
-	import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.LeadingEigenVector.LEVCluster;
-	import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.LeadingEigenVector.LEVContext;
+	import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Multilevel.MultilevelCluster;
+	import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Multilevel.MultilevelContext;
 	import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 	import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 	public class MultilevelClusterTaskFactory extends AbstractClusterTaskFactory {
-		LEVContext context = null;
+		MultilevelContext context = null;
 		final CyServiceRegistrar registrar;
 		
 		public MultilevelClusterTaskFactory(ClusterManager clusterManager, CyServiceRegistrar registrar) {
 			super(clusterManager);
-			context = new LEVContext();
+			context = new MultilevelContext();
 			this.registrar = registrar;
 		}
 		
@@ -43,7 +43,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Multil
 
 		@Override
 		public TaskIterator createTaskIterator() {
-			return new TaskIterator(new LEVCluster(context, clusterManager, registrar));
+			return new TaskIterator(new MultilevelCluster(context, clusterManager, registrar));
 		}
 	}
 
