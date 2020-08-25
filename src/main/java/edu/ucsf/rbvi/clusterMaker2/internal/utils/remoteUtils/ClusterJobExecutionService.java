@@ -164,8 +164,9 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		}
 		
 		Object value = null;
+		String jobName = (String) clJob.getClusterData().get("shortName");
 		try {
-			value = RemoteServer.postFile(RemoteServer.getServiceURI("leiden"), jsonData);
+			value = RemoteServer.postFile(RemoteServer.getServiceURI(jobName), jsonData);
 		} catch (Exception e) {
 			System.out.println("Error in postFile method: " + e.getMessage());
 		}

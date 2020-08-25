@@ -27,8 +27,10 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Fuzzifi
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.GLay.GLayClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Infomap.InfomapTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.LabelPropagation.LabelPropagationTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.LeadingEigenVector.LEVClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCODE.MCODEClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Multilevel.MultilevelClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.NetworkClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.SCPS.SCPSClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.TransClustClusterTaskFactory;
@@ -187,7 +189,10 @@ public class CyActivator extends AbstractCyActivator {
 						ClusterTaskFactory.class, new Properties());
 		registerService(bc, new LabelPropagationTaskFactory(clusterManager, registrar),
 						ClusterTaskFactory.class, new Properties());
-
+		registerService(bc, new LEVClusterTaskFactory(clusterManager, registrar),
+						ClusterTaskFactory.class, new Properties());
+		registerService(bc, new MultilevelClusterTaskFactory(clusterManager, registrar),
+						ClusterTaskFactory.class, new Properties());
 		
 		// Cluster ranking
 		registerService(bc, new MAATaskFactory(clusterManager), RankFactory.class, new Properties());
