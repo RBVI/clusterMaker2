@@ -11,7 +11,6 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FastGre
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FastGreedy.FastGreedyContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
-import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 
 public class FastGreedyTaskFactory extends AbstractClusterTaskFactory {
 	FastGreedyContext context = null;

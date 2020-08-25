@@ -18,7 +18,7 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leiden.LeidenContext;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FastGreedy.FastGreedyContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJob;

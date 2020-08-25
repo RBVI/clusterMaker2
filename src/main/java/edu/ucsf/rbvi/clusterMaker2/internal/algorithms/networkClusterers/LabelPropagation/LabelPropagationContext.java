@@ -1,12 +1,6 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.LabelPropagation;
 
-	import java.util.ArrayList;
-	import java.util.Collection;
-	import java.util.List;
-
-	import org.cytoscape.model.CyColumn;
 	import org.cytoscape.model.CyNetwork;
-	import org.cytoscape.model.CyTable;
 	import org.cytoscape.work.ContainsTunables;
 	import org.cytoscape.work.Tunable;
 	import org.cytoscape.work.swing.TunableUIHelper;
@@ -15,7 +9,6 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.LabelP
 	import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterAlgorithmContext;
 	import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 	import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AdvancedProperties;
-	import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.edgeConverters.EdgeAttributeHandler;
 	import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.NetworkVizProperties;
 
 	public class LabelPropagationContext implements ClusterAlgorithmContext {

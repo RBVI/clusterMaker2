@@ -11,7 +11,6 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leadin
 	import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.LeadingEigenVector.LEVContext;
 	import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 	import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
-	import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory.ClusterType;
 
 	public class LEVClusterTaskFactory extends AbstractClusterTaskFactory {
 		LEVContext context = null;
