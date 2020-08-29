@@ -10,6 +10,7 @@ TODO:
  * SPICi (Speed and Performance In Clustering)
 
 
+
 1 JUNE - 29 AUGUST 2020 changes done as a Google Summer of Code Project by Maija Utriainen
 
 Implementing new algorithms with a new approach that runs the algorithm remotely on a server instead of in clusterMaker/Cytoscape utilizing interfaces in cytoscape.jobs package. 
