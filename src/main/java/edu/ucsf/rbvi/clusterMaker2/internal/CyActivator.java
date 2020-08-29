@@ -1,6 +1,7 @@
 package edu.ucsf.rbvi.clusterMaker2.internal;
 
 
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobExecutionService;
 // Java imports
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.AttributeClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.ChengChurch.ChengChurchTaskFactory;
@@ -21,13 +22,19 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.clusterFilters.HairCut.Ha
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AP.APClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.ConnectedComponents.ConnectedComponentsTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FCM.FCMClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FastGreedy.FastGreedyTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Fuzzifier.FuzzifierTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.GLay.GLayClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Infomap.InfomapTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.LabelPropagation.LabelPropagationTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.LeadingEigenVector.LEVClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCL.MCLClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.MCODE.MCODEClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Multilevel.MultilevelClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.NetworkClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.SCPS.SCPSClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.TransClustClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leiden.LeidenClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.PCAMenuTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.PCATaskFactory;
 
@@ -48,6 +55,8 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.jobs.CyJobExecutionService;
+import org.cytoscape.jobs.CyJobManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -97,6 +106,10 @@ public class CyActivator extends AbstractCyActivator {
 		CyGroupFactory groupFactory = getService(bc, CyGroupFactory.class);
 		CyTableFactory tableFactory = getService(bc, CyTableFactory.class);
 		CyTableManager tableManager = getService(bc, CyTableManager.class);
+		
+		// clusterJob
+		CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
+		CyJobManager cyJobManager = getService(bc, CyJobManager.class);
 
 		// Create our context object.  This will probably keep track of all of the
 		// registered clustering algorithms, settings, etc.
@@ -168,7 +181,19 @@ public class CyActivator extends AbstractCyActivator {
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new TransClustClusterTaskFactory(clusterManager),
 		                ClusterTaskFactory.class, new Properties());
-
+		registerService(bc, new LeidenClusterTaskFactory(clusterManager, registrar),
+						ClusterTaskFactory.class, new Properties());
+		registerService(bc, new InfomapTaskFactory(clusterManager, registrar),
+						ClusterTaskFactory.class, new Properties());
+		registerService(bc, new FastGreedyTaskFactory(clusterManager, registrar),
+						ClusterTaskFactory.class, new Properties());
+		registerService(bc, new LabelPropagationTaskFactory(clusterManager, registrar),
+						ClusterTaskFactory.class, new Properties());
+		registerService(bc, new LEVClusterTaskFactory(clusterManager, registrar),
+						ClusterTaskFactory.class, new Properties());
+		registerService(bc, new MultilevelClusterTaskFactory(clusterManager, registrar),
+						ClusterTaskFactory.class, new Properties());
+		
 		// Cluster ranking
 		registerService(bc, new MAATaskFactory(clusterManager), RankFactory.class, new Properties());
 		registerService(bc, new MAMTaskFactory(clusterManager), RankFactory.class, new Properties());
@@ -264,7 +289,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "cluster");
 			props.setProperty(COMMAND, CommandTaskFactory.HASCLUSTER);
-  		props.setProperty(COMMAND_DESCRIPTION, "Test to see if this network has a cluster of the requested type");
+			props.setProperty(COMMAND_DESCRIPTION, "Test to see if this network has a cluster of the requested type");
 			props.setProperty(COMMAND_EXAMPLE_JSON, commandTaskFactory.getExampleJSON());
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, 
@@ -277,7 +302,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "cluster");
 			props.setProperty(COMMAND, CommandTaskFactory.GETNETWORKCLUSTER);
-  		props.setProperty(COMMAND_DESCRIPTION, "Get a cluster network cluster result");
+			props.setProperty(COMMAND_DESCRIPTION, "Get a cluster network cluster result");
 			props.setProperty(COMMAND_EXAMPLE_JSON, commandTaskFactory.getExampleJSON());
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, 
@@ -290,7 +315,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "cluster");
 			props.setProperty(COMMAND, CommandTaskFactory.GETCLUSTER);
-  		props.setProperty(COMMAND_DESCRIPTION, "Get an attribute cluster result");
+			props.setProperty(COMMAND_DESCRIPTION, "Get an attribute cluster result");
 			props.setProperty(COMMAND_EXAMPLE_JSON, commandTaskFactory.getExampleJSON());
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, 
@@ -301,5 +326,16 @@ public class CyActivator extends AbstractCyActivator {
 			                  "type.");
 			registerService(bc, commandTaskFactory, TaskFactory.class, props);
 		}
+		
+		
+		{
+			ClusterJobExecutionService clusterJobService = 
+							new ClusterJobExecutionService(cyJobManager, registrar);
+			Properties props = new Properties();
+			props.setProperty(TITLE, "ClusterJobExecutor");
+			registerService(bc, clusterJobService, CyJobExecutionService.class, props);
+		}
+		
+
 	}
 }
