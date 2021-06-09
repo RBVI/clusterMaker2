@@ -4,6 +4,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.TunableUIHelper;
+import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AdvancedProperties;
@@ -59,18 +60,20 @@ public class UMAPContext {
 			groups = {"UMAP Advanced Settings"}, gravity = 2.0)
 	public double min_dist = 1.0;
 	
-	/*@Tunable(description = "Metric",
+	@Tunable(description = "Metric",
 			longDescription = "The final UMAP parameter we will be considering in this notebook is the metric parameter. "
 			+ "This controls how distance is computed in the ambient space of the input data. By default UMAP supports a wide variety of metrics, including:",
 			exampleStringValue = "",
 			groups = {}, gravity = 3.0)
-	public ListSingleSelection<> list; */
-	
+	public ListSingleSelection<String> metric = new ListSingleSelection<String>("euclidean", "manhattan", "chebyshev", "minkowski", "canberra", "braycurtis",
+			"haversine", "mahalanobis", "wminkowski", "seuclidean", "cosine", "correlation", "hamming", "jaccard", "dice", "russellrao", "kulsinski", "rogerstanimoto",
+			"sokalmichener", "sokalsneath", "yule");
+
 	@Tunable(description = "Scale",
 			longDescription = "true/false.  If true, preprocess the data to scale the matrix",
 			exampleStringValue = "True",
 			groups = {"UMAP Advanced Settings"}, gravity = 4.0)
-    public Boolean metric = true;
+    public Boolean scale = true;
 	
 	@ContainsTunables
 	public AdvancedProperties advancedAttributes;
@@ -90,9 +93,10 @@ public class UMAPContext {
 		
 		objective_function = origin.objective_function;
 		attribute = origin.attribute;
-		resolution_parameter = origin.resolution_parameter;
-		beta = origin.beta;
-		n_iterations = origin.n_iterations;
+		n_neighbors = origin.n_neighbors;
+		min_dist = origin.min_dist;
+		metric = origin.metric;
+		scale = origin.scale;
 	}
 
 	public void setNetwork(CyNetwork network) {
