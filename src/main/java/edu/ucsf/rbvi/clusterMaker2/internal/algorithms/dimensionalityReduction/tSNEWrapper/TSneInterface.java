@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEWrapper;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.tSNEWrapper;
 
 import org.cytoscape.model.CyNetwork;
 

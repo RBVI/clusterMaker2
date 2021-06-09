@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.pca;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;

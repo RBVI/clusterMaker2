@@ -258,11 +258,12 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		return new CyJobStatus(Status.ERROR, "CyJob is not a ClusterJob"); //if not a clusterjob
 	}
 	
+	//returns a list of NodeCluster objects that have a number and a list of nodes belonging to it
 	public static List<NodeCluster> createClusters(CyJobData data, String clusterAttributeName, CyNetwork network) {
 		JSONArray partitions = (JSONArray) data.get("partitions");
 		
 		List<NodeCluster> nodeClusters = new ArrayList<>();
-		int i = 1;
+		int i = 1; //each cluster is assigned a number
 		for (Object partition : partitions) {
 			List<String> cluster = (ArrayList<String>) partition;
 			List<CyNode> cyNodes = new ArrayList<>();

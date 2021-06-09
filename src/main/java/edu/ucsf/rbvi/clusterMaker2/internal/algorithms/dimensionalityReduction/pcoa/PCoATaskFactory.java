@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.pcoa;
 
 import java.util.Collections;
 import java.util.List;
@@ -6,8 +6,8 @@ import java.util.List;
 import org.cytoscape.work.TaskIterator;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.PCA;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.PCAContext;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.pca.PCA;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.pca.PCAContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
