@@ -63,8 +63,8 @@ public class UMAPContext {
 	@Tunable(description = "Metric",
 			longDescription = "The final UMAP parameter we will be considering in this notebook is the metric parameter. "
 			+ "This controls how distance is computed in the ambient space of the input data. By default UMAP supports a wide variety of metrics, including:",
-			exampleStringValue = "",
-			groups = {}, gravity = 3.0)
+			exampleStringValue = "euclidean",
+			groups = {"UMAP Advanced Settings"}, gravity = 3.0)
 	public ListSingleSelection<String> metric = new ListSingleSelection<String>("euclidean", "manhattan", "chebyshev", "minkowski", "canberra", "braycurtis",
 			"haversine", "mahalanobis", "wminkowski", "seuclidean", "cosine", "correlation", "hamming", "jaccard", "dice", "russellrao", "kulsinski", "rogerstanimoto",
 			"sokalmichener", "sokalsneath", "yule");

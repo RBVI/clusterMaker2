@@ -12,7 +12,10 @@ import org.cytoscape.jobs.CyJobManager;
 import org.cytoscape.jobs.CyJobStatus;
 import org.cytoscape.jobs.SUIDUtil;
 import org.cytoscape.jobs.CyJobStatus.Status;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
@@ -51,6 +54,7 @@ public class UMAP extends AbstractNetworkClusterer {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		// Get the execution service
+				System.out.println("Running UMAP :)");
 				CyJobExecutionService executionService = 
 								registrar.getService(CyJobExecutionService.class, "(title=ClusterJobExecutor)");
 				CyApplicationManager appManager = registrar.getService(CyApplicationManager.class);
@@ -59,14 +63,31 @@ public class UMAP extends AbstractNetworkClusterer {
 				clusterAttributeName = context.getClusterAttribute();
 				createGroups = context.advancedAttributes.createGroups;
 		     	String attribute = context.getattribute().getSelectedValue();
-						
+				
+				// list of column names wanted to use in UMAP
+				CyTable nodeTable = currentNetwork.getDefaultNodeTable();
+				List<String> columns = new ArrayList<>();
+				columns.add("name");
+				columns.add("gal1RGexp");
+				columns.add("gal4RGexp");
+				
+				// creating the data itself, values of the columns chosen for each row (node)
+				List<List<String>> data = new ArrayList<>();
 				HashMap<Long, String> nodeMap = getNetworkNodes(currentNetwork);
-				List<String> nodeArray = new ArrayList<>();
+				
 				for (Long nodeSUID : nodeMap.keySet()) {
-					nodeArray.add(nodeMap.get(nodeSUID));
+					CyRow row = nodeTable.getRow(nodeSUID);
+					List<String> rowList = new ArrayList<>();
+					for (String columnName : columns) {
+						CyColumn column = nodeTable.getColumn(columnName);
+						if (row.get(columnName, column.getType()) != null) {
+							rowList.add(row.get(columnName, column.getType()).toString());
+						} else {
+							rowList.add("0");
+						}
+					}
+					data.add(rowList);
 				}
-						
-				List<String[]> edgeArray = getNetworkEdges(currentNetwork, nodeMap, attribute);
 						
 				String basePath = RemoteServer.getBasePath();
 						
@@ -75,12 +96,12 @@ public class UMAP extends AbstractNetworkClusterer {
 						// Get the data service
 				CyJobDataService dataService = job.getJobDataService(); //gets the dataService of the execution service
 						// Add our data
-				CyJobData jobData = dataService.addData(null, "nodes", nodeArray);
-				jobData = dataService.addData(jobData, "edges", edgeArray);
+				CyJobData jobData = dataService.addData(null, "columns", columns);
+				jobData = dataService.addData(jobData, "data", data);
 				job.storeClusterData(clusterAttributeName, currentNetwork, clusterManager, createGroups, GROUP_ATTRIBUTE, null, getShortName());
 						// Create our handler
 				ClusterJobHandler jobHandler = new ClusterJobHandler(job, network);
-				job.setJobMonitor(jobHandler);	
+				job.setJobMonitor(jobHandler);
 						// Submit the job
 				CyJobStatus exStatus = executionService.executeJob(job, basePath, null, jobData);
 				

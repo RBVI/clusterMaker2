@@ -143,7 +143,6 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 	@Override
 	public CyJobStatus executeJob(CyJob job, String basePath, Map<String, Object> configuration, //configuration comes from network data
 	                              CyJobData inputData) {
-		
 		if (!(job instanceof ClusterJob))
 			return new CyJobStatus(Status.ERROR, "CyJob is not a ClusterJob"); //error message if not clusterjob
 
@@ -151,7 +150,7 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		Map<String, String> queryMap = convertConfiguration(configuration); //converts configuration into Map<String, String>
 
 		String serializedData = dataService.getSerializedData(inputData); //gets serialized data (JSON) using dataService
-		System.out.println("Serialized data in execution service: " + serializedData);
+		System.out.println("Serialized data in execution service: " + serializedData); 
 		queryMap.put("inputData", serializedData.toString()); //...and puts it into queryMap as key: "inputData", value: String of the data
 		queryMap.put(COMMAND, Command.SUBMIT.toString()); //puts key: COMMAND, value: SUBMIT in the queryMap --> queryMap has two keys
 		
@@ -222,10 +221,12 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 	//fetches JSON object, deserializes the data and puts it to CyJobData
 	@Override
 	public CyJobStatus fetchResults(CyJob job, CyJobData data) {
+		System.out.println("inside fetchResults()");
 		if (job instanceof ClusterJob) {
 			ClusterJob clusterJob = (ClusterJob) job;
 			//handleCommand gives whatever HttpGET gives.
 			JSONObject result = handleCommand(clusterJob, Command.FETCH, null); //handles command FETCH --> argMap is null --> JSON object runs the command
+			System.out.println("fetchResults() JSONObject result: " + result);
 			
 			// Get the unserialized data, dataService deserializes the data (the JSON object), CyJobData is basically a HashMap
 			CyJobData newData = dataService.deserialize(result); 
@@ -358,6 +359,7 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 
 		argMap.put(COMMAND, command.toString());
 		argMap.put(JOBID, job.getJobId());
+	    System.out.println("handleCommand argmap: " + argMap);
 		
 		JSONObject response = null;
 		
@@ -376,6 +378,7 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 			}
 		}
 		
+		System.out.println("FetchJSON: " + response + "/nmessage: ");
 		return response;
 	}
 
