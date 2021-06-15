@@ -92,36 +92,31 @@ public class ScatterPlotDialog extends JDialog {
 
 	private boolean useLoadings;
 
+	// Entry point for remote DR techniques (e.g. UMAP)
+	public ScatterPlotDialog(ClusterManager manager, String title, TaskMonitor monitor, CyNode[] nodes, double[][] coordinates) {
+    super();
+    // Make the matrix
+	  CyMatrix matrix = CyMatrixFactory.makeSmallMatrix(manager.getNetwork(), coordinates.length, coordinates[0].length, coordinates);
+    matrix.setRowNodes(nodes);
+		this.manager = manager;
+		this.scores = new CyMatrix[1];
+		this.title = title;
+		this.variances = null;
+		this.loadings = CyMatrixFactory.makeSmallMatrix(scores[0].getNetwork(), 1, 2);
+		thisDialog = this;
+    init(manager, title, monitor, matrix);
+  }
+
 	// Entry point for tSNE and related
 	public ScatterPlotDialog(ClusterManager manager, String title, TaskMonitor monitor, CyMatrix coordinates) {
 		super();
-		this.title = title;
-		setTitle(title+" Scatter Plot");
-		monitor.setTitle(title+" Scatter Plot");
-		useLoadings = false;
-		supportsLayout = true;
 		this.manager = manager;
 		this.scores = new CyMatrix[1];
-		this.scores[0] = coordinates;
-
+		this.title = title;
 		this.variances = null;
-		this.loadings = CyMatrixFactory.makeSmallMatrix(scores[0].getNetwork(), 1, 2);
-		loadings.setColumnLabel(0, "X Axis");
-		loadings.setColumnLabel(1, "Y Axis");
+		this.loadings = CyMatrixFactory.makeSmallMatrix(manager.getNetwork(), 1, 2);
 		thisDialog = this;
-
-		if (coordinates.nColumns() != 2) {
-			monitor.showMessage(TaskMonitor.Level.ERROR, "Coordinate scatterplot must have 2 columns!");
-			return;
-		}
-
-		container = new JPanel();
-		createUI();
-		getContentPane().add(container);
-
-		pack();
-		setLocationByPlatform(true);
-		setVisible(true);
+    init(manager, title, monitor, coordinates);
 	}
 
 	// Entry point for PCoA and related
@@ -192,6 +187,31 @@ public class ScatterPlotDialog extends JDialog {
 		setLocationByPlatform(true);
 		setVisible(true);
 	}
+
+  private void init(ClusterManager manager, String title, TaskMonitor monitor, CyMatrix matrix) {
+		this.title = title;
+		setTitle(title+" Scatter Plot");
+		monitor.setTitle(title+" Scatter Plot");
+		useLoadings = false;
+		supportsLayout = true;
+		this.scores[0] = matrix;
+
+		loadings.setColumnLabel(0, "X Axis");
+		loadings.setColumnLabel(1, "Y Axis");
+
+		if (matrix.nColumns() != 2) {
+			monitor.showMessage(TaskMonitor.Level.ERROR, "Coordinate scatterplot must have 2 columns!");
+			return;
+		}
+
+		container = new JPanel();
+		createUI();
+		getContentPane().add(container);
+
+		pack();
+		setLocationByPlatform(true);
+		setVisible(true);
+  }
 
 	private void createUI() {
 		panelXAxis = new JPanel();
