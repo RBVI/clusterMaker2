@@ -49,6 +49,8 @@ public class RemoteServer {
 			return server + "service/leadingeigenvector";
 		} else if (service.equals("multilevel")) {
 			return server + "service/multilevel";
+		} else if (service.equals("umap")) {
+			return server + "service/umap";
 		} else {
 			System.out.println("Unknown service");
 		}
@@ -106,6 +108,7 @@ public class RemoteServer {
 		
 		int statusCode = response.getStatusLine().getStatusCode();
 		if (statusCode != 200 && statusCode != 202) {
+			System.out.println("Status code not 200!");
 			return null;
 		}
 		HttpEntity entity = response.getEntity();

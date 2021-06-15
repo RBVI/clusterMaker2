@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.pcoa;
 
 import java.util.Arrays;
 import java.util.List;

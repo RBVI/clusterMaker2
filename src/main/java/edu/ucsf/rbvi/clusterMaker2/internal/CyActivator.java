@@ -35,8 +35,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Network
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.SCPS.SCPSClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.TransClustClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leiden.LeidenClusterTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.PCAMenuTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pca.PCATaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.pca.PCAMenuTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.pca.PCATaskFactory;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.HITS.HITSTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.MAA.MAATaskFactory;
@@ -44,8 +44,9 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.MAM.MAMTaskFactor
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PR.PRTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PRWP.PRWPTaskFactory;
 
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.tSNEWrapper.tSNETaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa.PCoATaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.tSNEWrapper.tSNETaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.umap.UMAPTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.pcoa.PCoATaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterVizFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.RankFactory;
@@ -242,6 +243,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new PCATaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new PCoATaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new tSNETaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new UMAPTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
 
 		{
 			// Link Network Selections

@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.pcoa;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.pcoa;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
