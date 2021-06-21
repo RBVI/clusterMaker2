@@ -217,27 +217,37 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 	        return true;
 	    return false;
 	}
-
+ 
+	
 	//fetches JSON object, deserializes the data and puts it to CyJobData
 	@Override
 	public CyJobStatus fetchResults(CyJob job, CyJobData data) {
-		System.out.println("inside fetchResults()");
 		if (job instanceof ClusterJob) {
+			
 			ClusterJob clusterJob = (ClusterJob) job;
 			//handleCommand gives whatever HttpGET gives.
-			JSONObject result = handleCommand(clusterJob, Command.FETCH, null); //handles command FETCH --> argMap is null --> JSON object runs the command
-			System.out.println("fetchResults() JSONObject result: " + result);
+		    JSONObject result = handleCommand(clusterJob, Command.FETCH, null); //handles command FETCH --> argMap is null --> JSON object runs the command
+		    System.out.println("fetchResults() JSONObject result: " + result);
 			
 			// Get the unserialized data, dataService deserializes the data (the JSON object), CyJobData is basically a HashMap
-			CyJobData newData = dataService.deserialize(result); 
-			System.out.println("CyJobData results: " + newData.getAllValues());
+		    CyJobData newData = dataService.deserialize(result); 
+		    System.out.println("CyJobData results: " + newData.getAllValues());
 			
 			// Merge it in, move the information from newData to data
-			for (String key: newData.keySet()) {
-				data.put(key, newData.get(key));
-			}
+		    for (String key: newData.keySet()) {
+		    	data.put(key, newData.get(key));
+		    }
+			
+		    System.out.println("fetchResults() CyJobData: " + data.getAllValues());
 
-			Map<String, Object> clusterData = clusterJob.getClusterData().getAllValues();
+		    Map<String, Object> clusterData = clusterJob.getClusterData().getAllValues();
+		    System.out.println("fetchResults() ClusterJob: " + clusterData);
+		    
+		    // HERE I should take the results from UMAP {embedding=[["Node","x","y"],["YKR026C",12.655669212341309,13.004707336425781]....], "status" : "done"}
+		    // and make the scatter plot that needs the coordinates and the node name
+		    // make another method for dimensionality reduction? one that would see what form the data is ? either CLUSTER or DIMENSIONALITY --> different processing
+		    // OR make an if sentence to this method?
+			
 			String clusterAttributeName = (String) clusterData.get("clusterAttributeName");
 			CyNetwork network = (CyNetwork) clusterData.get("network");
 			ClusterManager clusterManager = (ClusterManager) clusterData.get("clusterManager");
@@ -245,11 +255,40 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 			String group_attr = (String) clusterData.get("group_attr");
 			List<String> params  = (List<String>) clusterData.get("params");
 			String shortName = (String) clusterData.get("shortName");
-			List<NodeCluster> nodeClusters = createClusters(data, clusterAttributeName, network); //move this to remote utils
-			System.out.println("NodeClusters: " + nodeClusters);
 			
-			AbstractNetworkClusterer.createGroups(network, nodeClusters, group_attr, clusterAttributeName, 
-					clusterManager, createGroups, params, shortName);
+			// if we are running a dimensionality reduction algorithm, now UMAP only
+			if (shortName.equals("umap")) {
+				JSONArray embedding = (JSONArray) data.get("embedding");
+				int size = embedding.size(); 
+				CyNode[] nodes = new CyNode[size]; 
+				double[][] coordinates = new double[size][2];  
+				
+				for (int i = 1; i < embedding.size(); i++) {
+					JSONArray nodeData = (JSONArray) embedding.get(i);
+					String nodeName = (String) nodeData.get(0);
+					
+					for (CyNode cyNode : network.getNodeList()) {// getting the cyNode object with the name of the node
+						if (network.getRow(cyNode).get(CyNetwork.NAME, String.class).equals(nodeName)) {
+							nodes[i] = cyNode;
+						}
+					} 
+					
+					double x = (Double) nodeData.get(1); 
+					double y = (Double) nodeData.get(2); 
+					coordinates[i][0] = x;
+					coordinates[i][1] = y;
+					System.out.println("coordinates :" + coordinates[i][0] + ", " + coordinates[i][1]);
+				}
+				
+				//ScatterPlotDialog scatter = new ScatterPlotDialog(clusterManager, "String title", taskMonitor, nodes, coordinates);
+				
+			} else { // for clustering algorithms
+				List<NodeCluster> nodeClusters = createClusters(data, clusterAttributeName, network); //move this to remote utils
+				System.out.println("NodeClusters: " + nodeClusters);
+		
+				AbstractNetworkClusterer.createGroups(network, nodeClusters, group_attr, clusterAttributeName, 
+						clusterManager, createGroups, params, shortName);
+			}
 			
 			CyJobStatus resultStatus = getStatus(result, null);
 			if (resultStatus == null)
@@ -257,6 +296,11 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 
 		}
 		return new CyJobStatus(Status.ERROR, "CyJob is not a ClusterJob"); //if not a clusterjob
+	}
+	
+	
+	public void dimensionalityReduction() {
+		
 	}
 	
 	//returns a list of NodeCluster objects that have a number and a list of nodes belonging to it

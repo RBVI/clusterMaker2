@@ -18,14 +18,10 @@ public class UMAPContext {
 	
 	//Tunables
 	
-	@Tunable(description = "Objective function",
-			 longDescription = "Whether to use the Constant Potts Model (CPM) or modularity. Must be either \"CPM\" or \"modularity\".",
-			 exampleStringValue = "CPM",
-			 groups = {"UMAP Advanced Settings"}, gravity = 1.0)
-	public ListSingleSelection<String> objective_function = new ListSingleSelection<>("CPM", "modularity");
-	
+	//change this to multiple selection, call node attributeList?
+	//pull node attribute list directly into the context, attributeclusterers --> attributelist
 	private ListSingleSelection<String> attribute ;
-	@Tunable(description = "Attribute", groups={"Source for array data"}, params="displayState=uncollapsed", 
+	@Tunable(description = "Attribute List", groups={"Source for array data"}, params="displayState=uncollapsed", 
 	         longDescription = "The column containing the data to be used for the clustering. "+
 	                           "If no weight column is used, select ```--NONE---```",
 	         exampleStringValue = "weight",
@@ -35,6 +31,30 @@ public class UMAPContext {
 		return attribute;
 	}
 	public void setattribute(ListSingleSelection<String> attr) { }
+	
+	
+	
+	/*	@Contains Tunables(description="Node attributes for cluster", groups="Array sources", 
+	         longDescription="Select the node table columns to be used for calculating the cluster.  "+
+	                         "Note that at least 2 node columns are usually required.",
+	         exampleStringValue="gal1RGexp,gal4RGExp,gal80Rexp",
+	         tooltip="You must choose at least 2 node columns for an attribute cluster", gravity=50 )
+	public ListMultipleSelection<String> nodeAttributeList = null;
+*/
+	
+	//Call this nodesOnly = true
+	
+	
+	/*public AttributeList(CyNetwork network, boolean nodesOnly) {
+		this.network = network;
+		if (network != null) {
+			nodeAttributeList = ModelUtils.updateNodeAttributeList(network, nodeAttributeList);
+			if (!nodesOnly)
+				edgeAttributeList = ModelUtils.updateEdgeAttributeList(network, edgeAttributeList);
+		}
+	}
+*/
+	
 	
 	@Tunable(description = "Number of neighbors",
 			longDescription = "This parameter controls how UMAP balances local versus "
@@ -91,7 +111,6 @@ public class UMAPContext {
 		else
 			advancedAttributes = new AdvancedProperties("__umap", false);
 		
-		objective_function = origin.objective_function;
 		attribute = origin.attribute;
 		n_neighbors = origin.n_neighbors;
 		min_dist = origin.min_dist;
