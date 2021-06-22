@@ -3,6 +3,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.jobs.CyJobData;
@@ -54,7 +55,6 @@ public class UMAP extends AbstractNetworkClusterer {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		// Get the execution service
-				System.out.println("Running UMAP :)");
 				CyJobExecutionService executionService = 
 								registrar.getService(CyJobExecutionService.class, "(title=ClusterJobExecutor)");
 				CyApplicationManager appManager = registrar.getService(CyApplicationManager.class);
@@ -62,12 +62,14 @@ public class UMAP extends AbstractNetworkClusterer {
 				
 				clusterAttributeName = context.getClusterAttribute();
 				createGroups = context.advancedAttributes.createGroups;
-		     	String attribute = context.getattribute().getSelectedValue();
+		     	String attribute = context.getattribute().getSelectedValue(); // rather than get single select attribute, make it multiple select
 				
 				// list of column names wanted to use in UMAP
 				CyTable nodeTable = currentNetwork.getDefaultNodeTable();
+				// create x and y column in the nodeTable after getting results --> write the dta into the columns
+				// map<CyNode, Float[]> float arrays have x and y and cynode is the key
 				List<String> columns = new ArrayList<>();
-				columns.add("name");
+				columns.add("name"); //identifier column, tunable
 				columns.add("gal1RGexp");
 				columns.add("gal4RGexp");
 				
@@ -104,6 +106,11 @@ public class UMAP extends AbstractNetworkClusterer {
 				job.setJobMonitor(jobHandler);
 						// Submit the job
 				CyJobStatus exStatus = executionService.executeJob(job, basePath, null, jobData);
+				
+
+				//add two columns x, y , based on node name, node table --> write x and y values!!!!!!!!!!!!!!!!!!!!!!!!!
+				//call them this : newmap_x, newmap_y
+
 				
 				CyJobStatus.Status status = exStatus.getStatus();
 				System.out.println("Status: " + status);
