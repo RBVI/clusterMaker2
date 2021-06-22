@@ -41,6 +41,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leiden.LeidenCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.ScatterPlotDialog;
 
 /**
  * The main interface to the RBVI network cluster REST service.  The
@@ -277,10 +278,10 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 					double y = (Double) nodeData.get(2); 
 					coordinates[i][0] = x;
 					coordinates[i][1] = y;
-					System.out.println("coordinates :" + coordinates[i][0] + ", " + coordinates[i][1]);
 				}
-				
-				//ScatterPlotDialog scatter = new ScatterPlotDialog(clusterManager, "String title", taskMonitor, nodes, coordinates);
+				ClusterManager manager = (ClusterManager) clusterData.get("manager");
+				ScatterPlotDialog scatter = new ScatterPlotDialog(manager, "UMAP scatterplot", null, nodes, coordinates);
+				System.out.println("scatter plot : " + scatter);
 				
 			} else { // for clustering algorithms
 				List<NodeCluster> nodeClusters = createClusters(data, clusterAttributeName, network); //move this to remote utils

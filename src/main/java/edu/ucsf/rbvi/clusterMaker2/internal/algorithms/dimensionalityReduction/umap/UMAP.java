@@ -108,9 +108,9 @@ public class UMAP extends AbstractNetworkClusterer {
 				CyJobStatus exStatus = executionService.executeJob(job, basePath, null, jobData);
 				
 
-				//add two columns x, y , based on node name, node table --> write x and y values
-				
-				// ---> modify scatterplot so the columns are read
+				//add two columns x, y , based on node name, node table --> write x and y values!!!!!!!!!!!!!!!!!!!!!!!!!
+				//call them this : newmap_x, newmap_y
+
 				
 				CyJobStatus.Status status = exStatus.getStatus();
 				System.out.println("Status: " + status);
