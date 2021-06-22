@@ -102,7 +102,7 @@ public class ScatterPlotDialog extends JDialog {
 		this.scores = new CyMatrix[1];
 		this.title = title;
 		this.variances = null;
-		this.loadings = CyMatrixFactory.makeSmallMatrix(scores[0].getNetwork(), 1, 2);
+		this.loadings = CyMatrixFactory.makeSmallMatrix(manager.getNetwork(), 1, 2);
 		thisDialog = this;
     init(manager, title, monitor, matrix);
   }
@@ -191,7 +191,8 @@ public class ScatterPlotDialog extends JDialog {
   private void init(ClusterManager manager, String title, TaskMonitor monitor, CyMatrix matrix) {
 		this.title = title;
 		setTitle(title+" Scatter Plot");
-		monitor.setTitle(title+" Scatter Plot");
+    if (monitor != null)
+		  monitor.setTitle(title+" Scatter Plot");
 		useLoadings = false;
 		supportsLayout = true;
 		this.scores[0] = matrix;
@@ -200,7 +201,11 @@ public class ScatterPlotDialog extends JDialog {
 		loadings.setColumnLabel(1, "Y Axis");
 
 		if (matrix.nColumns() != 2) {
-			monitor.showMessage(TaskMonitor.Level.ERROR, "Coordinate scatterplot must have 2 columns!");
+      if (monitor != null)
+        monitor.showMessage(TaskMonitor.Level.ERROR, "Coordinate scatterplot must have 2 columns!");
+      else {
+        // User log?
+      }
 			return;
 		}
 
