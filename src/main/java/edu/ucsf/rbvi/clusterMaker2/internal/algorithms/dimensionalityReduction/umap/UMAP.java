@@ -60,18 +60,21 @@ public class UMAP extends AbstractNetworkClusterer {
 				CyApplicationManager appManager = registrar.getService(CyApplicationManager.class);
 				CyNetwork currentNetwork = appManager.getCurrentNetwork(); //gets the network presented in Cytoscape
 				
-				clusterAttributeName = context.getClusterAttribute();
-				createGroups = context.advancedAttributes.createGroups;
-		     	String attribute = context.getattribute().getSelectedValue(); // rather than get single select attribute, make it multiple select
+				// clusterAttributeName = context.getClusterAttribute();
+				clusterAttributeName = "__umap";
+				// createGroups = context.advancedAttributes.createGroups;
+        List<String> attributes = context.getnodeAttributeList().getSelectedValues(); // rather than get single select attribute, make it multiple select
 				
 				// list of column names wanted to use in UMAP
 				CyTable nodeTable = currentNetwork.getDefaultNodeTable();
 				// create x and y column in the nodeTable after getting results --> write the dta into the columns
 				// map<CyNode, Float[]> float arrays have x and y and cynode is the key
 				List<String> columns = new ArrayList<>();
-				columns.add("name"); //identifier column, tunable
-				columns.add("gal1RGexp");
-				columns.add("gal4RGexp");
+				// columns.add("name"); //identifier column, tunable
+				// columns.add("gal1RGexp");
+				// columns.add("gal4RGexp");
+        columns.add("name");
+        columns.addAll(attributes);
 				
 				// creating the data itself, values of the columns chosen for each row (node)
 				List<List<String>> data = new ArrayList<>();
@@ -116,10 +119,12 @@ public class UMAP extends AbstractNetworkClusterer {
 				System.out.println("Status: " + status);
 				if (status == Status.FINISHED) {
 					executionService.fetchResults(job, dataService.getDataInstance()); 
+          /*
 					if (context.vizProperties.showUI) {
 						taskMonitor.showMessage(TaskMonitor.Level.INFO, "Creating network");
 						insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true, context.vizProperties.restoreEdges, false));
 					}
+          */
 					
 				} else if (status == Status.RUNNING 
 						|| status == Status.SUBMITTED 

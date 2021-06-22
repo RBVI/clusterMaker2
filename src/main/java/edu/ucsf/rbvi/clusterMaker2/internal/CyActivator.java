@@ -166,6 +166,8 @@ public class CyActivator extends AbstractCyActivator {
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new AutoSOMETaskFactory(clusterManager, false),
 		                ClusterTaskFactory.class, new Properties());
+		registerService(bc, new FastGreedyTaskFactory(clusterManager, registrar),
+		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new FuzzifierTaskFactory(clusterManager), 
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new GLayClusterTaskFactory(clusterManager), 
@@ -174,26 +176,24 @@ public class CyActivator extends AbstractCyActivator {
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new FCMClusterTaskFactory(clusterManager), 
 		                ClusterTaskFactory.class, new Properties());
+		registerService(bc, new InfomapTaskFactory(clusterManager, registrar),
+		                ClusterTaskFactory.class, new Properties());
+		registerService(bc, new LeidenClusterTaskFactory(clusterManager, registrar),
+		                ClusterTaskFactory.class, new Properties());
+		registerService(bc, new LabelPropagationTaskFactory(clusterManager, registrar),
+		                ClusterTaskFactory.class, new Properties());
+		registerService(bc, new LEVClusterTaskFactory(clusterManager, registrar),
+		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new MCLClusterTaskFactory(clusterManager), 
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new MCODEClusterTaskFactory(clusterManager), 
+		                ClusterTaskFactory.class, new Properties());
+		registerService(bc, new MultilevelClusterTaskFactory(clusterManager, registrar),
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new SCPSClusterTaskFactory(clusterManager), 
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new TransClustClusterTaskFactory(clusterManager),
 		                ClusterTaskFactory.class, new Properties());
-		registerService(bc, new LeidenClusterTaskFactory(clusterManager, registrar),
-						ClusterTaskFactory.class, new Properties());
-		registerService(bc, new InfomapTaskFactory(clusterManager, registrar),
-						ClusterTaskFactory.class, new Properties());
-		registerService(bc, new FastGreedyTaskFactory(clusterManager, registrar),
-						ClusterTaskFactory.class, new Properties());
-		registerService(bc, new LabelPropagationTaskFactory(clusterManager, registrar),
-						ClusterTaskFactory.class, new Properties());
-		registerService(bc, new LEVClusterTaskFactory(clusterManager, registrar),
-						ClusterTaskFactory.class, new Properties());
-		registerService(bc, new MultilevelClusterTaskFactory(clusterManager, registrar),
-						ClusterTaskFactory.class, new Properties());
 		
 		// Cluster ranking
 		registerService(bc, new MAATaskFactory(clusterManager), RankFactory.class, new Properties());
