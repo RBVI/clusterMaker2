@@ -23,6 +23,7 @@ import org.cytoscape.jobs.CyJobData;
 import org.cytoscape.jobs.CyJobDataService;
 import org.cytoscape.jobs.CyJobStatus;
 import org.cytoscape.jobs.CyJobStatus.Status;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
@@ -262,7 +263,8 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 				JSONArray embedding = (JSONArray) data.get("embedding");
 				int size = embedding.size(); 
 				CyNode[] nodes = new CyNode[size]; 
-				double[][] coordinates = new double[size][2];  
+				double[][] coordinates = new double[size][2];
+				String[] nodeNames = new String[size];
 				
 				for (int i = 1; i < embedding.size(); i++) {
 					JSONArray nodeData = (JSONArray) embedding.get(i);
@@ -271,6 +273,8 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 					for (CyNode cyNode : network.getNodeList()) {// getting the cyNode object with the name of the node
 						if (network.getRow(cyNode).get(CyNetwork.NAME, String.class).equals(nodeName)) {
 							nodes[i] = cyNode;
+							nodeNames[i] = nodeName;
+							System.out.println(nodes[i]);
 						}
 					} 
 					
@@ -279,9 +283,25 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 					coordinates[i][0] = x;
 					coordinates[i][1] = y;
 				}
-				ClusterManager manager = (ClusterManager) clusterData.get("manager");
-				ScatterPlotDialog scatter = new ScatterPlotDialog(manager, "UMAP scatterplot", null, nodes, coordinates);
-				System.out.println("scatter plot : " + scatter);
+				
+				CyTable nodeTable = network.getDefaultNodeTable();
+				nodeTable.createColumn("newmap_x", Double.class, false);
+				nodeTable.createColumn("newmap_y", Double.class, false);
+				
+				for (int i = 0; i < nodes.length; i++) {
+				   if (nodes[i] != null) {
+					   network.getRow(nodes[i]).set("newmap_x", coordinates[i][0]);
+					   System.out.println("X value from the table : " + network.getRow(nodes[i]).get("newmap_x", Double.class));
+					   network.getRow(nodes[i]).set("newmap_y", coordinates[i][1]);
+					   System.out.println("Y value from the table : " + network.getRow(nodes[i]).get("newmap_y", Double.class));
+				   }
+				}
+				
+					// If we want to use ScatterPlotDialog
+				
+				//ClusterManager manager = (ClusterManager) clusterData.get("manager");
+				//ScatterPlotDialog scatter = new ScatterPlotDialog(manager, "UMAP scatterplot", null, nodes, coordinates);
+				//System.out.println("scatter plot : " + scatter);
 				
 			} else { // for clustering algorithms
 				List<NodeCluster> nodeClusters = createClusters(data, clusterAttributeName, network); //move this to remote utils
@@ -299,10 +319,6 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		return new CyJobStatus(Status.ERROR, "CyJob is not a ClusterJob"); //if not a clusterjob
 	}
 	
-	
-	public void dimensionalityReduction() {
-		
-	}
 	
 	//returns a list of NodeCluster objects that have a number and a list of nodes belonging to it
 	public static List<NodeCluster> createClusters(CyJobData data, String clusterAttributeName, CyNetwork network) {
@@ -372,8 +388,7 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		}
 	}
 
-	
-	
+
 	
 	//compare f ex "done" and map that to the status ENUM
 	//added return new CyJobStatus
