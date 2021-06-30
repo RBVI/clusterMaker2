@@ -100,7 +100,6 @@ public class ScatterPlotDialog extends JDialog {
     matrix.setRowNodes(nodes);
 		this.manager = manager;
 		this.scores = new CyMatrix[1];
-		this.scores[0] = matrix;
 		this.title = title;
 		this.variances = null;
 		this.loadings = CyMatrixFactory.makeSmallMatrix(manager.getNetwork(), 1, 2);

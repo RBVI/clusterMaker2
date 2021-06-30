@@ -20,6 +20,7 @@ public class UMAPContext {
 	
 	//change this to multiple selection, call node attributeList?
 	//pull node attribute list directly into the context, attributeclusterers --> attributelist
+  /*
 	private ListSingleSelection<String> attribute ;
 	@Tunable(description = "Attribute List", groups={"Source for array data"}, params="displayState=uncollapsed", 
 	         longDescription = "The column containing the data to be used for the clustering. "+
@@ -31,16 +32,23 @@ public class UMAPContext {
 		return attribute;
 	}
 	public void setattribute(ListSingleSelection<String> attr) { }
+  */
 	
 	
 	
-	/*	@Contains Tunables(description="Node attributes for cluster", groups="Array sources", 
+	public ListMultipleSelection<String> nodeAttributeList = null;
+	@Tunable(description="Node attributes for cluster", groups="Array sources", 
 	         longDescription="Select the node table columns to be used for calculating the cluster.  "+
 	                         "Note that at least 2 node columns are usually required.",
 	         exampleStringValue="gal1RGexp,gal4RGExp,gal80Rexp",
 	         tooltip="You must choose at least 2 node columns for an attribute cluster", gravity=50 )
-	public ListMultipleSelection<String> nodeAttributeList = null;
-*/
+  public ListMultipleSelection<String> getnodeAttributeList() {
+		if (network != null && nodeAttributeList == null)
+			nodeAttributeList = ModelUtils.updateNodeAttributeList(network, nodeAttributeList);
+    return nodeAttributeList;
+  }
+
+  public void setnodeAttributeList(ListMultipleSelection<String> nal) { }
 	
 	//Call this nodesOnly = true
 	
@@ -95,23 +103,24 @@ public class UMAPContext {
 			groups = {"UMAP Advanced Settings"}, gravity = 4.0)
     public Boolean scale = true;
 	
-	@ContainsTunables
-	public AdvancedProperties advancedAttributes;
+	// @ContainsTunables
+	// public AdvancedProperties advancedAttributes;
 
-	@ContainsTunables
-	public NetworkVizProperties vizProperties = new NetworkVizProperties();
+	// @ContainsTunables
+	// public NetworkVizProperties vizProperties = new NetworkVizProperties();
 
 	public UMAPContext() {
-		advancedAttributes = new AdvancedProperties("__umap", false); //this is the name of the column Integer that is created when click LOAD
+		// advancedAttributes = new AdvancedProperties("__umap", false); //this is the name of the column Integer that is created when click LOAD
 	}
 
 	public UMAPContext(UMAPContext origin) {
-		if (origin.advancedAttributes != null)
-			advancedAttributes = new AdvancedProperties(origin.advancedAttributes);
-		else
-			advancedAttributes = new AdvancedProperties("__umap", false);
+		// if (origin.advancedAttributes != null)
+		// 	advancedAttributes = new AdvancedProperties(origin.advancedAttributes);
+		// else
+		// 	advancedAttributes = new AdvancedProperties("__umap", false);
 		
-		attribute = origin.attribute;
+		// attribute = origin.attribute;
+		nodeAttributeList = origin.nodeAttributeList;
 		n_neighbors = origin.n_neighbors;
 		min_dist = origin.min_dist;
 		metric = origin.metric;
@@ -123,11 +132,12 @@ public class UMAPContext {
 			return;
 
 		this.network = network;
+    this.nodeAttributeList = null;
 	}
 
 	public CyNetwork getNetwork() { return network; }
 
-	public String getClusterAttribute() { return advancedAttributes.clusterAttribute;}
+	// public String getClusterAttribute() { return advancedAttributes.clusterAttribute;}
 
 	public void setUIHelper(TunableUIHelper helper) {
 		this.helper = helper;

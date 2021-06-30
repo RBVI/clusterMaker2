@@ -144,6 +144,7 @@ public class TransClustCluster extends AbstractNetworkClusterer{
 
 		monitor.showMessage(TaskMonitor.Level.INFO,"Clustering...");
 		createGroups = context.advancedAttributes.createGroups;
+		clusterAttributeName = context.getClusterAttribute();
 
 		//Cluster the nodes
 

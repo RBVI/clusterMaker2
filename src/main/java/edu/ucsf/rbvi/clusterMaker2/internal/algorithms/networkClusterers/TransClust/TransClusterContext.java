@@ -32,7 +32,7 @@ public class TransClusterContext implements ClusterAlgorithmContext {
 	public int mergeThreshold = 100;
 
 	@Tunable(description= "Number of Processors:",groups={"Advanced Tuning Parameters","Parallelization"}, gravity=15.0)
-	public int processors = -1;
+	public int processors = 1;
 	
 	@ContainsTunables
 	public AdvancedProperties advancedAttributes;
@@ -42,6 +42,7 @@ public class TransClusterContext implements ClusterAlgorithmContext {
 
 	public TransClusterContext() {
 		advancedAttributes = new AdvancedProperties("__transclustCluster", false);
+    processors = Runtime.getRuntime().availableProcessors();
 	}
 
 	public TransClusterContext(TransClusterContext origin) {

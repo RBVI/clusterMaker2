@@ -262,27 +262,27 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 			if (shortName.equals("umap")) {
 				JSONArray embedding = (JSONArray) data.get("embedding");
 				int size = embedding.size(); 
-				CyNode[] nodes = new CyNode[size]; 
-				double[][] coordinates = new double[size][2];
-				String[] nodeNames = new String[size];
+        
+				CyNode[] nodes = new CyNode[size-1]; 
+				double[][] coordinates = new double[size-1][2];
 				
-				for (int i = 1; i < embedding.size(); i++) {
+				for (int i = 1; i < size; i++) {
 					JSONArray nodeData = (JSONArray) embedding.get(i);
 					String nodeName = (String) nodeData.get(0);
 					
 					for (CyNode cyNode : network.getNodeList()) {// getting the cyNode object with the name of the node
 						if (network.getRow(cyNode).get(CyNetwork.NAME, String.class).equals(nodeName)) {
-							nodes[i] = cyNode;
-							nodeNames[i] = nodeName;
-							System.out.println(nodes[i]);
+							nodes[i-1] = cyNode;
+
 						}
 					} 
 					
 					double x = (Double) nodeData.get(1); 
 					double y = (Double) nodeData.get(2); 
-					coordinates[i][0] = x;
-					coordinates[i][1] = y;
+					coordinates[i-1][0] = x;
+					coordinates[i-1][1] = y;
 				}
+
 				
 				CyTable nodeTable = network.getDefaultNodeTable();
 				nodeTable.createColumn("newmap_x", Double.class, false);
