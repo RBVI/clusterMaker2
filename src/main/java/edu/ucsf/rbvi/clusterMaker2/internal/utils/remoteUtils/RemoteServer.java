@@ -51,6 +51,8 @@ public class RemoteServer {
 			return server + "service/multilevel";
 		} else if (service.equals("umap")) {
 			return server + "service/umap";
+		} else if (service.equals("tsne")) { // what is the path to remote tsne?
+			return server + "service/tsne";
 		} else {
 			System.out.println("Unknown service");
 		}

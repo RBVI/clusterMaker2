@@ -245,11 +245,6 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		    Map<String, Object> clusterData = clusterJob.getClusterData().getAllValues();
 		    System.out.println("fetchResults() ClusterJob: " + clusterData);
 		    
-		    // HERE I should take the results from UMAP {embedding=[["Node","x","y"],["YKR026C",12.655669212341309,13.004707336425781]....], "status" : "done"}
-		    // and make the scatter plot that needs the coordinates and the node name
-		    // make another method for dimensionality reduction? one that would see what form the data is ? either CLUSTER or DIMENSIONALITY --> different processing
-		    // OR make an if sentence to this method?
-			
 			String clusterAttributeName = (String) clusterData.get("clusterAttributeName");
 			CyNetwork network = (CyNetwork) clusterData.get("network");
 			ClusterManager clusterManager = (ClusterManager) clusterData.get("clusterManager");
