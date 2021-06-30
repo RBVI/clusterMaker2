@@ -18,23 +18,6 @@ public class UMAPContext {
 	
 	//Tunables
 	
-	//change this to multiple selection, call node attributeList?
-	//pull node attribute list directly into the context, attributeclusterers --> attributelist
-  /*
-	private ListSingleSelection<String> attribute ;
-	@Tunable(description = "Attribute List", groups={"Source for array data"}, params="displayState=uncollapsed", 
-	         longDescription = "The column containing the data to be used for the clustering. "+
-	                           "If no weight column is used, select ```--NONE---```",
-	         exampleStringValue = "weight",
-	         gravity=2.0)
-	public ListSingleSelection<String> getattribute(){
-		attribute = ModelUtils.updateEdgeAttributeList(network, attribute);
-		return attribute;
-	}
-	public void setattribute(ListSingleSelection<String> attr) { }
-  */
-	
-	
 	
 	public ListMultipleSelection<String> nodeAttributeList = null;
 	@Tunable(description="Node attributes for cluster", groups="Array sources", 
@@ -42,26 +25,12 @@ public class UMAPContext {
 	                         "Note that at least 2 node columns are usually required.",
 	         exampleStringValue="gal1RGexp,gal4RGExp,gal80Rexp",
 	         tooltip="You must choose at least 2 node columns for an attribute cluster", gravity=50 )
-  public ListMultipleSelection<String> getnodeAttributeList() {
+    public ListMultipleSelection<String> getnodeAttributeList() {
 		if (network != null && nodeAttributeList == null)
 			nodeAttributeList = ModelUtils.updateNodeAttributeList(network, nodeAttributeList);
-    return nodeAttributeList;
-  }
-
-  public void setnodeAttributeList(ListMultipleSelection<String> nal) { }
-	
-	//Call this nodesOnly = true
-	
-	
-	/*public AttributeList(CyNetwork network, boolean nodesOnly) {
-		this.network = network;
-		if (network != null) {
-			nodeAttributeList = ModelUtils.updateNodeAttributeList(network, nodeAttributeList);
-			if (!nodesOnly)
-				edgeAttributeList = ModelUtils.updateEdgeAttributeList(network, edgeAttributeList);
-		}
-	}
-*/
+        return nodeAttributeList;
+    }
+    public void setnodeAttributeList(ListMultipleSelection<String> nal) { }
 	
 	
 	@Tunable(description = "Number of neighbors",
@@ -103,12 +72,13 @@ public class UMAPContext {
 			groups = {"UMAP Advanced Settings"}, gravity = 4.0)
     public Boolean scale = true;
 	
-	// @ContainsTunables
-	// public AdvancedProperties advancedAttributes;
+	//@ContainsTunables
+	//public AdvancedProperties advancedAttributes;
 
-	// @ContainsTunables
-	// public NetworkVizProperties vizProperties = new NetworkVizProperties();
-
+	//@ContainsTunables
+	//public NetworkVizProperties vizProperties = new NetworkVizProperties();
+	
+	
 	public UMAPContext() {
 		// advancedAttributes = new AdvancedProperties("__umap", false); //this is the name of the column Integer that is created when click LOAD
 	}
@@ -119,7 +89,6 @@ public class UMAPContext {
 		// else
 		// 	advancedAttributes = new AdvancedProperties("__umap", false);
 		
-		// attribute = origin.attribute;
 		nodeAttributeList = origin.nodeAttributeList;
 		n_neighbors = origin.n_neighbors;
 		min_dist = origin.min_dist;
