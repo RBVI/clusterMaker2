@@ -35,6 +35,9 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Network
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.SCPS.SCPSClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.TransClustClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leiden.LeidenClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.isomap.IsomapTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.linearDiscriminant.LinearDiscriminantTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.mds.MDSTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.pca.PCAMenuTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.pca.PCATaskFactory;
 
@@ -47,6 +50,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PRWP.PRWPTaskFact
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.tSNEWrapper.tSNETaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.umap.UMAPTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.pcoa.PCoATaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.spectral.SpectralTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.tSNERemote.tSNERemoteTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterVizFactory;
@@ -246,7 +250,11 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new tSNETaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new UMAPTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new tSNERemoteTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
-
+		registerService(bc, new IsomapTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new LinearDiscriminantTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new MDSTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new SpectralTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
+		
 		{
 			// Link Network Selections
 			LinkSelectionTaskFactory linkTaskFactory = new LinkSelectionTaskFactory(clusterManager);

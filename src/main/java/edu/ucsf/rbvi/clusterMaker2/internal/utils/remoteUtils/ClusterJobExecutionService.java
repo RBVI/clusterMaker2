@@ -253,8 +253,10 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 			List<String> params  = (List<String>) clusterData.get("params");
 			String shortName = (String) clusterData.get("shortName");
 			
-			// if we are running a dimensionality reduction algorithm, now UMAP only
-			if (shortName.equals("umap")) {
+			// if we are running a dimensionality reduction algorithm
+			if (shortName.equals("umap") || shortName.equals("tsne") ||shortName.equals("isomap") || shortName.equals("lineardiscriminant")
+					|| shortName.equals("mds") || shortName.equals("spectral")) {
+				
 				JSONArray embedding = (JSONArray) data.get("embedding");
 				int size = embedding.size(); 
         
