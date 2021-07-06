@@ -1,25 +1,26 @@
 """
-UMAP dimensionality reduction algorithm
+tSNE dimensionality reduction algorithm
 """
 
 import falcon
 import api.utils as utils
 from .base_algorithm import BaseAlgorithm
-from sklearn.preprocessing import StandardScaler
+from sklearn.manifold import TSNE
 import pandas as pd
-import umap
 
-class UMAP(BaseAlgorithm):
+class TSNE(BaseAlgorithm):
 
     def get_args(self, req: falcon.Request) -> dict:
         """ Get the arguments """
 
         # Get our parameters
         args = {}
-        args['n_neighbors'] = utils.get_param_as_int(req, 'n_neighbors', 15)
-        args['min_dist'] = utils.get_param_as_float(req, 'min_dist', 0.1)
+        args['perplexity'] = utils.get_param_as_float(req, 'perplexity', 30.0)
+        args['early_exaggeration'] = utils.get_param_as_float(req, 'early_exaggeration', 12.0)
         args['metric'] = utils.get_param_as_string(req, 'metric', 'euclidean')
-        args['scale'] = utils.get_param_as_bool(req, 'scale', False)
+        args['learning_rate'] = utils.get_param_as_float(req, 'learning_rate', '200.0')
+        args['n_iter'] = utils.get_param_as_int(req, 'n_iter', 1000)
+        args['init'] = utils.get_param_as_string(req, 'init', 'pca')
         return args
 
     # This isn't really a community detection algorithm, but...
@@ -27,9 +28,12 @@ class UMAP(BaseAlgorithm):
         status['status'] = 'running'
 
         # Get our parameters
-        n_neighbors = args['n_neighbors']
-        min_dist = args['min_dist']
+        perplexity = args['perplexity']
+        early_ex = args['early_exaggeration']
+        learning_rate = args['learning_rate']
+        n_iter = args['n_iter']
         metric = args['metric']
+        init = args['init']
         data = args['json_data']
 
         df = utils.get_matrix(data)
@@ -40,11 +44,10 @@ class UMAP(BaseAlgorithm):
         df = df.dropna()
 
         data = df[columns[1:]].values # skip over the label and just pull the data
-        if (args['scale']):
-          data = StandardScaler().fit_transform(data)
+        tsne = TSNE(n_components=2, perplexity=perplexity,early_exggageration=early_ex, learning_rage=learning_rate,
+                    metric=metric, init=init, n_jobs=10)
+        embedding = tsne.fit_transform(data)
 
-        reducer = umap.UMAP(n_neighbors=n_neighbors,min_dist=min_dist,metric=metric)
-        embedding = reducer.fit_transform(data)
         #print(str(embedding))
 
         result_df = pd.DataFrame(embedding, columns=['x','y'])

@@ -1,25 +1,25 @@
 """
-UMAP dimensionality reduction algorithm
+MDS (Multidimensional scaling) dimensionality reduction algorithm
 """
 
 import falcon
 import api.utils as utils
 from .base_algorithm import BaseAlgorithm
 from sklearn.preprocessing import StandardScaler
+from sklearn.manifold import SpectralEmbedding
 import pandas as pd
-import umap
 
-class UMAP(BaseAlgorithm):
+class SpectralEmbedding(BaseAlgorithm):
 
     def get_args(self, req: falcon.Request) -> dict:
         """ Get the arguments """
 
         # Get our parameters
         args = {}
-        args['n_neighbors'] = utils.get_param_as_int(req, 'n_neighbors', 15)
-        args['min_dist'] = utils.get_param_as_float(req, 'min_dist', 0.1)
-        args['metric'] = utils.get_param_as_string(req, 'metric', 'euclidean')
-        args['scale'] = utils.get_param_as_bool(req, 'scale', False)
+        args['affinity'] = utils.get_param_as_string(req, 'affinity', 'nearest_neighbors')
+        args['gamma'] = utils.get_param_as_float(req, 'gamma', None)
+        args['eigen_solver'] = utils.get_param_as_string(req, 'eigen_solver', None)
+        args['n_neighbors'] = utils.get_param_as_int(req, 'n_neighbors', None)
         return args
 
     # This isn't really a community detection algorithm, but...
@@ -27,9 +27,10 @@ class UMAP(BaseAlgorithm):
         status['status'] = 'running'
 
         # Get our parameters
+        affinity = args['affinity']
+        gamma = args['gamma']
+        eigen_solver = args['eigen_solver']
         n_neighbors = args['n_neighbors']
-        min_dist = args['min_dist']
-        metric = args['metric']
         data = args['json_data']
 
         df = utils.get_matrix(data)
@@ -40,11 +41,10 @@ class UMAP(BaseAlgorithm):
         df = df.dropna()
 
         data = df[columns[1:]].values # skip over the label and just pull the data
-        if (args['scale']):
-          data = StandardScaler().fit_transform(data)
 
-        reducer = umap.UMAP(n_neighbors=n_neighbors,min_dist=min_dist,metric=metric)
-        embedding = reducer.fit_transform(data)
+        spectral = SpectralEmbedding(n_components=2, affinity=affinity, gamma=gamma,
+                                     eigen_solver=eigen_solver,n_neighbors=n_neighbors, n_jobs=10)
+        embedding = spectral.fit_transform(data)
         #print(str(embedding))
 
         result_df = pd.DataFrame(embedding, columns=['x','y'])

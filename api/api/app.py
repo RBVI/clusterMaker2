@@ -10,8 +10,8 @@ import sys
 manager = None
 
 def create_app(mgr: Manager):
-    #logging.basicConfig(filename="/var/tmp/webservices_api.log",level=logging.INFO)
-    #logging.info("Service initialized")
+    logging.basicConfig(filename="/var/tmp/webservices_api.log",level=logging.INFO)
+    logging.info("Service initialized")
     print("Service initialized", file=sys.stderr)
 
     manager = mgr

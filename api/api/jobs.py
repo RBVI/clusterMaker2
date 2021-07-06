@@ -10,7 +10,6 @@ from .service import Service
 
 class Jobs:
     """ A class to keep track of all running jobs """
-    active_jobs = {}
     manager = None
 
     def __init__(self, manager:Manager):
@@ -25,7 +24,7 @@ class Jobs:
         job_uuid = uuid.uuid4()
         # Add it to the list
         self.active_jobs[job_uuid] = service
-        #logging.info('Created job %s for service %s [%d]'%(str(job_uuid), service, os.getpid()))
+        logging.info('Created job %s for service %s [%d]'%(str(job_uuid), service, os.getpid()))
         return job_uuid
 
     def remove_job(self, job_uuid: uuid.UUID):
@@ -44,9 +43,10 @@ class Jobs:
         path = req.path
         #print('path: '+path)
         #print('job_id: '+job_id)
-        #logging.info('path: %s, job_id: %s [%d]'%(path,job_id,os.getpid()))
+        logging.info('path: %s, job_id: %s [%d], active_jobs=%d'%(path,job_id,os.getpid(),len(self.active_jobs)))
         if path.startswith("/status/"):
             uid = get_job_id(job_id)
+            logging.info('path: %s, job_id: %s [%d], active_jobs=%d'%(path,str(uid),os.getpid(),len(self.active_jobs)))
             if uid in self.active_jobs:
                 resp.code = falcon.HTTP_200
                 resp.text = str(self.active_jobs[uid].get_status(uid))

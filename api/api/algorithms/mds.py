@@ -1,25 +1,26 @@
 """
-UMAP dimensionality reduction algorithm
+MDS (Multidimensional scaling) dimensionality reduction algorithm
 """
 
 import falcon
 import api.utils as utils
 from .base_algorithm import BaseAlgorithm
 from sklearn.preprocessing import StandardScaler
+from sklearn.manifold import MDS
 import pandas as pd
-import umap
 
-class UMAP(BaseAlgorithm):
+class MDS(BaseAlgorithm):
 
     def get_args(self, req: falcon.Request) -> dict:
         """ Get the arguments """
 
         # Get our parameters
         args = {}
-        args['n_neighbors'] = utils.get_param_as_int(req, 'n_neighbors', 15)
-        args['min_dist'] = utils.get_param_as_float(req, 'min_dist', 0.1)
-        args['metric'] = utils.get_param_as_string(req, 'metric', 'euclidean')
-        args['scale'] = utils.get_param_as_bool(req, 'scale', False)
+        args['metric'] = utils.get_param_as_bool(req, 'metric', True)
+        args['n_init'] = utils.get_param_as_int(req, 'n_init', 4)
+        args['max_iter'] = utils.get_param_as_int(req, 'max_iter', 0)
+        args['eps'] = utils.get_param_as_float(req, 'eps', 1e-3)
+        args['dissimilarity'] = utils.get_param_as_string(req, 'dissimilarity', 'euclidean')
         return args
 
     # This isn't really a community detection algorithm, but...
@@ -27,9 +28,11 @@ class UMAP(BaseAlgorithm):
         status['status'] = 'running'
 
         # Get our parameters
-        n_neighbors = args['n_neighbors']
-        min_dist = args['min_dist']
         metric = args['metric']
+        n_init = args['n_init']
+        max_iter = args['max_iter']
+        eps = args['eps']
+        dissimilarity = args['dissimilarity']
         data = args['json_data']
 
         df = utils.get_matrix(data)
@@ -40,11 +43,10 @@ class UMAP(BaseAlgorithm):
         df = df.dropna()
 
         data = df[columns[1:]].values # skip over the label and just pull the data
-        if (args['scale']):
-          data = StandardScaler().fit_transform(data)
 
-        reducer = umap.UMAP(n_neighbors=n_neighbors,min_dist=min_dist,metric=metric)
-        embedding = reducer.fit_transform(data)
+        mds = MDS(n_components=2, n_init=n_init, eps=eps, dissimilarity=dissimilarity,
+                  metric=metric, max_iter=max_iter, n_jobs=10)
+        embedding = mds.fit_transform(data)
         #print(str(embedding))
 
         result_df = pd.DataFrame(embedding, columns=['x','y'])
