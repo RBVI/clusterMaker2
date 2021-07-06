@@ -15,6 +15,9 @@ public class tSNEContext implements TSneConfiguration {
 	CyNetwork network;
 	public boolean cancelled = false;
 
+	// use this website for the algorithms
+	// https://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html
+	
 	//Tunables
 	@ContainsTunables
 	public AttributeList attributeList = null;
