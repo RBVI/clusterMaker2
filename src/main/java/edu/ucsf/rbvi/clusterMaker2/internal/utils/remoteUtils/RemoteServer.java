@@ -37,7 +37,7 @@ public class RemoteServer {
 		
 		String server = PROD_PATH;
 		
-		if (service.equals("leiden")) {
+		/*if (service.equals("leiden")) {
 			return server + "service/leiden?objective_function=modularity&iterations=4";
 		} else if (service.equals("fastgreedy")) {
 			return server + "service/fastgreedy";
@@ -55,8 +55,20 @@ public class RemoteServer {
 			return server + "service/tsne";
 		} else {
 			System.out.println("Unknown service");
+		} */
+		
+		if (service.equals("leiden")) {
+			return server + "service/leiden?objective_function=modularity&iterations=4";
+		} else if (service.equals("fastgreedy") || service.equals("infomap")  || service.equals("labelpropagation")
+				|| service.equals("leadingeigenvector") || service.equals("multilevel") || service.equals("umap")
+				|| service.equals("tsne") || service.equals("isomap") || service.equals("mds") || service.equals("spectral") 
+				|| service.equals("lineardiscriminant")) {
+			return server + "service/" + service;
+		} else {
+			System.out.println("Unknown service");
 		}
-			
+		
+		
 		return null;
 	}
 		//sends the data
