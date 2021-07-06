@@ -36,7 +36,7 @@ public class IsomapTaskFactory extends AbstractClusterTaskFactory {
 	
 	@Override
 	public List<ClusterType> getTypeList() {
-		return Collections.singletonList(ClusterType.NETWORK);
+		return Collections.singletonList(ClusterType.DIMRED);
 	}
 	
 	@Override

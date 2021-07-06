@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.linearDiscriminant;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.linearEmbedding;
 
 import java.util.Collections;
 import java.util.List;
@@ -11,19 +11,19 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
-public class LinearDiscriminantTaskFactory extends AbstractClusterTaskFactory {
-	LinearDiscriminantContext context = null;
+public class LocalLinearEmbeddingTaskFactory extends AbstractClusterTaskFactory {
+	LocalLinearEmbeddingContext context = null;
 	final CyServiceRegistrar registrar;
 	
-	public LinearDiscriminantTaskFactory(ClusterManager clusterManager, CyServiceRegistrar registrar) {
+	public LocalLinearEmbeddingTaskFactory(ClusterManager clusterManager, CyServiceRegistrar registrar) {
 		super(clusterManager);
-		context = new LinearDiscriminantContext();
+		context = new LocalLinearEmbeddingContext();
 		this.registrar = registrar;
 	}
 	
-	public String getName() {return LinearDiscriminant.NAME;}
+	public String getName() {return LocalLinearEmbedding.NAME;}
 	
-	public String getShortName() {return LinearDiscriminant.SHORTNAME;}
+	public String getShortName() {return LocalLinearEmbedding.SHORTNAME;}
 	
 	@Override
 	public String getLongDescription() {
@@ -42,6 +42,6 @@ public class LinearDiscriminantTaskFactory extends AbstractClusterTaskFactory {
 	
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new LinearDiscriminant(context, clusterManager, registrar));
+		return new TaskIterator(new LocalLinearEmbedding(context, clusterManager, registrar));
 	}
 }

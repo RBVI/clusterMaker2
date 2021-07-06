@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.linearDiscriminant;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.linearEmbedding;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,16 +28,16 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJob;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
 
-public class LinearDiscriminant extends AbstractNetworkClusterer {
-	public static String NAME = "Linear Discriminant";
-	public static String SHORTNAME = "lineardiscriminant";
+public class LocalLinearEmbedding extends AbstractNetworkClusterer {
+	public static String NAME = "Local Linear Embedding";
+	public static String SHORTNAME = "lle";
 	final CyServiceRegistrar registrar;
-	public final static String GROUP_ATTRIBUTE = "__LinearDiscriminantGroups.SUID";
+	public final static String GROUP_ATTRIBUTE = "__LocalLinearEmbeddingGroups.SUID";
 	
 	@ContainsTunables
-	public LinearDiscriminantContext context = null;
+	public LocalLinearEmbeddingContext context = null;
 	
-	public LinearDiscriminant(LinearDiscriminantContext context, ClusterManager manager, CyServiceRegistrar registrar) {
+	public LocalLinearEmbedding(LocalLinearEmbeddingContext context, ClusterManager manager, CyServiceRegistrar registrar) {
 		super(manager);
 		this.context = context;
 		if (network == null)
@@ -60,7 +60,7 @@ public class LinearDiscriminant extends AbstractNetworkClusterer {
 		CyApplicationManager appManager = registrar.getService(CyApplicationManager.class);
 		CyNetwork currentNetwork = appManager.getCurrentNetwork(); //gets the network presented in Cytoscape
 				
-		clusterAttributeName = "__lineardiscriminant";
+		clusterAttributeName = "__localLinearEmbedding";
         List<String> attributes = context.getnodeAttributeList().getSelectedValues(); // rather than get single select attribute, make it multiple select
 				
 				// list of column names wanted to use in UMAP

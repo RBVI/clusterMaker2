@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.linearDiscriminant;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.linearEmbedding;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.ContainsTunables;
@@ -13,7 +13,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.attributeClusterers.Attri
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.NetworkVizProperties;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
-public class LinearDiscriminantContext {
+public class LocalLinearEmbeddingContext {
 
 	CyNetwork network;
 	TunableUIHelper helper;
@@ -36,19 +36,19 @@ public class LinearDiscriminantContext {
     @Tunable(description = "Number of neighbors",
 			 longDescription = "number of neighbors to consider for each point.",
 			 exampleStringValue = "5",
-			 groups = {"LinearDiscriminant Advanced Settings"}, gravity = 66)
+			 groups = {"Local Linear Embedding Advanced Settings"}, gravity = 66)
     public int n_neighbors = 5;
     
     @Tunable(description = "Regularization constant",
     		longDescription = "regularization constant, multiplies the trace of the local covariance matrix of the distances.",
     		exampleStringValue = "1 * 10^(-3)",
-    		groups = {"LinearDiscriminant Advanced Settings"}, gravity = 67)
+    		groups = {"Local Linear Embedding Advanced Settings"}, gravity = 67)
     public double reg = 1 * 10^(-3);
     
     @Tunable(description = "Tolerance",
     		longDescription = "Tolerance for ‘arpack’ method Not used if eigen_solver==’dense’.",
     		exampleStringValue = "1 * 10^(-6)",
-    		groups = {"LinearDiscriminant Advanced Settings"}, gravity = 68)
+    		groups = {"Local Linear Embedding Advanced Settings"}, gravity = 68)
     public double tol = 1 * 10^(-6);
     
     @Tunable(description = "Eigen solver",
@@ -60,13 +60,13 @@ public class LinearDiscriminantContext {
     				"denseuse standard dense matrix operations for the eigenvalue\r\n" + 
     				"decomposition. For this method, M must be an array or matrix type. This method should be avoided fo",
     		exampleStringValue = "auto",
-    		groups = {"LinearDiscriminant Advanced Settings"}, gravity = 69)
+    		groups = {"Local Linear Embedding Advanced Settings"}, gravity = 69)
     public ListSingleSelection<String> eigen_solver = new ListSingleSelection<String>("auto", "arpack", "dense");
     
     @Tunable(description = "Maximum iterations",
     		longDescription = "maximum number of iterations for the arpack solver. Not used if eigen_solver==’dense’.",
     		exampleStringValue = "100",
-    		groups = {"LinearDiscriminant Advanced Settings"}, gravity = 70)
+    		groups = {"Local Linear Embedding Advanced Settings"}, gravity = 70)
     public int max_iter = 100;
     
     @Tunable(description = "Method",
@@ -78,33 +78,33 @@ public class LinearDiscriminantContext {
 	 		"\r\n" + 
 	 		"ltsa: use local tangent space alignment algorithm. ",
 	 		exampleStringValue = "standard",
-	 		groups = {"LinearDiscriminant Advanced Settings"}, gravity = 71)
+	 		groups = {"Local Linear Embedding Advanced Settings"}, gravity = 71)
     public ListSingleSelection<String> method = new ListSingleSelection<String>("standard", "hessian", "modified", "ltsa");
     
     @Tunable(description = "Hessian tolerance",
     		longDescription = "Tolerance for Hessian eigenmapping method. Only used if method == 'hessian'",
     		exampleStringValue = "1 * 10^(-4)",
-    		groups = {"LinearDiscriminant Advanced Settings"}, gravity = 72)
+    		groups = {"Local Linear Embedding Advanced Settings"}, gravity = 72)
     public double hessian_tol = 1 * 10^(-4);
     
     @Tunable(description = "Modified tolerance",
     		longDescription = "Tolerance for modified LLE method. Only used if method == 'modified'",
     		exampleStringValue = "1 * 10^(-12)",
-    		groups = {"LinearDiscriminant Advanced Settings"}, gravity = 73)
+    		groups = {"Local Linear Embedding Advanced Settings"}, gravity = 73)
     public double modified_tol = 1 * 10^(-12);
     
     @Tunable(description = "Neighbors algorithm",
     		longDescription = "algorithm to use for nearest neighbors search, passed to neighbors.NearestNeighbors instance",
     		exampleStringValue = "auto",
-    		groups = {"LinearDiscriminant Advanced Settings"}, gravity = 74)
+    		groups = {"Local Linear Embedding Advanced Settings"}, gravity = 74)
     public ListSingleSelection<String> neighbors_algorithm = new ListSingleSelection<String>("auto", "brute", "kd_tree", "ball_tree");
     
     
-	public LinearDiscriminantContext() {
+	public LocalLinearEmbeddingContext() {
 
 	}
 
-	public LinearDiscriminantContext(LinearDiscriminantContext origin) {
+	public LocalLinearEmbeddingContext(LocalLinearEmbeddingContext origin) {
 
 		nodeAttributeList = origin.nodeAttributeList;
 		n_neighbors = origin.n_neighbors;

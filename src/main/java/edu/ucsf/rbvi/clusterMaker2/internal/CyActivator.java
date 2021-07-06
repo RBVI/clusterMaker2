@@ -36,7 +36,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.SCPS.SC
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.TransClustClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leiden.LeidenClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.isomap.IsomapTaskFactory;
-import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.linearDiscriminant.LinearDiscriminantTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.linearEmbedding.LocalLinearEmbeddingTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.mds.MDSTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.pca.PCAMenuTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.pca.PCATaskFactory;
@@ -251,7 +251,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new UMAPTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new tSNERemoteTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new IsomapTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
-		registerService(bc, new LinearDiscriminantTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new LocalLinearEmbeddingTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new MDSTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new SpectralTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
 		
