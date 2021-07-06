@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.umap;
+package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.dimensionalityReduction.tSNERemote;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,16 +28,16 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJob;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
 
-public class UMAP extends AbstractNetworkClusterer {
-	public static String NAME = "UMAP";
-	public static String SHORTNAME = "umap";
+public class tSNERemote extends AbstractNetworkClusterer {
+	public static String NAME = "tSNERemote";
+	public static String SHORTNAME = "tsneremote";
 	final CyServiceRegistrar registrar;
-	public final static String GROUP_ATTRIBUTE = "__UMAPGroups.SUID";
+	public final static String GROUP_ATTRIBUTE = "__tSNERemoteGroups.SUID";
 	
 	@ContainsTunables
-	public UMAPContext context = null;
+	public tSNERemoteContext context = null;
 	
-	public UMAP(UMAPContext context, ClusterManager manager, CyServiceRegistrar registrar) {
+	public tSNERemote(tSNERemoteContext context, ClusterManager manager, CyServiceRegistrar registrar) {
 		super(manager);
 		this.context = context;
 		if (network == null)
@@ -60,21 +60,14 @@ public class UMAP extends AbstractNetworkClusterer {
 				CyApplicationManager appManager = registrar.getService(CyApplicationManager.class);
 				CyNetwork currentNetwork = appManager.getCurrentNetwork(); //gets the network presented in Cytoscape
 				
-				// clusterAttributeName = context.getClusterAttribute();
-				clusterAttributeName = "__umap";
-				// createGroups = context.advancedAttributes.createGroups;
-        List<String> attributes = context.getnodeAttributeList().getSelectedValues(); // rather than get single select attribute, make it multiple select
+				clusterAttributeName = "__tsneremote";
+				List<String> attributes = context.getnodeAttributeList().getSelectedValues();
 				
-				// list of column names wanted to use in UMAP
+				// list of column names
 				CyTable nodeTable = currentNetwork.getDefaultNodeTable();
-				// create x and y column in the nodeTable after getting results --> write the dta into the columns
-				// map<CyNode, Float[]> float arrays have x and y and cynode is the key
 				List<String> columns = new ArrayList<>();
-				// columns.add("name"); //identifier column, tunable
-				// columns.add("gal1RGexp");
-				// columns.add("gal4RGexp");
-        columns.add("name");
-        columns.addAll(attributes);
+				columns.add("name");
+		        columns.addAll(attributes);
 				
 				// creating the data itself, values of the columns chosen for each row (node)
 				List<List<String>> data = new ArrayList<>();
@@ -114,12 +107,6 @@ public class UMAP extends AbstractNetworkClusterer {
 				System.out.println("Status: " + status);
 				if (status == Status.FINISHED) {
 					executionService.fetchResults(job, dataService.getDataInstance()); 
-          /*
-					if (context.vizProperties.showUI) {
-						taskMonitor.showMessage(TaskMonitor.Level.INFO, "Creating network");
-						insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true, context.vizProperties.restoreEdges, false));
-					}
-          */
 					
 				} else if (status == Status.RUNNING 
 						|| status == Status.SUBMITTED 
