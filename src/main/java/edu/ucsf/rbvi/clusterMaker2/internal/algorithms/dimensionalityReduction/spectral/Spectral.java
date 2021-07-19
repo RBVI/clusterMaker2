@@ -29,7 +29,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
 
 public class Spectral extends AbstractNetworkClusterer {
-	public static String NAME = "Spectral";
+	public static String NAME = "Spectral remote";
 	public static String SHORTNAME = "spectral";
 	final CyServiceRegistrar registrar;
 	public final static String GROUP_ATTRIBUTE = "__SpectralGroups.SUID";

@@ -19,13 +19,6 @@ public class IsomapContext {
 	TunableUIHelper helper;
 		
 		//Tunables
-	
-	//Which tunables??
-	
-	/*@Tunable(description = "",
-			 longDescription = "",
-			 exampleStringValue = "",
-			 groups = {"Isomap Advanced Settings"}, gravity = 70)*/
 
 	public ListMultipleSelection<String> nodeAttributeList = null;
 	@Tunable(description="Node attributes for cluster", groups="Array sources", 
@@ -89,7 +82,6 @@ public class IsomapContext {
     public int max_iter;
     
 	public IsomapContext() {
-		//advancedAttributes = new AdvancedProperties("__tsneremote", false); //this is the name of the column Integer that is created when click LOAD
 	}
 
 	public IsomapContext(IsomapContext origin) {
@@ -101,7 +93,7 @@ public class IsomapContext {
 		path_method = origin.path_method;
 		neighbors_algorithm = origin.neighbors_algorithm;
 		max_iter = origin.max_iter;
-		}
+	}
 
 	public void setNetwork(CyNetwork network) {
 		if (this.network != null && this.network.equals(network))

@@ -28,7 +28,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobExecutio
 
 public class FastGreedy extends AbstractNetworkClusterer {
 
-	public static String NAME = "Fast Greedy";
+	public static String NAME = "Fast Greedy remote";
 	public static String SHORTNAME = "fastgreedy";
 	final CyServiceRegistrar registrar;
 	public final static String GROUP_ATTRIBUTE = "__FastGreedyGroups.SUID";

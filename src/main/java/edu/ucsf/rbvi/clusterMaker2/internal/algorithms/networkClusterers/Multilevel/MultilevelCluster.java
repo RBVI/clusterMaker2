@@ -27,7 +27,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Multil
 
 	public class MultilevelCluster extends AbstractNetworkClusterer {
 
-		public static String NAME = "Multilevel Cluster";
+		public static String NAME = "Multilevel Cluster remote";
 		public static String SHORTNAME = "multilevel";
 		final CyServiceRegistrar registrar;
 		public final static String GROUP_ATTRIBUTE = "__Multilevel.SUID";

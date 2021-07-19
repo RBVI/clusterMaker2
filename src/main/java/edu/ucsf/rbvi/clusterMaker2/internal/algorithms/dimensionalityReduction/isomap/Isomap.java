@@ -29,7 +29,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
 
 public class Isomap extends AbstractNetworkClusterer {
-	public static String NAME = "Isomap";
+	public static String NAME = "Isomap remote";
 	public static String SHORTNAME = "isomap";
 	final CyServiceRegistrar registrar;
 	public final static String GROUP_ATTRIBUTE = "__IsomapGroups.SUID";

@@ -29,7 +29,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
 
 public class UMAP extends AbstractNetworkClusterer {
-	public static String NAME = "UMAP";
+	public static String NAME = "UMAP remote";
 	public static String SHORTNAME = "umap";
 	final CyServiceRegistrar registrar;
 	public final static String GROUP_ATTRIBUTE = "__UMAPGroups.SUID";

@@ -40,7 +40,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
 
 public class Infomap extends AbstractNetworkClusterer {
-	public static String NAME = "Infomap";
+	public static String NAME = "Infomap remote";
 	public static String SHORTNAME = "infomap";
 	final CyServiceRegistrar registrar;
 	public final static String GROUP_ATTRIBUTE = "__InfomapGroups.SUID";
