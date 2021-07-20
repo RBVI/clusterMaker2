@@ -43,14 +43,14 @@ public class UMAPContext {
 			+ "estimating the manifold structure of the data, losing fine detail structure for the sake "
 			+ "of getting the broader of the data.",
 			exampleStringValue = "2",
-			tooltip = "<html>This parameter controls how UMAP balances local versus <br/>"
-			+ "global structure in the data. It does this by constraining the size of <br/>"
-			+ "the local neighborhood UMAP will look at when attempting to learn the manifold <br/>"
-			+ "structure of the data. This means that low values of n_neighbors will force UMAP <br/>"
-			+ "to concentrate on very local structure (potentially to the detriment of the big picture), <br/>"
-			+ "while large values will push UMAP to look at larger neighborhoods of each point when <br/>"
-			+ "estimating the manifold structure of the data, losing fine detail structure for the sake <br/>"
-			+ "of getting the broader of the data.</html>",
+			tooltip = "<html>This parameter controls how UMAP balances local versus global structure<br/>"
+			              + "in the data. It does this by constraining the size of the local neighborhood<br/>"
+			              + "UMAP will look at when attempting to learn the manifold structure of the data.<br/>"
+			              + "This means that low values of n_neighbors will force UMAP to concentrate on very<br/>"
+			              + "local structure (potentially to the detriment of the big picture), while large<br/>"
+			              + "values will push UMAP to look at larger neighborhoods of each point when estimating<br/>"
+			              + "the manifold structure of the data, losing fine detail structure for the sake <br/>"
+			              + "of getting the broader of the data.</html>",
 			groups = {"UMAP Advanced Settings"}, gravity = 1.0)
 	public int n_neighbors = 2;
 	
