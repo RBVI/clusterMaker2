@@ -27,7 +27,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
 
 public class LabelPropagation extends AbstractNetworkClusterer {
 
-	public static String NAME = "Label Propagation";
+	public static String NAME = "Label Propagation remote";
 	public static String SHORTNAME = "labelpropagation";
 	final CyServiceRegistrar registrar;
 	public final static String GROUP_ATTRIBUTE = "__LabelPropagationGroups.SUID";

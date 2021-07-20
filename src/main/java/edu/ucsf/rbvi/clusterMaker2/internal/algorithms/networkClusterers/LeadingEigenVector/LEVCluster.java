@@ -27,7 +27,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leadin
 
 	public class LEVCluster extends AbstractNetworkClusterer {
 
-		public static String NAME = "Leading Eigenvector";
+		public static String NAME = "Leading Eigenvector remote";
 		public static String SHORTNAME = "leadingeigenvector";
 		final CyServiceRegistrar registrar;
 		public final static String GROUP_ATTRIBUTE = "__LeadingEigenvector.SUID";

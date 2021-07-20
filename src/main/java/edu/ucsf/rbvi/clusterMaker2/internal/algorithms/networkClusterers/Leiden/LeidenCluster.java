@@ -40,7 +40,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
 
 public class LeidenCluster extends AbstractNetworkClusterer {
-	public static String NAME = "Leiden Clusterer";
+	public static String NAME = "Leiden Clusterer remote";
 	public static String SHORTNAME = "leiden";
 	final CyServiceRegistrar registrar;
 	public final static String GROUP_ATTRIBUTE = "__LeidenGroups.SUID";

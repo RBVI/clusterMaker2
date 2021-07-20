@@ -29,7 +29,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
 
 public class MDS extends AbstractNetworkClusterer {
-	public static String NAME = "MDS";
+	public static String NAME = "MDS remote";
 	public static String SHORTNAME = "mds";
 	final CyServiceRegistrar registrar;
 	public final static String GROUP_ATTRIBUTE = "__MDSGroups.SUID";
