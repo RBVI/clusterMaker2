@@ -62,7 +62,7 @@ public class RemoteServer {
 		} else if (service.equals("fastgreedy") || service.equals("infomap")  || service.equals("labelpropagation")
 				|| service.equals("leadingeigenvector") || service.equals("multilevel") || service.equals("umap")
 				|| service.equals("tsne") || service.equals("isomap") || service.equals("mds") || service.equals("spectral") 
-				|| service.equals("lineardiscriminant")) {
+				|| service.equals("locallinearembedding")) {
 			return server + "service/" + service;
 		} else {
 			System.out.println("Unknown service");

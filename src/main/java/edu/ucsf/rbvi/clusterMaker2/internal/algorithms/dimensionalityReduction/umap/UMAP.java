@@ -54,7 +54,7 @@ public class UMAP extends AbstractNetworkClusterer {
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-    monitor = taskMonitor;
+		monitor = taskMonitor;
 		// Get the execution service
 		CyJobExecutionService executionService = registrar.getService(CyJobExecutionService.class, "(title=ClusterJobExecutor)");
 		CyApplicationManager appManager = registrar.getService(CyApplicationManager.class);
@@ -107,12 +107,6 @@ public class UMAP extends AbstractNetworkClusterer {
 		System.out.println("Status: " + status);
 		if (status == Status.FINISHED) {
 			executionService.fetchResults(job, dataService.getDataInstance()); 
-          /*
-					if (context.vizProperties.showUI) {
-						taskMonitor.showMessage(TaskMonitor.Level.INFO, "Creating network");
-						insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true, context.vizProperties.restoreEdges, false));
-					}
-          */
 					
 		} else if (status == Status.RUNNING 
 				|| status == Status.SUBMITTED 

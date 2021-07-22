@@ -54,77 +54,78 @@ public class tSNERemote extends AbstractNetworkClusterer {
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		monitor = taskMonitor;
 		// Get the execution service
-				CyJobExecutionService executionService = 
-								registrar.getService(CyJobExecutionService.class, "(title=ClusterJobExecutor)");
-				CyApplicationManager appManager = registrar.getService(CyApplicationManager.class);
-				CyNetwork currentNetwork = appManager.getCurrentNetwork(); //gets the network presented in Cytoscape
+		CyJobExecutionService executionService = 
+						registrar.getService(CyJobExecutionService.class, "(title=ClusterJobExecutor)");
+		CyApplicationManager appManager = registrar.getService(CyApplicationManager.class);
+		CyNetwork currentNetwork = appManager.getCurrentNetwork(); //gets the network presented in Cytoscape
 				
-				clusterAttributeName = "__tsneremote";
-				List<String> attributes = context.getnodeAttributeList().getSelectedValues();
+		clusterAttributeName = "__tsneremote";
+		List<String> attributes = context.getnodeAttributeList().getSelectedValues();
 				
-				// list of column names
-				CyTable nodeTable = currentNetwork.getDefaultNodeTable();
-				List<String> columns = new ArrayList<>();
-				columns.add("name");
-		        columns.addAll(attributes);
+		// list of column names
+		CyTable nodeTable = currentNetwork.getDefaultNodeTable();
+		List<String> columns = new ArrayList<>();
+		columns.add("name");
+		columns.addAll(attributes);
 				
-				// creating the data itself, values of the columns chosen for each row (node)
-				List<List<String>> data = new ArrayList<>();
-				HashMap<Long, String> nodeMap = getNetworkNodes(currentNetwork);
+		// creating the data itself, values of the columns chosen for each row (node)
+		List<List<String>> data = new ArrayList<>();
+		HashMap<Long, String> nodeMap = getNetworkNodes(currentNetwork);
 				
-				for (Long nodeSUID : nodeMap.keySet()) {
-					CyRow row = nodeTable.getRow(nodeSUID);
-					List<String> rowList = new ArrayList<>();
-					for (String columnName : columns) {
-						CyColumn column = nodeTable.getColumn(columnName);
-						if (row.get(columnName, column.getType()) != null) {
-							rowList.add(row.get(columnName, column.getType()).toString());
-						} else {
-							rowList.add("0");
-						}
-					}
-					data.add(rowList);
+		for (Long nodeSUID : nodeMap.keySet()) {
+			CyRow row = nodeTable.getRow(nodeSUID);
+			List<String> rowList = new ArrayList<>();
+			for (String columnName : columns) {
+				CyColumn column = nodeTable.getColumn(columnName);
+				if (row.get(columnName, column.getType()) != null) {
+					rowList.add(row.get(columnName, column.getType()).toString());
+				} else {
+					rowList.add("0");
 				}
+			}
+			data.add(rowList);
+		}
 						
-				String basePath = RemoteServer.getBasePath();
+		String basePath = RemoteServer.getBasePath();
 						
-						// Get our initial job
-				ClusterJob job = (ClusterJob) executionService.createCyJob("ClusterJob"); //creates a new ClusterJob object
-						// Get the data service
-				CyJobDataService dataService = job.getJobDataService(); //gets the dataService of the execution service
-						// Add our data
-				CyJobData jobData = dataService.addData(null, "columns", columns);
-				jobData = dataService.addData(jobData, "data", data);
-				job.storeClusterData(clusterAttributeName, currentNetwork, clusterManager, createGroups, GROUP_ATTRIBUTE, null, getShortName());
-						// Create our handler
-				ClusterJobHandler jobHandler = new ClusterJobHandler(job, network);
-				job.setJobMonitor(jobHandler);
-						// Submit the job
-				CyJobStatus exStatus = executionService.executeJob(job, basePath, null, jobData);
+				// Get our initial job
+		ClusterJob job = (ClusterJob) executionService.createCyJob("ClusterJob"); //creates a new ClusterJob object
+				// Get the data service
+		CyJobDataService dataService = job.getJobDataService(); //gets the dataService of the execution service
+				// Add our data
+		CyJobData jobData = dataService.addData(null, "columns", columns);
+		jobData = dataService.addData(jobData, "data", data);
+		job.storeClusterData(clusterAttributeName, currentNetwork, clusterManager, createGroups, GROUP_ATTRIBUTE, null, getShortName());
+				// Create our handler
+		ClusterJobHandler jobHandler = new ClusterJobHandler(job, network);
+		job.setJobMonitor(jobHandler);
+				// Submit the job
+		CyJobStatus exStatus = executionService.executeJob(job, basePath, null, jobData);
 				
-				CyJobStatus.Status status = exStatus.getStatus();
-				System.out.println("Status: " + status);
-				if (status == Status.FINISHED) {
-					executionService.fetchResults(job, dataService.getDataInstance()); 
+		CyJobStatus.Status status = exStatus.getStatus();
+		System.out.println("Status: " + status);
+		if (status == Status.FINISHED) {
+			executionService.fetchResults(job, dataService.getDataInstance()); 
 					
-				} else if (status == Status.RUNNING 
-						|| status == Status.SUBMITTED 
-						|| status == Status.QUEUED) {
-					CyJobManager manager = registrar.getService(CyJobManager.class);
-					manager.addJob(job, jobHandler, 5); //this one shows the load button
+		} else if (status == Status.RUNNING 
+				|| status == Status.SUBMITTED 
+				|| status == Status.QUEUED) {
+			CyJobManager manager = registrar.getService(CyJobManager.class);
+			manager.addJob(job, jobHandler, 5); //this one shows the load button
 					
-				} else if (status == Status.ERROR 
-						|| status == Status.UNKNOWN  
-						|| status == Status.CANCELED 
-						|| status == Status.FAILED
-						|| status == Status.TERMINATED 
-						|| status == Status.PURGED) {
-					monitor.setStatusMessage("Job status: " + status);
-				}
+		} else if (status == Status.ERROR 
+				|| status == Status.UNKNOWN  
+			    || status == Status.CANCELED 
+				|| status == Status.FAILED
+				|| status == Status.TERMINATED 
+				|| status == Status.PURGED) {
+			monitor.setStatusMessage("Job status: " + status);
+		}
 				
 						// Save our SUIDs in case we get saved and restored
-				SUIDUtil.saveSUIDs(job, currentNetwork, currentNetwork.getNodeList());
+		SUIDUtil.saveSUIDs(job, currentNetwork, currentNetwork.getNodeList());
 
 	}
 }
