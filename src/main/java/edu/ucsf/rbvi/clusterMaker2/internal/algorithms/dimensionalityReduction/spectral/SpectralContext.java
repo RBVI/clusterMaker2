@@ -35,23 +35,27 @@ public class SpectralContext {
 
     @Tunable(description = "Affinity",
 			 longDescription = "‘nearest_neighbors’ : construct the affinity matrix by computing a graph of nearest neighbors.\r\n" + 
-			 		"\r\n" + 
 			 		"‘rbf’ : construct the affinity matrix by computing a radial basis function (RBF) kernel.\r\n" + 
-			 		"\r\n" + 
 			 		"‘precomputed’ : interpret X as a precomputed affinity matrix.\r\n" + 
-			 		"\r\n" + 
 			 		"‘precomputed_nearest_neighbors’ : interpret X as a sparse graph of precomputed nearest neighbors,"
 			 		+ " and constructs the affinity matrix by selecting the n_neighbors nearest neighbors.\r\n" + 
-			 		"\r\n" + 
 			 		"callable : use passed in function as affinity the function takes in data matrix (n_samples, n_features) "
 			 		+ "and return affinity matrix (n_samples, n_samples).",
 			 exampleStringValue = "nearest_neighbors",
+			 tooltip = "<html>‘nearest_neighbors’: construct the affinity matrix by computing a graph of nearest neighbors.<br/>"
+			 		+ "‘rbf’ : construct the affinity matrix by computing a radial basis function (RBF) kernel.<br/>"
+					+ "‘precomputed’: interpret X as a precomputed affinity matrix.<br/>"
+			 		+ "‘precomputed_nearest_neighbors’: interpret X as a sparse graph of precomputed nearest neighbors, <br/>"
+					+ "and constructs the affinity matrix by selecting the n_neighbors nearest neighbors.<br/>"
+			 		+ "'callable': use passed in function as affinity the function takes in data matrix (n_samples, n_features)<br/>"
+					+ "and return affinity matrix (n_samples, n_samples).</html>",
 			 groups = {"Spectral Advanced Settings"}, gravity = 67)
     public ListSingleSelection<String> affinity = new ListSingleSelection<String>("nearest_neighbors", "rbf", "precomputed", "precomputed_nearest_neighbors");
     
     @Tunable(description = "Gamma",
     		longDescription = "Kernel coefficient for rbf kernel. If None, gamma will be set to 1/n_features.",
     		exampleStringValue = "None",
+    		tooltip = "<html>Kernel coefficient for rbf kernel. If None, gamma will be set to 1/n_features.</html>",
     		groups = {"Spectral Advanced Settings"}, gravity = 68)
     public double gamma;
     
@@ -59,12 +63,15 @@ public class SpectralContext {
     		longDescription = "The eigenvalue decomposition strategy to use. AMG requires pyamg to be installed. "
     				+ "It can be faster on very large, sparse problems. If None, then 'arpack' is used.",
     		exampleStringValue = "None",
+    		tooltip = "<html>The eigenvalue decomposition strategy to use. AMG requires pyamg to be installed.<br/>"
+    				+ "It can be faster on very large, sparse problems. If None, then 'arpack' is used.</html>",
     		groups = {"Spectral Advanced Settings"}, gravity = 69)
     public ListSingleSelection<String> eigen_solver = new ListSingleSelection<String>("arpack", "lobpcg", "amg");
     
     @Tunable(description = "Number of neighbors",
     		longDescription = "Number of nearest neighbors for nearest_neighbors graph building. If None, n_neighbors will be set to max(n_samples/10, 1).",
     		exampleStringValue = "None",
+    		tooltip = "Number of nearest neighbors for nearest_neighbors graph building. If None, Number of neighbors will be set to max(n_samples/10, 1).</html>",
     		groups = {"Spectral Advanced Settings"}, gravity = 70)
     public int n_neighbors;
     
