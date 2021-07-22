@@ -54,13 +54,14 @@ public class MDS extends AbstractNetworkClusterer {
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		monitor = taskMonitor;
 		// Get the execution service
 		CyJobExecutionService executionService = 
 					registrar.getService(CyJobExecutionService.class, "(title=ClusterJobExecutor)");
 		CyApplicationManager appManager = registrar.getService(CyApplicationManager.class);
 		CyNetwork currentNetwork = appManager.getCurrentNetwork(); //gets the network presented in Cytoscape
 				
-		clusterAttributeName = "__isomap";
+		clusterAttributeName = "__mds";
         List<String> attributes = context.getnodeAttributeList().getSelectedValues(); // rather than get single select attribute, make it multiple select
 				
 				// list of column names wanted to use in UMAP
