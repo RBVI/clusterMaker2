@@ -36,6 +36,7 @@ public class MDSContext {
 	@Tunable(description = "Metric",
 			 longDescription = "If True, perform metric MDS; otherwise, perform nonmetric MDS.",
 			 exampleStringValue = "True",
+			 tooltip = "<html>If checked, perform metric MDS; otherwise, perform nonmetric MDS.</html>",
 			 groups = {"MDS Advanced Settings"}, gravity = 69)
 	public boolean metric = true;
 	
@@ -43,30 +44,33 @@ public class MDSContext {
 			 longDescription = "Number of times the SMACOF algorithm will be run with different initializations. "
 			 		+ "The final results will be the best output of the runs, determined by the run with the smallest final stress.",
 			 exampleStringValue = "4",
+			 tooltip = "<html>Number of times the SMACOF algorithm will be run with different initializations.<br/>"
+			 		+ "The final results will be the best output of the runs, determined by the run with the smallest final stress.</html>",
 			 groups = {"MDS Advanced Settings"}, gravity = 70)
 	public int n_init = 4; 
 	
 	@Tunable(description = "Maximum iterations",
 			 longDescription = "Maximum number of iterations of the SMACOF algorithm for a single run.",
 			 exampleStringValue = "300",
+			 tooltip = "<html>Maximum number of iterations of the SMACOF algorithm for a single run.</html>",
 			 groups = {"MDS Advanced Settings"}, gravity = 71)
 	public int max_iter = 300;
 	
 	@Tunable(description = "Eps",
 	 longDescription = "Relative tolerance with respect to stress at which to declare convergence.",
 	 exampleStringValue = "1 * 10^(-3)",
+	 tooltip = "<html>Relative tolerance with respect to stress at which to declare convergence.</html>",
 	 groups = {"MDS Advanced Settings"}, gravity = 72)
 	public double eps = 1 * 10^(-3);
 	
 	@Tunable(description = "Dissimilarity",
 	 longDescription = "Dissimilarity measure to use:\r\n" + 
-	 		"\r\n" + 
-	 		"‘euclidean’:\r\n" + 
-	 		"Pairwise Euclidean distances between points in the dataset.\r\n" + 
-	 		"\r\n" + 
-	 		"‘precomputed’:\r\n" + 
-	 		"Pre-computed dissimilarities are passed directly to fit and fit_transform.",
+	 		"‘euclidean’: Pairwise Euclidean distances between points in the dataset.\r\n" + 
+	 		"‘precomputed’: Pre-computed dissimilarities are passed directly to fit and fit_transform.",
 	 exampleStringValue = "euclidean",
+	 tooltip = "<html>Dissimilarity measure to use:<br/>"
+	 		+ "‘euclidean’: Pairwise Euclidean distances between points in the dataset.<br/>"
+			+ "‘precomputed’: Pre-computed dissimilarities are passed directly to fit and fit_transform.</html>",
 	 groups = {"MDS Advanced Settings"}, gravity = 73)
 	public ListSingleSelection<String> dissimilarity = new ListSingleSelection<String>("euclidean", "precomputed");
 	

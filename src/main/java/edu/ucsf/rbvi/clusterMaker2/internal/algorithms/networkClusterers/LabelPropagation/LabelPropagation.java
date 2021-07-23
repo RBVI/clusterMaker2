@@ -52,6 +52,7 @@ public class LabelPropagation extends AbstractNetworkClusterer {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		monitor = taskMonitor;
 		// Get the execution service
 		CyJobExecutionService executionService = 
 						registrar.getService(CyJobExecutionService.class, "(title=ClusterJobExecutor)");

@@ -55,28 +55,35 @@ public class UMAPContext {
 	public int n_neighbors = 2;
 	
 	@Tunable(description = "Minumum distance",
-			longDescription = " The min_dist parameter controls how tightly UMAP is allowed to pack points together. "
+			longDescription = "The min_dist parameter controls how tightly UMAP is allowed to pack points together. "
 			+ "It, quite literally, provides the minimum distance apart that points are allowed to be in the low "
 			+ "dimensional representation. This means that low values of min_dist will result in clumpier embeddings. "
 			+ "This can be useful if you are interested in clustering, or in finer topological structure. "
 			+ "Larger values of min_dist will prevent UMAP from packing points together and will focus on the preservation "
 			+ "of the broad topological structure instead.",
 			exampleStringValue = "1.0",
+			tooltip = "<html>The Minimum distance parameter controls how tightly UMAP is allowed to pack points together.<br/>"
+					+ "It, quite literally, provides the minimum distance apart that points are allowed to be in the low<br/>"
+					+ "dimensional representation. This means that low values of Minimum distance will result in clumpier embeddings.<br/>"
+					+ "This can be useful if you are interested in clustering, or in finer topological structure.<br/>"
+					+ "Larger values of Minimum distance will prevent UMAP from packing points together and will focus on the preservation<br/>"
+					+ "of the broad topological structure instead.</html>",
 			groups = {"UMAP Advanced Settings"}, gravity = 2.0)
 	public double min_dist = 1.0;
 	
 	@Tunable(description = "Metric",
-			longDescription = "The final UMAP parameter we will be considering in this notebook is the metric parameter. "
-			+ "This controls how distance is computed in the ambient space of the input data. By default UMAP supports a wide variety of metrics, including:",
+			longDescription = "This controls how distance is computed in the ambient space of the input data. By default UMAP supports a wide variety of metrics.",
 			exampleStringValue = "euclidean",
+			tooltip = "<html>This controls how distance is computed in the ambient space of the input data.</html>",
 			groups = {"UMAP Advanced Settings"}, gravity = 3.0)
 	public ListSingleSelection<String> metric = new ListSingleSelection<String>("euclidean", "manhattan", "chebyshev", "minkowski", "canberra", "braycurtis",
 			"haversine", "mahalanobis", "wminkowski", "seuclidean", "cosine", "correlation", "hamming", "jaccard", "dice", "russellrao", "kulsinski", "rogerstanimoto",
 			"sokalmichener", "sokalsneath", "yule");
 
 	@Tunable(description = "Scale",
-			longDescription = "true/false.  If true, preprocess the data to scale the matrix",
+			longDescription = "true/false. If true, preprocess the data to scale the matrix",
 			exampleStringValue = "True",
+			tooltip = "<html>If checked, preprocess the data to scale the matrix</html>",
 			groups = {"UMAP Advanced Settings"}, gravity = 4.0)
     public Boolean scale = true;
 	
