@@ -23,6 +23,7 @@ import org.cytoscape.jobs.CyJobData;
 import org.cytoscape.jobs.CyJobDataService;
 import org.cytoscape.jobs.CyJobStatus;
 import org.cytoscape.jobs.CyJobStatus.Status;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -254,7 +255,7 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 			String shortName = (String) clusterData.get("shortName");
 			
 			// if we are running a dimensionality reduction algorithm
-			if (shortName.equals("umap") || shortName.equals("tsne") ||shortName.equals("isomap") || shortName.equals("lineardiscriminant")
+			if (shortName.equals("umap") || shortName.equals("tsneremote") ||shortName.equals("isomap") || shortName.equals("lle")
 					|| shortName.equals("mds") || shortName.equals("spectral")) {
 				
 				JSONArray embedding = (JSONArray) data.get("embedding");
@@ -280,17 +281,31 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 					coordinates[i-1][1] = y;
 				}
 
+				String newmapX = shortName + "_x";
+				String newmapY = shortName + "_y";
 				
 				CyTable nodeTable = network.getDefaultNodeTable();
-				nodeTable.createColumn("newmap_x", Double.class, false);
-				nodeTable.createColumn("newmap_y", Double.class, false);
+				
+				Boolean columnExists = false;
+				for(CyColumn col : nodeTable.getColumns()) {
+					if (col.getName().equals(newmapX) || col.getName().equals(newmapY)) {
+						columnExists = true;
+						break;
+					}
+				}
+				
+				if (!columnExists) {
+					nodeTable.createColumn(newmapX, Double.class, false);
+					nodeTable.createColumn(newmapY, Double.class, false);
+				}
+				
 				
 				for (int i = 0; i < nodes.length; i++) {
 				   if (nodes[i] != null) {
-					   network.getRow(nodes[i]).set("newmap_x", coordinates[i][0]);
-					   System.out.println("X value from the table : " + network.getRow(nodes[i]).get("newmap_x", Double.class));
-					   network.getRow(nodes[i]).set("newmap_y", coordinates[i][1]);
-					   System.out.println("Y value from the table : " + network.getRow(nodes[i]).get("newmap_y", Double.class));
+					   network.getRow(nodes[i]).set(newmapX, coordinates[i][0]);
+					   System.out.println("X value from the table : " + network.getRow(nodes[i]).get(newmapX, Double.class));
+					   network.getRow(nodes[i]).set(newmapY, coordinates[i][1]);
+					   System.out.println("Y value from the table : " + network.getRow(nodes[i]).get(newmapY, Double.class));
 				   }
 				}
 				
