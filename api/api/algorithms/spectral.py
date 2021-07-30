@@ -6,7 +6,7 @@ import falcon
 import api.utils as utils
 from .base_algorithm import BaseAlgorithm
 from sklearn.preprocessing import StandardScaler
-from sklearn.manifold import SpectralEmbedding
+from sklearn import manifold
 import pandas as pd
 
 class SpectralEmbedding(BaseAlgorithm):
@@ -42,8 +42,8 @@ class SpectralEmbedding(BaseAlgorithm):
 
         data = df[columns[1:]].values # skip over the label and just pull the data
 
-        spectral = SpectralEmbedding(n_components=2, affinity=affinity, gamma=gamma,
-                                     eigen_solver=eigen_solver,n_neighbors=n_neighbors, n_jobs=10)
+        spectral = manifold.SpectralEmbedding(n_components=2, affinity=affinity, gamma=gamma,
+                                              eigen_solver=eigen_solver,n_neighbors=n_neighbors, n_jobs=10)
         embedding = spectral.fit_transform(data)
         #print(str(embedding))
 

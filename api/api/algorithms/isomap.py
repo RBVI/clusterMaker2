@@ -48,7 +48,7 @@ class IsoMapEmbedding(BaseAlgorithm):
 
         data = df[columns[1:]].values # skip over the label and just pull the data
 
-        isomap = Isomap(n_components=2, n_neighbors=n_neighbors, eigen_solver=eigen_solver,
+        isomap = Isomap(n_neighbors, n_components, eigen_solver=eigen_solver,
                         tol=tol, path_method=path_method, neighbors_algorithm=neighbors_algorithm,
                         metric=metric, max_iter=max_iter, n_jobs=10)
         embedding = isomap.fit_transform(data)

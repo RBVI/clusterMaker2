@@ -6,7 +6,7 @@ import falcon
 import api.utils as utils
 from .base_algorithm import BaseAlgorithm
 from sklearn.preprocessing import StandardScaler
-from sklearn.manifold import MDS
+from sklearn import manifold
 import pandas as pd
 
 class MDS(BaseAlgorithm):
@@ -18,7 +18,7 @@ class MDS(BaseAlgorithm):
         args = {}
         args['metric'] = utils.get_param_as_bool(req, 'metric', True)
         args['n_init'] = utils.get_param_as_int(req, 'n_init', 4)
-        args['max_iter'] = utils.get_param_as_int(req, 'max_iter', 0)
+        args['max_iter'] = utils.get_param_as_int(req, 'max_iter', 300)
         args['eps'] = utils.get_param_as_float(req, 'eps', 1e-3)
         args['dissimilarity'] = utils.get_param_as_string(req, 'dissimilarity', 'euclidean')
         return args
@@ -44,8 +44,8 @@ class MDS(BaseAlgorithm):
 
         data = df[columns[1:]].values # skip over the label and just pull the data
 
-        mds = MDS(n_components=2, n_init=n_init, eps=eps, dissimilarity=dissimilarity,
-                  metric=metric, max_iter=max_iter, n_jobs=10)
+        mds = manifold.MDS(n_components=2, n_init=n_init, eps=eps, dissimilarity=dissimilarity,
+                           metric=metric, max_iter=max_iter, n_jobs=10)
         embedding = mds.fit_transform(data)
         #print(str(embedding))
 

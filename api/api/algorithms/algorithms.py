@@ -10,7 +10,8 @@ from .tsne import TSNE
 from .isomap import IsoMapEmbedding
 from .mds import MDS
 from .spectral import SpectralEmbedding
-from .lineardisc import LinearDiscriminant
+#from .lineardisc import LinearDiscriminant
+from .lle import LLE
 import falcon
 import json
 
@@ -34,9 +35,10 @@ class Algorithms(object):
         self.algorithms["umap"] = UMAP(jobs)
         self.algorithms["tsne"] = TSNE(jobs)
         self.algorithms["mds"] = MDS(jobs)
-        self.algorithms["isomap"] = IsoMapEmbeddingjobs)
+        self.algorithms["isomap"] = IsoMapEmbedding(jobs)
         self.algorithms["spectral"] = SpectralEmbedding(jobs)
-        self.algorithms["lineardisc"] = LinearDiscriminant(jobs)
+        self.algorithms["lle"] = LLE(jobs)
+        # self.algorithms["lineardisc"] = LinearDiscriminant(jobs)
 
     def on_get(self, req: falcon.Request, resp: falcon.Response):
         resp.code = falcon.HTTP_200
