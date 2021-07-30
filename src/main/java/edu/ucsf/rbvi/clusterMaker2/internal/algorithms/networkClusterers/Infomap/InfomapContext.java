@@ -28,6 +28,7 @@ public class InfomapContext implements ClusterAlgorithmContext {
 	@Tunable(description = "Trials",
 			 longDescription = "The number of attempts to partition the network.",
 			 exampleStringValue = "10",
+			 tooltip = "<html>The number of attempts to partition the network.</html>",
 			 groups =  {"Infomap Advanced Settings"}, gravity = 1.0)
 	public int trials = 10;
 	

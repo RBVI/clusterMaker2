@@ -34,50 +34,54 @@ public class IsomapContext {
     public void setnodeAttributeList(ListMultipleSelection<String> nal) { }
 
     @Tunable(description = "Number of neighbors",
-			 longDescription = "number of neighbors to consider for each point.",
+			 longDescription = "Number of neighbors to consider for each point.",
 			 exampleStringValue = "5",
+			 tooltip = "<html>Number of neighbors to consider for each point.</html>",
 			 groups = {"Isomap Advanced Settings"}, gravity = 66)
     public int n_neighbors = 5;
     
     @Tunable(description = "Eigen solver",
 			 longDescription = "‘auto’ : Attempt to choose the most efficient solver for the given problem.\r\n" + 
-			 		"\r\n" + 
 			 		"‘arpack’ : Use Arnoldi decomposition to find the eigenvalues and eigenvectors.\r\n" + 
-			 		"\r\n" + 
 			 		"‘dense’ : Use a direct solver (i.e. LAPACK) for the eigenvalue decomposition.",
 			 exampleStringValue = "auto",
+			 tooltip = "<html>'auto': Attempt to choose the most efficient solver for the given problem.<br/>"
+			 		+ "‘arpack’: Use Arnoldi decomposition to find the eigenvalues and eigenvectors.<br/>"
+					+ "‘dense’: Use a direct solver (i.e. LAPACK) for the eigenvalue decomposition.</html>",
 			 groups = {"Isomap Advanced Settings"}, gravity = 67)
     public ListSingleSelection<String> eigen_solver = new ListSingleSelection<String>("auto", "arpack", "dense");
     
     @Tunable(description = "Convergence tolerance",
 			 longDescription = "Convergence tolerance passed to arpack or lobpcg. not used if eigen_solver == ‘dense’.",
 			 exampleStringValue = "0.0",
+			 tooltip = "<html>Convergence tolerance passed to arpack or lobpcg. Not used if Eigen solver = ‘dense’.</html>",
 			 groups = {"Isomap Advanced Settings"}, gravity = 68)
     public double tol = 0.0;
 
     @Tunable(description = "Path method",
 			 longDescription = "Method to use in finding shortest path.\r\n" + 
-			 		"\r\n" + 
 			 		"‘auto’ : attempt to choose the best algorithm automatically.\r\n" + 
-			 		"\r\n" + 
 			 		"‘FW’ : Floyd-Warshall algorithm.\r\n" + 
-			 		"\r\n" + 
-			 		"‘D’ : Dijkstra’s algorithm.\r\n" + 
-			 		"\r\n" + 
-			 		"",
+			 		"‘D’ : Dijkstra’s algorithm.\r\n",
 			 exampleStringValue = "auto",
+			 tooltip = "<html>Method to use in finding shortest path.<br/>"
+			 		+ "‘auto’ : attempt to choose the best algorithm automatically.<br/>"
+				    + "‘FW’ : Floyd-Warshall algorithm.<br/>"
+			 		+ "‘D’ : Dijkstra’s algorithm.</html>",
 			 groups = {"Isomap Advanced Settings"}, gravity = 69)
     public ListSingleSelection<String> path_method = new ListSingleSelection<String>("auto", "FW", "D");
     
     @Tunable(description = "Neighbors algorithm",
-			 longDescription = "Algorithm to use for nearest neighbors search, passed to neighbors.NearestNeighbors instance.",
+			 longDescription = "Algorithm to use for nearest neighbors search, passed to neighbors. NearestNeighbors instance.",
 			 exampleStringValue = "auto",
+			 tooltip = "<html>Algorithm to use for nearest neighbors search, passed to neighbors.</html>",
 			 groups = {"Isomap Advanced Settings"}, gravity = 70)
     public ListSingleSelection<String> neighbors_algorithm = new ListSingleSelection<String>("auto", "brute", "kd_tree", "ball_tree");
     
     @Tunable(description = "Maximum iterations",
 			 longDescription = "Maximum number of iterations for the arpack solver. not used if eigen_solver == ‘dense’.",
 			 exampleStringValue = "None",
+			 tooltip = "<html>Maximum number of iterations for the arpack solver. Not used if Eigen solver = ‘dense’.</html>",
 			 groups = {"Isomap Advanced Settings"}, gravity = 71)
     public int max_iter;
     

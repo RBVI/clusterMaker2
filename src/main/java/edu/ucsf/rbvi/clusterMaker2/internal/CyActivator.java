@@ -245,15 +245,15 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Dimensionality Reduction
 		// registerService(bc, new PCAMenuTaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
-		registerService(bc, new PCATaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
-		registerService(bc, new PCoATaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
-		registerService(bc, new tSNETaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
-		registerService(bc, new UMAPTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
-		registerService(bc, new tSNERemoteTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new IsomapTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new LocalLinearEmbeddingTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new MDSTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new PCATaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new PCoATaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
 		registerService(bc, new SpectralTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new tSNETaskFactory(clusterManager), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new tSNERemoteTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
+		registerService(bc, new UMAPTaskFactory(clusterManager, registrar), ClusterTaskFactory.class, new Properties());
 		
 		{
 			// Link Network Selections

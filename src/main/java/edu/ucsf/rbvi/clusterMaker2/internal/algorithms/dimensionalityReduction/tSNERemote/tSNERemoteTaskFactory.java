@@ -8,6 +8,7 @@ import org.cytoscape.work.TaskIterator;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
+import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterViz;
 
 public class tSNERemoteTaskFactory extends AbstractClusterTaskFactory {
@@ -36,7 +37,7 @@ public class tSNERemoteTaskFactory extends AbstractClusterTaskFactory {
 	
 	@Override
 	public List<ClusterType> getTypeList() {
-		return Collections.singletonList(ClusterType.NETWORK);
+		return Collections.singletonList(ClusterTaskFactory.ClusterType.DIMRED); 
 	}
 	
 	@Override

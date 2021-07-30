@@ -45,12 +45,16 @@ public class tSNERemoteContext {
 		     		+ "require a larger perplexity. Consider selecting a value between 5 and 50. "
 		     		+ "Different values can result in significantly different results.",
 		     exampleStringValue="30.0",
+		     tooltip = "<html>The perplexity is related to the number of nearest neighbors that is used in other manifold learning algorithms.<br/>"
+		    		+ "Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.<br/>"
+		    		+ "Different values can result in significantly different results.</html>",
 		     groups = {"t-SNE Advanced Settings"}, gravity = 67)
 	public double perplexity = 30.0;
 
 	@Tunable(description = "Number of Iterations", 
 		     longDescription = "The number of iterations of the algorithm to perform",
 		     exampleStringValue = "1000",
+		     tooltip = "<html>The number of iterations of the algorithm to perform.</html>",
 		     groups = {"t-SNE Advanced Settings"}, gravity = 68)
 	public int n_iter = 1000;
 
@@ -61,6 +65,10 @@ public class tSNERemoteContext {
 			         + "If the cost function increases during initial optimization, the early exaggeration factor or the learning rate "
 			         + "might be too high.",
 			 exampleStringValue = "12.0",
+			 tooltip = "<html>Controls how tight natural clusters in the original space are in the embedded<br/>"
+			 		+ "space and how much space will be between them. For larger values, the space between natural clusters<br/>"
+					+ "will be larger in the embedded space. Again, the choice of this parameter is not very critical.<br/>"
+			 		+ "If the cost function increases during initial optimization, the early exaggeration factor or the learning rate might be too high.</html>",
 			 groups = {"t-SNE Advanced Settings"}, gravity = 69)
 	public double early_exaggeration = 12.0;
 		
@@ -73,6 +81,13 @@ public class tSNERemoteContext {
 			 		+ "two arrays from X as input and return a value indicating the distance between them. The default is "
 			 		+ "“euclidean” which is interpreted as squared euclidean distance.",
 			 exampleStringValue = "euclidean",
+			 tooltip = "<html>The metric to use when calculating distance between instances in a feature array.</br>"
+			 		+ "If metric is a string, it must be one of the options allowed by scipy.spatial.distance.pdist<br/>"
+					+ "for its metric parameter, or a metric listed in pairwise. PAIRWISE_DISTANCE_FUNCTIONS. If metric is<br/>"
+			 		+ "'precomputed', X is assumed to be a distance matrix. Alternatively, if metric is a callable function,<br/>"
+					+ "it is called on each pair of instances (rows) and the resulting value recorded. The callable should take<br/>"
+			 		+ "two arrays from X as input and return a value indicating the distance between them. The default is<br/>"
+					+ "'euclidean' which is interpreted as squared euclidean distance.</html>",
 			 groups = {"t-SNE Advanced Settings"}, gravity = 70)
 	public ListSingleSelection<String> metric = new ListSingleSelection<String>("euclidean", "manhattan", "chebyshev", "minkowski", "canberra", "braycurtis",
 			"haversine", "mahalanobis", "wminkowski", "seuclidean", "cosine", "correlation", "hamming", "jaccard", "dice", "russellrao", "kulsinski", "rogerstanimoto",
@@ -84,6 +99,10 @@ public class tSNERemoteContext {
 			 		+ "from its nearest neighbours. If the learning rate is too low, most points may look compressed in a dense cloud "
 			 		+ "with few outliers. If the cost function gets stuck in a bad local minimum increasing the learning rate may help.",
 			 exampleStringValue = "200.0",
+			 tooltip = "<html>The learning rate for t-SNE is usually in the range [10.0, 1000.0]."
+			 		+ "If the learning rate is too high, the data may look like a ‘ball’ with any point approximately equidistant<br/>"
+					+ "from its nearest neighbours. If the learning rate is too low, most points may look compressed in a dense cloud<br/>"
+			 		+ "with few outliers. If the cost function gets stuck in a bad local minimum increasing the learning rate may help.</html>",
 			 groups = {"t-SNE Advanced Settings"}, gravity = 71)
 	public double learning_rate = 200.0;
 	
@@ -93,6 +112,9 @@ public class tSNERemoteContext {
 					+ "‘pca’, and a numpy array of shape (n_samples, n_components). PCA initialization cannot be "
 					+ "used with precomputed distances and is usually more globally stable than random initialization.",
 			exampleStringValue = "PCA",
+			tooltip = "<html>Initialization of embedding. Possible options are ‘random’,<br/>"
+					+ "‘pca’, and a numpy array of shape (n_samples, n_components). PCA initialization cannot be<br/>"
+					+ "used with precomputed distances and is usually more globally stable than random initialization.</html>",
 			groups = {"t-SNE Advanced Settings"}, gravity = 3.0)
 	public ListSingleSelection<String> init = new ListSingleSelection<String>("PCA", "random");
 	
