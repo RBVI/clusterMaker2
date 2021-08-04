@@ -3,6 +3,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.LabelP
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.jobs.CyJobData;
@@ -17,11 +18,13 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.LabelPropagation.LabelPropagationContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJob;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobExecutionService;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
 
@@ -90,7 +93,22 @@ public class LabelPropagation extends AbstractNetworkClusterer {
 		CyJobStatus.Status status = exStatus.getStatus();
 		System.out.println("Status: " + status);
 		if (status == Status.FINISHED) {
-			executionService.fetchResults(job, dataService.getDataInstance()); 
+			CyJobData data = dataService.getDataInstance();
+			executionService.fetchResults(job, data); 
+			
+			/*Map<String, Object> clusterData = job.getClusterData().getAllValues();
+			
+			String clusterAttributeName = (String) clusterData.get("clusterAttributeName");
+			ClusterManager clusterManager = (ClusterManager) clusterData.get("clusterManager");
+			Boolean createGroups = (Boolean) clusterData.get("createGroups");
+			String group_attr = (String) clusterData.get("group_attr");
+			List<String> params  = (List<String>) clusterData.get("params");
+
+			List<NodeCluster> nodeClusters = ClusterJobExecutionService.createClusters(data, clusterAttributeName, network); //move this to remote utils
+			System.out.println("NodeClusters: " + nodeClusters);
+	
+			AbstractNetworkClusterer.createGroups(network, nodeClusters, group_attr, clusterAttributeName, 
+					clusterManager, createGroups, params, SHORTNAME); */
 			if (context.vizProperties.showUI) {
 				taskMonitor.showMessage(TaskMonitor.Level.INFO, "Creating network");
 				insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true, context.vizProperties.restoreEdges, false));

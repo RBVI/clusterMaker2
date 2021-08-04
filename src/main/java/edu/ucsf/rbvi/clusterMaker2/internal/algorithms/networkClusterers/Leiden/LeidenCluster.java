@@ -103,8 +103,27 @@ public class LeidenCluster extends AbstractNetworkClusterer {
 		
 		CyJobStatus.Status status = exStatus.getStatus();
 		System.out.println("Status: " + status);
+		
 		if (status == Status.FINISHED) {
-			executionService.fetchResults(job, dataService.getDataInstance()); 
+			CyJobData data = dataService.getDataInstance();
+			executionService.fetchResults(job, data); 
+			
+			Map<String, Object> clusterData = job.getClusterData().getAllValues();
+			
+			String shortName = (String) clusterData.get("shortName");
+			String clusterAttributeName = (String) clusterData.get("clusterAttributeName");
+			CyNetwork network = (CyNetwork) clusterData.get("network");
+			ClusterManager clusterManager = (ClusterManager) clusterData.get("clusterManager");
+			Boolean createGroups = (Boolean) clusterData.get("createGroups");
+			String group_attr = (String) clusterData.get("group_attr");
+			List<String> params  = (List<String>) clusterData.get("params");
+
+			List<NodeCluster> nodeClusters = ClusterJobExecutionService.createClusters(data, clusterAttributeName, network); //move this to remote utils
+			System.out.println("NodeClusters: " + nodeClusters);
+	
+			AbstractNetworkClusterer.createGroups(network, nodeClusters, group_attr, clusterAttributeName, 
+					clusterManager, createGroups, params, shortName);
+			
 			if (context.vizProperties.showUI) {
 				taskMonitor.showMessage(TaskMonitor.Level.INFO, "Creating network");
 				insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true, context.vizProperties.restoreEdges, false));

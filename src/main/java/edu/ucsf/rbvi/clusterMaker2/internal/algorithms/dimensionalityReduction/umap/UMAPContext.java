@@ -87,6 +87,13 @@ public class UMAPContext {
 			groups = {"UMAP Advanced Settings"}, gravity = 4.0)
     public Boolean scale = true;
 	
+	@Tunable(description = "Show scatter plot with results",
+	         longDescription = "If this is set to ```true```, show the scatterplot after the calculation is complete",
+	         exampleStringValue = "true",
+	         tooltip = "If this is set to ```true```, show the scatterplot after the calculation is complete",
+	         groups = {"UMAP Advanced Settings"}, gravity = 5.0)
+	public boolean showScatterPlot = true;
+	
 	//@ContainsTunables
 	//public AdvancedProperties advancedAttributes;
 
@@ -109,6 +116,7 @@ public class UMAPContext {
 		min_dist = origin.min_dist;
 		metric = origin.metric;
 		scale = origin.scale;
+		showScatterPlot = origin.showScatterPlot;
 	}
 
 	public void setNetwork(CyNetwork network) {

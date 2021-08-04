@@ -75,6 +75,12 @@ public class SpectralContext {
     		groups = {"Spectral Advanced Settings"}, gravity = 70)
     public int n_neighbors;
     
+    @Tunable(description = "Show scatter plot with results",
+	         longDescription = "If this is set to ```true```, show the scatterplot after the calculation is complete",
+	         exampleStringValue = "true",
+	         tooltip = "If this is set to ```true```, show the scatterplot after the calculation is complete",
+	         groups = {"UMAP Advanced Settings"}, gravity = 71)
+	public boolean showScatterPlot = true;
 
 	public SpectralContext() {
 

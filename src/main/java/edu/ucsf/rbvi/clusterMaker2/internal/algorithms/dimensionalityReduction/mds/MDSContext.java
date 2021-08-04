@@ -74,6 +74,13 @@ public class MDSContext {
 	 groups = {"MDS Advanced Settings"}, gravity = 73)
 	public ListSingleSelection<String> dissimilarity = new ListSingleSelection<String>("euclidean", "precomputed");
 	
+	@Tunable(description = "Show scatter plot with results",
+	         longDescription = "If this is set to ```true```, show the scatterplot after the calculation is complete",
+	         exampleStringValue = "true",
+	         tooltip = "If this is set to ```true```, show the scatterplot after the calculation is complete",
+	         groups = {"UMAP Advanced Settings"}, gravity = 74)
+	public boolean showScatterPlot = true;
+	
 	public MDSContext() {
 		
 	}

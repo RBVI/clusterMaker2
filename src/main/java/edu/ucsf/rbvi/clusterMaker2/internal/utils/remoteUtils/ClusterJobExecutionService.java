@@ -241,81 +241,21 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		    	data.put(key, newData.get(key));
 		    }
 			
-		    System.out.println("fetchResults() CyJobData: " + data.getAllValues());
-
 		    Map<String, Object> clusterData = clusterJob.getClusterData().getAllValues();
-		    System.out.println("fetchResults() ClusterJob: " + clusterData);
-		    
-			String clusterAttributeName = (String) clusterData.get("clusterAttributeName");
-			CyNetwork network = (CyNetwork) clusterData.get("network");
-			ClusterManager clusterManager = (ClusterManager) clusterData.get("clusterManager");
-			Boolean createGroups = (Boolean) clusterData.get("createGroups");
-			String group_attr = (String) clusterData.get("group_attr");
-			List<String> params  = (List<String>) clusterData.get("params");
 			String shortName = (String) clusterData.get("shortName");
 			
-			// if we are running a dimensionality reduction algorithm
-			if (shortName.equals("umap") || shortName.equals("tsneremote") ||shortName.equals("isomap") || shortName.equals("lle")
-					|| shortName.equals("mds") || shortName.equals("spectral")) {
-				
-				JSONArray embedding = (JSONArray) data.get("embedding");
-				int size = embedding.size(); 
-        
-				CyNode[] nodes = new CyNode[size-1]; 
-				double[][] coordinates = new double[size-1][2];
-				
-				for (int i = 1; i < size; i++) {
-					JSONArray nodeData = (JSONArray) embedding.get(i);
-					String nodeName = (String) nodeData.get(0);
-					
-					for (CyNode cyNode : network.getNodeList()) {// getting the cyNode object with the name of the node
-						if (network.getRow(cyNode).get(CyNetwork.NAME, String.class).equals(nodeName)) {
-							nodes[i-1] = cyNode;
+			// don't go through here if we are running a dimensionality reduction
+			// should i move this part to network clusterer classes?
+			if (!shortName.equals("umap") || !shortName.equals("tsneremote") || !shortName.equals("isomap") || !shortName.equals("lle")
+					|| !shortName.equals("mds") || !shortName.equals("spectral")) {
 
-						}
-					} 
-					
-					double x = (Double) nodeData.get(1); 
-					double y = (Double) nodeData.get(2); 
-					coordinates[i-1][0] = x;
-					coordinates[i-1][1] = y;
-				}
+				String clusterAttributeName = (String) clusterData.get("clusterAttributeName");
+				CyNetwork network = (CyNetwork) clusterData.get("network");
+				ClusterManager clusterManager = (ClusterManager) clusterData.get("clusterManager");
+				Boolean createGroups = (Boolean) clusterData.get("createGroups");
+				String group_attr = (String) clusterData.get("group_attr");
+				List<String> params  = (List<String>) clusterData.get("params");
 
-				String newmapX = shortName + "_x";
-				String newmapY = shortName + "_y";
-				
-				CyTable nodeTable = network.getDefaultNodeTable();
-				
-				Boolean columnExists = false;
-				for(CyColumn col : nodeTable.getColumns()) {
-					if (col.getName().equals(newmapX) || col.getName().equals(newmapY)) {
-						columnExists = true;
-						break;
-					}
-				}
-				
-				if (!columnExists) {
-					nodeTable.createColumn(newmapX, Double.class, false);
-					nodeTable.createColumn(newmapY, Double.class, false);
-				}
-				
-				
-				for (int i = 0; i < nodes.length; i++) {
-				   if (nodes[i] != null) {
-					   network.getRow(nodes[i]).set(newmapX, coordinates[i][0]);
-					   System.out.println("X value from the table : " + network.getRow(nodes[i]).get(newmapX, Double.class));
-					   network.getRow(nodes[i]).set(newmapY, coordinates[i][1]);
-					   System.out.println("Y value from the table : " + network.getRow(nodes[i]).get(newmapY, Double.class));
-				   }
-				}
-				
-					// If we want to use ScatterPlotDialog
-				
-				//ClusterManager manager = (ClusterManager) clusterData.get("manager");
-				//ScatterPlotDialog scatter = new ScatterPlotDialog(manager, "UMAP scatterplot", null, nodes, coordinates);
-				//System.out.println("scatter plot : " + scatter);
-				
-			} else { // for clustering algorithms
 				List<NodeCluster> nodeClusters = createClusters(data, clusterAttributeName, network); //move this to remote utils
 				System.out.println("NodeClusters: " + nodeClusters);
 		
@@ -330,7 +270,6 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		}
 		return new CyJobStatus(Status.ERROR, "CyJob is not a ClusterJob"); //if not a clusterjob
 	}
-	
 	
 	//returns a list of NodeCluster objects that have a number and a list of nodes belonging to it
 	public static List<NodeCluster> createClusters(CyJobData data, String clusterAttributeName, CyNetwork network) {

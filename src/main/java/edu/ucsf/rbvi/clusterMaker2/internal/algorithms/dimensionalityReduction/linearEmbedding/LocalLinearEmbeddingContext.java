@@ -110,6 +110,13 @@ public class LocalLinearEmbeddingContext {
     		groups = {"Local Linear Embedding Advanced Settings"}, gravity = 74)
     public ListSingleSelection<String> neighbors_algorithm = new ListSingleSelection<String>("auto", "brute", "kd_tree", "ball_tree");
     
+    @Tunable(description = "Show scatter plot with results",
+	         longDescription = "If this is set to ```true```, show the scatterplot after the calculation is complete",
+	         exampleStringValue = "true",
+	         tooltip = "If this is set to ```true```, show the scatterplot after the calculation is complete",
+	         groups = {"UMAP Advanced Settings"}, gravity = 5.0)
+	public boolean showScatterPlot = true;
+    
     
 	public LocalLinearEmbeddingContext() {
 
