@@ -241,7 +241,7 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		    	data.put(key, newData.get(key));
 		    }
 			
-		    Map<String, Object> clusterData = clusterJob.getClusterData().getAllValues();
+		    /*Map<String, Object> clusterData = clusterJob.getClusterData().getAllValues();
 			String shortName = (String) clusterData.get("shortName");
 			
 			// don't go through here if we are running a dimensionality reduction
@@ -261,7 +261,7 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		
 				AbstractNetworkClusterer.createGroups(network, nodeClusters, group_attr, clusterAttributeName, 
 						clusterManager, createGroups, params, shortName);
-			}
+			} */
 			
 			CyJobStatus resultStatus = getStatus(result, null);
 			if (resultStatus == null)
