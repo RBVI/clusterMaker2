@@ -85,6 +85,13 @@ public class IsomapContext {
 			 groups = {"Isomap Advanced Settings"}, gravity = 71)
     public int max_iter;
     
+	@Tunable(description = "Show scatter plot with results",
+	         longDescription = "If this is set to ```true```, show the scatterplot after the calculation is complete",
+	         exampleStringValue = "true",
+	         tooltip = "If this is set to ```true```, show the scatterplot after the calculation is complete",
+	         groups = {"Isomap Advanced Settings"}, gravity = 72)
+	public boolean showScatterPlot = true;
+    
 	public IsomapContext() {
 	}
 
@@ -97,6 +104,7 @@ public class IsomapContext {
 		path_method = origin.path_method;
 		neighbors_algorithm = origin.neighbors_algorithm;
 		max_iter = origin.max_iter;
+		showScatterPlot = origin.showScatterPlot;
 	}
 
 	public void setNetwork(CyNetwork network) {

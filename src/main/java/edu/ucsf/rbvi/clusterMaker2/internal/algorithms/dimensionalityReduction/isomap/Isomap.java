@@ -15,15 +15,18 @@ import org.cytoscape.jobs.SUIDUtil;
 import org.cytoscape.jobs.CyJobStatus.Status;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
+import org.json.simple.JSONArray;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.ScatterPlotDialog;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJob;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
@@ -106,8 +109,68 @@ public class Isomap extends AbstractNetworkClusterer {
 				
 		CyJobStatus.Status status = exStatus.getStatus();
 		System.out.println("Status: " + status);
+		
 		if (status == Status.FINISHED) {
-			executionService.fetchResults(job, dataService.getDataInstance()); 
+			
+			CyJobData cyjobdata = dataService.getDataInstance();
+			executionService.fetchResults(job, cyjobdata);
+			
+			// arranging the dimensionality reduction data into coordinates[] and nodes[] columns
+			JSONArray embedding = (JSONArray) cyjobdata.get("embedding"); //getting the relevant data from the data object
+			int size = embedding.size(); 
+    
+			CyNode[] nodes = new CyNode[size-1]; 
+			double[][] coordinates = new double[size-1][2];
+			
+			for (int i = 1; i < size; i++) {
+				JSONArray nodeData = (JSONArray) embedding.get(i);
+				String nodeName = (String) nodeData.get(0);
+				
+				for (CyNode cyNode : network.getNodeList()) {// getting the cyNode object with the name of the node
+					if (network.getRow(cyNode).get(CyNetwork.NAME, String.class).equals(nodeName)) {
+						nodes[i-1] = cyNode;
+
+					}
+				} 
+				
+				double x = (Double) nodeData.get(1); 
+				double y = (Double) nodeData.get(2); 
+				coordinates[i-1][0] = x;
+				coordinates[i-1][1] = y;
+			}
+
+			String newmapX = SHORTNAME + "_x";
+			String newmapY = SHORTNAME + "_y";
+			
+			Boolean columnExists = false;
+			for(CyColumn col : nodeTable.getColumns()) {
+				if (col.getName().equals(newmapX) || col.getName().equals(newmapY)) {
+					columnExists = true;
+					break;
+				}
+			}
+			
+			if (!columnExists) {
+				nodeTable.createColumn(newmapX, Double.class, false);
+				nodeTable.createColumn(newmapY, Double.class, false);
+			}
+			
+			
+			for (int i = 0; i < nodes.length; i++) {
+			   if (nodes[i] != null) {
+				   network.getRow(nodes[i]).set(newmapX, coordinates[i][0]);
+				   System.out.println("X value from the table : " + network.getRow(nodes[i]).get(newmapX, Double.class));
+				   network.getRow(nodes[i]).set(newmapY, coordinates[i][1]);
+				   System.out.println("Y value from the table : " + network.getRow(nodes[i]).get(newmapY, Double.class));
+			   }
+			}
+
+			
+			Map<String, Object> clusterData = job.getClusterData().getAllValues();
+			if (context.showScatterPlot) {
+				ClusterManager manager = (ClusterManager) clusterData.get("manager");
+				ScatterPlotDialog scatter = new ScatterPlotDialog(manager, "Isomap scatterplot", null, nodes, coordinates);
+			}
 					
 		} else if (status == Status.RUNNING 
 						|| status == Status.SUBMITTED 

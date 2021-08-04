@@ -32,44 +32,11 @@ public class RemoteServer {
 		return PROD_PATH;
 	}
 	
+	    // service is the shortname of the algorithm
 		//make the choice between different clustering algorithms/servers, this works
 	static public String getServiceURI(String service) {
-		
-		String server = PROD_PATH;
-		
-		/*if (service.equals("leiden")) {
-			return server + "service/leiden?objective_function=modularity&iterations=4";
-		} else if (service.equals("fastgreedy")) {
-			return server + "service/fastgreedy";
-		} else if (service.equals("infomap")) {
-			return server + "service/infomap";
-		} else if (service.equals("labelpropagation")) {
-			return server + "service/labelpropagation";
-		} else if (service.equals("leadingeigenvector")) {
-			return server + "service/leadingeigenvector";
-		} else if (service.equals("multilevel")) {
-			return server + "service/multilevel";
-		} else if (service.equals("umap")) {
-			return server + "service/umap";
-		} else if (service.equals("tsne")) { // what is the path to remote tsne?
-			return server + "service/tsne";
-		} else {
-			System.out.println("Unknown service");
-		} */
-		
-		if (service.equals("leiden")) {
-			return server + "service/leiden?objective_function=modularity&iterations=4";
-		} else if (service.equals("fastgreedy") || service.equals("infomap")  || service.equals("labelpropagation")
-				|| service.equals("leadingeigenvector") || service.equals("multilevel") || service.equals("umap")
-				|| service.equals("tsne") || service.equals("isomap") || service.equals("mds") || service.equals("spectral") 
-				|| service.equals("locallylinear")) {
-			return server + "service/" + service;
-		} else {
-			System.out.println("Unknown service");
-		}
-		
-		
-		return null;
+		return PROD_PATH + "service/" + service;
+
 	}
 		//sends the data
 		//you should use a JSONParser to parse the reply and return that.
