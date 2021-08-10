@@ -21,11 +21,11 @@ public class LocalLinearEmbeddingContext {
 		//Tunables
 
 	public ListMultipleSelection<String> nodeAttributeList = null;
-	@Tunable(description="Node attributes for cluster", groups="Array sources", 
-	         longDescription="Select the node table columns to be used for calculating the cluster.  "+
+	@Tunable(description="Node attributes for dimensionality reduction", groups="Array sources", 
+	         longDescription="Select the node table columns to be used for calculating the dimensionality reduction.  "+
 	                         "Note that at least 2 node columns are usually required.",
 	         exampleStringValue="gal1RGexp,gal4RGExp,gal80Rexp",
-	         tooltip="You must choose at least 2 node columns for an attribute cluster", gravity=50 )
+	         tooltip = "<html>You must choose at least 2 node columns for dimensionality reduction.</html>", gravity = 65 )
     public ListMultipleSelection<String> getnodeAttributeList() {
 		if (network != null && nodeAttributeList == null)
 			nodeAttributeList = ModelUtils.updateNodeAttributeList(network, nodeAttributeList);
@@ -47,13 +47,6 @@ public class LocalLinearEmbeddingContext {
     		groups = {"Local Linear Embedding Advanced Settings"}, gravity = 67)
     public double reg = 1 * 10^(-3);
     
-    @Tunable(description = "Tolerance",
-    		longDescription = "Tolerance for ‘arpack’ method. Not used if eigen_solver==’dense’.",
-    		exampleStringValue = "1 * 10^(-6)",
-    		tooltip = "<html>Tolerance for ‘arpack’ method. Not used if Eigen solver = ’dense’.</html>",
-    		groups = {"Local Linear Embedding Advanced Settings"}, gravity = 68)
-    public double tol = 1 * 10^(-6);
-    
     @Tunable(description = "Eigen solver",
     		longDescription = "'auto' : algorithm will attempt to choose the best method for input data\r\n" + 
     				"'arpack': use arnoldi iteration in shift-invert mode.\r\n" + 
@@ -66,8 +59,15 @@ public class LocalLinearEmbeddingContext {
     			+ "'arpack':  use arnoldi iteration in shift-invert mode. For this method, M may be a dense matrix, sparse matrix, or general linear operator.<br/> "
     			+ "Warning: ARPACK can be unstable for some problems. It is best to try several random seeds in order to check results.<br/>"
     			+ "'dense': use standard dense matrix operations for the eigenvalue decomposition. For this method, M must be an array or matrix type.</html>",
-    		groups = {"Local Linear Embedding Advanced Settings"}, gravity = 69)
+    		groups = {"Local Linear Embedding Advanced Settings"}, gravity = 68)
     public ListSingleSelection<String> eigen_solver = new ListSingleSelection<String>("auto", "arpack", "dense");
+    
+    @Tunable(description = "Tolerance",
+    		longDescription = "Tolerance for ‘arpack’ method. Not used if eigen_solver==’dense’.",
+    		exampleStringValue = "1 * 10^(-6)",
+    		tooltip = "<html>Tolerance for ‘arpack’ method. Not used if Eigen solver = ’dense’.</html>",
+    		groups = {"Local Linear Embedding Advanced Settings"}, gravity = 69)
+    public double tol = 1 * 10^(-6);
     
     @Tunable(description = "Maximum iterations",
     		longDescription = "Maximum number of iterations for the arpack solver. Not used if eigen_solver==’dense’.",
@@ -92,14 +92,14 @@ public class LocalLinearEmbeddingContext {
     @Tunable(description = "Hessian tolerance",
     		longDescription = "Tolerance for Hessian eigenmapping method. Only used if Method == 'hessian'",
     		exampleStringValue = "1 * 10^(-4)",
-    		tooltip = "<html>Tolerance for Hessian eigenmapping method. Only used if Method = 'hessian'</html>",
+    		tooltip = "<html>Tolerance for Hessian eigenmapping method. Only used if Method = 'hessian'.</html>",
     		groups = {"Local Linear Embedding Advanced Settings"}, gravity = 72)
     public double hessian_tol = 1 * 10^(-4);
     
     @Tunable(description = "Modified tolerance",
     		longDescription = "Tolerance for modified LLE method. Only used if Method == 'modified'",
     		exampleStringValue = "1 * 10^(-12)",
-    		tooltip = "<html>Tolerance for modified LLE method. Only used if Method = 'modified'</html>",
+    		tooltip = "<html>Tolerance for modified LLE method. Only used if Method = 'modified'.</html>",
     		groups = {"Local Linear Embedding Advanced Settings"}, gravity = 73)
     public double modified_tol = 1 * 10^(-12);
     
@@ -111,10 +111,10 @@ public class LocalLinearEmbeddingContext {
     public ListSingleSelection<String> neighbors_algorithm = new ListSingleSelection<String>("auto", "brute", "kd_tree", "ball_tree");
     
     @Tunable(description = "Show scatter plot with results",
-	         longDescription = "If this is set to ```true```, show the scatterplot after the calculation is complete",
+	         longDescription = "If this is set to ```true```, show the scatterplot after the calculation is complete.",
 	         exampleStringValue = "true",
-	         tooltip = "If this is set to ```true```, show the scatterplot after the calculation is complete",
-	         groups = {"UMAP Advanced Settings"}, gravity = 5.0)
+	         tooltip = "<html>If this is checked, show the scatterplot after the calculation is complete.</html>",
+	         groups = {"Local Linear Embedding Advanced Settings"}, gravity = 75)
 	public boolean showScatterPlot = true;
     
     

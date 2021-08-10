@@ -21,11 +21,11 @@ public class SpectralContext {
 		//Tunables
 	
 	public ListMultipleSelection<String> nodeAttributeList = null;
-	@Tunable(description="Node attributes for cluster", groups="Array sources", 
-	         longDescription="Select the node table columns to be used for calculating the cluster.  "+
+	@Tunable(description="Node attributes for dimensionality reduction", groups="Array sources", 
+	         longDescription="Select the node table columns to be used for calculating dimensionality reduction.  "+
 	                         "Note that at least 2 node columns are usually required.",
 	         exampleStringValue="gal1RGexp,gal4RGExp,gal80Rexp",
-	         tooltip="You must choose at least 2 node columns for an attribute cluster", gravity=50 )
+	         tooltip = "<html>You must choose at least 2 node columns for dimensionality reduction.</html>", gravity=50 )
     public ListMultipleSelection<String> getnodeAttributeList() {
 		if (network != null && nodeAttributeList == null)
 			nodeAttributeList = ModelUtils.updateNodeAttributeList(network, nodeAttributeList);
@@ -50,7 +50,7 @@ public class SpectralContext {
 			 		+ "'callable': use passed in function as affinity the function takes in data matrix (n_samples, n_features)<br/>"
 					+ "and return affinity matrix (n_samples, n_samples).</html>",
 			 groups = {"Spectral Advanced Settings"}, gravity = 67)
-    public ListSingleSelection<String> affinity = new ListSingleSelection<String>("nearest_neighbors", "rbf", "precomputed", "precomputed_nearest_neighbors");
+    public ListSingleSelection<String> affinity = new ListSingleSelection<String>("nearest_neighbors", "rbf", "precomputed", "precomputed_nearest_neighbors", "callable");
     
     @Tunable(description = "Gamma",
     		longDescription = "Kernel coefficient for rbf kernel. If None, gamma will be set to 1/n_features.",
@@ -71,15 +71,15 @@ public class SpectralContext {
     @Tunable(description = "Number of neighbors",
     		longDescription = "Number of nearest neighbors for nearest_neighbors graph building. If None, n_neighbors will be set to max(n_samples/10, 1).",
     		exampleStringValue = "None",
-    		tooltip = "Number of nearest neighbors for nearest_neighbors graph building. If None, Number of neighbors will be set to max(n_samples/10, 1).</html>",
+    		tooltip = "<html>Number of nearest neighbors for nearest_neighbors graph building. If None, Number of neighbors will be set to max(n_samples/10, 1).</html>",
     		groups = {"Spectral Advanced Settings"}, gravity = 70)
     public int n_neighbors;
     
     @Tunable(description = "Show scatter plot with results",
 	         longDescription = "If this is set to ```true```, show the scatterplot after the calculation is complete",
 	         exampleStringValue = "true",
-	         tooltip = "If this is set to ```true```, show the scatterplot after the calculation is complete",
-	         groups = {"UMAP Advanced Settings"}, gravity = 71)
+	         tooltip = "<html>If this is checked, show the scatterplot after the calculation is complete.</html>",
+	         groups = {"Spectral Advanced Settings"}, gravity = 71)
 	public boolean showScatterPlot = true;
 
 	public SpectralContext() {

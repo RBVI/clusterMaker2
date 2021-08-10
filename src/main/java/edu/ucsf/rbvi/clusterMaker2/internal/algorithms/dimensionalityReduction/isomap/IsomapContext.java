@@ -22,10 +22,10 @@ public class IsomapContext {
 
 	public ListMultipleSelection<String> nodeAttributeList = null;
 	@Tunable(description="Node attributes for cluster", groups="Array sources", 
-	         longDescription="Select the node table columns to be used for calculating the cluster.  "+
+	         longDescription="Select the node table columns to be used for calculating the dimensionality reduction.  "+
 	                         "Note that at least 2 node columns are usually required.",
 	         exampleStringValue="gal1RGexp,gal4RGExp,gal80Rexp",
-	         tooltip="You must choose at least 2 node columns for an attribute cluster", gravity=50 )
+	         tooltip = "<html>You must choose at least 2 node columns for dimensionality reduction</html>", gravity=50 )
     public ListMultipleSelection<String> getnodeAttributeList() {
 		if (network != null && nodeAttributeList == null)
 			nodeAttributeList = ModelUtils.updateNodeAttributeList(network, nodeAttributeList);
@@ -88,7 +88,7 @@ public class IsomapContext {
 	@Tunable(description = "Show scatter plot with results",
 	         longDescription = "If this is set to ```true```, show the scatterplot after the calculation is complete",
 	         exampleStringValue = "true",
-	         tooltip = "If this is set to ```true```, show the scatterplot after the calculation is complete",
+	         tooltip = "<html>If this is checked, show the scatterplot after the calculation is complete</html>",
 	         groups = {"Isomap Advanced Settings"}, gravity = 72)
 	public boolean showScatterPlot = true;
     

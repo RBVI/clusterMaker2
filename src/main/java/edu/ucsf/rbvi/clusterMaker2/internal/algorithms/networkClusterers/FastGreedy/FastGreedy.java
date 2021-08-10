@@ -102,7 +102,7 @@ public class FastGreedy extends AbstractNetworkClusterer {
 			String clusterAttributeName = (String) clusterData.get("clusterAttributeName");
 			Boolean createGroups = (Boolean) clusterData.get("createGroups");
 			String group_attr = (String) clusterData.get("group_attr");
-			List<String> params  = (List<String>) clusterData.get("params");
+			List<String> params = (List<String>) clusterData.get("params");
 
 			List<NodeCluster> nodeClusters = ClusterJobExecutionService.createClusters(data, clusterAttributeName, network); //move this to remote utils
 			System.out.println("NodeClusters: " + nodeClusters);
