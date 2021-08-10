@@ -30,7 +30,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
 
 	public class MultilevelCluster extends AbstractNetworkClusterer {
 
-		public static String NAME = "Multilevel Cluster remote";
+		public static String NAME = "Multilevel Cluster (remote)";
 		public static String SHORTNAME = "multilevel";
 		final CyServiceRegistrar registrar;
 		public final static String GROUP_ATTRIBUTE = "__Multilevel.SUID";

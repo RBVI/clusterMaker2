@@ -32,7 +32,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
 
 public class LocalLinearEmbedding extends AbstractNetworkClusterer {
-	public static String NAME = "Local Linear Embedding remote";
+	public static String NAME = "Local Linear Embedding (remote)";
 	public static String SHORTNAME = "lle";
 	final CyServiceRegistrar registrar;
 	public final static String GROUP_ATTRIBUTE = "__LocalLinearEmbeddingGroups.SUID";

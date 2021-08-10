@@ -30,7 +30,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
 
 	public class LEVCluster extends AbstractNetworkClusterer {
 
-		public static String NAME = "Leading Eigenvector remote";
+		public static String NAME = "Leading Eigenvector (remote)";
 		public static String SHORTNAME = "leadingeigenvector";
 		final CyServiceRegistrar registrar;
 		public final static String GROUP_ATTRIBUTE = "__LeadingEigenvector.SUID";

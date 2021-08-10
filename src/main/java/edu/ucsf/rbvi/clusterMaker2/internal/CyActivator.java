@@ -149,10 +149,10 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new PAMTaskFactory(clusterManager),
                 ClusterTaskFactory.class, new Properties());
 		// FIXME: FFT is seriously broken!
-		registerService(bc, new FFTTaskFactory(clusterManager),
-                    ClusterTaskFactory.class, new Properties());
-		registerService(bc, new DBSCANTaskFactory(clusterManager),
-               ClusterTaskFactory.class, new Properties());
+		// registerService(bc, new FFTTaskFactory(clusterManager),
+    //                 ClusterTaskFactory.class, new Properties());
+		// registerService(bc, new DBSCANTaskFactory(clusterManager),
+    //            ClusterTaskFactory.class, new Properties());
 		/*
 		 * Hold off on these until we get improve the performance sufficiently
 		 * to allow them to be useful
@@ -161,8 +161,8 @@ public class CyActivator extends AbstractCyActivator {
     //           ClusterTaskFactory.class, new Properties());
 		// registerService(bc, new BiMineTaskFactory(clusterManager),
     //             ClusterTaskFactory.class, new Properties());
-		registerService(bc, new ChengChurchTaskFactory(clusterManager),
-                    ClusterTaskFactory.class, new Properties());
+		// registerService(bc, new ChengChurchTaskFactory(clusterManager),
+    //                 ClusterTaskFactory.class, new Properties());
 
 		// Network clusterers
 		registerService(bc, new NetworkClusterTaskFactory(clusterManager),

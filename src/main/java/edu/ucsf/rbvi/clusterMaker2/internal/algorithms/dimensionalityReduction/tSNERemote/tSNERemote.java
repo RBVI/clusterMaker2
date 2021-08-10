@@ -32,7 +32,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
 
 public class tSNERemote extends AbstractNetworkClusterer {
-	public static String NAME = "tSNE remote";
+	public static String NAME = "tSNE (remote)";
 	public static String SHORTNAME = "tsneremote";
 	final CyServiceRegistrar registrar;
 	public final static String GROUP_ATTRIBUTE = "__tSNERemoteGroups.SUID";
