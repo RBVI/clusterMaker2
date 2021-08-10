@@ -241,28 +241,6 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		    	data.put(key, newData.get(key));
 		    }
 			
-		    /*Map<String, Object> clusterData = clusterJob.getClusterData().getAllValues();
-			String shortName = (String) clusterData.get("shortName");
-			
-			// don't go through here if we are running a dimensionality reduction
-			// should i move this part to network clusterer classes?
-			if (!shortName.equals("umap") || !shortName.equals("tsneremote") || !shortName.equals("isomap") || !shortName.equals("lle")
-					|| !shortName.equals("mds") || !shortName.equals("spectral")) {
-
-				String clusterAttributeName = (String) clusterData.get("clusterAttributeName");
-				CyNetwork network = (CyNetwork) clusterData.get("network");
-				ClusterManager clusterManager = (ClusterManager) clusterData.get("clusterManager");
-				Boolean createGroups = (Boolean) clusterData.get("createGroups");
-				String group_attr = (String) clusterData.get("group_attr");
-				List<String> params  = (List<String>) clusterData.get("params");
-
-				List<NodeCluster> nodeClusters = createClusters(data, clusterAttributeName, network); //move this to remote utils
-				System.out.println("NodeClusters: " + nodeClusters);
-		
-				AbstractNetworkClusterer.createGroups(network, nodeClusters, group_attr, clusterAttributeName, 
-						clusterManager, createGroups, params, shortName);
-			} */
-			
 			CyJobStatus resultStatus = getStatus(result, null);
 			if (resultStatus == null)
 				return new CyJobStatus(Status.FINISHED, "Data fetched"); //returns status FINISHED if succesfull

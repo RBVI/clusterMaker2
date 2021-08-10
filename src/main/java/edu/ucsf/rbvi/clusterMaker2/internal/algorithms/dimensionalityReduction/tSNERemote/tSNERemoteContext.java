@@ -19,25 +19,19 @@ public class tSNERemoteContext {
 	TunableUIHelper helper;
 		
 		//Tunables
-	
-	/*@Tunable(description = "",
-			 longDescription = "",
-			 exampleStringValue = "",
-			 groups = {}, gravity = 70)*/
 
 	public ListMultipleSelection<String> nodeAttributeList = null;
-	@Tunable(description="Node attributes for cluster", groups="Array sources", 
+	@Tunable(description="Node attributes for dimensionality reduction", groups = "Array sources", 
 	         longDescription="Select the node table columns to be used for calculating the cluster.  "+
 	                         "Note that at least 2 node columns are usually required.",
 	         exampleStringValue="gal1RGexp,gal4RGExp,gal80Rexp",
-	         tooltip="You must choose at least 2 node columns for an attribute cluster", gravity=50 )
+	         tooltip = "<html>You must choose at least 2 node columns for dimensionality reduction.</html>", gravity = 66 )
     public ListMultipleSelection<String> getnodeAttributeList() {
 		if (network != null && nodeAttributeList == null)
 			nodeAttributeList = ModelUtils.updateNodeAttributeList(network, nodeAttributeList);
         return nodeAttributeList;
     }
     public void setnodeAttributeList(ListMultipleSelection<String> nal) { }
-
 
 	@Tunable(description = "Perplexity", 
 		     longDescription = "The perplexity is related to the number of nearest neighbors "
@@ -81,13 +75,8 @@ public class tSNERemoteContext {
 			 		+ "two arrays from X as input and return a value indicating the distance between them. The default is "
 			 		+ "“euclidean” which is interpreted as squared euclidean distance.",
 			 exampleStringValue = "euclidean",
-			 tooltip = "<html>The metric to use when calculating distance between instances in a feature array.</br>"
-			 		+ "If metric is a string, it must be one of the options allowed by scipy.spatial.distance.pdist<br/>"
-					+ "for its metric parameter, or a metric listed in pairwise. PAIRWISE_DISTANCE_FUNCTIONS. If metric is<br/>"
-			 		+ "'precomputed', X is assumed to be a distance matrix. Alternatively, if metric is a callable function,<br/>"
-					+ "it is called on each pair of instances (rows) and the resulting value recorded. The callable should take<br/>"
-			 		+ "two arrays from X as input and return a value indicating the distance between them. The default is<br/>"
-					+ "'euclidean' which is interpreted as squared euclidean distance.</html>",
+			 tooltip = "<html>The metric to use when calculating distance between instances in a feature array.<br/>"
+					+ "The default is 'euclidean' which is interpreted as squared euclidean distance.</html>",
 			 groups = {"t-SNE Advanced Settings"}, gravity = 70)
 	public ListSingleSelection<String> metric = new ListSingleSelection<String>("euclidean", "manhattan", "chebyshev", "minkowski", "canberra", "braycurtis",
 			"haversine", "mahalanobis", "wminkowski", "seuclidean", "cosine", "correlation", "hamming", "jaccard", "dice", "russellrao", "kulsinski", "rogerstanimoto",
@@ -106,7 +95,6 @@ public class tSNERemoteContext {
 			 groups = {"t-SNE Advanced Settings"}, gravity = 71)
 	public double learning_rate = 200.0;
 	
-	
 	@Tunable(description = "Init",
 			longDescription = "Initialization of embedding. Possible options are ‘random’, "
 					+ "‘pca’, and a numpy array of shape (n_samples, n_components). PCA initialization cannot be "
@@ -121,8 +109,8 @@ public class tSNERemoteContext {
 	@Tunable(description = "Show scatter plot with results",
 	         longDescription = "If this is set to ```true```, show the scatterplot after the calculation is complete",
 	         exampleStringValue = "true",
-	         tooltip = "If this is set to ```true```, show the scatterplot after the calculation is complete",
-	         groups = {"UMAP Advanced Settings"}, gravity = 73)
+	         tooltip = "<html>If this is checked, show the scatterplot after the calculation is complete.</html>",
+	         groups = {"t-SNE Advanced Settings"}, gravity = 73)
 	public boolean showScatterPlot = true;
 	
 	//@ContainsTunables

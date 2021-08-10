@@ -167,7 +167,7 @@ public class MDS extends AbstractNetworkClusterer {
 			Map<String, Object> clusterData = job.getClusterData().getAllValues();
 			if (context.showScatterPlot) {
 				ClusterManager manager = (ClusterManager) clusterData.get("manager");
-				ScatterPlotDialog scatter = new ScatterPlotDialog(manager, "MDS scatterplot", null, nodes, coordinates);
+				ScatterPlotDialog scatter = new ScatterPlotDialog(manager, "MDS", null, nodes, coordinates);
 			}
 					
 		} else if (status == Status.RUNNING 

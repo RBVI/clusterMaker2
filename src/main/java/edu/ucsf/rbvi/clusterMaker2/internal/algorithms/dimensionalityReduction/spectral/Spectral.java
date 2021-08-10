@@ -168,7 +168,7 @@ public class Spectral extends AbstractNetworkClusterer {
 			Map<String, Object> clusterData = job.getClusterData().getAllValues();
 			if (context.showScatterPlot) {
 				ClusterManager manager = (ClusterManager) clusterData.get("manager");
-				ScatterPlotDialog scatter = new ScatterPlotDialog(manager, "Spectral scatterplot", null, nodes, coordinates);
+				ScatterPlotDialog scatter = new ScatterPlotDialog(manager, "Spectral", null, nodes, coordinates);
 			} 
 					
 		} else if (status == Status.RUNNING 
