@@ -38,6 +38,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobDataServ
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobExecutionService;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.NetworkClusterJobHandler;
 
 public class LeidenCluster extends AbstractNetworkClusterer {
 	public static String NAME = "Leiden Clusterer (remote)";
@@ -96,7 +97,7 @@ public class LeidenCluster extends AbstractNetworkClusterer {
 		jobData = dataService.addData(jobData, "edges", edgeArray);
 		job.storeClusterData(clusterAttributeName, currentNetwork, clusterManager, createGroups, GROUP_ATTRIBUTE, null, getShortName());
 				// Create our handler
-		ClusterJobHandler jobHandler = new ClusterJobHandler(job, network);
+		NetworkClusterJobHandler jobHandler = new NetworkClusterJobHandler(job, network);
 		job.setJobMonitor(jobHandler);	
 				// Submit the job
 		CyJobStatus exStatus = executionService.executeJob(job, basePath, null, jobData);
@@ -105,7 +106,10 @@ public class LeidenCluster extends AbstractNetworkClusterer {
 		System.out.println("Status: " + status);
 		
 		if (status == Status.FINISHED) {
-			CyJobData data = dataService.getDataInstance();
+			
+			jobHandler.loadData(job, taskMonitor);
+			
+			/*CyJobData data = dataService.getDataInstance();
 			executionService.fetchResults(job, data); 
 			
 			Map<String, Object> clusterData = job.getClusterData().getAllValues();
@@ -119,7 +123,7 @@ public class LeidenCluster extends AbstractNetworkClusterer {
 			System.out.println("NodeClusters: " + nodeClusters);
 	
 			AbstractNetworkClusterer.createGroups(network, nodeClusters, group_attr, clusterAttributeName, 
-					clusterManager, createGroups, params, SHORTNAME); 
+					clusterManager, createGroups, params, SHORTNAME); */
 			
 			if (context.vizProperties.showUI) {
 				taskMonitor.showMessage(TaskMonitor.Level.INFO, "Creating network");
