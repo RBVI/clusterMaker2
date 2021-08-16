@@ -7,16 +7,23 @@ import org.cytoscape.jobs.CyJob;
 import org.cytoscape.jobs.CyJobData;
 import org.cytoscape.jobs.CyJobStatus;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
 
 public class NetworkClusterJobHandler extends ClusterJobHandler {
+	public boolean showUI;
+	public boolean restoreEdges;
 	
-	public NetworkClusterJobHandler(CyJob job, CyNetwork network) {
+	public NetworkClusterJobHandler(CyJob job, CyNetwork network, Boolean showUI, Boolean restoreEdges) {
 		super(job, network);
+		this.showUI = showUI;
+		this.restoreEdges = restoreEdges;
 	}
 	
 	@Override
@@ -44,6 +51,10 @@ public class NetworkClusterJobHandler extends ClusterJobHandler {
 		AbstractNetworkClusterer.createGroups(network, nodeClusters, group_attr, clusterAttributeName, 
 				clusterManager, createGroups, params, job.getJobName()); 
 		
+		if (showUI) {
+			TaskManager manager = clusterManager.getService(TaskManager.class);
+			manager.execute(new TaskIterator(new NewNetworkView(network, clusterManager, true, restoreEdges, false)));
+		}
 	}
 		
 }
