@@ -25,6 +25,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.ui.NewNetworkView;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJob;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.NetworkClusterJobHandler;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobExecutionService;
 
@@ -85,7 +86,7 @@ public class FastGreedy extends AbstractNetworkClusterer {
 		jobData = dataService.addData(jobData, "edges", edgeArray);
 		job.storeClusterData(clusterAttributeName, currentNetwork, clusterManager, createGroups, GROUP_ATTRIBUTE, null, getShortName());
 				// Create our handler
-		ClusterJobHandler jobHandler = new ClusterJobHandler(job, network);
+		NetworkClusterJobHandler jobHandler = new NetworkClusterJobHandler(job, network, context.vizProperties.showUI, context.vizProperties.restoreEdges);
 		job.setJobMonitor(jobHandler);	
 				// Submit the job
 		CyJobStatus exStatus = executionService.executeJob(job, basePath, null, jobData);
@@ -94,7 +95,10 @@ public class FastGreedy extends AbstractNetworkClusterer {
 		System.out.println("Status: " + status);
 		
 		if (status == Status.FINISHED) {
-			CyJobData data = dataService.getDataInstance();
+			
+			jobHandler.loadData(job, taskMonitor);
+			
+			/*CyJobData data = dataService.getDataInstance();
 			executionService.fetchResults(job, data); 
 			
 			Map<String, Object> clusterData = job.getClusterData().getAllValues();
@@ -113,7 +117,7 @@ public class FastGreedy extends AbstractNetworkClusterer {
 			if (context.vizProperties.showUI) {
 				taskMonitor.showMessage(TaskMonitor.Level.INFO, "Creating network");
 				insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true, context.vizProperties.restoreEdges, false));
-			}
+			} */
 			
 		} else if (status == Status.RUNNING 
 				|| status == Status.SUBMITTED 

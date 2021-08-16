@@ -97,7 +97,7 @@ public class LeidenCluster extends AbstractNetworkClusterer {
 		jobData = dataService.addData(jobData, "edges", edgeArray);
 		job.storeClusterData(clusterAttributeName, currentNetwork, clusterManager, createGroups, GROUP_ATTRIBUTE, null, getShortName());
 				// Create our handler
-		NetworkClusterJobHandler jobHandler = new NetworkClusterJobHandler(job, network);
+		NetworkClusterJobHandler jobHandler = new NetworkClusterJobHandler(job, network, context.vizProperties.showUI, context.vizProperties.restoreEdges);
 		job.setJobMonitor(jobHandler);	
 				// Submit the job
 		CyJobStatus exStatus = executionService.executeJob(job, basePath, null, jobData);
@@ -123,12 +123,12 @@ public class LeidenCluster extends AbstractNetworkClusterer {
 			System.out.println("NodeClusters: " + nodeClusters);
 	
 			AbstractNetworkClusterer.createGroups(network, nodeClusters, group_attr, clusterAttributeName, 
-					clusterManager, createGroups, params, SHORTNAME); */
+					clusterManager, createGroups, params, SHORTNAME); 
 			
 			if (context.vizProperties.showUI) {
 				taskMonitor.showMessage(TaskMonitor.Level.INFO, "Creating network");
 				insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true, context.vizProperties.restoreEdges, false));
-			}
+			}*/
 			
 		} else if (status == Status.RUNNING 
 				|| status == Status.SUBMITTED 
