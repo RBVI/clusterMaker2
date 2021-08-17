@@ -30,7 +30,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.ui.KnnView;
  *
  */
 public class PAMClusterer extends AbstractAttributeClusterer {
-	public static String SHORTNAME="pam";
+	public static String SHORTNAME="PAM Cluster";
 	public static String NAME="Partition Around Medoids (PAM) cluster";
 
 	@Tunable (description="Network to cluster", context="nogui")

@@ -9,6 +9,7 @@ import org.cytoscape.model.*;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
@@ -44,6 +45,7 @@ public class MultipleAttributeMultiplicative extends AbstractTask implements Ran
     }
 
     @Override
+    @ProvidesTitle
     public String getName() {
         return NAME;
     }

@@ -20,6 +20,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
@@ -64,6 +65,7 @@ public class PRWP extends AbstractTask implements Rank, ObservableTask {
     }
 
     @Override
+    @ProvidesTitle
     public String getName() {
         return NAME;
     }

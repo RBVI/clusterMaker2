@@ -20,6 +20,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.json.simple.JSONArray;
 
@@ -54,6 +55,7 @@ public class MDS extends AbstractNetworkClusterer {
 	public String getShortName() {return SHORTNAME;}
 	
 	@Override
+  @ProvidesTitle
 	public String getName() {return NAME;}
 	
 	@Override

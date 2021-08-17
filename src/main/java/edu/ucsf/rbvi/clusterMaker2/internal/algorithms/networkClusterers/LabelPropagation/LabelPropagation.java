@@ -16,6 +16,7 @@ import org.cytoscape.jobs.CyJobStatus.Status;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
@@ -51,6 +52,7 @@ public class LabelPropagation extends AbstractNetworkClusterer {
 	public String getShortName() {return SHORTNAME;}
 
 	@Override
+  @ProvidesTitle
 	public String getName() {return NAME;}
 
 	@Override

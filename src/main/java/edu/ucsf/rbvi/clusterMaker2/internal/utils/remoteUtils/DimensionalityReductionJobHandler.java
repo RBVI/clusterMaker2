@@ -79,9 +79,9 @@ public class DimensionalityReductionJobHandler extends ClusterJobHandler {
 		for (int i = 0; i < nodes.length; i++) {
 		   if (nodes[i] != null) {
 			   network.getRow(nodes[i]).set(newmapX, coordinates[i][0]);
-			   System.out.println("X value from the table : " + network.getRow(nodes[i]).get(newmapX, Double.class));
+			   // System.out.println("X value from the table : " + network.getRow(nodes[i]).get(newmapX, Double.class));
 			   network.getRow(nodes[i]).set(newmapY, coordinates[i][1]);
-			   System.out.println("Y value from the table : " + network.getRow(nodes[i]).get(newmapY, Double.class));
+			   // System.out.println("Y value from the table : " + network.getRow(nodes[i]).get(newmapY, Double.class));
 		   }
 		}
 
