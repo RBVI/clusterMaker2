@@ -1,3 +1,17 @@
+# This is git repository for the Cytoscape 3 clustering app: clusterMaker
+
+TODO:
+1) Fix BiClusterView
+2) Add support for BiClustering routines: 
+ * Cheng & Church
+ * BiMine
+ * BicFinder
+3) New potential cluster algorithms
+ * CIDR (Lin, Troup, Ho, Genome Biology 2017)
+ * SPICi (Speed and Performance In Clustering)
+
+
+
 7 JUNE - 23 AUGUST 2021 Google Summer of Code by Maija Utriainen
 
 Implementing remote dimensionality reduction techniques using similar approach to last years remote network clusterers (see below).
@@ -20,19 +34,6 @@ The added and edited code can be found in clusterMaker2/src/main/java/edu/ucsf/r
     - tSNERemote
     - umap
   - CyActivator 
-
-
-# This is git repository for the Cytoscape 3 clustering app: clusterMaker
-TODO:
-1) Fix BiClusterView
-2) Add support for BiClustering routines: 
- * Cheng & Church
- * BiMine
- * BicFinder
-3) New potential cluster algorithms
- * CIDR (Lin, Troup, Ho, Genome Biology 2017)
- * SPICi (Speed and Performance In Clustering)
-
 
 
 1 JUNE - 29 AUGUST 2020 changes done as a Google Summer of Code Project by Maija Utriainen
