@@ -12,6 +12,8 @@ TODO:
 
 
 
+
+
 7 JUNE - 23 AUGUST 2021 Google Summer of Code by Maija Utriainen
 
 Implementing remote dimensionality reduction techniques using similar approach to last years remote network clusterers (see below).
@@ -34,6 +36,8 @@ The added and edited code can be found in clusterMaker2/src/main/java/edu/ucsf/r
     - tSNERemote
     - umap
   - CyActivator 
+
+
 
 
 1 JUNE - 29 AUGUST 2020 changes done as a Google Summer of Code Project by Maija Utriainen
