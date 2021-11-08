@@ -7,20 +7,19 @@ import org.cytoscape.application.CyUserLog;
 import org.apache.log4j.Logger;
 
 import org.ojalgo.OjAlgoUtils;
-import org.ojalgo.access.Access1D;
 import org.ojalgo.function.PrimitiveFunction;
 import org.ojalgo.function.aggregator.Aggregator;
 import org.ojalgo.function.aggregator.AggregatorFunction;
+import org.ojalgo.function.constant.PrimitiveMath;
 import org.ojalgo.matrix.BasicMatrix;
-import org.ojalgo.matrix.BasicMatrix.Builder;
-import org.ojalgo.matrix.PrimitiveMatrix;
+import org.ojalgo.matrix.Primitive64Matrix;
 import org.ojalgo.matrix.decomposition.DecompositionStore;
 import org.ojalgo.matrix.decomposition.Eigenvalue;
 import org.ojalgo.matrix.decomposition.SingularValue;
 import org.ojalgo.matrix.store.ElementsSupplier;
 import org.ojalgo.matrix.store.MatrixStore;
 import org.ojalgo.matrix.store.PhysicalStore;
-import org.ojalgo.matrix.store.PrimitiveDenseStore;
+import org.ojalgo.matrix.store.Primitive64Store;
 import org.ojalgo.matrix.task.InverterTask;
 import org.ojalgo.matrix.task.SolverTask;
 import org.ojalgo.scalar.ComplexNumber;
@@ -125,13 +124,13 @@ public class OjAlgoOps implements MatrixOps {
 
 	public double normalizeRow(int row) {
 		double sum = rowSum(row);
-		matrix.data.modifyRow(row, 0L, PrimitiveFunction.DIVIDE.second(sum));
+		matrix.data.modifyRow(row, 0L, PrimitiveMath.DIVIDE.second(sum));
 		return sum;
 	}
 
 	public double normalizeColumn(int column) {
 		double sum = columnSum(column);
-		matrix.data.modifyColumn(0L, column, PrimitiveFunction.DIVIDE.second(sum));
+		matrix.data.modifyColumn(0L, column, PrimitiveMath.DIVIDE.second(sum));
 		return sum;
 	}
 
@@ -293,7 +292,7 @@ public class OjAlgoOps implements MatrixOps {
 	 * Add a value to all cells in the matrix
 	 */
 	public void addScalar(double value) {
-		matrix.data.modifyAll(PrimitiveFunction.ADD.second(value));
+		matrix.data.modifyAll(PrimitiveMath.ADD.second(value));
 	}
 
 	/**
@@ -309,7 +308,7 @@ public class OjAlgoOps implements MatrixOps {
 	 * Subtract a value to all cells in the matrix
 	 */
 	public void subtractScalar(double value) {
-		matrix.data.modifyAll(PrimitiveFunction.SUBTRACT.second(value));
+		matrix.data.modifyAll(PrimitiveMath.SUBTRACT.second(value));
 	}
 
 	/**
@@ -325,7 +324,7 @@ public class OjAlgoOps implements MatrixOps {
 	 * Multiply a value to all cells in the matrix
 	 */
 	public void multiplyScalar(double value) {
-		matrix.data.modifyAll(PrimitiveFunction.MULTIPLY.second(value));
+		matrix.data.modifyAll(PrimitiveMath.MULTIPLY.second(value));
 	}
 	
 	public Matrix multiplyMatrix(Matrix m2) {
@@ -341,7 +340,7 @@ public class OjAlgoOps implements MatrixOps {
 	 * Divide a value to all cells in the matrix
 	 */
 	public void divideScalar(double value) {
-		matrix.data.modifyAll(PrimitiveFunction.DIVIDE.second(value));
+		matrix.data.modifyAll(PrimitiveMath.DIVIDE.second(value));
 	}
 
 	/**
@@ -354,7 +353,7 @@ public class OjAlgoOps implements MatrixOps {
 	 * @param value to divide each cell in the column by
 	 */
 	public void divideScalarColumn(int column, double value) {
-		matrix.data.modifyColumn(0L, column, PrimitiveFunction.DIVIDE.second(value));
+		matrix.data.modifyColumn(0L, column, PrimitiveMath.DIVIDE.second(value));
 	}
 
 	/**
