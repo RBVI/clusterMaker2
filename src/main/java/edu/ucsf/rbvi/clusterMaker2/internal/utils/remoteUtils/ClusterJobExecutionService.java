@@ -193,7 +193,7 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		System.out.println("ClusterJob BasePath: " + clJob.getBasePath());
 		
 		//getting status
-		int waitTime = 20;
+		int waitTime = Integer.parseInt(queryMap.get("waitTime"));
 		CyJobStatus status = checkJobStatus(clJob);
 		for (int i = 0; i < waitTime; i += 5) {
 		    if (jobDone(status)) return status;
@@ -206,6 +206,7 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		    
 		    status = checkJobStatus(clJob);
 		}
+		//CHANGE THIS: only return when job is done (status = finished or error ....)
 		
 		return status;
 	}
