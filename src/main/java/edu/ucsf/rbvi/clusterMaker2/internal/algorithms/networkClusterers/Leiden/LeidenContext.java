@@ -3,6 +3,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leiden
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 import org.cytoscape.model.CyColumn;
@@ -68,6 +69,13 @@ public class LeidenContext implements ClusterAlgorithmContext {
 			 groups = {"Leiden Advanced Settings"}, gravity = 5.0)
 	public int n_iterations = 2;
 	
+	@Tunable(description = "Synchronous",
+			 longDescription = "Is the algorithm going on the background after specified wait time",
+			 exampleStringValue = "true",
+			 tooltip = "<html>Is the algorithm going on the background after specified wait time</html>",
+			 groups = {"Leiden Advanced Settings"}, gravity = 6.0)
+	public boolean isSynchronous = true;
+	
 	@ContainsTunables
 	public AdvancedProperties advancedAttributes;
 
@@ -89,6 +97,8 @@ public class LeidenContext implements ClusterAlgorithmContext {
 		resolution_parameter = origin.resolution_parameter;
 		beta = origin.beta;
 		n_iterations = origin.n_iterations;
+		isSynchronous = origin.isSynchronous;
+		
 	}
 
 	public void setNetwork(CyNetwork network) {

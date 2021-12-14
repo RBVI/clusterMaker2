@@ -32,8 +32,6 @@ public class DimensionalityReductionJobHandler extends ClusterJobHandler {
 		CyNetwork network = networkMap.get(job);
 		System.out.println("network: " + network);
 		
-		// if dimensionality reduction algorithm
-		
 			// arranging the dimensionality reduction data into coordinates[] and nodes[] columns
 		CyTable nodeTable = network.getDefaultNodeTable();
 		JSONArray embedding = (JSONArray) data.get("embedding"); //getting the relevant data from the data object
