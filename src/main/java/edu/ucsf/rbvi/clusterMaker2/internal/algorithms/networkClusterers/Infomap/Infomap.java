@@ -7,15 +7,6 @@ import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.group.CyGroup;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.TaskMonitor;
-import org.json.simple.JSONArray;
 import org.cytoscape.jobs.CyJob;
 import org.cytoscape.jobs.CyJobData;
 import org.cytoscape.jobs.CyJobDataService;
@@ -24,6 +15,17 @@ import org.cytoscape.jobs.CyJobManager;
 import org.cytoscape.jobs.CyJobStatus;
 import org.cytoscape.jobs.SUIDUtil;
 import org.cytoscape.jobs.CyJobStatus.Status;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskMonitor;
+
+import org.json.simple.JSONArray;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.AbstractClusterResults;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
@@ -62,6 +64,7 @@ public class Infomap extends AbstractNetworkClusterer {
 	public String getShortName() {return SHORTNAME;}
 
 	@Override
+  @ProvidesTitle
 	public String getName() {return NAME;}
 
 	@Override
@@ -104,28 +107,7 @@ public class Infomap extends AbstractNetworkClusterer {
 		CyJobStatus.Status status = exStatus.getStatus();
 		System.out.println("Status: " + status);
 		if (status == Status.FINISHED) {
-			CyJobData data = dataService.getDataInstance();
-			executionService.fetchResults(job, data); 
-			
-			Map<String, Object> clusterData = job.getClusterData().getAllValues();
-			
-			String clusterAttributeName = (String) clusterData.get("clusterAttributeName");
-			Boolean createGroups = (Boolean) clusterData.get("createGroups");
-			String group_attr = (String) clusterData.get("group_attr");
-			List<String> params  = (List<String>) clusterData.get("params");
-
-			List<NodeCluster> nodeClusters = ClusterJobExecutionService.createClusters(data, clusterAttributeName, network); //move this to remote utils
-			System.out.println("NodeClusters: " + nodeClusters);
-	
-			AbstractNetworkClusterer.createGroups(network, nodeClusters, group_attr, clusterAttributeName, 
-					clusterManager, createGroups, params, SHORTNAME); 
-			
-			
-			if (context.vizProperties.showUI) {
-				taskMonitor.showMessage(TaskMonitor.Level.INFO, "Creating network");
-				insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true, context.vizProperties.restoreEdges, false));
-			}
-			
+			jobHandler.loadData(job, taskMonitor);
 		} else if (status == Status.RUNNING 
 				|| status == Status.SUBMITTED 
 				|| status == Status.QUEUED) {

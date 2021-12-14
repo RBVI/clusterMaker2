@@ -153,7 +153,7 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		Map<String, String> queryMap = convertConfiguration(configuration); //converts configuration into Map<String, String>
 
 		String serializedData = dataService.getSerializedData(inputData); //gets serialized data (JSON) using dataService
-		System.out.println("Serialized data in execution service: " + serializedData); 
+		// System.out.println("Serialized data in execution service: " + serializedData); 
 		queryMap.put("inputData", serializedData.toString()); //...and puts it into queryMap as key: "inputData", value: String of the data
 		queryMap.put(COMMAND, Command.SUBMIT.toString()); //puts key: COMMAND, value: SUBMIT in the queryMap --> queryMap has two keys
 		
@@ -178,11 +178,11 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 			return new CyJobStatus(Status.ERROR, "Job submission failed!");
 		JSONObject json = (JSONObject) value;
 		if (!json.containsKey(JOBID)) {
-			System.out.println("JSON returned: "+json.toString());
+			// System.out.println("JSON returned: "+json.toString());
 			return new CyJobStatus(Status.ERROR, "Server didn't return an ID!");
 		}
 
-		System.out.println("JSONObject postFile(): " + json);
+		// System.out.println("JSONObject postFile(): " + json);
 		
 		String jobId = json.get(JOBID).toString(); //gets the job ID from the JSON Object
 		clJob.setJobId(jobId); //...and sets it to the ClusterJob 
@@ -193,7 +193,7 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		System.out.println("ClusterJob BasePath: " + clJob.getBasePath());
 		
 		//getting status
-		int waitTime = Integer.parseInt(queryMap.get("waitTime"));
+		int waitTime = 20;
 		CyJobStatus status = checkJobStatus(clJob);
 		for (int i = 0; i < waitTime; i += 5) {
 		    if (jobDone(status)) return status;
@@ -231,11 +231,11 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 			ClusterJob clusterJob = (ClusterJob) job;
 			//handleCommand gives whatever HttpGET gives.
 		    JSONObject result = handleCommand(clusterJob, Command.FETCH, null); //handles command FETCH --> argMap is null --> JSON object runs the command
-		    System.out.println("fetchResults() JSONObject result: " + result);
+		    // System.out.println("fetchResults() JSONObject result: " + result);
 			
 			// Get the unserialized data, dataService deserializes the data (the JSON object), CyJobData is basically a HashMap
 		    CyJobData newData = dataService.deserialize(result); 
-		    System.out.println("CyJobData results: " + newData.getAllValues());
+		    // System.out.println("CyJobData results: " + newData.getAllValues());
 			
 			// Merge it in, move the information from newData to data
 		    for (String key: newData.keySet()) {
@@ -349,7 +349,7 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 
 		argMap.put(COMMAND, command.toString());
 		argMap.put(JOBID, job.getJobId());
-	    System.out.println("handleCommand argmap: " + argMap);
+	    // System.out.println("handleCommand argmap: " + argMap);
 		
 		JSONObject response = null;
 		
@@ -368,7 +368,7 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 			}
 		}
 		
-		System.out.println("FetchJSON: " + response + "/nmessage: ");
+		// System.out.println("FetchJSON: " + response + "/nmessage: ");
 		return response;
 	}
 

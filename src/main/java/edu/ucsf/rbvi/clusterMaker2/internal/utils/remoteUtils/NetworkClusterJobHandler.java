@@ -33,7 +33,7 @@ public class NetworkClusterJobHandler extends ClusterJobHandler {
 		data.put("job", job);
 		//CyNetwork network = job.getJobDataService().getNetworkData(data, "network");
 		CyNetwork network = networkMap.get(job);
-		System.out.println("network: " + network);
+		// System.out.println("network: " + network);
 		
 		// network clustering algorithm
 		
@@ -46,7 +46,7 @@ public class NetworkClusterJobHandler extends ClusterJobHandler {
 		ClusterManager clusterManager = (ClusterManager) clusterData.get("manager");
 
 		List<NodeCluster> nodeClusters = ClusterJobExecutionService.createClusters(data, clusterAttributeName, network); //move this to remote utils
-		System.out.println("NodeClusters: " + nodeClusters);
+		// System.out.println("NodeClusters: " + nodeClusters);
 
 		AbstractNetworkClusterer.createGroups(network, nodeClusters, group_attr, clusterAttributeName, 
 				clusterManager, createGroups, params, job.getJobName()); 

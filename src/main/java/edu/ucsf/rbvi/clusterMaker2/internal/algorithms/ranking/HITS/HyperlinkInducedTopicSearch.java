@@ -18,6 +18,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
@@ -58,6 +59,7 @@ public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank, O
     }
 
     @Override
+    @ProvidesTitle
     public String getName() {
         return NAME;
     }
