@@ -36,13 +36,13 @@ public class LeidenClusterTaskFactory extends AbstractClusterTaskFactory{
 		       "N. J. (2019). From Louvain to Leiden: guaranteeing "+
 		       "well-connected communities. Scientific reports, 9(1), "+
 		       "5233. http://dx.doi.org/10.1038/s41598-019-41695-z "+
-           ""+
+           "<br/><br/>"+
            "It is similar to the multilevel algorithm, often called the "+
            "Louvain algorithm, but it is faster and yields higher quality "+
            "solutions. It can optimize both modularity and the Constant Potts "+
            "Model, which does not suffer from the resolution-limit (see preprint "+
            "http://arxiv.org/abs/1104.3083). "+
-           ""+
+           "<br/><br/>"+
            "The Leiden algorithm consists of three phases: (1) local moving of nodes, "+
            "(2) refinement of the partition and (3) aggregation of the network based "+
            "on the refined partition, using the non-refined partition to create "+
@@ -52,7 +52,7 @@ public class LeidenClusterTaskFactory extends AbstractClusterTaskFactory{
            "partition within each cluster and gradually merging the subclusters. When "+
            "aggregating, a single cluster may then be represented by several nodes "+
            "(which are the subclusters identified in the refinement). "+
-           " "+
+           "<br/><br/>"+
            "The Leiden algorithm provides several guarantees. The Leiden algorithm "+
            "is typically iterated: the output of one iteration is used as the input "+
            "for the next iteration. At each iteration all clusters are guaranteed to "+

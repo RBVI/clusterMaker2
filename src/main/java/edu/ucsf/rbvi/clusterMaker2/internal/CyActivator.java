@@ -238,8 +238,8 @@ public class CyActivator extends AbstractCyActivator {
 		                new Properties());
 		registerService(bc, new KnnViewTaskFactory(clusterManager), ClusterVizFactory.class,
 		                new Properties());
-		registerService(bc, new BiclusterViewTaskFactory(clusterManager), ClusterVizFactory.class,
-		                new Properties());
+		// registerService(bc, new BiclusterViewTaskFactory(clusterManager), ClusterVizFactory.class,
+		//                 new Properties());
 		registerService(bc, new TreeViewTaskFactory(clusterManager), ClusterVizFactory.class,
 		                new Properties());
 		registerService(bc, new CreateResultsPanelTaskFactory(clusterManager,true), 

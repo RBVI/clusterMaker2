@@ -27,7 +27,13 @@ public class MDSTaskFactory extends AbstractClusterTaskFactory {
 	
 	@Override
 	public String getLongDescription() {
-		return "";
+		return "Multidimensional scaling (MDS) seeks a low-dimensional representation of the data in "+
+           "which the distances respect well the distances in the original high-dimensional space."+
+           "<br/><br/>"+
+           "In general, MDS is a technique used for analyzing similarity or dissimilarity data. "+
+           "It attempts to model similarity or dissimilarity data as distances in a geometric spaces. "+
+           "The data can be ratings of similarity between objects, interaction frequencies of "+
+           "molecules, or trade indices between countries.";
 	}
 	
 	@Override

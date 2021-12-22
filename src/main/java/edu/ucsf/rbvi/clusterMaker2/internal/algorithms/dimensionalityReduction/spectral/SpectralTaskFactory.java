@@ -27,7 +27,7 @@ public class SpectralTaskFactory extends AbstractClusterTaskFactory {
 	
 	@Override
 	public String getLongDescription() {
-		return "";
+		return "Spectral Embedding is an approach to calculating a non-linear embedding. Scikit-learn implements Laplacian Eigenmaps, which finds a low dimensional representation of the data using a spectral decomposition of the graph Laplacian. The graph generated can be considered as a discrete approximation of the low dimensional manifold in the high dimensional space. Minimization of a cost function based on the graph ensures that points close to each other on the manifold are mapped close to each other in the low dimensional space, preserving local distances.";
 	}
 	
 	@Override

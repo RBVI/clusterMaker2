@@ -27,7 +27,7 @@ public class LocalLinearEmbeddingTaskFactory extends AbstractClusterTaskFactory 
 	
 	@Override
 	public String getLongDescription() {
-		return "";
+		return "Locally linear embedding (LLE) seeks a lower-dimensional projection of the data which preserves distances within local neighborhoods. It can be thought of as a series of local Principal Component Analyses which are globally compared to find the best non-linear embedding.";
 	}
 	
 	@Override

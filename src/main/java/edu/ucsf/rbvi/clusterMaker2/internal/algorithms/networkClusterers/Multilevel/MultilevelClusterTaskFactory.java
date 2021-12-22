@@ -39,7 +39,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Multil
 			       "for the details (preprint: "+
 			       "http://arxiv.org/abs/0803.0476). The algorithm "+
 			       "is sometimes known as the 'Louvain' algorithm. "+
-             " "+
+             "<br/><br/>"+
              "The algorithm is based on the modularity measure and a hierarchical "+
              "approach. Initially, each vertex is assigned to a community on its own. In "+
              "every step, vertices are re-assigned to communities in a local, greedy "+
@@ -49,7 +49,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Multil
              "and the process starts again with the merged communities. The process "+
              "stops when there is only a single vertex left or when the modularity "+
              "cannot be increased any more in a step. "+
-             " "+
+             "<br/><br/>"+
              "The resolution parameter gamma allows finding communities at different "+
              "resolutions. Higher values of the resolution parameter typically result in "+
              "more, smaller communities. Lower values typically result in fewer, larger "+
