@@ -27,7 +27,18 @@ public class UMAPTaskFactory extends AbstractClusterTaskFactory {
 	
 	@Override
 	public String getLongDescription() {
-		return "";
+		return "Uniform Manifold Approximation and Projection (UMAP) is a dimension reduction "+
+           "technique that can be used for visualisation similarly to t-SNE, but also for "+
+           "general non-linear dimension reduction. The algorithm is founded on three assumptions "+
+           "about the data:"+
+           "<ol><li>The data is uniformly distributed on a Riemannian manifold;</li>"+
+           "<li>The Riemannian metric is locally constant (or can be approximated as such);</li>"+
+           "<li>The manifold is locally connected.</li></ol>"+
+           "From these assumptions it is possible to model the manifold with a fuzzy topological structure. The embedding is found by searching for a low dimensional projection of the data that has the closest possible equivalent fuzzy topological structure."+
+           "<br/><br/>"+
+           "The details for the underlying mathematics can be found in the paper on ArXiv:"+
+           "<br/><br/>"+
+           "McInnes, L, Healy, J, <i>UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction</i>, ArXiv e-prints 1802.03426, 2018";
 	}
 	
 	@Override

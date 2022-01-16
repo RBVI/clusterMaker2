@@ -8,7 +8,7 @@ from .base_algorithm import BaseAlgorithm
 from sklearn.manifold import TSNE
 import pandas as pd
 
-class TSNE(BaseAlgorithm):
+class TSNEREMOTE(BaseAlgorithm):
 
     def get_args(self, req: falcon.Request) -> dict:
         """ Get the arguments """
@@ -44,7 +44,7 @@ class TSNE(BaseAlgorithm):
         df = df.dropna()
 
         data = df[columns[1:]].values # skip over the label and just pull the data
-        tsne = TSNE(n_components=2, perplexity=perplexity,early_exggageration=early_ex, learning_rage=learning_rate,
+        tsne = TSNE(n_components=2, perplexity=perplexity,early_exaggeration=early_ex, learning_rate=learning_rate,
                     metric=metric, init=init, n_jobs=10)
         embedding = tsne.fit_transform(data)
 

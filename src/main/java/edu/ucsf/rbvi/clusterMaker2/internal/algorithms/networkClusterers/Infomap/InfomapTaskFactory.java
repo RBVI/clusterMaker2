@@ -30,8 +30,8 @@ public class InfomapTaskFactory extends AbstractClusterTaskFactory{
 	
 	@Override
 	public String getLongDescription() {
-		return "";
-	}
+    return "Find community structure that minimizes the expected description length of a random walker trajectory. Implementation of the InfoMap community detection algorithm.of Martin Rosvall and Carl T. Bergstrom.";
+  }
 
 	@Override
 	public ClusterViz getVisualizer() {

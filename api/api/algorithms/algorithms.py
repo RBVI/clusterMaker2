@@ -6,7 +6,7 @@ from .label_propagation import LabelPropagation
 from .leading_eigenvector import LeadingEigenvector
 from .multilevel import Multilevel
 from .umap import UMAP
-from .tsne import TSNE
+from .tsne import TSNEREMOTE
 from .isomap import IsoMapEmbedding
 from .mds import MDS
 from .spectral import SpectralEmbedding
@@ -33,7 +33,7 @@ class Algorithms(object):
 
         # Dimensionality reduction (manifold) techniques
         self.algorithms["umap"] = UMAP(jobs)
-        self.algorithms["tsne"] = TSNE(jobs)
+        self.algorithms["tsneremote"] = TSNEREMOTE(jobs)
         self.algorithms["mds"] = MDS(jobs)
         self.algorithms["isomap"] = IsoMapEmbedding(jobs)
         self.algorithms["spectral"] = SpectralEmbedding(jobs)

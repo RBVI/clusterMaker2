@@ -29,7 +29,15 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.LabelP
 		
 		@Override
 		public String getLongDescription() {
-			return "";
+			return "This function implements the community detection method described in: Raghavan, U.N. and Albert, R. and "+
+             "Kumara, S.: Near linear time algorithm to detect community structures in large-scale networks. Phys Rev E "+
+             "76, 036106. (2007). This version extends the original method by the ability to take edge weights into consideration "+
+             "and also by allowing some labels to be fixed."+
+             "<br/><br/>"+
+             "Weights are taken into account as follows: when the new label of node i is determined, the algorithm iterates over "+
+             "all edges incident on node i and calculate the total weight of edges leading to other nodes with label 0, 1, 2, ..., "+
+             "k - 1 (where k is the number of possible labels). The new label of node i will then be the label whose edges "+
+             "(among the ones incident on node i) have the highest total weight";
 		}
 
 		@Override

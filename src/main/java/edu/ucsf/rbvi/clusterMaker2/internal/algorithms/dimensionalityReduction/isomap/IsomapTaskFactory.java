@@ -26,7 +26,7 @@ public class IsomapTaskFactory extends AbstractClusterTaskFactory {
 	
 	@Override
 	public String getLongDescription() {
-		return "";
+		return "One of the earliest approaches to manifold learning is the Isomap algorithm, short for Isometric Mapping. Isomap can be viewed as an extension of Multi-dimensional Scaling (MDS) or Kernel PCA. Isomap seeks a lower-dimensional embedding which maintains geodesic distances between all points.";
 	}
 	
 	@Override

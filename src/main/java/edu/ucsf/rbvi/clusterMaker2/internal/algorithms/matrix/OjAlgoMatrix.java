@@ -19,7 +19,6 @@ import cern.colt.matrix.tdouble.DoubleFactory2D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 
 import org.ojalgo.OjAlgoUtils;
-import org.ojalgo.access.Access1D;
 import org.ojalgo.function.NullaryFunction;
 import org.ojalgo.function.PrimitiveFunction;
 import org.ojalgo.function.aggregator.Aggregator;
@@ -27,14 +26,13 @@ import org.ojalgo.function.aggregator.AggregatorFunction;
 import org.ojalgo.machine.Hardware;
 import org.ojalgo.machine.VirtualMachine;
 import org.ojalgo.matrix.BasicMatrix;
-import org.ojalgo.matrix.BasicMatrix.Builder;
-import org.ojalgo.matrix.PrimitiveMatrix;
+import org.ojalgo.matrix.Primitive64Matrix;
 import org.ojalgo.matrix.decomposition.DecompositionStore;
 import org.ojalgo.matrix.decomposition.Eigenvalue;
 import org.ojalgo.matrix.store.ElementsSupplier;
 import org.ojalgo.matrix.store.MatrixStore;
 import org.ojalgo.matrix.store.PhysicalStore;
-import org.ojalgo.matrix.store.PrimitiveDenseStore;
+import org.ojalgo.matrix.store.Primitive64Store;
 import org.ojalgo.matrix.task.InverterTask;
 import org.ojalgo.matrix.task.SolverTask;
 import org.ojalgo.random.Binomial;
@@ -63,7 +61,7 @@ public class OjAlgoMatrix implements Matrix {
 	public final OjAlgoOps ops;
 	static VirtualMachine env = null;
 
-	protected final PhysicalStore.Factory<Double, PrimitiveDenseStore> storeFactory;
+	protected final PhysicalStore.Factory<Double, Primitive64Store> storeFactory;
 
 	// For debugging messages
 	private static DecimalFormat scFormat = new DecimalFormat("0.###E0");
@@ -71,7 +69,7 @@ public class OjAlgoMatrix implements Matrix {
 
 	public OjAlgoMatrix() {
 		nThreads = Runtime.getRuntime().availableProcessors()-1;
-		storeFactory = PrimitiveDenseStore.FACTORY;
+		storeFactory = Primitive64Store.FACTORY;
 		if (env == null) {
 			env = org.ojalgo.OjAlgoUtils.ENVIRONMENT;
 			// System.out.println("Architecture = "+env.getArchitecture());

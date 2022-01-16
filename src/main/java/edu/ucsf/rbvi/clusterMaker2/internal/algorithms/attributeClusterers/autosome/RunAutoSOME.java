@@ -51,10 +51,12 @@ import java.lang.Math;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.work.TaskMonitor;
 
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
@@ -93,6 +95,7 @@ public class RunAutoSOME {
 	private TaskMonitor monitor;
 	private ClusterManager clusterManager;
 	private CyNetwork network;
+	private CyNetwork subNetwork;
 
 	public RunAutoSOME(ClusterManager clusterManager, List<String> dataAttributes, 
 			           CyNetwork network, Settings settings, TaskMonitor monitor)
@@ -297,6 +300,10 @@ public class RunAutoSOME {
 
 
 
+  // Because we're tracking both nodes and edges, we actually need to create a new network.  This is
+  // somewhat different than the non-fuzzy cluster case.  Essentially, whether asked for or not, we
+  // always do the visualization, otherwise we wind up adding nodes to the current network (bad)
+  // XXX FIXME
 	private Map<NodeCluster,NodeCluster> getNodeClustersFCN(clusterRun cr, CyMatrix matrix, Settings s){
 		attrList = new ArrayList<String>();
 		attrOrderList = new ArrayList<String>();
@@ -307,6 +314,17 @@ public class RunAutoSOME {
 		storeClust = new HashMap<String, String>();
 		int currClust=-1;
 		NodeCluster nc = new NodeCluster();
+
+    // Create the new network
+    CyRootNetwork rootNetwork = ((CySubNetwork)network).getRootNetwork();
+    subNetwork = rootNetwork.addSubNetwork();
+    String name = ModelUtils.getName(network, network);
+    subNetwork.getRow(subNetwork).set(CyNetwork.NAME, name+" - AutoSOME_FCN");
+    // Register the network
+    CyNetworkManager netManager = clusterManager.getService(CyNetworkManager.class);
+    netManager.addNetwork(subNetwork);
+
+
 
 		Map<String, CyNode> storeOrigNodes = new HashMap<String, CyNode>();
 		for(int i = 0; i < nodes.size(); i++){
@@ -333,32 +351,43 @@ public class RunAutoSOME {
 
 			String temp = fcn[0];
 
-			//System.out.println(temp);
+			// System.out.println(temp);
 
 			String[] tokens = temp.split("_");
 			StringBuilder sb = new StringBuilder();
 			for(int j = 0; j < tokens.length-1; j++) sb.append(tokens[j]+"_");
 			temp = sb.substring(0,sb.length()-1);
 
-			CyNode cn = network.addNode();
-			network.getRow(cn).set(CyNetwork.NAME, temp);
-			network.getRow(cn).set(CyRootNetwork.SHARED_NAME, temp);
+			CyNode cn = subNetwork.addNode();
+			subNetwork.getRow(cn).set(CyNetwork.NAME, temp);
+			subNetwork.getRow(cn).set(CyRootNetwork.SHARED_NAME, temp);
 
 
 			nodeOrderList.add(temp);
 			attrList.add(temp+"\t"+currClust);
+
+      ModelUtils.createAndSet(subNetwork, cn, "_FCN_Cluster", currClust, Integer.class, null);
+      CyNode orig = (CyNode) storeOrigNodes.get(fcn[2]);
+      ModelUtils.createAndSet(network, orig, "_FCN_Cluster", currClust, Integer.class, null);
+
 			//System.out.println("*\t"+cn.getIdentifier()+"\t"+currClust);
 
 			if(s.FCNrows){
-				CyNode orig = (CyNode) storeOrigNodes.get(fcn[2]);
+				orig = (CyNode) storeOrigNodes.get(fcn[2]);
 
 				CyTable nodeAttrs = network.getDefaultNodeTable();
 				Set<String> atts = CyTableUtil.getColumnNames(nodeAttrs);
 				for (String attribute: atts) {
 					Class type = nodeAttrs.getColumn(attribute).getType();
-					Object att = nodeAttrs.getRow(orig).getRaw(attribute);
+          Class elementType = null;
+          if (type.equals(List.class)) {
+            elementType = nodeAttrs.getColumn(attribute).getListElementType();
+          }
+					Object att = nodeAttrs.getRow(orig.getSUID()).getRaw(attribute);
 					if(att==null) continue;
-					nodeAttrs.getRow(cn).set(attribute, att);
+
+          // Create the row, if necessary
+	        ModelUtils.createAndSet(subNetwork, cn, attribute, att, type, elementType);
 				}
 			}
 
@@ -417,8 +446,9 @@ public class RunAutoSOME {
 			String[] fce = (String[]) allEdges.get(j);
 			CyNode c1 = (CyNode) storeNodes.get(fce[0]);
 			CyNode c2 = (CyNode) storeNodes.get(fce[1]);
-			CyEdge edge = network.addEdge(c1, c2, false);
-			network.getDefaultEdgeTable().getRow(edge).set(CyNetwork.NAME,fce[2]);
+			CyEdge edge = subNetwork.addEdge(c1, c2, false);
+			subNetwork.getDefaultEdgeTable().getRow(edge.getSUID()).set(CyNetwork.NAME,fce[0]+"-"+fce[1]);
+      ModelUtils.createAndSet(subNetwork, edge, "Confidence", Double.valueOf(fce[2]), Double.class, null);
 			edges.add(edge);
 		}
 
