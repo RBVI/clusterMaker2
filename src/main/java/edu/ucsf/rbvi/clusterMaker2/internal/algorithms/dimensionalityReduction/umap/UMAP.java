@@ -68,6 +68,13 @@ public class UMAP extends AbstractNetworkClusterer {
 		CyJobExecutionService executionService = registrar.getService(CyJobExecutionService.class, "(title=ClusterJobExecutor)");
 		CyApplicationManager appManager = registrar.getService(CyApplicationManager.class);
         CyNetwork currentNetwork = appManager.getCurrentNetwork(); //gets the network presented in Cytoscape
+        
+		HashMap<String, Object> configuration = new HashMap<>();
+		if (context.isSynchronous == true) {
+			configuration.put("waitTime", 20);
+		} else {
+			configuration.put("waitTime", -1);
+		}
 				
 		clusterAttributeName = "__umap";
 
@@ -110,7 +117,7 @@ public class UMAP extends AbstractNetworkClusterer {
 		DimensionalityReductionJobHandler jobHandler = new DimensionalityReductionJobHandler(job, network, context.showScatterPlot);
 		job.setJobMonitor(jobHandler);
 						// Submit the job
-		CyJobStatus exStatus = executionService.executeJob(job, basePath, null, jobData);
+		CyJobStatus exStatus = executionService.executeJob(job, basePath, configuration, jobData);
 				
 		CyJobStatus.Status status = exStatus.getStatus();
 		System.out.println("Status: " + status);

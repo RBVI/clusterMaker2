@@ -151,7 +151,7 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 
 		ClusterJob clJob = (ClusterJob)job; //converts CyJob into ClusterJob
 		Map<String, String> queryMap = convertConfiguration(configuration); //converts configuration into Map<String, String>
-
+		
 		String serializedData = dataService.getSerializedData(inputData); //gets serialized data (JSON) using dataService
 		// System.out.println("Serialized data in execution service: " + serializedData); 
 		queryMap.put("inputData", serializedData.toString()); //...and puts it into queryMap as key: "inputData", value: String of the data
@@ -164,6 +164,8 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		} catch (ParseException e1) {
 			System.out.println("Data to JSONObject conversion failed: " + e1.getMessage());
 		}
+		
+		System.out.println("jsonData (posted on server): " + jsonData);
 		
 		Object value = null;
 		String jobName = (String) clJob.getClusterData().get("shortName");

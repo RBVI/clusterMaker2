@@ -91,6 +91,13 @@ public class IsomapContext {
 	         tooltip = "<html>If this is checked, show the scatterplot after the calculation is complete</html>",
 	         groups = {"Isomap Advanced Settings"}, gravity = 72)
 	public boolean showScatterPlot = true;
+	
+	@Tunable(description = "Synchronous",
+			 longDescription = "Is the algorithm going on the background after specified wait time",
+			 exampleStringValue = "true",
+			 tooltip = "<html>Is the algorithm going on the background after specified wait time</html>",
+			 groups = {"Leiden Advanced Settings"}, gravity = 73)
+	public boolean isSynchronous = true;
     
 	public IsomapContext() {
 	}
@@ -105,6 +112,7 @@ public class IsomapContext {
 		neighbors_algorithm = origin.neighbors_algorithm;
 		max_iter = origin.max_iter;
 		showScatterPlot = origin.showScatterPlot;
+		isSynchronous = origin.isSynchronous;
 	}
 
 	public void setNetwork(CyNetwork network) {

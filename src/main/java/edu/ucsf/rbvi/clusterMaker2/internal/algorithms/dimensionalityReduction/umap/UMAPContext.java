@@ -93,6 +93,13 @@ public class UMAPContext {
 	         groups = {"UMAP Advanced Settings"}, gravity = 6.0)
 	public boolean showScatterPlot = true;
 	
+	@Tunable(description = "Synchronous",
+			 longDescription = "Is the algorithm going on the background after specified wait time",
+			 exampleStringValue = "true",
+			 tooltip = "<html>Is the algorithm going on the background after specified wait time</html>",
+			 groups = {"Leiden Advanced Settings"}, gravity = 7.0)
+	public boolean isSynchronous = true;
+	
 	//@ContainsTunables
 	//public AdvancedProperties advancedAttributes;
 
@@ -116,6 +123,7 @@ public class UMAPContext {
 		metric = origin.metric;
 		scale = origin.scale;
 		showScatterPlot = origin.showScatterPlot;
+		isSynchronous = origin.isSynchronous;
 	}
 
 	public void setNetwork(CyNetwork network) {

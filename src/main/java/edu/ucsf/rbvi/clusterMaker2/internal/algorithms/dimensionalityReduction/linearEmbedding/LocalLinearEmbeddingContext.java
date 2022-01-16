@@ -117,6 +117,13 @@ public class LocalLinearEmbeddingContext {
 	         groups = {"Local Linear Embedding Advanced Settings"}, gravity = 75)
 	public boolean showScatterPlot = true;
     
+	@Tunable(description = "Synchronous",
+			 longDescription = "Is the algorithm going on the background after specified wait time",
+			 exampleStringValue = "true",
+			 tooltip = "<html>Is the algorithm going on the background after specified wait time</html>",
+			 groups = {"Leiden Advanced Settings"}, gravity = 76)
+	public boolean isSynchronous = true;
+    
     
 	public LocalLinearEmbeddingContext() {
 
@@ -134,6 +141,7 @@ public class LocalLinearEmbeddingContext {
 		hessian_tol = origin.hessian_tol;
 		modified_tol = origin.modified_tol;
 		neighbors_algorithm = origin.neighbors_algorithm;
+		isSynchronous = origin.isSynchronous;
 		
 		}
 
