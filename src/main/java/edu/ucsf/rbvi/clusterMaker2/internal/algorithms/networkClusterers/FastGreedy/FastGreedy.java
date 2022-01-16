@@ -68,6 +68,13 @@ public class FastGreedy extends AbstractNetworkClusterer {
 		clusterAttributeName = context.getClusterAttribute();
 		createGroups = context.advancedAttributes.createGroups;
      	String attribute = context.getattribute().getSelectedValue();
+     	
+		HashMap<String, Object> configuration = new HashMap<>();
+		if (context.isSynchronous == true) {
+			configuration.put("waitTime", 20);
+		} else {
+			configuration.put("waitTime", -1);
+		}
 				
 		HashMap<Long, String> nodeMap = getNetworkNodes(currentNetwork);
 		List<String> nodeArray = new ArrayList<>();
@@ -91,7 +98,7 @@ public class FastGreedy extends AbstractNetworkClusterer {
 		NetworkClusterJobHandler jobHandler = new NetworkClusterJobHandler(job, network, context.vizProperties.showUI, context.vizProperties.restoreEdges);
 		job.setJobMonitor(jobHandler);	
 				// Submit the job
-		CyJobStatus exStatus = executionService.executeJob(job, basePath, null, jobData);
+		CyJobStatus exStatus = executionService.executeJob(job, basePath, configuration, jobData);
 		
 		CyJobStatus.Status status = exStatus.getStatus();
 		System.out.println("Status: " + status);

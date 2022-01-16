@@ -81,6 +81,13 @@ public class SpectralContext {
 	         tooltip = "<html>If this is checked, show the scatterplot after the calculation is complete.</html>",
 	         groups = {"Spectral Advanced Settings"}, gravity = 71)
 	public boolean showScatterPlot = true;
+    
+	@Tunable(description = "Synchronous",
+			 longDescription = "Is the algorithm going on the background after specified wait time",
+			 exampleStringValue = "true",
+			 tooltip = "<html>Is the algorithm going on the background after specified wait time</html>",
+			 groups = {"Leiden Advanced Settings"}, gravity = 72)
+	public boolean isSynchronous = true;
 
 	public SpectralContext() {
 
@@ -93,6 +100,7 @@ public class SpectralContext {
 		gamma = origin.gamma;
 		eigen_solver = origin.eigen_solver;
 		n_neighbors = origin.n_neighbors;
+		isSynchronous = origin.isSynchronous;
 		}
 
 	public void setNetwork(CyNetwork network) {

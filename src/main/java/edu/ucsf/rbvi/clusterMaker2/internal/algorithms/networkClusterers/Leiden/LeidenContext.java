@@ -72,7 +72,7 @@ public class LeidenContext implements ClusterAlgorithmContext {
 	@Tunable(description = "Synchronous",
 			 longDescription = "Is the algorithm going on the background after specified wait time",
 			 exampleStringValue = "true",
-			 tooltip = "<html>Is the algorithm going on the background after specified wait time</html>",
+			 tooltip = "<html>Is the algorithm going on the background after wait time 20 seconds</html>",
 			 groups = {"Leiden Advanced Settings"}, gravity = 6.0)
 	public boolean isSynchronous = true;
 	
