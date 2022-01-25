@@ -95,6 +95,12 @@ public class PRWP extends AbstractTask implements Rank, ObservableTask {
         addEdges();
         taskMonitor.setProgress(0.7);
 
+        // Normalize the scores 
+        // normalizeNodes();
+
+        // Normalize the scores based on the source node
+        normalizeEdges();
+
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Calculating PageRank scores");
         PageRankWithPriors<PRNode, PREdge> pageRank = performPageRank();
         taskMonitor.setProgress(0.8);
@@ -119,6 +125,43 @@ public class PRWP extends AbstractTask implements Rank, ObservableTask {
     @Override
     public <R> R getResults(Class<? extends R> clzz) {
         return results.getResults(clzz);
+    }
+
+    private void normalizeNodes() {
+      double sum = 0d;
+      double maxNeg = 0d;
+      for (PRNode node: graph.getVertices()) {
+        if (node.getScore() < maxNeg)
+          maxNeg = node.getScore();
+        sum += node.getScore();
+      }
+
+      if (maxNeg < 0) {
+        maxNeg = -maxNeg;
+        sum += maxNeg;
+      } else
+        maxNeg = 0;
+
+      for (PRNode node: graph.getVertices()) {
+        double score = node.getScore();
+        node.setScore((score+maxNeg)/sum);
+      }
+
+    }
+
+    private void normalizeEdges() {
+      // The PageRank algorithm requires that edge weights represent a transition probability -- that is,
+      // they must sum to 1.  We need to adjust our edges to reflect that
+      for (PRNode node: graph.getVertices()) {
+        double sum = 0d;
+        for (PREdge edge: graph.getOutEdges(node)) {
+          sum += edge.getScore();
+        }
+
+        for (PREdge edge: graph.getOutEdges(node)) {
+          edge.setScore(edge.getScore()/sum);
+        }
+      }
     }
 
     private void insertScores(List<NodeCluster> clusters, PageRankWithPriors<PRNode, PREdge> pageRank) {

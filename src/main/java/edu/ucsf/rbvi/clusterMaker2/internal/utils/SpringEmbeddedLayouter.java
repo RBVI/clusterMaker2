@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.ui;
+package edu.ucsf.rbvi.clusterMaker2.internal.utils;
 
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_HEIGHT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
