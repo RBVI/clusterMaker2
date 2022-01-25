@@ -41,6 +41,8 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
+import org.cytoscape.util.swing.CyColorChooser;
+
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix;
@@ -89,6 +91,9 @@ public class ScatterPlotDialog extends JDialog {
 
 	// For inner classes
 	private final ScatterPlotDialog thisDialog;
+
+  // Get a handle on the CyColorChooser
+  private CyColorChooser chooser = null;
 
 	private boolean useLoadings;
 
@@ -143,6 +148,8 @@ public class ScatterPlotDialog extends JDialog {
 			monitor.showMessage(TaskMonitor.Level.ERROR, "Coordinate scatterplot must at least 2 columns!");
 			return;
 		}
+
+    CyColorChooser chooser = manager.getService(CyColorChooser.class);
 
 		container = new JPanel();
 		createUI();
@@ -302,7 +309,7 @@ public class ScatterPlotDialog extends JDialog {
 			lButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					String label = e.getActionCommand();
-					Color clr = JColorChooser.showDialog(thisDialog, "Choose color for "+label+" arrow", thisDialog.getBackground());
+					Color clr = chooser.showDialog(thisDialog, "Choose color for "+label+" arrow", loadingsColorMap.get(label));
 					if (clr != null) {
 						loadingsColorMap.put(label, clr);
 						repaintScatterPlot();

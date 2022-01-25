@@ -365,10 +365,13 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 				int x2 = (int) (loadings.getValue(row, xIndex) * xScale * MAX_SCORE + newX);
 				int y2 = (int) (-1 * (loadings.getValue(row, yIndex) * yScale * MAX_SCORE - newY));
 				String label = loadings.getRowLabel(row);
-				if (colorMap.containsKey(label))
-					drawArrow(g2, x1, y1, x2, y2, colorMap.get(label));
-				else
+				if (colorMap.containsKey(label)) {
+          if (colorMap.get(label).getAlpha() != 0) {
+            drawArrow(g2, x1, y1, x2, y2, colorMap.get(label));
+          }
+        } else {
 					drawArrow(g2, x1, y1, x2, y2, Color.RED);
+        }
 			}
 		}
 
