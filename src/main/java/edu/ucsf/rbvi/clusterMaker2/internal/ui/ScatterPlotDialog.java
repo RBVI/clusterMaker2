@@ -31,15 +31,20 @@ import java.awt.geom.Path2D;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
+import javax.swing.filechooser.FileFilter;
 import org.jdesktop.swingx.JXCollapsiblePane;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.util.swing.FileChooserFilter;
+import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
@@ -104,6 +109,9 @@ public class ScatterPlotDialog extends JDialog {
 
 	private boolean useLoadings;
 
+  private FileUtil fileUtil;
+  private Collection<FileChooserFilter> fileFilters;
+
 	// Entry point for remote DR techniques (e.g. UMAP)
 	public ScatterPlotDialog(ClusterManager manager, String title, TaskMonitor monitor, CyNode[] nodes, double[][] coordinates) {
     super();
@@ -116,7 +124,9 @@ public class ScatterPlotDialog extends JDialog {
 		this.variances = null;
 		this.loadings = CyMatrixFactory.makeSmallMatrix(manager.getNetwork(), 1, 2);
 		thisDialog = this;
-    createExportDialog();
+    fileUtil = manager.getService(FileUtil.class);
+    fileFilters = getFileChooserFilters();
+    // createExportDialog();
     init(manager, title, monitor, matrix);
   }
 
@@ -129,7 +139,9 @@ public class ScatterPlotDialog extends JDialog {
 		this.variances = null;
 		this.loadings = CyMatrixFactory.makeSmallMatrix(manager.getNetwork(), 1, 2);
 		thisDialog = this;
-    createExportDialog();
+    fileUtil = manager.getService(FileUtil.class);
+    fileFilters = getFileChooserFilters();
+    // createExportDialog();
     init(manager, title, monitor, coordinates);
 	}
 
@@ -159,7 +171,9 @@ public class ScatterPlotDialog extends JDialog {
 		}
 
     CyColorChooser chooser = manager.getService(CyColorChooser.class);
-    createExportDialog();
+    fileUtil = manager.getService(FileUtil.class);
+    fileFilters = getFileChooserFilters();
+    // createExportDialog();
 
 		container = new JPanel();
 		createUI();
@@ -186,6 +200,9 @@ public class ScatterPlotDialog extends JDialog {
 		supportsLayout = false;
 		initializeColors();
 
+    fileUtil = manager.getService(FileUtil.class);
+    fileFilters = getFileChooserFilters();
+
 		this.variances = varianceArray;
 
 		thisDialog = this;
@@ -196,7 +213,7 @@ public class ScatterPlotDialog extends JDialog {
 			return;
 		}
 
-    createExportDialog();
+    // createExportDialog();
 
 		container = new JPanel();
 		createUI();
@@ -517,8 +534,10 @@ public class ScatterPlotDialog extends JDialog {
 		buttonExport.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e)
 			{
-
-        exportDialog.setVisible(true);
+        // File file = fileUtil.getFile(thisDialog, "Export Image", FileUtil.CUSTOM, null, "Export", fileFilters);
+        // System.out.println("File = "+file.getAbsolutePath());
+        // exportDialog.setVisible(true);
+        createExportDialog();
 			}
 
 		});
@@ -583,6 +602,51 @@ public class ScatterPlotDialog extends JDialog {
 	}
 
   public void createExportDialog() {
+    CyApplicationManager applicationManager = manager.getService(CyApplicationManager.class);
+
+    JFileChooser fileChooser = new JFileChooser();
+    // Clear the default file filter
+    for (FileFilter f: fileChooser.getChoosableFileFilters()) {
+      fileChooser.removeChoosableFileFilter(f);
+    }
+    fileChooser.setCurrentDirectory(applicationManager.getCurrentDirectory());
+    for (FileChooserFilter filter: fileFilters) {
+      fileChooser.addChoosableFileFilter(filter);
+    }
+    if (fileChooser.showDialog(thisDialog, "Export") == JFileChooser.APPROVE_OPTION) {
+      FileChooserFilter chooserFilter = (FileChooserFilter)fileChooser.getFileFilter();
+      File file = fileChooser.getSelectedFile();
+      if (file == null)
+        file = new File(fileChooser.getCurrentDirectory(), "image"+chooserFilter.getExtensions()[0]);
+
+      // System.out.println("File = "+file);
+      // System.out.println("Format = "+chooserFilter.getExtensions()[0]);
+
+      // Check the file types and get the right format
+      if (!chooserFilter.accept(file)) {
+        FileChooserFilter newFilter = null;
+        for (FileChooserFilter filter: fileFilters) {
+          if (filter.accept(file)) {
+            newFilter = filter;
+            break;
+          }
+        }
+        if (newFilter == null) {
+          // We need to force the file to be the right type
+          file = new File(file.getAbsolutePath()+chooserFilter.getExtensions()[0]);
+        } else {
+          chooserFilter = newFilter;
+        }
+      }
+
+      // Do the print
+      scatterPlot.print(chooserFilter.getExtensions()[0], file);
+    }
+    return;
+  }
+
+  /*
+  public void createExportDialog() {
     JComboBox<String> formatSelection;
 
     // Get the format (popup dialog)
@@ -591,10 +655,10 @@ public class ScatterPlotDialog extends JDialog {
     JPanel topPanel = new JPanel();
     topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
 
-    JFileChooser chooser = new JFileChooser();
-    chooser.setDialogType(JFileChooser.SAVE_DIALOG);
-    chooser.setControlButtonsAreShown(false);
-    topPanel.add(chooser);
+    JFileChooser fileChooser = new JFileChooser((String)null);
+    fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
+    fileChooser.setControlButtonsAreShown(false);
+    topPanel.add(fileChooser);
 
     {
       Box formatBox = Box.createHorizontalBox();
@@ -614,11 +678,14 @@ public class ScatterPlotDialog extends JDialog {
       JButton exportButton = new JButton("Export");
       exportButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
+          fileChooser.approveSelection();
           String format = (String)formatSelection.getSelectedItem();
-          File file = chooser.getSelectedFile();
+          File dir = fileChooser.getCurrentDirectory();
+          File file = fileChooser.getSelectedFile();
           if (file == null) {
-            file = new File("image."+format);
+            file = new File(dir, "image."+format);
           }
+          System.out.println("File type = "+fileChooser.getTypeDescription(file));
 
           // Do the print
           scatterPlot.print(format, file);
@@ -651,7 +718,7 @@ public class ScatterPlotDialog extends JDialog {
     exportDialog.add(topPanel);
     exportDialog.pack();
   }
-
+*/
 
 	private void initializeColors() {
 		float hue = 0f;
@@ -673,4 +740,13 @@ public class ScatterPlotDialog extends JDialog {
 		                                                       view, coordinates, undo);
 		splt.execute();
 	}
+
+  private Collection<FileChooserFilter> getFileChooserFilters() {
+    List<FileChooserFilter> chooserList = new ArrayList<>();
+    chooserList.add(new FileChooserFilter("PDF File", ".pdf"));
+    chooserList.add(new FileChooserFilter("PNG File", ".png"));
+    chooserList.add(new FileChooserFilter("JPEG File", ".jpg"));
+    chooserList.add(new FileChooserFilter("SVG File", ".svg"));
+    return chooserList;
+  }
 }

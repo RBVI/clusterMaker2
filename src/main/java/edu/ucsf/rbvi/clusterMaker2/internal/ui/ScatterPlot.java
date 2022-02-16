@@ -45,12 +45,15 @@ import com.itextpdf.text.PageSize;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
 
+import org.apache.log4j.Logger;
 import org.freehep.graphicsio.ps.PSGraphics2D;
 import org.freehep.graphicsio.svg.SVGGraphics2D;
 import org.freehep.graphics2d.VectorGraphics;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
@@ -64,6 +67,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ViewUtils;
  */
 @SuppressWarnings("serial")
 public class ScatterPlot extends JPanel implements MouseListener, MouseMotionListener{
+  static final Logger logger = Logger.getLogger(CyUserLog.NAME);
+
 	private float scale = 1;
 	private int MAX_SCORE = 1;
 	private int MIN_SCORE = -1;
@@ -568,6 +573,9 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 	}
 
   public void print(String format, File file) {
+    if (format.startsWith(".")) {
+      format = format.substring(1);
+    }
     int saveWidth = pointWidth;
     pointWidth = 1;
 		if (format.equals("png") || format.equals("jpg") || format.equals("bmp"))
@@ -590,6 +598,7 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 	
   private void pdfSave(String format, File file) {
 		com.itextpdf.text.Rectangle pageSize = PageSize.LETTER;
+    logger.info("Writing PDF document to "+file.getAbsolutePath());
 		Document document = new Document(pageSize);
 		try {
 			OutputStream output = new BufferedOutputStream(new FileOutputStream(file));
@@ -604,19 +613,21 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
       g.scale(imageScale*scale, imageScale*scale);
 			drawAll(g);
       g.dispose();
+      document.close();
     }
     catch (Exception e)
     {
+			e.printStackTrace();
 			JOptionPane.showMessageDialog(this,
-				new JTextArea("Dendrogram export had problem " +  e ));
+				new JTextArea("Scatterplot export had problem " +  e ));
 			// logger.error("Exception " + e);
-			// e.printStackTrace();
     }
   
     document.close();
 	}
 
 	private void bitmapSave(String format, File file) {
+    logger.info("Writing "+format+" document to "+file.getAbsolutePath());
 		try {
 			OutputStream output = new BufferedOutputStream(new FileOutputStream(file));
 
@@ -624,7 +635,11 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 			int extraHeight = BORDER_GAP*2;
 			Rectangle destRect = new Rectangle(0,0, getWidth(), getHeight());
 
-			BufferedImage i = new BufferedImage(destRect.width + extraWidth, destRect.height + extraHeight, BufferedImage.TYPE_INT_ARGB);
+			BufferedImage i;
+      if (format.equals("png"))
+        i = new BufferedImage(destRect.width + extraWidth, destRect.height + extraHeight, BufferedImage.TYPE_INT_ARGB);
+      else
+        i = new BufferedImage(destRect.width + extraWidth, destRect.height + extraHeight, BufferedImage.TYPE_INT_RGB);
 			Graphics g = i.getGraphics();
 			g.setColor(Color.white);
 			g.fillRect(0,0,destRect.width+1 + extraWidth,  destRect.height+1+extraHeight);
@@ -636,14 +651,15 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 			// ignore success, could keep window open on failure if save could indicate success.
 			output.close();
 		} catch (Exception e) {
+			e.printStackTrace();
 			JOptionPane.showMessageDialog(this,
-				new JTextArea("Graphics export had problem " +  e ));
+				new JTextArea("Scatterplot export had problem " +  e ));
 			// logger.error("Exception " + e);
-			// e.printStackTrace();
 		}
   }
 
 	private void svgSave (String format, File file) {
+    logger.info("Writing "+format+" document to "+file.getAbsolutePath());
 		com.itextpdf.text.Rectangle pageSize = PageSize.LETTER;
 		Properties p = new Properties();
 		p.setProperty(PSGraphics2D.PAGE_SIZE,"Letter");
@@ -667,7 +683,7 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
     catch (Exception e)
     {
 			JOptionPane.showMessageDialog(this,
-				new JTextArea("Dendrogram export had problem " +  e ));
+				new JTextArea("Scatterplot export had problem " +  e ));
 			// logger.error("Exception " + e);
 			// e.printStackTrace();
     }
