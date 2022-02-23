@@ -85,7 +85,7 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 	private final CyMatrix[] scores;
 	private final int xIndex;
 	private final int yIndex;
-	private final Color pointColor;
+	private Color pointColor;
 	private int pointWidth;
 	private final ClusterManager manager;
 
@@ -161,6 +161,21 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 		addMouseMotionListener(this);
 
 	}
+
+  public void setPointSize(int size) {
+    pointWidth = size;
+    repaint();
+  }
+
+  public void setPointColor(Color color) {
+    pointColor = color;
+    repaint();
+  }
+
+  public void setColorMap(Map<String, Color> map) {
+    colorMap = map;
+    repaint();
+  }
 
 	@Override
 	public Dimension getPreferredSize() { return new Dimension(PREF_W, PREF_H); }
@@ -332,16 +347,21 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 
 	  Graphics2D g2 = (Graphics2D)g;
 	  g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-	  AffineTransform at = new AffineTransform();
+	  // AffineTransform at = new AffineTransform();
 	  if(dragging && !shift){
 			int currentDX = currentX - startingX;
 			int currentDY =  currentY - startingY;
-			at.setToTranslation(previousDX + currentDX, previousDY + currentDY);
+			// at.setToTranslation(previousDX + currentDX, previousDY + currentDY);
+      g2.translate(previousDX + currentDX, previousDY + currentDY);
+      System.out.println("Dragging");
 	  } else {
-			at.setToTranslation(previousDX, previousDY);
+			// at.setToTranslation(previousDX, previousDY);
+      g2.translate(previousDX, previousDY);
+      System.out.println("Not dragging: dx = "+previousDX+" dy = "+previousDY);
 		}
-	  at.scale(scale, scale);
-	  g2.setTransform(at);
+	  g2.scale(scale, scale);
+	  // at.scale(scale, scale);
+	  // g2.setTransform(at);
 
 		drawAxes(g2, plotWidth, plotHeight, labelX, labelY);
 
@@ -577,7 +597,7 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
       format = format.substring(1);
     }
     int saveWidth = pointWidth;
-    pointWidth = 1;
+    // pointWidth = 1;
 		if (format.equals("png") || format.equals("jpg") || format.equals("bmp"))
 			bitmapSave(format, file);
 		else if (format.equals("pdf"))
@@ -597,20 +617,19 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 	}
 	
   private void pdfSave(String format, File file) {
-		com.itextpdf.text.Rectangle pageSize = PageSize.LETTER;
+		com.itextpdf.text.Rectangle pageSize = new com.itextpdf.text.Rectangle(getWidth(), getHeight());
     logger.info("Writing PDF document to "+file.getAbsolutePath());
+    System.out.println("PageSize = "+pageSize.toString());
+    System.out.println("Width X Height = "+getWidth()+" X "+getHeight());
 		Document document = new Document(pageSize);
+    float saveScale = scale;
 		try {
 			OutputStream output = new BufferedOutputStream(new FileOutputStream(file));
 			PdfWriter writer = PdfWriter.getInstance(document, output);
 			document.open();
 			PdfContentByte cb = writer.getDirectContent();
+
 			Graphics2D g = cb.createGraphics(pageSize.getWidth(), pageSize.getHeight(), new DefaultFontMapper());
-  
-      // Width and height aren't the same, so we need to fix this up
-      double imageScale = Math.min(pageSize.getWidth()  / ((double) getWidth()+BORDER_GAP*2),
-                                   pageSize.getHeight() / ((double) getHeight()+BORDER_GAP*2));
-      g.scale(imageScale*scale, imageScale*scale);
 			drawAll(g);
       g.dispose();
       document.close();
@@ -622,18 +641,22 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 				new JTextArea("Scatterplot export had problem " +  e ));
 			// logger.error("Exception " + e);
     }
+    scale = saveScale;
   
     document.close();
 	}
 
 	private void bitmapSave(String format, File file) {
     logger.info("Writing "+format+" document to "+file.getAbsolutePath());
+    float saveScale = scale;
 		try {
 			OutputStream output = new BufferedOutputStream(new FileOutputStream(file));
 
 			int extraWidth = BORDER_GAP*2;
 			int extraHeight = BORDER_GAP*2;
-			Rectangle destRect = new Rectangle(0,0, getWidth(), getHeight());
+			Rectangle destRect = new Rectangle(0,0, getWidth()*5, getHeight()*5);
+
+      // scale = scale * 5;
 
 			BufferedImage i;
       if (format.equals("png"))
@@ -641,10 +664,17 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
       else
         i = new BufferedImage(destRect.width + extraWidth, destRect.height + extraHeight, BufferedImage.TYPE_INT_RGB);
 			Graphics g = i.getGraphics();
-			g.setColor(Color.white);
-			g.fillRect(0,0,destRect.width+1 + extraWidth,  destRect.height+1+extraHeight);
+
+      // For PNG, we want to allow a transparent background, so don't do the fill
+      if (!format.equals("png")) {
+        g.setColor(Color.white);
+        g.fillRect(0,0,destRect.width+1 + extraWidth,  destRect.height+1+extraHeight);
+      }
 			g.setColor(Color.black);
 			g.translate(extraHeight/2, extraWidth/2);
+
+      // Our X and Y values are currently in the wrong scale -- we need to fix that
+      ((Graphics2D)g).scale(5,5);
 			drawAll(g);
 
 			ImageIO.write(i,format,output);
@@ -656,6 +686,7 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 				new JTextArea("Scatterplot export had problem " +  e ));
 			// logger.error("Exception " + e);
 		}
+    scale = saveScale;
   }
 
 	private void svgSave (String format, File file) {

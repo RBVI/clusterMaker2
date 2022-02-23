@@ -25,7 +25,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobExecutio
 public class RemoteServer {
 
 	static private String LOCAL_PATH = "http://localhost:8000/";
-	static private String PROD_PATH = "http://webservices.rbvi.ucsf.edu/rest/api/v1/";
+	static private String PROD_PATH = "https://webservices.rbvi.ucsf.edu/rest/api/v1/";
 	
 		
 	static public String getBasePath() {

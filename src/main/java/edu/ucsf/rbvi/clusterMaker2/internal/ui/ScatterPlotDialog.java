@@ -380,8 +380,10 @@ public class ScatterPlotDialog extends JDialog {
 		colorButton.addActionListener (new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				Color clr = JColorChooser.showDialog(thisDialog, "Choose color of points", thisDialog.getBackground());
-				if (clr != null)
+				if (clr != null) {
 					pointColor = clr;
+          scatterPlot.setPointColor(pointColor);
+        }
 			}
 		});
 
@@ -517,6 +519,8 @@ public class ScatterPlotDialog extends JDialog {
 			public void actionPerformed(ActionEvent e)
 			{
 				repaintScatterPlot();
+        // int pointSize = Integer.parseInt(textFieldPointSize.getText());
+				// scatterPlot.setPointSize(pointSize);
 			}
 
 		});
@@ -526,7 +530,9 @@ public class ScatterPlotDialog extends JDialog {
 			public void actionPerformed(ActionEvent e)
 			{
 				pointColor = null;
-				repaintScatterPlot();
+        scatterPlot.setPointColor(pointColor);
+        scatterPlot.setColorMap(loadingsColorMap);
+				// repaintScatterPlot();
 			}
 
 		});
@@ -541,6 +547,15 @@ public class ScatterPlotDialog extends JDialog {
 			}
 
 		});
+
+    textFieldPointSize.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e)
+      {
+        int pointSize = Integer.parseInt(textFieldPointSize.getText());
+				scatterPlot.setPointSize(pointSize);
+      }
+    });
+
 		
 		if (supportsLayout) {
 			buttonLayout.addActionListener(new ActionListener() {
