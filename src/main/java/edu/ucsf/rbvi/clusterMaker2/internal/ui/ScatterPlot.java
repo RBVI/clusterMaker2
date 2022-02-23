@@ -353,11 +353,11 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 			int currentDY =  currentY - startingY;
 			// at.setToTranslation(previousDX + currentDX, previousDY + currentDY);
       g2.translate(previousDX + currentDX, previousDY + currentDY);
-      System.out.println("Dragging");
+      // System.out.println("Dragging");
 	  } else {
 			// at.setToTranslation(previousDX, previousDY);
       g2.translate(previousDX, previousDY);
-      System.out.println("Not dragging: dx = "+previousDX+" dy = "+previousDY);
+      // System.out.println("Not dragging: dx = "+previousDX+" dy = "+previousDY);
 		}
 	  g2.scale(scale, scale);
 	  // at.scale(scale, scale);
