@@ -81,6 +81,13 @@ public class MDSContext {
 	         groups = {"MDS Advanced Settings"}, gravity = 74)
 	public boolean showScatterPlot = true;
 	
+	@Tunable(description = "Synchronous",
+			 longDescription = "If ```false``` the algorithm will run in the background after specified wait time",
+			 exampleStringValue = "true",
+			 tooltip = "<html>If ```false``` the algorithm will run in the background after specified wait time</html>",
+			 groups = {"MDS Advanced Settings"}, gravity = 75)
+	public boolean isSynchronous = false;
+	
 	public MDSContext() {
 		
 	}

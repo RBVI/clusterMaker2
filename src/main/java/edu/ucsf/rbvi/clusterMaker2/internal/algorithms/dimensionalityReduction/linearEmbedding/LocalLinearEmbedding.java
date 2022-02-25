@@ -69,10 +69,21 @@ public class LocalLinearEmbedding extends AbstractNetworkClusterer {
 		
 		HashMap<String, Object> configuration = new HashMap<>();
 		if (context.isSynchronous == true) {
-			configuration.put("waitTime", 20);
-		} else {
 			configuration.put("waitTime", -1);
+		} else {
+			configuration.put("waitTime", 20);
 		}
+
+    configuration.put("n_neighbors",context.n_neighbors);
+    configuration.put("reg",context.reg);
+    configuration.put("eigen_solver",context.eigen_solver.getSelectedValue());
+    configuration.put("tol",context.tol);
+    configuration.put("max_iter",context.max_iter);
+    configuration.put("method",context.method.getSelectedValue());
+    configuration.put("hessian_tol",context.hessian_tol);
+    configuration.put("modified_tol",context.modified_tol);
+    configuration.put("neighbors_algorithm",context.neighbors_algorithm.getSelectedValue());
+
 				
 		clusterAttributeName = "__localLinearEmbedding";
         List<String> attributes = context.getnodeAttributeList().getSelectedValues(); // rather than get single select attribute, make it multiple select

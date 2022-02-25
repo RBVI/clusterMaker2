@@ -69,10 +69,18 @@ public class tSNERemote extends AbstractNetworkClusterer {
 		
 		HashMap<String, Object> configuration = new HashMap<>();
 		if (context.isSynchronous == true) {
-			configuration.put("waitTime", 20);
-		} else {
 			configuration.put("waitTime", -1);
+		} else {
+			configuration.put("waitTime", 20);
 		}
+
+    configuration.put("perplexity", context.perplexity);
+    configuration.put("early_exaggeration", context.early_exaggeration);
+    configuration.put("metric", context.metric.getSelectedValue());
+    configuration.put("learning_rate", context.learning_rate);
+    configuration.put("n_iter", context.n_iter);
+    configuration.put("init", context.init.getSelectedValue());
+
 				
 		clusterAttributeName = "__tsneremote";
 		List<String> attributes = context.getnodeAttributeList().getSelectedValues();

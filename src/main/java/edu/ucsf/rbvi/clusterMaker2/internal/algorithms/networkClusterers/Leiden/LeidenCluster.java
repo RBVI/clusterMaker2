@@ -82,10 +82,16 @@ public class LeidenCluster extends AbstractNetworkClusterer {
      	
 		HashMap<String, Object> configuration = new HashMap<>();
 		if (context.isSynchronous == true) {
-			configuration.put("waitTime", 20);
-		} else {
 			configuration.put("waitTime", -1);
+		} else {
+			configuration.put("waitTime", 20);
 		}
+
+    // Get the arguments from our context
+    configuration.put("resolution", context.resolution_parameter);
+    configuration.put("beta", context.beta);
+    configuration.put("iterations", context.n_iterations);
+    configuration.put("objective_function", context.objective_function.getSelectedValue());
 				
 		HashMap<Long, String> nodeMap = getNetworkNodes(currentNetwork);
 		List<String> nodeArray = new ArrayList<>();

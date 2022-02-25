@@ -69,9 +69,9 @@ public class Spectral extends AbstractNetworkClusterer {
 		
 		HashMap<String, Object> configuration = new HashMap<>();
 		if (context.isSynchronous == true) {
-			configuration.put("waitTime", 20);
-		} else {
 			configuration.put("waitTime", -1);
+		} else {
+			configuration.put("waitTime", 20);
 		}
 				
 		clusterAttributeName = "__spectral";

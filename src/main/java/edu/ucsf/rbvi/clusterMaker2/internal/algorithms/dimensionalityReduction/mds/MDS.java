@@ -66,6 +66,20 @@ public class MDS extends AbstractNetworkClusterer {
 					registrar.getService(CyJobExecutionService.class, "(title=ClusterJobExecutor)");
 		CyApplicationManager appManager = registrar.getService(CyApplicationManager.class);
 		CyNetwork currentNetwork = appManager.getCurrentNetwork(); //gets the network presented in Cytoscape
+                                                               //
+		HashMap<String, Object> configuration = new HashMap<>();
+		if (context.isSynchronous == true) {
+			configuration.put("waitTime", -1);
+		} else {
+			configuration.put("waitTime", 20);
+		}
+
+    configuration.put("metric",context.metric);
+    configuration.put("n_init",context.n_init);
+    configuration.put("max_iter",context.max_iter);
+    configuration.put("eps",context.eps);
+    configuration.put("dissimilarity",context.dissimilarity.getSelectedValue());
+
 				
 		clusterAttributeName = "__mds";
         List<String> attributes = context.getnodeAttributeList().getSelectedValues(); // rather than get single select attribute, make it multiple select

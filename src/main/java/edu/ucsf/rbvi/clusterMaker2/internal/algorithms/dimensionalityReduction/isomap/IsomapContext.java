@@ -77,26 +77,35 @@ public class IsomapContext {
 			 tooltip = "<html>Algorithm to use for nearest neighbors search, passed to neighbors.</html>",
 			 groups = {"Isomap Advanced Settings"}, gravity = 70)
     public ListSingleSelection<String> neighbors_algorithm = new ListSingleSelection<String>("auto", "brute", "kd_tree", "ball_tree");
+
+    @Tunable(description = "Metric",
+			 longDescription = "This controls how distance is computed in the ambient space of the input data. By default UMAP supports a wide variety of metrics.",
+			 exampleStringValue = "euclidean",
+			 tooltip = "<html>This controls how distance is computed in the ambient space of the input data.</html>",
+			 groups = {"Isomap Advanced Settings"}, gravity = 71)
+    public ListSingleSelection<String> metric = new ListSingleSelection<String>("euclidean", "manhattan", "chebyshev", "minkowski", "canberra", "braycurtis",
+			"haversine", "mahalanobis", "wminkowski", "seuclidean", "cosine", "correlation", "hamming", "jaccard", "dice", "russellrao", "kulsinski", "rogerstanimoto",
+			"sokalmichener", "sokalsneath", "yule");
     
     @Tunable(description = "Maximum iterations",
 			 longDescription = "Maximum number of iterations for the arpack solver. not used if eigen_solver == ‘dense’.",
 			 exampleStringValue = "None",
 			 tooltip = "<html>Maximum number of iterations for the arpack solver. Not used if Eigen solver = ‘dense’.</html>",
-			 groups = {"Isomap Advanced Settings"}, gravity = 71)
+			 groups = {"Isomap Advanced Settings"}, gravity = 72)
     public int max_iter;
     
 	@Tunable(description = "Show scatter plot with results",
 	         longDescription = "If this is set to ```true```, show the scatterplot after the calculation is complete",
 	         exampleStringValue = "true",
 	         tooltip = "<html>If this is checked, show the scatterplot after the calculation is complete</html>",
-	         groups = {"Isomap Advanced Settings"}, gravity = 72)
+	         groups = {"Isomap Advanced Settings"}, gravity = 73)
 	public boolean showScatterPlot = true;
 	
 	@Tunable(description = "Synchronous",
-			 longDescription = "Is the algorithm going on the background after specified wait time",
+			 longDescription = "If ```false``` the algorithm will run in the background after specified wait time",
 			 exampleStringValue = "true",
-			 tooltip = "<html>Is the algorithm going on the background after specified wait time</html>",
-			 groups = {"Leiden Advanced Settings"}, gravity = 73)
+			 tooltip = "<html>If ```false``` the algorithm will run in the background after specified wait time</html>",
+			 groups = {"Isomap Advanced Settings"}, gravity = 74)
 	public boolean isSynchronous = true;
     
 	public IsomapContext() {
@@ -113,6 +122,7 @@ public class IsomapContext {
 		max_iter = origin.max_iter;
 		showScatterPlot = origin.showScatterPlot;
 		isSynchronous = origin.isSynchronous;
+		metric = origin.metric;
 	}
 
 	public void setNetwork(CyNetwork network) {

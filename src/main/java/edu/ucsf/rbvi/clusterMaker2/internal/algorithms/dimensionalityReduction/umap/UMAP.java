@@ -71,14 +71,20 @@ public class UMAP extends AbstractNetworkClusterer {
         
 		HashMap<String, Object> configuration = new HashMap<>();
 		if (context.isSynchronous == true) {
-			configuration.put("waitTime", 20);
-		} else {
 			configuration.put("waitTime", -1);
+		} else {
+			configuration.put("waitTime", 20);
 		}
+
+    configuration.put("n_neighbors",context.n_neighbors);
+    configuration.put("min_dist",context.min_dist);
+    configuration.put("metric",context.metric.getSelectedValue());
+    configuration.put("scale",context.scale);
+
 				
 		clusterAttributeName = "__umap";
 
-        List<String> attributes = context.getnodeAttributeList().getSelectedValues(); // rather than get single select attribute, make it multiple select
+    List<String> attributes = context.getnodeAttributeList().getSelectedValues(); // rather than get single select attribute, make it multiple select
 
 		CyTable nodeTable = currentNetwork.getDefaultNodeTable();
 		List<String> columns = new ArrayList<>();

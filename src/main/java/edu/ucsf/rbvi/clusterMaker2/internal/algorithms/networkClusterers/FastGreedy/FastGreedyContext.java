@@ -30,11 +30,11 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.FastGr
 		public void setattribute(ListSingleSelection<String> attr) { }
 		
 		@Tunable(description = "Synchronous",
-				 longDescription = "Is the algorithm going on the background after specified wait time",
+			   longDescription = "If ```false``` the algorithm will run in the background after specified wait time",
 				 exampleStringValue = "true",
-				 tooltip = "<html>Is the algorithm going on the background after wait time 20 seconds</html>",
+			   tooltip = "<html>If ```false``` the algorithm will run in the background after specified wait time</html>",
 				 groups = {"FastGreedy Advanced Settings"}, gravity = 6.0)
-		public boolean isSynchronous = true;
+		public boolean isSynchronous = false;
 		
 		@ContainsTunables
 		public AdvancedProperties advancedAttributes;
