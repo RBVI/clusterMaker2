@@ -33,6 +33,7 @@ public class UMAPContext {
     public void setnodeAttributeList(ListMultipleSelection<String> nal) { }
 	
 	@Tunable(description = "Number of neighbors",
+    @Tunable(description = "Number of neighbors",
 			longDescription = "This parameter controls how UMAP balances local versus "
 			+ "global structure in the data. It does this by constraining the size of "
 			+ "the local neighborhood UMAP will look at when attempting to learn the manifold "
