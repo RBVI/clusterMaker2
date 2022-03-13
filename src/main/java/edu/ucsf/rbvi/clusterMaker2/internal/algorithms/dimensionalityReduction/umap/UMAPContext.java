@@ -32,8 +32,7 @@ public class UMAPContext {
     }
     public void setnodeAttributeList(ListMultipleSelection<String> nal) { }
 	
-	@Tunable(description = "Number of neighbors",
-    @Tunable(description = "Number of neighbors",
+   @Tunable(description = "Number of neighbors",
 			longDescription = "This parameter controls how UMAP balances local versus "
 			+ "global structure in the data. It does this by constraining the size of "
 			+ "the local neighborhood UMAP will look at when attempting to learn the manifold "
@@ -98,7 +97,7 @@ public class UMAPContext {
 			 longDescription = "Is the algorithm going on the background after specified wait time",
 			 exampleStringValue = "true",
 			 tooltip = "<html>Is the algorithm going on the background after specified wait time</html>",
-			 groups = {"Leiden Advanced Settings"}, gravity = 7.0)
+			 groups = {"UMAP Advanced Settings"}, gravity = 7.0)
 	public boolean isSynchronous = true;
 	
 	//@ContainsTunables
