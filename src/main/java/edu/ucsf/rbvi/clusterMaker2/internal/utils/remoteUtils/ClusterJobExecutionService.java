@@ -154,33 +154,37 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		
 		String serializedData = dataService.getSerializedData(inputData); //gets serialized data (JSON) using dataService
 		// System.out.println("Serialized data in execution service: " + serializedData); 
-		queryMap.put("inputData", serializedData.toString()); //...and puts it into queryMap as key: "inputData", value: String of the data
-		queryMap.put(COMMAND, Command.SUBMIT.toString()); //puts key: COMMAND, value: SUBMIT in the queryMap --> queryMap has two keys
+		// queryMap.put("inputData", serializedData.toString()); //...and puts it into queryMap as key: "inputData", value: String of the data
+		// queryMap.put(COMMAND, Command.SUBMIT.toString()); //puts key: COMMAND, value: SUBMIT in the queryMap --> queryMap has two keys
 		
 		JSONParser parser = new JSONParser();
 		JSONObject jsonData = null;
 		try {
 			jsonData = (JSONObject) parser.parse(serializedData);
 		} catch (ParseException e1) {
-			System.out.println("Data to JSONObject conversion failed: " + e1.getMessage());
+			// System.out.println("Data to JSONObject conversion failed: " + e1.getMessage());
+      logger.error("Data to JSONObject conversion failed: " + e1.getMessage());
+      return new CyJobStatus(Status.ERROR, "Data to JSONObject conversion failed: "+e1.getMessage());
 		}
 		
-		System.out.println("jsonData (posted on server): " + jsonData);
+		// System.out.println("jsonData (posted on server): " + jsonData);
 		
 		Object value = null;
 		String jobName = (String) clJob.getClusterData().get("shortName");
 		try {
-			value = RemoteServer.postFile(RemoteServer.getServiceURI(jobName), jsonData);
+			value = RemoteServer.postFile(RemoteServer.getServiceURIWithArgs(jobName,queryMap), jsonData);
 		} catch (Exception e) {
-			System.out.println("Error in postFile method: " + e.getMessage());
+      logger.error("Error in postFile method: " + e.getMessage());
+      return new CyJobStatus(Status.ERROR, "Error in postFile method: "+e.getMessage());
 		}
-		System.out.println("JSON Job ID: " + value);
+		logger.info("JSON Job ID: " + value);
 		
 		if (value == null) 
 			return new CyJobStatus(Status.ERROR, "Job submission failed!");
 		JSONObject json = (JSONObject) value;
 		if (!json.containsKey(JOBID)) {
 			// System.out.println("JSON returned: "+json.toString());
+      logger.error("Server didn't return an ID!");
 			return new CyJobStatus(Status.ERROR, "Server didn't return an ID!");
 		}
 
@@ -188,11 +192,11 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		
 		String jobId = json.get(JOBID).toString(); //gets the job ID from the JSON Object
 		clJob.setJobId(jobId); //...and sets it to the ClusterJob 
-		System.out.println("ClusterJob jobID: " + clJob.getJobId());
+    logger.info("ClusterJob jobID: " + clJob.getJobId());
 		//everything above this is to get the job ID from the JSON jobID repsonse from postFile() and put it in the ClusterJob object
 		
 		clJob.setBasePath(basePath); //...and also sets the basePath to the Cluster Job
-		System.out.println("ClusterJob BasePath: " + clJob.getBasePath());
+    logger.info("ClusterJob BasePath: " + clJob.getBasePath());
 		
 		//getting status
 		int waitTime = Integer.parseInt(queryMap.get("waitTime"));

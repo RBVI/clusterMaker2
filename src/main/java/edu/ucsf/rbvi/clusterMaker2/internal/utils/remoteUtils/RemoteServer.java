@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import org.apache.http.HttpEntity;
@@ -25,7 +26,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobExecutio
 public class RemoteServer {
 
 	static private String LOCAL_PATH = "http://localhost:8000/";
-	static private String PROD_PATH = "http://webservices.rbvi.ucsf.edu/rest/api/v1/";
+	static private String PROD_PATH = "https://webservices.rbvi.ucsf.edu/rest/api/v1/";
 	
 		
 	static public String getBasePath() {
@@ -38,16 +39,26 @@ public class RemoteServer {
 		return PROD_PATH + "service/" + service;
 
 	}
+
+  static public String getServiceURIWithArgs(String service, Map<String, String> args) {
+    String uri = getServiceURI(service) + '?';
+    for (String key: args.keySet()) {
+      uri += key+"="+args.get(key)+'&';
+    }
+    return uri.substring(0, uri.length()-1);
+  }
+
+
 		//sends the data
 		//you should use a JSONParser to parse the reply and return that.
 		//the URI is the whole URI of the service
 		//returns the status code and JSONObject (JobID)
 	static public JSONObject postFile(String uri, JSONObject jsonData) throws Exception {
-		System.out.println("Posting on: " + uri);
+		// System.out.println("Posting on: " + uri);
 		CloseableHttpClient httpClient = HttpClients.createDefault();  //client = browser --> executes in the default browser of my computer?
 		
 		CloseableHttpResponse response = getPOSTresponse(uri, jsonData, httpClient);
-		System.out.println("HttpPOST response: " + response.toString());
+		// System.out.println("HttpPOST response: " + response.toString());
 		
 		int statusCode = response.getStatusLine().getStatusCode();
 		if (statusCode != 200 && statusCode != 202) {

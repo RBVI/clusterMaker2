@@ -69,10 +69,19 @@ public class Isomap extends AbstractNetworkClusterer {
 		
 		HashMap<String, Object> configuration = new HashMap<>();
 		if (context.isSynchronous == true) {
-			configuration.put("waitTime", 20);
-		} else {
 			configuration.put("waitTime", -1);
+		} else {
+			configuration.put("waitTime", 20);
 		}
+
+    configuration.put("n_neighbors", context.n_neighbors);
+    configuration.put("eigen_solver", context.eigen_solver.getSelectedValue());
+    configuration.put("metric", context.metric.getSelectedValue());
+    configuration.put("tol", context.tol);
+    configuration.put("path_method", context.path_method.getSelectedValue());
+    configuration.put("neighbors_algorithm", context.neighbors_algorithm.getSelectedValue());
+    configuration.put("max_iter", context.max_iter);
+
 	
 		clusterAttributeName = "__isomap";
         List<String> attributes = context.getnodeAttributeList().getSelectedValues(); // rather than get single select attribute, make it multiple select

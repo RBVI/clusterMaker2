@@ -70,9 +70,9 @@ public class LabelPropagation extends AbstractNetworkClusterer {
      	
 		HashMap<String, Object> configuration = new HashMap<>();
 		if (context.isSynchronous == true) {
-			configuration.put("waitTime", 20);
-		} else {
 			configuration.put("waitTime", -1);
+		} else {
+			configuration.put("waitTime", 20);
 		}
 				
 		HashMap<Long, String> nodeMap = getNetworkNodes(currentNetwork);

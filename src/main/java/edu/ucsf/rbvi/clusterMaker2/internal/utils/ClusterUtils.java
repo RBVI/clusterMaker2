@@ -109,8 +109,9 @@ public class ClusterUtils {
      * Assumes ascending sorted clusters
      */
     public static void insertResultsInColumns(CyNetwork network, List<NodeCluster> clusters, String shortname) {
-        CyTable nodeTable = network.getDefaultNodeTable();
-        CyTable edgeTable = network.getDefaultEdgeTable();
+
+        CyTable nodeTable = network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS);
+        CyTable edgeTable = network.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS);
         CyTable networkTable = network.getDefaultNetworkTable();
         List<CyEdge> edges = network.getEdgeList();
 

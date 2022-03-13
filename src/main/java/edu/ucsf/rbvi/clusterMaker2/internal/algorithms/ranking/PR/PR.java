@@ -77,7 +77,7 @@ public class PR extends AbstractTask implements Rank, ObservableTask {
     @Override
     public void run(TaskMonitor taskMonitor) {
         taskMonitor.setProgress(0.0);
-        taskMonitor.setTitle("PRWP with Priors ranking of clusters");
+        taskMonitor.setTitle("PR ranking of clusters");
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Fetching clusters...");
         taskMonitor.setProgress(0.1);
         List<NodeCluster> clusters = ClusterUtils.fetchClusters(network);
@@ -93,6 +93,9 @@ public class PR extends AbstractTask implements Rank, ObservableTask {
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Setting edge scores in clusters");
         addEdges();
         taskMonitor.setProgress(0.7);
+
+        // Normalize the scores based on the source node
+        normalizeEdges();
 
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Calculating PageRank scores");
         PageRank<PRNode, PREdge> pageRank = performPageRank();
@@ -120,6 +123,21 @@ public class PR extends AbstractTask implements Rank, ObservableTask {
         return results.getResults(clzz);
     }
 
+    private void normalizeEdges() {
+      // The PageRank algorithm requires that edge weights represent a transition probability -- that is,
+      // they must sum to 1.  We need to adjust our edges to reflect that
+      for (PRNode node: graph.getVertices()) {
+        double sum = 0d;
+        for (PREdge edge: graph.getOutEdges(node)) {
+          sum += edge.getScore();
+        }
+
+        for (PREdge edge: graph.getOutEdges(node)) {
+          edge.setScore(edge.getScore()/sum);
+        }
+      }
+    }
+
     private void insertScores(List<NodeCluster> clusters, PageRank<PRNode, PREdge> pageRank) {
         for (PRNode node : graph.getVertices()) {
             node.setPRScore(pageRank.getVertexScore(node));
@@ -145,7 +163,10 @@ public class PR extends AbstractTask implements Rank, ObservableTask {
             PRNode targetNode = idToNode.get(edge.getTarget().getSUID());
             PREdge prEdge = new PREdge(edge);
             insertEdgeScore(prEdge, edgeTable, edgeAttributes);
-            graph.addEdge(prEdge, new Pair<>(sourceNode, targetNode), EdgeType.DIRECTED);
+            if (edge.isDirected())
+              graph.addEdge(prEdge, new Pair<>(sourceNode, targetNode), EdgeType.DIRECTED);
+            else
+              graph.addEdge(prEdge, new Pair<>(sourceNode, targetNode), EdgeType.UNDIRECTED);
         }
     }
 

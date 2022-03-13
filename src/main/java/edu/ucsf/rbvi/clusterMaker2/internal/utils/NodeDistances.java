@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.ui;
+package edu.ucsf.rbvi.clusterMaker2.internal.utils;
 
 import java.util.Arrays;
 import java.util.Collection;

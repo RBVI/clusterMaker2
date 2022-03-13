@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.clusterMaker2.internal.ui;
+package edu.ucsf.rbvi.clusterMaker2.internal.utils;
 
 /**
  * Classes that perform long tasks (like graph algorithms) can implement this interface

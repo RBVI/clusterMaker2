@@ -118,11 +118,11 @@ public class LocalLinearEmbeddingContext {
 	public boolean showScatterPlot = true;
     
 	@Tunable(description = "Synchronous",
-			 longDescription = "Is the algorithm going on the background after specified wait time",
+			 longDescription = "If ```false``` the algorithm will run in the background after specified wait time",
 			 exampleStringValue = "true",
-			 tooltip = "<html>Is the algorithm going on the background after specified wait time</html>",
-			 groups = {"Leiden Advanced Settings"}, gravity = 76)
-	public boolean isSynchronous = true;
+			 tooltip = "<html>If ```false``` the algorithm will run in the background after specified wait time</html>",
+			 groups = {"Local Linear Embedding Advanced Settings"}, gravity = 76)
+	public boolean isSynchronous = false;
     
     
 	public LocalLinearEmbeddingContext() {

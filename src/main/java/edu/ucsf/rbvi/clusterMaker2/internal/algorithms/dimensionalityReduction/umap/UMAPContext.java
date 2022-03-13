@@ -51,7 +51,7 @@ public class UMAPContext {
 			              + "the manifold structure of the data, losing fine detail structure for the sake <br/>"
 			              + "of getting the broader of the data.</html>",
 			groups = {"UMAP Advanced Settings"}, gravity = 2.0)
-	public int n_neighbors = 2;
+	public int n_neighbors = 15;
 	
 	@Tunable(description = "Minumum distance",
 			longDescription = "The min_dist parameter controls how tightly UMAP is allowed to pack points together. "
@@ -68,7 +68,7 @@ public class UMAPContext {
 					+ "Larger values of Minimum distance will prevent UMAP from packing points together and will focus on the preservation<br/>"
 					+ "of the broad topological structure instead.</html>",
 			groups = {"UMAP Advanced Settings"}, gravity = 3.0)
-	public double min_dist = 1.0;
+	public double min_dist = 0.1;
 	
 	@Tunable(description = "Metric",
 			longDescription = "This controls how distance is computed in the ambient space of the input data. By default UMAP supports a wide variety of metrics.",
@@ -94,11 +94,11 @@ public class UMAPContext {
 	public boolean showScatterPlot = true;
 	
 	@Tunable(description = "Synchronous",
-			 longDescription = "Is the algorithm going on the background after specified wait time",
+			 longDescription = "If ```false``` the algorithm will run in the background after specified wait time",
 			 exampleStringValue = "true",
-			 tooltip = "<html>Is the algorithm going on the background after specified wait time</html>",
+			 tooltip = "<html>If ```false``` the algorithm will run in the background after specified wait time</html>",
 			 groups = {"UMAP Advanced Settings"}, gravity = 7.0)
-	public boolean isSynchronous = true;
+	public boolean isSynchronous = false;
 	
 	//@ContainsTunables
 	//public AdvancedProperties advancedAttributes;
