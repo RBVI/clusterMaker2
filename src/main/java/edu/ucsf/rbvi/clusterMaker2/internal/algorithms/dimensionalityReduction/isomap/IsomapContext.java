@@ -32,6 +32,12 @@ public class IsomapContext {
         return nodeAttributeList;
     }
     public void setnodeAttributeList(ListMultipleSelection<String> nal) { }
+	
+  @Tunable(description="Only use data from selected nodes", groups="Array sources",
+           longDescription="Only the data from the array sources of the selected nodes will be used.",
+           exampleStringValue = "false",
+           gravity = 1.5)
+  public boolean selectedOnly = false;
 
     @Tunable(description = "Number of neighbors",
 			 longDescription = "Number of neighbors to consider for each point.",

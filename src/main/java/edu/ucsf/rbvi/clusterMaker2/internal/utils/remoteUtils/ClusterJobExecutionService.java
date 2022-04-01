@@ -181,6 +181,7 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		
 		if (value == null) 
 			return new CyJobStatus(Status.ERROR, "Job submission failed!");
+
 		JSONObject json = (JSONObject) value;
 		if (!json.containsKey(JOBID)) {
 			// System.out.println("JSON returned: "+json.toString());
@@ -201,18 +202,22 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		//getting status
 		int waitTime = Integer.parseInt(queryMap.get("waitTime"));
 		CyJobStatus status = checkJobStatus(clJob);
-		for (int i = 0; i < waitTime; i += 5) {
-		    if (jobDone(status)) return status;
 
-		    try {
-		        TimeUnit.SECONDS.sleep(5);
-		    } catch (InterruptedException e) {
-		        return new CyJobStatus(Status.ERROR, "Interrupted");
-		    }
-		    
-		    status = checkJobStatus(clJob);
-		}
-		//CHANGE THIS: only return when job is done (status = finished or error ....)
+    boolean done = false;
+    int i = 0;
+    while (!done) {
+      if (jobDone(status)) return status;
+      try {
+          TimeUnit.SECONDS.sleep(5);
+      } catch (InterruptedException e) {
+          return new CyJobStatus(Status.ERROR, "Interrupted");
+      }
+
+      status = checkJobStatus(clJob);
+      i += 5;
+      if ((waitTime >= 0) && (i >= waitTime))
+        return status;
+    }
 		
 		return status;
 	}

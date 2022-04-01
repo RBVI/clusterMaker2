@@ -25,13 +25,19 @@ public class UMAPContext {
 	                         "Note that at least 2 node columns are usually required.",
 	         exampleStringValue="gal1RGexp,gal4RGExp,gal80Rexp",
 	         tooltip = "<html>You must choose at least 2 node columns for dimensionality reduction.</html>", gravity = 1.0 )
-    public ListMultipleSelection<String> getnodeAttributeList() {
-		if (network != null && nodeAttributeList == null)
-			nodeAttributeList = ModelUtils.updateNodeAttributeList(network, nodeAttributeList);
-        return nodeAttributeList;
-    }
-    public void setnodeAttributeList(ListMultipleSelection<String> nal) { }
+  public ListMultipleSelection<String> getnodeAttributeList() {
+  if (network != null && nodeAttributeList == null)
+    nodeAttributeList = ModelUtils.updateNodeAttributeList(network, nodeAttributeList);
+      return nodeAttributeList;
+  }
+  public void setnodeAttributeList(ListMultipleSelection<String> nal) { }
 	
+  @Tunable(description="Only use data from selected nodes", groups="Array sources",
+           longDescription="Only the data from the array sources of the selected nodes will be used.",
+           exampleStringValue = "false",
+           gravity = 1.5)
+  public boolean selectedOnly = false;
+
 	@Tunable(description = "Number of neighbors",
 			longDescription = "This parameter controls how UMAP balances local versus "
 			+ "global structure in the data. It does this by constraining the size of "
@@ -84,7 +90,7 @@ public class UMAPContext {
 			exampleStringValue = "True",
 			tooltip = "<html>If checked, preprocess the data to scale the matrix</html>",
 			groups = {"UMAP Advanced Settings"}, gravity = 5.0)
-    public Boolean scale = true;
+  public Boolean scale = true;
 	
 	@Tunable(description = "Show scatter plot with results",
 	         longDescription = "If this is set to ```true```, show the scatterplot after the calculation is complete",
