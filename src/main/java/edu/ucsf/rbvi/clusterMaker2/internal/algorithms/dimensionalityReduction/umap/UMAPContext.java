@@ -31,7 +31,7 @@ public class UMAPContext {
       return nodeAttributeList;
   }
   public void setnodeAttributeList(ListMultipleSelection<String> nal) { }
-	
+
   @Tunable(description="Only use data from selected nodes", groups="Array sources",
            longDescription="Only the data from the array sources of the selected nodes will be used.",
            exampleStringValue = "false",
@@ -39,6 +39,7 @@ public class UMAPContext {
   public boolean selectedOnly = false;
 
 	@Tunable(description = "Number of neighbors",
+
 			longDescription = "This parameter controls how UMAP balances local versus "
 			+ "global structure in the data. It does this by constraining the size of "
 			+ "the local neighborhood UMAP will look at when attempting to learn the manifold "
