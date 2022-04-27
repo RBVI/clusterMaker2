@@ -88,6 +88,8 @@ public class Spectral extends AbstractNetworkClusterer {
 				
 		for (Long nodeSUID : nodeMap.keySet()) {
 			CyRow row = nodeTable.getRow(nodeSUID);
+      if (context.selectedOnly && !row.get(CyNetwork.SELECTED, Boolean.class))
+        continue;
 			List<String> rowList = new ArrayList<>();
 			for (String columnName : columns) {
 				CyColumn column = nodeTable.getColumn(columnName);
