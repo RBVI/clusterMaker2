@@ -34,7 +34,7 @@ public class PRWPContext {
     public PRWPContext(ClusterManager manager) {
         this.manager = manager;
         network = this.manager.getNetwork();
-        normalizationContext = new NormalizationContext(manager);
+        normalizationContext = new NormalizationContext(manager, network);
         updateContext();
     }
 
@@ -85,6 +85,7 @@ public class PRWPContext {
 
     public void setNetwork(CyNetwork network) {
         this.network = network;
+        normalizationContext.setNetwork(network);
     }
 
     public CyNetwork getNetwork() {

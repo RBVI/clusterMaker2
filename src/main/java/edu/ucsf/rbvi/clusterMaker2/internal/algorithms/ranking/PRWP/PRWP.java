@@ -13,6 +13,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.units.PRNode;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Rank;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ClusterUtils;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -39,6 +40,7 @@ public class PRWP extends AbstractTask implements Rank, ObservableTask {
 
     @ContainsTunables
     public PRWPContext context;
+
     private Hypergraph<PRNode, PREdge> graph;
     private HashMap<Long, PRNode> idToNode;
     private List<CyNode> nodeList;
@@ -98,10 +100,12 @@ public class PRWP extends AbstractTask implements Rank, ObservableTask {
         taskMonitor.setProgress(0.7);
 
         // Normalize the scores 
-        // normalizeNodes();
+        //if (nodeAttributes.size() > 0 && !nodeAttributes.get(0).equals(ModelUtils.NONEATTRIBUTE))
+        //  normalizeNodes();
 
         // Normalize the scores based on the source node
-        normalizeEdges();
+        if (edgeAttributes.size() > 0 && !edgeAttributes.get(0).equals(ModelUtils.NONEATTRIBUTE))
+          normalizeEdges();
 
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Calculating PageRank scores");
         PageRankWithPriors<PRNode, PREdge> pageRank = performPageRank();
@@ -131,22 +135,12 @@ public class PRWP extends AbstractTask implements Rank, ObservableTask {
 
     private void normalizeNodes() {
       double sum = 0d;
-      double maxNeg = 0d;
       for (PRNode node: graph.getVertices()) {
-        if (node.getScore() < maxNeg)
-          maxNeg = node.getScore();
         sum += node.getScore();
       }
 
-      if (maxNeg < 0) {
-        maxNeg = -maxNeg;
-        sum += maxNeg;
-      } else
-        maxNeg = 0;
-
       for (PRNode node: graph.getVertices()) {
-        double score = node.getScore();
-        node.setScore((score+maxNeg)/sum);
+        node.setScore(node.getScore()/sum);
       }
 
     }
@@ -186,21 +180,33 @@ public class PRWP extends AbstractTask implements Rank, ObservableTask {
     }
 
     private void addEdges() {
-				Map<CyIdentifiable, double[]> edgeMap = context.normalizationContext.normalize(edgeAttributes, edgeList);
+				Map<CyIdentifiable, double[]> edgeMap = null;
+        context.normalizationContext.normalize(edgeAttributes, edgeList);
+        if (edgeAttributes.size() > 0 && !edgeAttributes.get(0).equals(ModelUtils.NONEATTRIBUTE))
+          edgeMap = context.normalizationContext.normalize(edgeAttributes, edgeList);
         for (CyEdge edge : edgeList) {
             PRNode sourceNode = idToNode.get(edge.getSource().getSUID());
             PRNode targetNode = idToNode.get(edge.getTarget().getSUID());
             PREdge prEdge = new PREdge(edge);
-            insertEdgeScore(prEdge, edgeTable, edgeMap.get(edge));
+            if (edgeMap != null)
+              insertEdgeScore(prEdge, edgeMap.get(edge));
+            else
+              prEdge.setScore(0.0d);
             graph.addEdge(prEdge, new Pair<>(sourceNode, targetNode), EdgeType.DIRECTED);
         }
     }
 
     private void addNodes() {
-				Map<CyIdentifiable, double[]> nodeMap = context.normalizationContext.normalize(nodeAttributes, nodeList);
+				Map<CyIdentifiable, double[]> nodeMap = null;
+        if (nodeAttributes.size() > 0 && !nodeAttributes.get(0).equals(ModelUtils.NONEATTRIBUTE))
+          nodeMap = context.normalizationContext.normalize(nodeAttributes, nodeList);
+
         for (CyNode node : nodeList) {
             PRNode prNode = new PRNode(node);
-            insertNodeScore(prNode, nodeTable, nodeMap.get(node));
+            if (nodeMap != null)
+              insertNodeScore(prNode, nodeMap.get(node));
+            else
+              prNode.setScore(0.0d);
             graph.addVertex(prNode);
             idToNode.put(node.getSUID(), prNode);
         }
@@ -218,7 +224,7 @@ public class PRWP extends AbstractTask implements Rank, ObservableTask {
         edgeTable = network.getDefaultEdgeTable();
     }
 
-    private void insertNodeScore(PRNode prNode, CyTable nodeTable, double[] nodeAttrValues) {
+    private void insertNodeScore(PRNode prNode, double[] nodeAttrValues) {
         double totalNodeScore = 0.0d;
 
 				for (double value: nodeAttrValues) {
@@ -249,7 +255,7 @@ public class PRWP extends AbstractTask implements Rank, ObservableTask {
         prNode.setScore(totalNodeScore);
     }
 
-    private void insertEdgeScore(PREdge prEdge, CyTable edgeTable, double[] edgeAttrValues) {
+    private void insertEdgeScore(PREdge prEdge, double[] edgeAttrValues) {
         double totalEdgeScore = 0.0d;
 
 				for (double value: edgeAttrValues) {

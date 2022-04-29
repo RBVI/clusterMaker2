@@ -1,8 +1,10 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.MAM;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.units.NormalizationContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListMultipleSelection;
 
@@ -19,9 +21,13 @@ public class MAMContext {
     @Tunable(description = "Edge attributes", groups = "Biomarker information", gravity = 10.0)
     public ListMultipleSelection<String> edgeAttributes;
 
+    @ContainsTunables
+    public NormalizationContext normalizationContext;
+
     public MAMContext(ClusterManager manager) {
         this.manager = manager;
         network = this.manager.getNetwork();
+        normalizationContext = new NormalizationContext(manager, network);
         updateContext();
     }
 

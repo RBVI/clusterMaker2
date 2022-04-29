@@ -188,7 +188,7 @@ public class ClusterUtils {
         return clusters;
     }
 
-    public static List<NodeCluster> fetchRankingResults(CyNetwork network) {
+    public static List<NodeCluster> fetchRankingResults(CyNetwork network, boolean skipSingletons) {
         List<NodeCluster> clusters = new ArrayList<>();
         String clusterAttribute = getClusterAttribute(network);
         String rankingAttribute = getRankingAttribute(network);
@@ -212,6 +212,8 @@ public class ClusterUtils {
         }
 
         for (int clusterNum : clusterMap.keySet()) {
+            if (skipSingletons && clusterMap.get(clusterNum).size() <= 1)
+              continue;
             NodeCluster cluster = new NodeCluster(clusterMap.get(clusterNum));
             cluster.setClusterNumber(clusterNum);
             cluster.setRankScore(clusterScoreMap.get(clusterNum));

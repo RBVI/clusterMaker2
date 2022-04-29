@@ -36,8 +36,12 @@ public class NormalizationContext {
 	public ListSingleSelection<String> twoTailedValues = new ListSingleSelection<String>("Absolute value", "Only positive values", "Only negative values");
 	
 	public NormalizationContext(ClusterManager manager) {
+    this(manager, manager.getNetwork());
+  }
+
+	public NormalizationContext(ClusterManager manager, CyNetwork network) {
 		this.manager = manager;
-    network = this.manager.getNetwork();
+    this.network = network;
 	}
 	
   public void setNetwork(CyNetwork network) {
@@ -63,22 +67,8 @@ public class NormalizationContext {
 
     int nAttributes = attributeList.size();
 
-    // Get all of the values
-    for (CyIdentifiable obj: objs) {
-      CyRow row = network.getRow(obj);
-      double[] values = new double[attributeList.size()];
-      for (int index = 0; index < nAttributes; index++) {
-        Double v = row.get(attributeList.get(index), Double.class);
-        if (v == null)
-          values[index] = Double.NaN;
-        else
-          values[index] = v;
-      }
-      returnMap.put(obj, values);
-    }
-
-    if (normalization.getSelectedValue().equals("None"))
-      return returnMap;
+    boolean negativeOnly = twoTailedValues.getSelectedValue().equals("Only negative values");
+    boolean positiveOnly = twoTailedValues.getSelectedValue().equals("Only positive values");
 
     // Go through the attributes and find the minimum and maximum values
     Map<String, double[]> minMax = new HashMap<>();
@@ -86,31 +76,40 @@ public class NormalizationContext {
       minMax.put(attr, new double[]{Double.MAX_VALUE, Double.MIN_VALUE});
     }
 
-    for (CyIdentifiable obj: returnMap.keySet()) {
-      double[] values = returnMap.get(obj);
-      for (int index = 0; index < values.length; index++) {
-        Double value = values[index];
+    // Get all of the values
+    for (CyIdentifiable obj: objs) {
+      CyRow row = network.getRow(obj);
+      double[] values = new double[attributeList.size()];
+      for (int index = 0; index < nAttributes; index++) {
+        Double v = row.get(attributeList.get(index), Double.class);
+        if (v == null)
+          values[index] = 0.0d;   // values[index] = Double.NaN;  -- if we're going to use NaN we need to account for it everywhere
+        else if (v < 0) {
+          if (positiveOnly)
+            values[index] = 0.0d;
+          else
+            values[index] = Math.abs(v);
+        } else if (negativeOnly)
+          values[index] = 0.0d;
+        else
+          values[index] = v;
+
         double[] myMinMax = minMax.get(attributeList.get(index));
-        if (value < myMinMax[0])
-          myMinMax[0] = value;
-        if (value > myMinMax[1])
-          myMinMax[1] = value;
+        myMinMax[0] = Math.min(myMinMax[0], values[index]);
+        myMinMax[1] = Math.max(myMinMax[1], values[index]);
       }
+      returnMap.put(obj, values);
     }
 
-    // Now, adjust the min/max based on how the user want's to handle two-tailed values
-    for (int index = 0; index < nAttributes; index++) {
-      double[] myMinMax = minMax.get(attributeList.get(index));
-      myMinMax = adjustMinMax(myMinMax);
-      minMax.put(attributeList.get(index), myMinMax);
-    }
+    if (normalization.getSelectedValue().equals("None"))
+      return returnMap;
 
     // OK, now that we have the minMax, do the normalization, handling two-tailed values as we go
     for (int index = 0; index < nAttributes; index++) {
       double[] myMinMax = minMax.get(attributeList.get(index));
       for (CyIdentifiable obj: returnMap.keySet()) {
         double value = returnMap.get(obj)[index];
-        value = normalize(value, myMinMax);
+        value = (value - myMinMax[0])/myMinMax[1];
         returnMap.get(obj)[index] = value;
       }
     }
@@ -118,35 +117,4 @@ public class NormalizationContext {
     return returnMap;
   }
 
-  double normalize(double value, double[] minMax) {
-    if (value < 0 && twoTailedValues.getSelectedValue().equals("Absolute value")) {
-      value = Math.abs(value);
-    } else if (value < 0 && twoTailedValues.getSelectedValue().equals("Negative only")) {
-      value = Math.abs(value);
-    } else if (value > 0 && twoTailedValues.getSelectedValue().equals("Negative only")) {
-      value = 0.0;
-    } else if (value < 0 && twoTailedValues.getSelectedValue().equals("Positive only")) {
-      value = 0.0;
-    }
-
-    value = (value - minMax[0])/minMax[1];
-    return value;
-  }
-
-  double[] adjustMinMax(double[] minMax) {
-    if (minMax[0] < 0) {
-      if (twoTailedValues.getSelectedValue().equals("Absolute value")) {
-        double min = Math.min(Math.abs(minMax[0]), Math.abs(minMax[1]));
-        double max = Math.max(Math.abs(minMax[0]), Math.abs(minMax[1]));
-        minMax[0] = min; minMax[1] = max;
-      } else if (twoTailedValues.getSelectedValue().equals("Negative only")) {
-        minMax[1] = Math.abs(minMax[0]);
-        minMax[0] = 0.0;
-      } else if (twoTailedValues.getSelectedValue().equals("Positive only")) {
-        minMax[0] = 0.0;
-      }
-    }
-    return minMax;
-  }
-	
 }
