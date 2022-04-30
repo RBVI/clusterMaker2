@@ -13,7 +13,9 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.units.PRNode;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Rank;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ClusterUtils;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
@@ -26,6 +28,7 @@ import org.cytoscape.work.Tunable;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PR extends AbstractTask implements Rank, ObservableTask {
     private ClusterManager manager;
@@ -37,6 +40,7 @@ public class PR extends AbstractTask implements Rank, ObservableTask {
 
     @ContainsTunables
     public PRContext context;
+
     private Hypergraph<PRNode, PREdge> graph;
     private HashMap<Long, PRNode> idToNode;
     private List<CyNode> nodeList;
@@ -158,11 +162,18 @@ public class PR extends AbstractTask implements Rank, ObservableTask {
     }
 
     private void addEdges() {
+				Map<CyIdentifiable, double[]> edgeMap = null;
+        context.normalizationContext.normalize(edgeAttributes, edgeList);
+        if (edgeAttributes.size() > 0 && !edgeAttributes.get(0).equals(ModelUtils.NONEATTRIBUTE))
+          edgeMap = context.normalizationContext.normalize(edgeAttributes, edgeList);
         for (CyEdge edge : edgeList) {
             PRNode sourceNode = idToNode.get(edge.getSource().getSUID());
             PRNode targetNode = idToNode.get(edge.getTarget().getSUID());
             PREdge prEdge = new PREdge(edge);
-            insertEdgeScore(prEdge, edgeTable, edgeAttributes);
+            if (edgeMap != null)
+              insertEdgeScore(prEdge, edgeMap.get(edge));
+            else
+              prEdge.setScore(0.0d);
             if (edge.isDirected())
               graph.addEdge(prEdge, new Pair<>(sourceNode, targetNode), EdgeType.DIRECTED);
             else
@@ -190,26 +201,12 @@ public class PR extends AbstractTask implements Rank, ObservableTask {
     }
 
 
-    private void insertEdgeScore(PREdge prEdge, CyTable edgeTable, List<String> edgeAttributes) {
-        Double totalEdgeScore = 0.0d;
+    private void insertEdgeScore(PREdge prEdge, double[] edgeAttrValues) {
+        double totalEdgeScore = 0.0d;
 
-        for (String edgeAttribute : edgeAttributes) {
-            double singleEdgeAttributeScore = 0.0d;
-
-            try { // Double
-                singleEdgeAttributeScore = edgeTable.getRow(prEdge.getCyEdge().getSUID())
-                        .get(edgeAttribute, Double.class, 0.0d);
-            } catch (ClassCastException cce) {
-                try { // Integer
-                    singleEdgeAttributeScore = edgeTable.getRow(prEdge.getCyEdge().getSUID())
-                            .get(edgeAttribute, Integer.class, 0);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } finally {
-                totalEdgeScore += singleEdgeAttributeScore;
-            }
-        }
+				for (double value: edgeAttrValues) {
+					totalEdgeScore += value;
+				}
 
         prEdge.setScore(totalEdgeScore);
     }
