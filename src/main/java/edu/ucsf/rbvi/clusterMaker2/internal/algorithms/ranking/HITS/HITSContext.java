@@ -14,13 +14,9 @@ public class HITSContext {
     @Tunable(description = "Alpha value", groups = "HITS teleport probability", gravity = 1.0)
     public double alpha = 0.1;
 
-    @ContainsTunables
-    public NormalizationContext normalizationContext;
-
     public HITSContext(ClusterManager manager) {
         this.manager = manager;
         network = this.manager.getNetwork();
-        normalizationContext = new NormalizationContext(manager, network);
     }
 
     public void setNetwork(CyNetwork network) {
