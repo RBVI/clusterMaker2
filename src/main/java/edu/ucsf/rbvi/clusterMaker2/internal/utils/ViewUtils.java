@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.awt.Color;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.awt.Paint;
 
 import javax.swing.SwingUtilities;
 
@@ -44,6 +45,7 @@ import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 
+import org.cytoscape.util.color.Palette;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -53,8 +55,11 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.NetworkImageFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
@@ -109,6 +114,41 @@ public class ViewUtils {
         newStyle.setTitle(style.getTitle()+suffix);
         manager.getService(VisualMappingManager.class).addVisualStyle(newStyle);
         return newStyle;
+    }
+
+    // NOTE: we need at least two pivot points
+    public static VisualStyle createFillStyle(ClusterManager manager, VisualStyle source, String suffix, String column, Palette palette, double[] pivots) {
+      VisualStyle newStyle;
+      if (source != null) {
+        newStyle = copyStyle(manager, source, suffix);
+      } else {
+        VisualStyleFactory visualStyleFactory = manager.getService(VisualStyleFactory.class);
+        newStyle = visualStyleFactory.createVisualStyle(palette.getName());
+      }
+
+      VisualMappingFunctionFactory vmff = manager.getService(VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
+      ContinuousMapping mapping = (ContinuousMapping) vmff.createVisualMappingFunction(column, Double.class,
+              BasicVisualLexicon.NODE_FILL_COLOR);
+
+      int nPivots = pivots.length;
+      Color[] paletteColors = palette.getColors(nPivots);
+
+      // First point
+      BoundaryRangeValues<Paint> firstRange = new BoundaryRangeValues<>(paletteColors[0], paletteColors[0], paletteColors[1]);
+      mapping.addPoint(pivots[0], firstRange);
+
+      for (int i=1; i < nPivots-1; i++) {
+        BoundaryRangeValues<Paint> range = new BoundaryRangeValues<>(paletteColors[i-1], paletteColors[i], paletteColors[i+1]);
+        mapping.addPoint(pivots[i], range);
+      }
+
+      // Handle the last point
+      BoundaryRangeValues<Paint> lastRange = new BoundaryRangeValues<>(paletteColors[nPivots-2], paletteColors[nPivots-1], paletteColors[nPivots-1]);
+      mapping.addPoint(pivots[nPivots-1], lastRange);
+
+      newStyle.addVisualMappingFunction(mapping);
+
+      return newStyle;
     }
 
     public static void setVisualStyle(ClusterManager manager, CyNetworkView view, 
@@ -168,7 +208,7 @@ public class ViewUtils {
         final NetworkImageFactory networkImageFactory = clusterManager.getService(NetworkImageFactory.class);
         //need to create a method get the subnetwork for a cluster
         final CyNetwork net = cluster.getSubNetwork(network, root, SavePolicy.DO_NOT_SAVE);
-        
+ 
         //System.out.println("CCI: after getting root and network ");
         // Progress reporters.
         // There are three basic tasks, the progress of each is calculated and then combined
@@ -232,47 +272,6 @@ public class ViewUtils {
 
             nv.setVisualProperty(NODE_X_LOCATION, x);
             nv.setVisualProperty(NODE_Y_LOCATION, y);
-
-            //Might be specific to MCODE
-            /*
-            // Node shape
-            if (cluster.getSeedNode() == nv.getModel().getSUID()) {
-                nv.setLockedValue(NODE_SHAPE, NodeShapeVisualProperty.RECTANGLE);
-            } else {
-                nv.setLockedValue(NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
-            }
-             */
-            
-            /*
-            // Update loader
-            if (loader != null) {
-                progress += 100.0 * (1.0 / (double) clusterView.getNodeViews().size()) *
-                            ((double) weightSetupNodes / (double) goalTotal);
-                loader.setProgress((int) progress, "Setup: nodes");
-            }
-            
-            */
-        }
-
-        if (clusterView.getEdgeViews() != null) {
-            for (int i = 0; i < clusterView.getEdgeViews().size(); i++) {
-              /*
-                if (interrupted) {
-                    //logger.error("Interrupted: Edge Setup");
-                    if (layouter != null) layouter.resetDoLayout();
-                    resetLoading();
-
-                    return null;
-                }
-                */
-                /*
-                if (loader != null) {
-                    progress += 100.0 * (1.0 / (double) clusterView.getEdgeViews().size()) *
-                                ((double) weightSetupEdges / (double) goalTotal);
-                    loader.setProgress((int) progress, "Setup: edges");
-                }
-                */
-            }
         }
 
         if (layoutNecessary) {

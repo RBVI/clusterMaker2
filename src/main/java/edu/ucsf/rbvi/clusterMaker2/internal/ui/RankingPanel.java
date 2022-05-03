@@ -27,7 +27,9 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.text.NumberFormat;
@@ -70,16 +72,22 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.util.color.BrewerType;
+import org.cytoscape.util.color.Palette;
+import org.cytoscape.util.swing.CyColorPaletteChooser;
+import org.cytoscape.util.swing.CyColorPaletteChooserFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.work.TaskMonitor;
-
 
 public class RankingPanel extends JPanel implements CytoPanelComponent{
 
@@ -231,7 +239,9 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
             add(tableScrollPane, BorderLayout.CENTER);
             //System.out.println("CBP: after adding JScrollPane");
 
+            Font buttonFont = new Font("sans-serif", Font.BOLD, 10);
             JButton dispose = new JButton("Remove Results");
+            dispose.setFont(buttonFont);
             dispose.addActionListener(new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -244,8 +254,40 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
                 }
             });
 
-            JPanel buttonPanel = new JPanel();
+            JButton color = new JButton("Color nodes by rank");
+            color.setFont(buttonFont);
+            color.addActionListener(new AbstractAction() {
+                boolean undo = false;
+                VisualStyle sourceStyle = null;
+                VisualStyle rankingStyle = null;
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                  if (!undo) {
+                    CyColorPaletteChooserFactory chooserFactory = clusterManager.getService(CyColorPaletteChooserFactory.class);
+                    CyColorPaletteChooser paletteChooser = chooserFactory.getColorPaletteChooser(BrewerType.SEQUENTIAL, true);
+                    Palette colorPalette = paletteChooser.showDialog(null, "Choose color palette for node fill", null, 9);
+
+                    double[] pivots = new double[]{0.0,0.5,1.0};
+
+                    sourceStyle = ViewUtils.getCurrentVisualStyle(clusterManager);
+                    rankingStyle = ViewUtils.createFillStyle(clusterManager, sourceStyle, "_ranking", rankingType, colorPalette,pivots);
+                    ViewUtils.setVisualStyle(clusterManager, clusterManager.getNetworkView(), rankingStyle);
+                    color.setText("Remove ranking color");
+                    undo = true;
+                  } else {
+                    ViewUtils.setVisualStyle(clusterManager, clusterManager.getNetworkView(), sourceStyle);
+                    clusterManager.getService(VisualMappingManager.class).removeVisualStyle(rankingStyle);
+                    rankingStyle = null;
+
+                    color.setText("Color nodes by rank");
+                    undo = false;
+                  }
+                }
+            });
+
+            JPanel buttonPanel = new JPanel(new GridLayout(2,1));
             buttonPanel.add(dispose);
+            buttonPanel.add(color);
             add(buttonPanel, BorderLayout.SOUTH);
         }
 
@@ -301,6 +343,7 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
 
         private final String[] columnNames = { "Network", "Score" };
         private final Object[][] data; // the actual table data
+        private int rowCount = 0;
 
         public RankingBrowserPanelModel() {
             //System.out.println("CBTM: inside constructor");
@@ -310,18 +353,22 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
 
             VisualStyle vs = ViewUtils.getClusterStyle(clusterManager, null);
 
+            SpringEmbeddedLayouter layouter = new SpringEmbeddedLayouter();
+
             for (int i = 0; i < clusters.size(); i++) {
-                //System.out.println("CBTM: cluster num: "+ i);
+                // System.out.println("CBTM: cluster num: "+ i);
                 final NodeCluster c = clusters.get(i);
+                if (c.getRankScore() < 0.1)
+                  continue;
                 //c.setRank(i);
+                rowCount++;
                 StringBuilder details = getRankScore(c);
                 data[i][1] = new StringBuffer(details);
 
-                SpringEmbeddedLayouter layouter = new SpringEmbeddedLayouter();
-                //System.out.println("CBTM: after invoking SpringEmbeddedLayouter");
+                // System.out.println("CBTM: after invoking SpringEmbeddedLayouter");
                 // get an image for each cluster - make it a nice layout of the cluster
                 final Image image = ViewUtils.createClusterImage(clusterManager, vs, network, c, graphPicSize, graphPicSize, layouter, false);
-                //System.out.println("CBTM: after createClusterImage");
+                // System.out.println("CBTM: after createClusterImage");
                 data[i][0] = image != null ? new ClusterImageIcon(image, c) : new ClusterImageIcon();
             }
         }
@@ -336,7 +383,7 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
         }
 
         public int getRowCount() {
-            return data.length;
+            return rowCount;
         }
 
         public Object getValueAt(int row, int col) {
