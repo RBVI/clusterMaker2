@@ -12,6 +12,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.units.PRNode;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Rank;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ClusterUtils;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -24,6 +25,7 @@ import org.cytoscape.work.Tunable;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class HyperlinkInducedTopicSearch extends AbstractTask implements Rank, ObservableTask {
     private ClusterManager manager;

@@ -5,6 +5,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.Rank;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ClusterUtils;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 import org.cytoscape.model.*;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
@@ -14,6 +15,7 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 import java.util.List;
+import java.util.Map;
 
 public class MultipleAttributeMultiplicative extends AbstractTask implements Rank, ObservableTask {
     private ClusterManager manager;
@@ -70,10 +72,22 @@ public class MultipleAttributeMultiplicative extends AbstractTask implements Ran
 
         taskMonitor.setProgress(0.6);
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Setting node scores in clusters");
-        clusters = ClusterUtils.setNodeScoresInCluster(network, clusters, nodeAttributes, clusterColumnName, true);
+        // Begin by doing basic normalization -- in particular handling possible negative values
+				Map<CyIdentifiable, double[]> nodeMap = null;
+        if (nodeAttributes.size() > 0 && !nodeAttributes.get(0).equals(ModelUtils.NONEATTRIBUTE)) {
+          nodeMap = context.normalizationContext.normalize(nodeAttributes, network.getNodeList());
+          clusters = ClusterUtils.setNodeScoresInCluster(network, clusters, nodeMap, clusterColumnName, true);
+        }
+
         taskMonitor.setProgress(0.75);
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Setting edge scores in clusters");
-        clusters = ClusterUtils.setEdgeScoresInCluster(network, clusters, edgeAttributes, clusterColumnName, true);
+
+				Map<CyIdentifiable, double[]> edgeMap = null;
+        if (edgeAttributes.size() > 0 && !edgeAttributes.get(0).equals(ModelUtils.NONEATTRIBUTE)) {
+          edgeMap = context.normalizationContext.normalize(edgeAttributes, network.getEdgeList());
+          clusters = ClusterUtils.setEdgeScoresInCluster(network, clusters, edgeMap, clusterColumnName, true);
+        }
+
         taskMonitor.setProgress(0.80);
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Sorting and ranking clusters");
         ClusterUtils.ascendingSort(clusters);

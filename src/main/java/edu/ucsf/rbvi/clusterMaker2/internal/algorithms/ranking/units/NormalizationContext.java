@@ -81,7 +81,13 @@ public class NormalizationContext {
       CyRow row = network.getRow(obj);
       double[] values = new double[attributeList.size()];
       for (int index = 0; index < nAttributes; index++) {
-        Double v = row.get(attributeList.get(index), Double.class);
+        Double v;
+        try {
+          v = row.get(attributeList.get(index), Double.class);
+        } catch (ClassCastException e) {
+          Integer intV = row.get(attributeList.get(index), Integer.class);
+          v = Double.valueOf(intV);
+        }
         if (v == null)
           values[index] = 0.0d;   // values[index] = Double.NaN;  -- if we're going to use NaN we need to account for it everywhere
         else if (v < 0) {
