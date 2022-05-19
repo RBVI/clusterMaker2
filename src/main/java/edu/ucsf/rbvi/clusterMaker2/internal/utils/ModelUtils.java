@@ -63,6 +63,12 @@ public class ModelUtils {
 		return hasAttribute(network, value, column, CyNetwork.DEFAULT_ATTRS);
 	}
 
+	public static boolean hasColumn(CyNetwork network, CyTable table, String column) {
+		if (!CyTableUtil.getColumnNames(table).contains(column))
+      return false;
+    return true;
+  }
+
 	public static boolean hasAttribute(CyNetwork network, CyIdentifiable value, String column, String namespace) {
 		if (!CyTableUtil.getColumnNames(network.getRow(value, namespace).getTable()).contains(column))
 			return false;
@@ -147,9 +153,9 @@ public class ModelUtils {
 
 		CyTable targetTable = target.getTable(clazz, CyNetwork.LOCAL_ATTRS);
 		boolean isImmutable = sourceColumn.isImmutable();
-		if (sourceColumn.getType().equals(List.class))
+		if (sourceColumn.getType().equals(List.class) && !hasColumn(target, targetTable, column))
 			targetTable.createListColumn(column, sourceColumn.getListElementType(), isImmutable);
-		else
+		else if (!hasColumn(target, targetTable, column))
 			targetTable.createColumn(column, sourceColumn.getType(), isImmutable);
 
 		// We need to handle things a little differently for CyNetworks...

@@ -27,10 +27,13 @@ public class FuzzifierContext implements ClusterAlgorithmContext {
 	public EdgeAttributeHandler edgeAttributeHandler;
 		
 	@Tunable(description = "Threshold for Fuzzy Membership in a Cluster", groups={"Fuzzifier Advanced Settings"}, params="displayState=collapsed, slider=true",gravity=20.0)
-	public BoundedDouble membershipThreshold = new BoundedDouble(0.0, 0.2, 1.0, false, false);
+	public BoundedDouble membershipThreshold = new BoundedDouble(0.0, 0.4, 1.0, false, false);
 			
-	@Tunable(description = "Maximum number of threads", groups={"Fuzzifier Advanced Settings"}, gravity=21.0)
-	public int maxThreads = 0;
+	// @Tunable(description = "Maximum number of threads", groups={"Fuzzifier Advanced Settings"}, gravity=21.0)
+	// public int maxThreads = 0;
+
+	@Tunable(description = "Minimum cluster size to consider", groups={"Fuzzifier Advanced Settings"}, gravity=22.0)
+	public int minClusterSize = 1;
 
 /*		
 	@Tunable(description = "Distance Metric", groups={"Fuzzifier Advanced Settings"}, gravity=22.0)
@@ -60,7 +63,7 @@ public class FuzzifierContext implements ClusterAlgorithmContext {
 		
 		
 		membershipThreshold = origin.membershipThreshold;
-		maxThreads = origin.maxThreads;
+		// maxThreads = origin.maxThreads;
 						
 /*
 		distanceMetric = new ListSingleSelection<DistanceMetric>(DistanceMetric.VALUE_IS_CORRELATION, DistanceMetric.UNCENTERED_CORRELATION, 

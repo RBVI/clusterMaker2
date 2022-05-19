@@ -89,6 +89,14 @@ public class ViewUtils {
         manager.getService(CyNetworkViewManager.class).addNetworkView(view);
     }
 
+    public static void copyLayout(ClusterManager manager, CyNetworkView sourceView, CyNetworkView targetView) {
+      for (View<CyNode> sourceNodeView: sourceView.getNodeViews()) {
+        double x = sourceNodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
+        double y = sourceNodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
+        moveNode(manager, targetView, sourceNodeView.getModel(), x, y);
+      }
+    }
+
     public static void doLayout(ClusterManager manager, CyNetworkView view, 
                                 TaskMonitor monitor, String algName) {
         CyLayoutAlgorithm alg = manager.getService(CyLayoutAlgorithmManager.class).getLayout(algName);
@@ -178,6 +186,7 @@ public class ViewUtils {
     public static void moveNode(ClusterManager manager, CyNetworkView view, 
                                 CyNode node, double x, double y) {
         View<CyNode> nodeView = view.getNodeView(node);
+        if (nodeView == null) return;
         nodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, x);
         nodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, y);
     }

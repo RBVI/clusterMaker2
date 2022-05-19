@@ -44,7 +44,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.api.Matrix.DISTRIBUTION;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.MatrixOps;
 
 public class OjAlgoMatrix implements Matrix {
-	protected PhysicalStore<Double> data;
+	protected Primitive64Store data;
 	protected int[] index = null;
 	protected int nRows;
 	protected int nColumns;
@@ -61,6 +61,7 @@ public class OjAlgoMatrix implements Matrix {
 	public final OjAlgoOps ops;
 	static VirtualMachine env = null;
 
+	protected final Primitive64Matrix.Factory matrixFactory;
 	protected final PhysicalStore.Factory<Double, Primitive64Store> storeFactory;
 
 	// For debugging messages
@@ -69,6 +70,7 @@ public class OjAlgoMatrix implements Matrix {
 
 	public OjAlgoMatrix() {
 		nThreads = Runtime.getRuntime().availableProcessors()-1;
+		matrixFactory = Primitive64Matrix.FACTORY;
 		storeFactory = Primitive64Store.FACTORY;
 		if (env == null) {
 			env = org.ojalgo.OjAlgoUtils.ENVIRONMENT;
@@ -99,7 +101,7 @@ public class OjAlgoMatrix implements Matrix {
 
 	public OjAlgoMatrix(int rows, int columns) {
 		this();
-		data = storeFactory.makeZero(rows, columns);
+    data = (Primitive64Store)storeFactory.makeFilled(rows, columns, new MatrixFiller(0.0));
 		nRows = rows;
 		nColumns = columns;
 		rowLabels = new String[rows];
@@ -110,7 +112,7 @@ public class OjAlgoMatrix implements Matrix {
 	public OjAlgoMatrix(int rows, int columns, double initialValue) {
 		this();
 		MatrixFiller f = new MatrixFiller(initialValue);
-		data = storeFactory.makeFilled(rows, columns, f);
+    data = (Primitive64Store)storeFactory.makeFilled(rows, columns, f);
 		nRows = rows;
 		nColumns = columns;
 		rowLabels = new String[rows];
@@ -174,7 +176,7 @@ public class OjAlgoMatrix implements Matrix {
 		if (arrayData != null) {
 			data = storeFactory.rows(arrayData);
 		} else {
-			data = storeFactory.makeZero(rows, columns);
+			data = (Primitive64Store)storeFactory.makeFilled(rows, columns, new MatrixFiller(0.0));
 		}
 		nRows = (int)data.countRows();
 		nColumns = (int)data.countColumns();
@@ -186,7 +188,7 @@ public class OjAlgoMatrix implements Matrix {
 	}
 
 	public void initialize(int rows, int columns, Double[][] arrayData) {
-		data = storeFactory.makeZero(rows, columns);
+		data = (Primitive64Store)storeFactory.makeFilled(rows, columns, new MatrixFiller(0.0));
 		nRows = (int)data.countRows();
 		nColumns = (int)data.countColumns();
 		if (arrayData != null) {
@@ -774,7 +776,7 @@ public class OjAlgoMatrix implements Matrix {
 	protected Matrix copyDataFromMatrix(PhysicalStore<Double> matrix2D) {
 		OjAlgoMatrix mat = new OjAlgoMatrix((int)matrix2D.countRows(), (int)matrix2D.countColumns());
 		mat.symmetric = true;
-		mat.data = matrix2D;
+		mat.data = (Primitive64Store)matrix2D;
 		String[] labels;
 		if (this.transposed)
 			labels = rowLabels;
@@ -798,7 +800,7 @@ public class OjAlgoMatrix implements Matrix {
 		return row;
 	}
 
-	class MatrixFiller implements NullaryFunction<Double> {
+	public class MatrixFiller implements NullaryFunction<Double> {
 		double value;
 		public MatrixFiller(double value) {
 			this.value = value;

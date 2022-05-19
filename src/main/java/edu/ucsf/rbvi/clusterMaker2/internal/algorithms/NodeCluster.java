@@ -23,6 +23,7 @@ public class NodeCluster extends ArrayList<CyNode> {
 	private int rank = -1;
 	private double rankScore = 0;
 	static int clusterCount = 0;
+  static int maxClusterNumber = 0;
 	static boolean hasScore = false;
 	protected double score = 0.0;
 	private HashMap<Long, Double> nodeScores;
@@ -34,18 +35,34 @@ public class NodeCluster extends ArrayList<CyNode> {
 		super();
 		clusterCount++;
 		clusterNumber = clusterCount;
+    maxClusterNumber = Math.max(clusterNumber, maxClusterNumber);
+    // System.out.println("maxClusterNumber = "+maxClusterNumber+", clusterNumber = "+clusterNumber);
 	}
 
 	public NodeCluster(int clusterNumber, Collection<CyNode> collection) {
 		super(collection);
 		this.clusterNumber = clusterNumber;
+    maxClusterNumber = Math.max(clusterNumber, maxClusterNumber);
+    // System.out.println("maxClusterNumber = "+maxClusterNumber+", clusterNumber = "+clusterNumber);
 	}
 
 	public NodeCluster(Collection<CyNode> collection) {
 		super(collection);
 		clusterCount++;
 		clusterNumber = clusterCount;
+    maxClusterNumber = Math.max(clusterNumber, maxClusterNumber);
+    // System.out.println("maxClusterNumber = "+maxClusterNumber+", clusterNumber = "+clusterNumber);
 	}
+
+  public static void reset() {
+    hasScore = false;
+    clusterCount = 0;
+    maxClusterNumber = 0;
+  }
+
+  public static int getMaxClusterNumber() {
+    return maxClusterNumber;
+  }
 
 	public boolean add(CyNode node) {
 		return super.add(node);

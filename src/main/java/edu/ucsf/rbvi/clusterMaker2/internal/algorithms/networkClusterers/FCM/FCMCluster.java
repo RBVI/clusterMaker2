@@ -124,7 +124,7 @@ public class FCMCluster extends AbstractFuzzyNetworkClusterer {
 
         int[] mostRelevantCluster = new int[network.getNodeList().size()];
 
-        FuzzyNodeCluster.fuzzyClusterCount = 0;
+        FuzzyNodeCluster.reset();
         runFCM = new RunFCM(distanceMatrix, context.iterations, context.cNumber,
                 context.fIndex, context.beta, context.membershipThreshold.getValue(),
                 context.maxThreads, this.monitor);
