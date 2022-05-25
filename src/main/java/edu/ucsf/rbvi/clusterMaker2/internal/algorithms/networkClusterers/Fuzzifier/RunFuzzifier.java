@@ -65,9 +65,10 @@ public class RunFuzzifier {
 	double membershipThreshold = 0;
 	private boolean debug = false;
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
+  private Map<CyNode, Integer> baseMembership;
 
 	public RunFuzzifier (List<NodeCluster> clusters, CyMatrix distanceMatrix, int cClusters,
-			 double membershipThreshold,int maxThreads, TaskMonitor monitor ){
+			 double membershipThreshold, int maxThreads, TaskMonitor monitor ){
 
 		this.clusters = clusters;
 		this.distanceMatrix = distanceMatrix;
@@ -85,6 +86,15 @@ public class RunFuzzifier {
 		monitor.showMessage(TaskMonitor.Level.INFO,"Threads = "+nThreads);
 		//monitor.showMessage(TaskMonitor.Level.INFO,"Matrix info: = "+distanceMatrix.printMatrixInfo(matrix));
 		monitor.showMessage(TaskMonitor.Level.INFO,"Number of Clusters = "+number_clusters);
+
+    // Create a map to record each node's membership
+    this.baseMembership = new HashMap<>();
+    for (NodeCluster c: clusters) {
+      Integer clusterNumber = c.getClusterNumber()-1;
+      for (CyNode n: c) {
+        baseMembership.put(n, clusterNumber);
+      }
+    }
 
 	}
 
@@ -142,25 +152,41 @@ public class RunFuzzifier {
     d2.ops().powScalar(2);
     // System.out.println(d2.printMatrix());
     List<NodeCluster> group_items = clusters;
+
     int[] group_sizes = get_sizes(group_items);
     // for (int i = 0; i < group_sizes.length; i++) { System.out.println("Group "+i+" has "+group_sizes[i]+" elements"); }
     double[] within_group_sums = get_sums(d2, group_items);
     // for (int i = 0; i < within_group_sums.length; i++) { System.out.println("Group "+i+" has sum "+within_group_sums[i]); }
+    boolean watch = false;
     for (CyNode node: nodeList) {
+      /* Debugging
+      if (node.getSUID() == 5705)
+        watch = true;
+      else
+        watch = false;
+      */
       // This part can be done in parallel
       // get_distance(d2, node_index, group, group_size, clusterMemberships)
       // clusterMemberships needs to be in a critical section.
       for (NodeCluster idx1: group_items) {
         int group = idx1.getClusterNumber()-1;
+        if (watch) System.out.println("group = "+group);
         int n1 = group_sizes[group];
         double sum1 = within_group_sums[group];
-        double sum12 = get_sum(d2, idx1, node);
+        if (sum1 == 0.0d) 
+          continue;
+        double sum12 = get_sum(d2, idx1, node, watch);
+        if (watch) System.out.println("sum12 = "+sum12);
         double term1 = sum1 / Math.pow(n1, 2);
+        if (watch) System.out.println("term1 = "+term1);
         double term12 = sum12 / n1;
+        if (watch) System.out.println("term12 = "+term12);
         double result_squared = term12 - term1;
         // clusterMemberships[nodeList.indexOf(node)][group] = result_squared;
+        if (watch) System.out.println("result_squared = "+result_squared);
         if (result_squared > 0.0d) {
           clusterMemberships[nodeList.indexOf(node)][group] = Math.sqrt(result_squared);
+          if (watch) System.out.println("result = "+Math.sqrt(result_squared));
           // System.out.println("Node "+node+" is "+clusterMemberships[nodeList.indexOf(node)][group]+" away from group "+group);
         } else {
           clusterMemberships[nodeList.indexOf(node)][group] = Double.NaN;
@@ -224,7 +250,11 @@ public class RunFuzzifier {
 				if (!Double.isNaN(v) && v > membershipThreshold) {
 					fuzzyNodeList.add(node);
 					clusterMembershipMap.put(node, v);
-				}
+				} else if (!Double.isNaN(v) && baseMembership.containsKey(node) && baseMembership.get(node) == i) {
+          // Force this to be part of this fuzzy cluster if it's part of the base cluster
+					fuzzyNodeList.add(node);
+					clusterMembershipMap.put(node, v);
+        }
 			}
 
       if (fuzzyNodeList.size() < context.minClusterSize) 
@@ -242,11 +272,14 @@ public class RunFuzzifier {
 
 	}
 
-  private double get_sum(CyMatrix d2, NodeCluster cluster, CyNode node) {
+  private double get_sum(CyMatrix d2, NodeCluster cluster, CyNode node, boolean watch) {
     int n_index = nodeList.indexOf(node);
+    if (watch) System.out.println("n_index = "+n_index);
     double sum = 0.0d;
     for (CyNode c_node: cluster) {
       int c_index = nodeList.indexOf(c_node);
+      if (watch) System.out.println("c_index = "+c_index+" node = "+c_node);
+      if (watch) System.out.println("distance = "+d2.doubleValue(n_index, c_index)+" weight = "+(1/d2.doubleValue(n_index, c_index)));
       sum += d2.doubleValue(n_index,c_index);
     }
 
@@ -271,6 +304,9 @@ public class RunFuzzifier {
       sums[cluster_number] = 0.0d;
 
       int[] node_indices = node_index(c, nodes);
+      if (node_indices == null) 
+        continue;
+
       for (int i = 0; i < node_indices.length; i++) {
         for (int j = i+1; j < node_indices.length; j++) {
           sums[cluster_number] += d2.doubleValue(node_indices[i], node_indices[j]);
@@ -283,10 +319,21 @@ public class RunFuzzifier {
   private int[] node_index(NodeCluster c, List<CyNode>nodes) {
     int[] indices = new int[c.size()];
     int index = 0;
+    /*
+    System.out.print("cluster number: "+c.getClusterNumber()+", nodes = [");
+    for (CyNode n: nodes) {System.out.print(n+",");}
+    System.out.println("]");
+    */
     for (CyNode n: c) {
-      indices[index++] = nodes.indexOf(n);
+      int nodeid = nodes.indexOf(n);
+      if (nodeid >= 0) {
+        // System.out.println("n = "+n+", index(n) = "+nodes.indexOf(n));
+        indices[index++] = nodes.indexOf(n);
+      }
     }
-    return indices;
+    if (index == 0) return null;
+
+    return Arrays.copyOf(indices, index);
   }
 
 	/**

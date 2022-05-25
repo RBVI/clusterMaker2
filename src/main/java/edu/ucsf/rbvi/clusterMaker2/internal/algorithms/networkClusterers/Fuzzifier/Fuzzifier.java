@@ -201,11 +201,21 @@ public class Fuzzifier extends AbstractFuzzyNetworkClusterer{
 
 		List<CyNode> nodeList = network.getNodeList();
 		String clusterName = network.getRow(network).get("__clusterAttribute", String.class);
+
     // Special case.  If the clusterAttribute is __fuzzifierCluster, then we're repeating this,
     // so use the __fuzzifierSeed instead
     if (clusterName.equals(clusterAttributeName)) {
       // We're reclustering
       clusterName = network.getRow(network).get("__fuzzifierSeed", String.class);
+
+      // We need to do some resetting
+      if (ModelUtils.hasColumn(network, network.getDefaultNetworkTable(), "__fuzzifierCluster_Table.SUID")) {
+        Long fuzzyTableSUID = network.getRow(network).get("__fuzzifierCluster_Table.SUID", Long.class);
+        if (fuzzyTableSUID != null) {
+          tableManager.deleteTable(fuzzyTableSUID);
+          ModelUtils.deleteColumnLocal(network, CyNetwork.class, "__fuzzifierCluster_Table.SUID");
+        }
+      }
     } else {
       // Save the seed cluster we used
       ModelUtils.createAndSetLocal(network, network, "__fuzzifierSeed", 
@@ -229,8 +239,10 @@ public class Fuzzifier extends AbstractFuzzyNetworkClusterer{
 		}
 
 		for (int key : clusterMap.keySet()){
-      if (clusterMap.get(key).size() > context.minClusterSize)
-        nodeClusters.add(new NodeCluster(key, clusterMap.get(key)));
+      if (clusterMap.get(key).size() > context.minClusterSize) {
+        NodeCluster nodeCluster = new NodeCluster(key, clusterMap.get(key));
+        nodeClusters.add(nodeCluster);
+      }
 		}
 		// System.out.println("NodeCluster Size : " +nodeClusters.size());
 		return nodeClusters;

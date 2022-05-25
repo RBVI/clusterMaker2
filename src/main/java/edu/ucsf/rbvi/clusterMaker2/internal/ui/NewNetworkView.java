@@ -234,7 +234,6 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 
     boolean selectedOnly = context.selectedOnly;
 		boolean isFuzzy = isFuzzy(clusterAttribute);
-		System.out.println("isFuzzy = "+isFuzzy);
 
 		// Get the clustering parameters
 		Map<String, String> params = getParams();
@@ -283,12 +282,13 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 		ModelUtils.copyLocalColumn(network, newNetwork, CyNetwork.class, "__clusterAttribute");
 		ModelUtils.copyLocalColumn(network, newNetwork, CyNetwork.class, "__clusterParams");
 
+    String fuzzySeed = null;
 		// Finally, if we're fuzzy, see if we had an initial seed and copy that over
 		if (isFuzzy && ModelUtils.hasAttribute(network, network, "__fuzzifierSeed")) {
 			ModelUtils.copyLocalColumn(network, newNetwork, CyNetwork.class, "__fuzzifierSeed");
-			String seedAttribute =
+			fuzzySeed =
 				network.getRow(network, CyNetwork.LOCAL_ATTRS).get("__fuzzifierSeed", String.class);
-			ModelUtils.copyLocalColumn(network, newNetwork, CyNode.class, seedAttribute);
+			ModelUtils.copyLocalColumn(network, newNetwork, CyNode.class, fuzzySeed);
 		}
 
 		// System.out.println("Getting the view");
@@ -319,13 +319,9 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 			ModelUtils.copyLocalColumn(network, newNetwork, CyNetwork.class, clusterAttribute + "_Table.SUID");
 			long fuzzyClusterTableSUID = network.getRow(network).get(clusterAttribute + "_Table.SUID", Long.class);
 			newNetwork.getRow(newNetwork).set(clusterAttribute + "_Table.SUID", fuzzyClusterTableSUID);
-			System.out.println("NetworkName: "+ network.getRow(network).get(CyNetwork.NAME, String.class));
-			System.out.println("Fuzzy Table SUID: " + fuzzyClusterTableSUID );
 			CyTable fuzzyClusterTable = manager.getTableManager().getTable(fuzzyClusterTableSUID);
       List<FuzzyNodeCluster> fuzzyClusters = getFuzzyClusters(network, selectedOnly, fuzzyClusterTable);
-			System.out.println("Creating membership edges");
-			createMembershipEdges(newNetwork,selectedOnly, networkView,manager,fuzzyClusters);
-			System.out.println("Done creating membership edges");
+			createMembershipEdges(newNetwork, selectedOnly, networkView,manager, fuzzyClusters, fuzzySeed);
 		}
 
 		ViewUtils.registerView(manager, networkView);
@@ -465,10 +461,11 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 	 * Method to add the membership edges
 	 */
 	private void createMembershipEdges(CyNetwork network, boolean selectedOnly, CyNetworkView networkView, 
-	                                   ClusterManager manager, List<FuzzyNodeCluster> fuzzyClusters) {
+	                                   ClusterManager manager, List<FuzzyNodeCluster> fuzzyClusters, String fuzzySeed) {
 
 		CyTable localTable = network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS);
 		localTable.createColumn("isFClusterNode", Boolean.class, false, Boolean.FALSE);
+
 
     Map<Integer,List<CyEdge>> allEdges = new HashMap<>();
     Map<CyNode, double[]> centroids = new HashMap<>();
@@ -477,8 +474,12 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 		for(FuzzyNodeCluster cluster :fuzzyClusters){
 			CyNode centroid = network.addNode();
 
+
 			network.getRow(centroid).set(CyNetwork.NAME, "FCluster" + cluster.getClusterNumber() );
 			network.getRow(centroid).set("isFClusterNode", Boolean.TRUE);
+      // For convenience, add the base cluster number to our fuzzy cluster
+			network.getRow(centroid).set(fuzzySeed, cluster.getClusterNumber());
+ 
 			// System.out.println("Centroid SUID: " + centroid.getSUID());
 			//View<CyNode> nodeView = networkView.getNodeView(centroid);
 			double x = 0.0;

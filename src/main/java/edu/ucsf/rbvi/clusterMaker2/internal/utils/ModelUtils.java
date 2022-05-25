@@ -14,6 +14,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.work.util.ListMultipleSelection;
@@ -122,6 +123,13 @@ public class ModelUtils {
 
 		return newNetwork;
 	}
+
+  public static void deleteUnassignedTable(ClusterManager manager, Long suid) {
+    if (suid == null) return;
+
+    CyTableManager tableManager = manager.getTableManager();
+    tableManager.deleteTable(suid);
+  }
 
 	public static void createAndSetLocal(CyNetwork net, CyIdentifiable obj, String column,
 	                                     Object value, Class type, Class elementType) {
