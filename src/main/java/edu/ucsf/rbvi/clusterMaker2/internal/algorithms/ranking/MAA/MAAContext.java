@@ -78,6 +78,7 @@ public class MAAContext {
 
     public void setNetwork(CyNetwork network) {
         this.network = network;
+        normalizationContext.setNetwork(network);
     }
 
     public CyNetwork getNetwork() {

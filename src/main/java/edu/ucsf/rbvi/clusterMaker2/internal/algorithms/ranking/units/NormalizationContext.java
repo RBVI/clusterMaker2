@@ -64,6 +64,7 @@ public class NormalizationContext {
 
   public Map<CyIdentifiable,double[]> normalize(List<String> attributeList, List<? extends CyIdentifiable> objs) {
     Map<CyIdentifiable, double[]> returnMap = new HashMap<>();
+    if (network == null) network = manager.getNetwork();
 
     int nAttributes = attributeList.size();
 
