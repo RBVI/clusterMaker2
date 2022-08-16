@@ -485,11 +485,12 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
             }
 
             // Row height calculations
+            this.setHorizontalAlignment(JLabel.CENTER);
             int iconPreferredHeight = (int) this.getPreferredSize().getHeight();
             int iconPreferredWidth = (int) this.getPreferredSize().getWidth();
             int currentRowHeight = table.getRowHeight(row);
             int rowMargin = table.getRowMargin();
-            this.setSize(iconPreferredWidth, currentRowHeight - (2 * rowMargin));
+            this.setSize(iconPreferredWidth+10, currentRowHeight - (2 * rowMargin));
 
             // JTextArea can grow and shrink here
             if (currentRowHeight != Math.max(iconPreferredHeight + (2 * rowMargin), minHeight + (2 * rowMargin))) {
