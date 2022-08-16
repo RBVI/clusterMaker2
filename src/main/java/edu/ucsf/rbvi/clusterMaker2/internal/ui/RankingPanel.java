@@ -42,6 +42,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -53,7 +54,9 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.UIManager;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
@@ -179,10 +182,15 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
     }
 
 
+    private static Integer getClusterNumber(final NodeCluster cluster) {
+      int clusterNumber = cluster.getClusterNumber();
+      return clusterNumber;
+    }
+
     private static StringBuilder getRankScore(final NodeCluster cluster) {
         StringBuilder details = new StringBuilder();
 
-        details.append("Score: ");
+        // details.append("Score: ");
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(3);
         details.append(nf.format(cluster.getRankScore()));
@@ -222,9 +230,21 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
             table = new JTable(browserModel);
             table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
             table.setAutoCreateRowSorter(true);
-            table.setDefaultRenderer(StringBuffer.class, new ResultsPanel.JTextAreaRenderer(defaultRowHeight));
+            // table.setDefaultRenderer(StringBuffer.class, new ResultsPanel.JTextAreaRenderer(defaultRowHeight));
+            table.setDefaultRenderer(ImageIcon.class, new ImageRenderer(defaultRowHeight));
             table.setIntercellSpacing(new Dimension(0, 4)); // gives a little vertical room between clusters
             table.setFocusable(false); // removes an outline that appears when the user clicks on the images
+                                       //
+            // DefaultTableCellRenderer columnRenderer = new DefaultTableCellRenderer();
+            // columnRenderer.setHorizontalAlignment(JLabel.CENTER);
+            table.getTableHeader().setDefaultRenderer(new HeaderRenderer());
+            // DefaultTableCellRenderer headerRenderer = (DefaultTableCellRenderer)table.getTableHeader().getDefaultRenderer();
+            // headerRenderer.setFont(new Font("sans-serif", Font.BOLD, 10));
+            // headerRenderer.setHorizontalAlignment(JLabel.CENTER);
+            
+
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+            table.getColumnModel().getColumn(0).setPreferredWidth(80);
 
             //System.out.println("CBP: after setting table params");
 
@@ -341,7 +361,7 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
      */
     private class RankingBrowserPanelModel extends AbstractTableModel {
 
-        private final String[] columnNames = { "Network", "Score" };
+        private final String[] columnNames = { "Network", "Cluster", "Score" };
         private final Object[][] data; // the actual table data
         private int rowCount = 0;
 
@@ -362,8 +382,10 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
                   continue;
                 //c.setRank(i);
                 rowCount++;
-                StringBuilder details = getRankScore(c);
-                data[i][1] = new StringBuffer(details);
+                data[i][1] = getClusterNumber(c);
+                // StringBuilder details = getRankScore(c);
+                // data[i][2] = new StringBuffer(details);
+                data[i][2] = c.getRankScore();
 
                 // System.out.println("CBTM: after invoking SpringEmbeddedLayouter");
                 // get an image for each cluster - make it a nice layout of the cluster
@@ -403,26 +425,33 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
     }
 
     /**
-     * A text area renderer that creates a line wrapped, non-editable text area
+     * Header renderer
      */
-    public static class JTextAreaRenderer extends JTextArea implements TableCellRenderer {
+    public static class HeaderRenderer extends DefaultTableCellRenderer {
+      public HeaderRenderer() {
+        super();
+        setHorizontalAlignment(JLabel.CENTER);
+        setFont(new Font("sans-serif", Font.BOLD, 10));
+      }
+
+      @Override
+      public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+        Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+        c.setFont(new Font("sans-serif", Font.BOLD, 10));
+        return c;
+      }
+    }
+
+    /**
+     * An image renderer that creates a reasonable row height
+     */
+    public static class ImageRenderer extends JLabel implements TableCellRenderer {
 
         int minHeight;
 
-        /**
-         * Constructor
-         *
-         * @param minHeight
-         *            The minimum height of the row, either the size of the
-         *            graph picture or zero
-         */
-        public JTextAreaRenderer(int minHeight) {
-            //System.out.println("JTAR: inside constructor ");
-            this.setLineWrap(true);
-            this.setWrapStyleWord(true);
-            this.setEditable(false);
-            this.setFont(new Font(this.getFont().getFontName(), Font.PLAIN, 11));
-            this.minHeight = minHeight;
+        public ImageRenderer(int minHeight) {
+          super();
+          this.minHeight = minHeight;
         }
 
         /**
@@ -445,9 +474,7 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
                                                        boolean hasFocus,
                                                        int row,
                                                        int column) {
-            //System.out.println("JTAR: inside getTableCellRendererComponent");
-            StringBuffer sb = (StringBuffer) value;
-            this.setText(sb.toString());
+            this.setIcon((Icon)value);
 
             if (isSelected) {
                 this.setBackground(table.getSelectionBackground());
@@ -458,15 +485,16 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
             }
 
             // Row height calculations
+            int iconPreferredHeight = (int) this.getPreferredSize().getHeight();
+            int iconPreferredWidth = (int) this.getPreferredSize().getWidth();
             int currentRowHeight = table.getRowHeight(row);
             int rowMargin = table.getRowMargin();
-            this.setSize(table.getColumnModel().getColumn(column).getWidth(), currentRowHeight - (2 * rowMargin));
-            int textAreaPreferredHeight = (int) this.getPreferredSize().getHeight();
+            this.setSize(iconPreferredWidth, currentRowHeight - (2 * rowMargin));
 
             // JTextArea can grow and shrink here
-            if (currentRowHeight != Math.max(textAreaPreferredHeight + (2 * rowMargin), minHeight + (2 * rowMargin))) {
+            if (currentRowHeight != Math.max(iconPreferredHeight + (2 * rowMargin), minHeight + (2 * rowMargin))) {
                 table.setRowHeight(row, Math
-                        .max(textAreaPreferredHeight + (2 * rowMargin), minHeight + (2 * rowMargin)));
+                        .max(iconPreferredHeight + (2 * rowMargin), minHeight + (2 * rowMargin)));
             }
 
             return this;
