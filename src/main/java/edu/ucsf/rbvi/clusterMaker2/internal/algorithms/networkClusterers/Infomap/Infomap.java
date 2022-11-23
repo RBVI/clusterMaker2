@@ -40,6 +40,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobDataServ
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobExecutionService;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.NetworkClusterJobHandler;
 
 public class Infomap extends AbstractNetworkClusterer {
 	public static String NAME = "Infomap (remote)";
@@ -108,7 +109,7 @@ public class Infomap extends AbstractNetworkClusterer {
 		jobData = dataService.addData(jobData, "edges", edgeArray);
 		job.storeClusterData(clusterAttributeName, currentNetwork, clusterManager, createGroups, GROUP_ATTRIBUTE, null, getShortName());
 				// Create our handler
-		ClusterJobHandler jobHandler = new ClusterJobHandler(job, network);
+		NetworkClusterJobHandler jobHandler = new NetworkClusterJobHandler(job, network, context.vizProperties.showUI, context.vizProperties.restoreEdges);
 		job.setJobMonitor(jobHandler);	
 				// Submit the job
 		CyJobStatus exStatus = executionService.executeJob(job, basePath, configuration, jobData);

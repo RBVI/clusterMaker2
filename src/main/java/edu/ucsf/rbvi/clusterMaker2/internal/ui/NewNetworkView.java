@@ -115,6 +115,7 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 		this(manager, true, addSingletons);
 		this.network = network;
 		this.restoreEdges = restoreEdges;
+    this.context = null;
 	}
 
 	public NewNetworkView(ClusterManager manager, boolean available, boolean addSingletons) {
@@ -232,7 +233,9 @@ public class NewNetworkView extends AbstractTask implements ClusterViz, ClusterA
 	@SuppressWarnings("unchecked")
 	private void createClusteredNetwork(String clusterAttribute, TaskMonitor monitor) {
 
-    boolean selectedOnly = context.selectedOnly;
+    boolean selectedOnly = false;
+    if (context != null)
+      selectedOnly = context.selectedOnly;
 		boolean isFuzzy = isFuzzy(clusterAttribute);
 
 		// Get the clustering parameters

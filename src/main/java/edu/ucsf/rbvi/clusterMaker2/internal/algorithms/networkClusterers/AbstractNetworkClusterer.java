@@ -245,9 +245,17 @@ public abstract class AbstractNetworkClusterer extends AbstractClusterAlgorithm 
 			String targetName = nodeMap.get(target.getSUID());
 			sourceTargetWeight[1] = targetName;
 			
-			Double weight = currentNetwork.getRow(edge).get(attribute, Double.class); // pull the "weight" value from the Context. If it's null --> then 1.0
-			
-			if (attribute == "None") weight = null;
+      // Check to see if the weight is Integer, Long, or Double (we don't handle Lists at this point)
+      Double weight = null;
+			if (attribute != "None")  {
+        Object oWeight = currentNetwork.getRow(edge).getRaw(attribute);
+        if (oWeight instanceof Double)
+          weight = (Double)oWeight;
+        else if (oWeight instanceof Integer)
+          weight = ((Integer)oWeight).doubleValue();
+        else if (oWeight instanceof Long)
+          weight = ((Long)oWeight).doubleValue();
+      }
 			
 			if (weight == null) {
 				sourceTargetWeight[2] = "1.0";
