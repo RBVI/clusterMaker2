@@ -5,6 +5,7 @@ from .leiden import Leiden
 from .label_propagation import LabelPropagation
 from .leading_eigenvector import LeadingEigenvector
 from .multilevel import Multilevel
+from .dbscan import DBScan
 from .umap import UMAP
 from .tsne import TSNEREMOTE
 from .isomap import IsoMapEmbedding
@@ -30,6 +31,7 @@ class Algorithms(object):
         self.algorithms["labelpropagation"] = LabelPropagation(jobs)
         self.algorithms["leadingeigenvector"] = LeadingEigenvector(jobs)
         self.algorithms["multilevel"] = Multilevel(jobs)
+        self.algorithms["dbscan"] = DBScan(jobs)
 
         # Dimensionality reduction (manifold) techniques
         self.algorithms["umap"] = UMAP(jobs)
