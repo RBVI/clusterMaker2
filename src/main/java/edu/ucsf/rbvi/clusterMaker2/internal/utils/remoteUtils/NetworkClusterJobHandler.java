@@ -7,6 +7,7 @@ import org.cytoscape.jobs.CyJob;
 import org.cytoscape.jobs.CyJobData;
 import org.cytoscape.jobs.CyJobStatus;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
@@ -28,8 +29,11 @@ public class NetworkClusterJobHandler extends ClusterJobHandler {
 	
 	@Override
 	public void loadData(CyJob job, TaskMonitor monitor) {
+    // System.out.println("Loading the data");
 		CyJobData data = job.getJobDataService().getDataInstance();
+    // System.out.println("Calling 'fetchResults'");
 		CyJobStatus status = job.getJobExecutionService().fetchResults(job, data);
+    // System.out.println("done");
 		data.put("job", job);
 		//CyNetwork network = job.getJobDataService().getNetworkData(data, "network");
 		CyNetwork network = networkMap.get(job);
@@ -37,7 +41,9 @@ public class NetworkClusterJobHandler extends ClusterJobHandler {
 		
 		// network clustering algorithm
 		
+    // System.out.println("Getting all values");
 		Map<String, Object> clusterData = ((ClusterJob) job).getClusterData().getAllValues();
+    // System.out.println("done");
 		
 		String clusterAttributeName = (String) clusterData.get("clusterAttributeName");
 		Boolean createGroups = (Boolean) clusterData.get("createGroups");
@@ -45,6 +51,7 @@ public class NetworkClusterJobHandler extends ClusterJobHandler {
 		List<String> params  = (List<String>) clusterData.get("params");
 		ClusterManager clusterManager = (ClusterManager) clusterData.get("manager");
 
+		// System.out.println("Creating the clusters");
 		List<NodeCluster> nodeClusters = ClusterJobExecutionService.createClusters(data, clusterAttributeName, network); //move this to remote utils
 		// System.out.println("NodeClusters: " + nodeClusters);
 
@@ -52,7 +59,8 @@ public class NetworkClusterJobHandler extends ClusterJobHandler {
 				clusterManager, createGroups, params, job.getJobName()); 
 		
 		if (showUI) {
-			TaskManager manager = clusterManager.getService(TaskManager.class);
+      // System.out.println("Creating the new network view");
+			TaskManager manager = clusterManager.getService(SynchronousTaskManager.class);
 			manager.execute(new TaskIterator(new NewNetworkView(network, clusterManager, true, restoreEdges, false)));
 		}
 	}
