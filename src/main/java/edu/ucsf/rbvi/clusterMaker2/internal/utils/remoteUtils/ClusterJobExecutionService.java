@@ -264,17 +264,23 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 	//returns a list of NodeCluster objects that have a number and a list of nodes belonging to it
 	public static List<NodeCluster> createClusters(CyJobData data, String clusterAttributeName, CyNetwork network) {
 		JSONArray partitions = (JSONArray) data.get("partitions");
+    // System.out.println("Found "+partitions.size()+" partitions");
+
+    // Build a map of node names
+    Map<String, CyNode> nodeNameMap = new HashMap<>();
+    for (CyNode cyNode: network.getNodeList()) {
+      String name = network.getRow(cyNode).get(CyNetwork.NAME, String.class);
+      nodeNameMap.put(name, cyNode);
+    }
 		
 		List<NodeCluster> nodeClusters = new ArrayList<>();
 		int i = 1; //each cluster is assigned a number
 		for (Object partition : partitions) {
+      // System.out.println("Cluster "+i);
 			List<String> cluster = (ArrayList<String>) partition;
 			List<CyNode> cyNodes = new ArrayList<>();
 			for (String nodeName : cluster) {
-				for (CyNode cyNode : network.getNodeList())
-					if (network.getRow(cyNode).get(CyNetwork.NAME, String.class).equals(nodeName)) {
-						cyNodes.add(cyNode);
-					}
+        cyNodes.add(nodeNameMap.get(nodeName));
 			}
 
 			NodeCluster nodeCluster = new NodeCluster(i, cyNodes);
