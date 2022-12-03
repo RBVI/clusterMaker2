@@ -4,6 +4,7 @@ Various utility functions
 
 import igraph as ig
 import pandas as pd
+import numpy as np
 import json
 
 
@@ -45,6 +46,7 @@ def get_matrix(json_data: str) -> pd.DataFrame:
     # Create the pandas dataframe
     df = pd.DataFrame(data=rows, columns=columns)
     df.set_index(columns[0], inplace=True)
+    df = df.astype(np.float)
     return df
 
 def get_graph(json_data: str) -> ig.Graph:
