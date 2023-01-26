@@ -105,12 +105,12 @@ public class tSNERemoteContext {
 			longDescription = "Initialization of embedding. Possible options are ‘random’, "
 					+ "‘pca’, and a numpy array of shape (n_samples, n_components). PCA initialization cannot be "
 					+ "used with precomputed distances and is usually more globally stable than random initialization.",
-			exampleStringValue = "PCA",
+			exampleStringValue = "pca",
 			tooltip = "<html>Initialization of embedding. Possible options are ‘random’,<br/>"
 					+ "‘pca’, and a numpy array of shape (n_samples, n_components). PCA initialization cannot be<br/>"
 					+ "used with precomputed distances and is usually more globally stable than random initialization.</html>",
 			groups = {"t-SNE Advanced Settings"}, gravity = 72)
-	public ListSingleSelection<String> init = new ListSingleSelection<String>("PCA", "random");
+	public ListSingleSelection<String> init = new ListSingleSelection<String>("pca", "random");
 	
 	@Tunable(description = "Show scatter plot with results",
 	         longDescription = "If this is set to ```true```, show the scatterplot after the calculation is complete",
