@@ -31,9 +31,15 @@ class Leiden(BaseAlgorithm):
 
         graph = utils.get_graph(data)
 
-        part = graph.community_leiden(objective_function=obj_func, weights="weights",
-                                      resolution_parameter=resolution_parameter, beta=beta,
-                                      n_iterations=iterations)
+        try:
+          part = graph.community_leiden(objective_function=obj_func, weights="weights",
+                                        resolution_parameter=resolution_parameter, beta=beta,
+                                        n_iterations=iterations)
+        except Exception as e:
+          exc = utils.parse_igraph_exception(repr(e))
+          status['status'] = 'error'
+          status['message'] = exc
+          return
 
         result['partitions'] = utils.get_vertex_list(graph, part)
 

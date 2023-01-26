@@ -17,7 +17,14 @@ class LeadingEigenvector(BaseAlgorithm):
 
         # Get our data file
         graph = utils.get_graph(data)
-        part = graph.community_leading_eigenvector(weights="weights")
+
+        try:
+          part = graph.community_leading_eigenvector(weights="weights")
+        except Exception as e:
+          exc = utils.parse_igraph_exception(repr(e))
+          status['status'] = 'error'
+          status['message'] = exc
+          return
 
         result['partitions'] = utils.get_vertex_list(graph, part)
 

@@ -8,6 +8,7 @@ import api.utils as utils
 from .base_algorithm import BaseAlgorithm
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import DBSCAN
+from scipy.sparse import csgraph
 
 class DBScan(BaseAlgorithm):
 
@@ -37,18 +38,27 @@ class DBScan(BaseAlgorithm):
         p = args['p']
         data = args['json_data']
 
-        df = utils.get_matrix(data)
-        columns = df.columns.to_list()
-        row_labels = df.index.to_list()
+        # We handle two different types of data -- either a square matrix with
+        # weights in the cells or a matrix with columns representing features
+        # If the metric is 'precomputed' then we're dealing with a square matrix
+        # otherwise, we assume we have a standard column matrix
+        if metric == 'precomputed':
+          # Get the graph
+          graph = utils.get_graph(data)
+          # Get the matrix from the graph
+          data = graph.get_adjacency_sparse(attribute="weights")
+        else:
+          df = utils.get_matrix(data)
+          columns = df.columns.to_list()
 
-        # We need to drop any NaNs
-        df = df.dropna()
+          # We need to drop any NaNs
+          df = df.dropna()
 
-        data = df[columns[1:]].values # skip over the label and just pull the data
-        if (args['scale']):
-          data = StandardScaler().fit_transform(data)
+          data = df[columns[1:]].values # skip over the label and just pull the data
 
-        graph = utils.get_graph(data)
+          if (args['scale']):
+            data = StandardScaler().fit_transform(data)
+
 
         db = DBSCAN(eps=eps, min_samples=min_samples, metric=metric,metric_params=None,
                     algorithm=algorithm,leaf_size=leaf_size,p=p,n_jobs=None).fit(data) 
@@ -58,7 +68,7 @@ class DBScan(BaseAlgorithm):
         # List of labels -- each element refers to a row
         labels = db.labels_
 
-        result['partitions'] = utils.get_vertex_list(graph, labels)
+        result['partitions'] = labels
 
         status['status'] = 'done'
 

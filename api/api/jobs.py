@@ -3,6 +3,7 @@ from multiprocessing import Manager
 import os
 import uuid
 import logging
+import json
 
 import falcon
 
@@ -50,6 +51,19 @@ class Jobs:
             if uid in self.active_jobs:
                 resp.code = falcon.HTTP_200
                 resp.text = str(self.active_jobs[uid].get_status(uid))
+                return
+            add_error(resp, "No such job")
+            return
+
+        # New version of status that returns a JSON structure rather than a string so we can return
+        # error messages.  We need to do it this way to preserve backwards compatability
+        if path.startswith("/status2/"):
+            uid = get_job_id(job_id)
+            logging.info('path: %s, job_id: %s [%d], active_jobs=%d'%(path,str(uid),os.getpid(),len(self.active_jobs)))
+            if uid in self.active_jobs:
+                resp.code = falcon.HTTP_200
+                resp.text = json.dumps(self.active_jobs[uid].get_status2(uid))
+                logging.info("status2 response: "+resp.text)
                 return
             add_error(resp, "No such job")
             return

@@ -28,6 +28,7 @@ def create_app(mgr: Manager):
     # New API
     jobs = Jobs(mgr)
     app.add_route('/status/{job_id}', jobs)
+    app.add_route('/status2/{job_id}', jobs)
     app.add_route('/fetch/{job_id}', jobs)
     app.add_route('/terminate/{job_id}', jobs)
     algorithms = Algorithms(jobs)

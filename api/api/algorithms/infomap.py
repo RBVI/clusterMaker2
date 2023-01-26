@@ -20,7 +20,13 @@ class Infomap(BaseAlgorithm):
 
         graph = utils.get_graph(data)
 
-        part = graph.community_infomap(edge_weights="weights", trials=trials)
+        try:
+          part = graph.community_infomap(edge_weights="weights", trials=trials)
+        except Exception as e:
+          exc = utils.parse_igraph_exception(repr(e))
+          status['status'] = 'error'
+          status['message'] = exc
+          return
 
         result['partitions'] = utils.get_vertex_list(graph, part)
 
