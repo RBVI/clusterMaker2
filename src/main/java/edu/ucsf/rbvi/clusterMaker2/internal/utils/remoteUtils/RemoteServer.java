@@ -90,13 +90,13 @@ public class RemoteServer {
 	//replace the handle command with an appropriate command of remote server
 	//parse the json
 	static public JSONObject fetchJSON(String uri, Command command) throws Exception {
-		// System.out.println("Fetching JSON from: " + uri);
+		System.out.println("Fetching JSON from: " + uri);
 		
 		CloseableHttpClient httpclient = HttpClients.createDefault();  //client = browser --> executes in the default browser of my computer?
 		HttpGet httpGet = new HttpGet(uri);
 		CloseableHttpResponse response = httpclient.execute(httpGet);
 		
-		// System.out.println("HttpGET response: " + response.toString());
+		System.out.println("HttpGET response: " + response.toString());
 		
 		int statusCode = response.getStatusLine().getStatusCode();
 		if (statusCode != 200 && statusCode != 202) {
@@ -106,12 +106,25 @@ public class RemoteServer {
 		HttpEntity entity = response.getEntity();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));
 		
-		JSONObject json= new JSONObject();
+    JSONObject json = null;
 		if (command == Command.CHECK) {
+      System.out.println("Creating parser");
+			JSONParser parser = new JSONParser();
+      System.out.println("Parsing data");
+      try {
+			json = (JSONObject) parser.parse(reader); 
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      System.out.println("Status: "+json.toString());
+      if (json.containsKey("status")) {
+        json.put("jobStatus", json.get("status"));
+      }
+      /*
 			String line = "";
 			Object message = null;
 			while ((line = reader.readLine()) != null) {
-				// System.out.println(line);
+				System.out.println("fetchJSON: "+line);
 				json.put("jobStatus", line);
 				if (json.containsKey("message")) {
 					message = json.get("message");
@@ -120,13 +133,12 @@ public class RemoteServer {
 					json.put("message", line);
 				}
 			}
+      */
 		} else if (command == Command.FETCH) {
 			JSONParser parser = new JSONParser();
 			json = (JSONObject) parser.parse(reader); 
 		}
-		
-	
-	   
+
 		return json; //= dictionary, take it and poll from this the status key Map<Key, value> and for key status there is some answer, JSON similar to xml but easier
 	}
 

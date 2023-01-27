@@ -37,6 +37,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Network
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.SCPS.SCPSClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.TransClust.TransClustClusterTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leiden.LeidenClusterTaskFactory;
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.DBScan.DBScanClusterTaskFactory;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.NodeRankingTaskFactory;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.HITS.HITSTaskFactory;
@@ -189,6 +190,8 @@ public class CyActivator extends AbstractCyActivator {
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new LeidenClusterTaskFactory(clusterManager, registrar),
 		                ClusterTaskFactory.class, new Properties());
+		//registerService(bc, new DBScanClusterTaskFactory(clusterManager, registrar),
+		//                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new LabelPropagationTaskFactory(clusterManager, registrar),
 		                ClusterTaskFactory.class, new Properties());
 		registerService(bc, new LEVClusterTaskFactory(clusterManager, registrar),

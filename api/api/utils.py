@@ -3,8 +3,8 @@ Various utility functions
 """
 
 import igraph as ig
-import pandas as pd
 import numpy as np
+import pandas as pd
 import json
 
 
@@ -88,3 +88,19 @@ def get_vertex_list(graph: ig.Graph, vertices: list) -> list:
         elif isinstance(vals, int):
             result.append(graph.vs[vals]['name'])
     return result
+
+def parse_sklearn_exception(e: str):
+    """ Parse out the actual error message from the exception and add
+        that to the status.  The general format of the exception is:
+        ExceptionType: message"""
+    parts = e.split(":")
+    return parts[1].strip()
+
+def parse_igraph_exception(e: str):
+    """ Parse out the actual error message from the exception and add
+        that to the status.  The general format of the exception is:
+        ExceptionType(file:line:' message',)"""
+
+    parts = e[0:len(e)-3].split(":")
+    return parts[2].strip()
+

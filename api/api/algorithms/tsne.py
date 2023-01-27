@@ -44,9 +44,15 @@ class TSNEREMOTE(BaseAlgorithm):
         df = df.dropna()
 
         data = df.values
-        tsne = TSNE(n_components=2, perplexity=perplexity,early_exaggeration=early_ex, learning_rate=learning_rate,
-                    metric=metric, init=init, n_jobs=10)
-        embedding = tsne.fit_transform(data)
+        try:
+          tsne = TSNE(n_components=2, perplexity=perplexity,early_exaggeration=early_ex, learning_rate=learning_rate,
+                      metric=metric, init=init, n_jobs=10)
+          embedding = tsne.fit_transform(data)
+        except Exception as e:
+          exc = utils.parse_sklearn_exception(repr(e))
+          status['status'] = 'error'
+          status['message'] = exc
+          return
 
         # print(str(embedding))
 

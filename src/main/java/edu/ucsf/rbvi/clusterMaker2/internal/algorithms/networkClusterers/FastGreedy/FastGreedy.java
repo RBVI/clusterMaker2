@@ -101,7 +101,6 @@ public class FastGreedy extends AbstractNetworkClusterer {
 		CyJobStatus exStatus = executionService.executeJob(job, basePath, configuration, jobData);
 		
 		CyJobStatus.Status status = exStatus.getStatus();
-		System.out.println("Status: " + status);
 		
 		if (status == Status.FINISHED) {
 			jobHandler.loadData(job, taskMonitor);
@@ -111,8 +110,9 @@ public class FastGreedy extends AbstractNetworkClusterer {
 			CyJobManager manager = registrar.getService(CyJobManager.class);
 			manager.addJob(job, jobHandler, 5); //this one shows the load button
 			
-		} else if (status == Status.ERROR 
-				|| status == Status.UNKNOWN  
+		} else if (status == Status.ERROR) {
+			monitor.showMessage(TaskMonitor.Level.ERROR, "Job error: " + exStatus.getMessage());
+    } else if (status == Status.UNKNOWN  
 				|| status == Status.CANCELED 
 				|| status == Status.FAILED
 				|| status == Status.TERMINATED 

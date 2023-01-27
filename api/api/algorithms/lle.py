@@ -53,10 +53,16 @@ class LLE(BaseAlgorithm):
 
         data = df[columns[1:]].values # skip over the label and just pull the data
 
-        lle = LocallyLinearEmbedding(n_components=2, n_neighbors=n_neighbors,reg=reg,eigen_solver=eigen_solver,
-                                     tol=tol,max_iter=max_iter, method=method, hessian_tol=hessian_tol, 
-                                     modified_tol=modified_tol, neighbors_algorithm=neighbors_algorithm, n_jobs=10)
-        embedding = lle.fit_transform(data)
+        try:
+          lle = LocallyLinearEmbedding(n_components=2, n_neighbors=n_neighbors,reg=reg,eigen_solver=eigen_solver,
+                                       tol=tol,max_iter=max_iter, method=method, hessian_tol=hessian_tol, 
+                                       modified_tol=modified_tol, neighbors_algorithm=neighbors_algorithm, n_jobs=10)
+          embedding = lle.fit_transform(data)
+        except Exception as e:
+          exc = utils.parse_sklearn_exception(repr(e))
+          status['status'] = 'error'
+          status['message'] = exc
+          return
         #print(str(embedding))
 
         result_df = pd.DataFrame(embedding, columns=['x','y'])

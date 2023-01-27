@@ -42,8 +42,14 @@ class LinearDiscriminant(BaseAlgorithm):
 
         data = df[columns[1:]].values # skip over the label and just pull the data
 
-        lda = LinearDiscriminantAnalysis(solver=solver, shrinkage=shrinkage, tol=tol)
-        embedding = lda.fit_transform(data)
+        try:
+          lda = LinearDiscriminantAnalysis(solver=solver, shrinkage=shrinkage, tol=tol)
+          embedding = lda.fit_transform(data)
+        except Exception as e:
+          exc = utils.parse_sklearn_exception(repr(e))
+          status['status'] = 'error'
+          status['message'] = exc
+          return
         #print(str(embedding))
 
         result_df = pd.DataFrame(embedding, columns=['x','y'])

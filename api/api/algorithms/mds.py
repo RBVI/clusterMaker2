@@ -44,9 +44,15 @@ class MDS(BaseAlgorithm):
 
         data = df[columns[1:]].values # skip over the label and just pull the data
 
-        mds = manifold.MDS(n_components=2, n_init=n_init, eps=eps, dissimilarity=dissimilarity,
-                           metric=metric, max_iter=max_iter, n_jobs=10)
-        embedding = mds.fit_transform(data)
+        try:
+          mds = manifold.MDS(n_components=2, n_init=n_init, eps=eps, dissimilarity=dissimilarity,
+                             metric=metric, max_iter=max_iter, n_jobs=10)
+          embedding = mds.fit_transform(data)
+        except Exception as e:
+          exc = utils.parse_sklearn_exception(repr(e))
+          status['status'] = 'error'
+          status['message'] = exc
+          return
         #print(str(embedding))
 
         result_df = pd.DataFrame(embedding, columns=['x','y'])

@@ -50,10 +50,16 @@ class IsoMapEmbedding(BaseAlgorithm):
 
         if max_iter == 0:
           max_iter = None
-        isomap = Isomap(n_neighbors=n_neighbors, n_components=2, eigen_solver=eigen_solver,
-                        tol=tol, path_method=path_method, neighbors_algorithm=neighbors_algorithm,
-                        metric=metric, max_iter=max_iter, n_jobs=10)
-        embedding = isomap.fit_transform(data)
+        try:
+          isomap = Isomap(n_neighbors=n_neighbors, n_components=2, eigen_solver=eigen_solver,
+                          tol=tol, path_method=path_method, neighbors_algorithm=neighbors_algorithm,
+                          metric=metric, max_iter=max_iter, n_jobs=10)
+          embedding = isomap.fit_transform(data)
+        except Exception as e:
+          exc = utils.parse_sklearn_exception(repr(e))
+          status['status'] = 'error'
+          status['message'] = exc
+          return
         #print(str(embedding))
 
         result_df = pd.DataFrame(embedding, columns=['x','y'])

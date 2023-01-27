@@ -42,9 +42,15 @@ class SpectralEmbedding(BaseAlgorithm):
 
         data = df[columns[1:]].values # skip over the label and just pull the data
 
-        spectral = manifold.SpectralEmbedding(n_components=2, affinity=affinity, gamma=gamma,
-                                              eigen_solver=eigen_solver,n_neighbors=n_neighbors, n_jobs=10)
-        embedding = spectral.fit_transform(data)
+        try:
+          spectral = manifold.SpectralEmbedding(n_components=2, affinity=affinity, gamma=gamma,
+                                                eigen_solver=eigen_solver,n_neighbors=n_neighbors, n_jobs=10)
+          embedding = spectral.fit_transform(data)
+        except Exception as e:
+          exc = utils.parse_sklearn_exception(repr(e))
+          status['status'] = 'error'
+          status['message'] = exc
+          return
         #print(str(embedding))
 
         result_df = pd.DataFrame(embedding, columns=['x','y'])
