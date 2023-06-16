@@ -46,7 +46,7 @@ def get_matrix(json_data: str) -> pd.DataFrame:
     # Create the pandas dataframe
     df = pd.DataFrame(data=rows, columns=columns)
     df.set_index(columns[0], inplace=True)
-    df = df.astype(np.float)
+    df = df.astype(float)
     return df
 
 def get_graph(json_data: str) -> ig.Graph:
