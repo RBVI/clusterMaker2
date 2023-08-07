@@ -51,7 +51,7 @@ public class RunFuzzifier {
 
 	HashMap<String,List<CyNode>> groupMap = null;
 
-	private List<NodeCluster> Clusters = null;
+	private List<NodeCluster> clusters = null;
 	private int number_clusters;
 	private List<CyNode> nodeList= null;
 	private boolean canceled = false;
@@ -65,11 +65,12 @@ public class RunFuzzifier {
 	double membershipThreshold = 0;
 	private boolean debug = false;
 	private int nThreads = Runtime.getRuntime().availableProcessors()-1;
+  private Map<CyNode, Integer> baseMembership;
 
-	public RunFuzzifier (List<NodeCluster> Clusters, CyMatrix distanceMatrix, int cClusters,
-			 double membershipThreshold,int maxThreads, TaskMonitor monitor ){
+	public RunFuzzifier (List<NodeCluster> clusters, CyMatrix distanceMatrix, int cClusters,
+			 double membershipThreshold, int maxThreads, TaskMonitor monitor ){
 
-		this.Clusters = Clusters;
+		this.clusters = clusters;
 		this.distanceMatrix = distanceMatrix;
 		this.number_clusters = cClusters;
 		this.monitor = monitor;
@@ -86,6 +87,15 @@ public class RunFuzzifier {
 		//monitor.showMessage(TaskMonitor.Level.INFO,"Matrix info: = "+distanceMatrix.printMatrixInfo(matrix));
 		monitor.showMessage(TaskMonitor.Level.INFO,"Number of Clusters = "+number_clusters);
 
+    // Create a map to record each node's membership
+    this.baseMembership = new HashMap<>();
+    for (NodeCluster c: clusters) {
+      Integer clusterNumber = c.getClusterNumber()-1;
+      for (CyNode n: c) {
+        baseMembership.put(n, clusterNumber);
+      }
+    }
+
 	}
 
 	public void cancel () { canceled = true; }
@@ -98,90 +108,233 @@ public class RunFuzzifier {
 	 * @return List of FuzzyNodeCLusters
 	 */
 
-	public List<FuzzyNodeCluster> run(CyNetwork network, TaskMonitor monitor){
+	public List<FuzzyNodeCluster> run(CyNetwork network, FuzzifierContext context, TaskMonitor monitor){
 
-		Long networkID = network.getSUID();
+    /**
+     * Algorithm (transcoded from the R usedist package's dist_to_centroids method:
+     *   Given the matrix distMatrix:
+     *       d2 = distMatrix ** 2
+     *       group_items = list of nodes in each cluster
+     *       group_sizes = sizes of each cluster
+     *       group_d2s = list of subportions of the d2 for each cluster
+     *       within_group_sums = list of sums for each group_d2s
+     *       foreach node:
+     *           foreach group:
+     *               idx1 = group_items[group]
+     *               n1 = group_sizes[group]
+     *               sum1 = winthin_group_sums[group]
+     *               sum12 = sum(d2[idx1, node]) # Note: idx1 is a vector
+     *               term1 = sum1 / n1**2
+     *               term12 = sum12 / n1
+     *               result_squared = term12 - term1
+     *               dist[node, group] = sqrt(result_sqared)
+     */
 
 		long startTime = System.currentTimeMillis();
 		int nelements = distanceMatrix.nRows();
 		nodeList = distanceMatrix.getRowNodes();
+    int max_cluster = Math.max(NodeCluster.getMaxClusterNumber(), number_clusters);
 
 		//Matrix to store the temporary cluster membership values of elements 
-		double [][] ClusterMemberships = new double[nelements][number_clusters];
+		double [][] clusterMemberships = new double[nelements][max_cluster];
 
-		//Initializing all membership values to 0
+		//Initializing all membership values to NaN
 		for (int i = 0; i < nelements; i++){
-			for (int j = 0; j < number_clusters; j++){
-				ClusterMemberships[i][j] = 0;
+			for (int j = 0; j < max_cluster; j++){
+				clusterMemberships[i][j] = Double.NaN;
 			}
 		}
 
-		// This matrix will store the centroid data
-		CyMatrix cData = CyMatrixFactory.makeSmallMatrix(network, number_clusters, nelements);
+    monitor.showMessage(TaskMonitor.Level.INFO, "Calculating distances");
 
-		getFuzzyCenters(cData);
+    CyMatrix d2 = distanceMatrix.copy();
+    // System.out.println(d2.printMatrix());
+    d2.ops().powScalar(2);
+    // System.out.println(d2.printMatrix());
+    List<NodeCluster> group_items = clusters;
 
-		for (CyNode node : nodeList){
-			int nodeIndex = nodeList.indexOf(node);
-			double sumDistances = 0;
-			for (int i = 0 ; i < Clusters.size(); i++){
-				sumDistances += cData.doubleValue(i, nodeIndex);
-			}
-			for(int i = 0 ; i < Clusters.size(); i++){
-				ClusterMemberships[nodeIndex][i] = 	cData.doubleValue(i, nodeIndex)/sumDistances;
-			} 
-		}
+    int[] group_sizes = get_sizes(group_items);
+    // for (int i = 0; i < group_sizes.length; i++) { System.out.println("Group "+i+" has "+group_sizes[i]+" elements"); }
+    double[] within_group_sums = get_sums(d2, group_items);
+    // for (int i = 0; i < within_group_sums.length; i++) { System.out.println("Group "+i+" has sum "+within_group_sums[i]); }
+    boolean watch = false;
+    for (CyNode node: nodeList) {
+      /* Debugging
+      if (node.getSUID() == 5705)
+        watch = true;
+      else
+        watch = false;
+      */
+      // This part can be done in parallel
+      // get_distance(d2, node_index, group, group_size, clusterMemberships)
+      // clusterMemberships needs to be in a critical section.
+      for (NodeCluster idx1: group_items) {
+        int group = idx1.getClusterNumber()-1;
+        if (watch) System.out.println("group = "+group);
+        int n1 = group_sizes[group];
+        double sum1 = within_group_sums[group];
+        if (sum1 == 0.0d) 
+          continue;
+        double sum12 = get_sum(d2, idx1, node, watch);
+        if (watch) System.out.println("sum12 = "+sum12);
+        double term1 = sum1 / Math.pow(n1, 2);
+        if (watch) System.out.println("term1 = "+term1);
+        double term12 = sum12 / n1;
+        if (watch) System.out.println("term12 = "+term12);
+        double result_squared = term12 - term1;
+        // clusterMemberships[nodeList.indexOf(node)][group] = result_squared;
+        if (watch) System.out.println("result_squared = "+result_squared);
+        if (result_squared > 0.0d) {
+          clusterMemberships[nodeList.indexOf(node)][group] = Math.sqrt(result_squared);
+          if (watch) System.out.println("result = "+Math.sqrt(result_squared));
+          // System.out.println("Node "+node+" is "+clusterMemberships[nodeList.indexOf(node)][group]+" away from group "+group);
+        } else {
+          clusterMemberships[nodeList.indexOf(node)][group] = Double.NaN;
+        }
+      }
+    }
 
-		HashMap <CyNode, double[]> membershipMap = createMembershipMap(ClusterMemberships);
+    long algTime = System.currentTimeMillis()-startTime;
+    System.out.println("Algorithm took "+((double)algTime)/1000.0+" seconds");
+
+    monitor.showMessage(TaskMonitor.Level.INFO, "Assigning fuzzy membership");
+
+    // OK, at this point, we have a matrix with the squared distance from each node to the
+    // the centroid of each cluster.  Now, we need to calculate the proportional
+    // membership, which we do by normalizing all of the distances so that they sum to 1.0
+    for (int node_index = 0; node_index< nelements; node_index++) {
+      double sum = 0.0d;
+      // System.out.println("Node: "+nodeList.get(node_index));
+      for (int cluster_index = 0; cluster_index < max_cluster; cluster_index++) {
+        double v = clusterMemberships[node_index][cluster_index];
+        if (Double.isNaN(v))
+          continue;
+        sum += v;
+      }
+      // System.out.println("Node "+nodeList.get(node_index)+" distances sum to "+sum);
+      for (int cluster_index = 0; cluster_index < max_cluster; cluster_index++) {
+        double v = clusterMemberships[node_index][cluster_index];
+        if (Double.isNaN(v))
+          continue;
+        CyNode node = nodeList.get(node_index);
+        if (sum == 0.0)
+          v = 1.0;
+        else
+          v = v/sum;
+        // if (v < 1.0)
+        //   v = 1.0 - v;
+        clusterMemberships[node_index][cluster_index] = v;
+        // System.out.println("Node "+nodeList.get(node_index)+" is "+clusterMemberships[node_index][cluster_index]+" away from group "+cluster_index);
+      }
+    }
+
+    /*
+    long assignTime = System.currentTimeMillis()-algTime;
+    System.out.println("Assigning clusters took "+((double)assignTime)/1000.0+" seconds");
+    */
+
+    monitor.showMessage(TaskMonitor.Level.INFO, "Making cluster map");
+
+		HashMap <CyNode, double[]> membershipMap = createMembershipMap(clusterMemberships);
 
 		List<FuzzyNodeCluster> fuzzyClusters = new ArrayList<FuzzyNodeCluster>();
 
 		// Adding the nodes which have memberships greater than the threshold to fuzzy node clusters
 		List<CyNode> fuzzyNodeList;
-		for(int i = 0 ; i < number_clusters; i++){
+		for(int i = 0 ; i < max_cluster; i++){
 			fuzzyNodeList = new ArrayList<CyNode>();
 			HashMap<CyNode, Double> clusterMembershipMap = new HashMap<CyNode, Double>();
-			for( CyNode node: nodeList){
-				if (membershipMap.get(node)[i] > membershipThreshold ){
+			for( int node_index = 0; node_index < nodeList.size(); node_index++) {
+        CyNode node = nodeList.get(node_index);
+        double v = clusterMemberships[node_index][i];
+				if (!Double.isNaN(v) && v > membershipThreshold) {
 					fuzzyNodeList.add(node);
-					clusterMembershipMap.put(node, membershipMap.get(node)[i]);
-				}
+					clusterMembershipMap.put(node, v);
+				} else if (!Double.isNaN(v) && baseMembership.containsKey(node) && baseMembership.get(node) == i) {
+          // Force this to be part of this fuzzy cluster if it's part of the base cluster
+					fuzzyNodeList.add(node);
+					clusterMembershipMap.put(node, v);
+        }
 			}
-			fuzzyClusters.add(new FuzzyNodeCluster(fuzzyNodeList,clusterMembershipMap));
+
+      if (fuzzyNodeList.size() < context.minClusterSize) 
+        continue;
+
+			FuzzyNodeCluster fCluster = new FuzzyNodeCluster(fuzzyNodeList,clusterMembershipMap);
+      fCluster.setClusterNumber(i+1); // This will number this the same as the corresponding source cluster
+			fuzzyClusters.add(fCluster);
 		}
+
+    long totalTime = System.currentTimeMillis()-startTime;
+    System.out.println("Total time: "+((double)totalTime)/1000.0+" seconds");
 
 		return fuzzyClusters;
 
-
 	}
 
-	/**
-	 * The method calculates the centers of fuzzy clusters
-	 * 
-	 * @param cData matrix to store the data for cluster centers
-	 */
+  private double get_sum(CyMatrix d2, NodeCluster cluster, CyNode node, boolean watch) {
+    int n_index = nodeList.indexOf(node);
+    if (watch) System.out.println("n_index = "+n_index);
+    double sum = 0.0d;
+    for (CyNode c_node: cluster) {
+      int c_index = nodeList.indexOf(c_node);
+      if (watch) System.out.println("c_index = "+c_index+" node = "+c_node);
+      if (watch) System.out.println("distance = "+d2.doubleValue(n_index, c_index)+" weight = "+(1/d2.doubleValue(n_index, c_index)));
+      sum += d2.doubleValue(n_index,c_index);
+    }
 
-	public void getFuzzyCenters(CyMatrix cData){
+    return sum;
+  }
 
-		// To store the sum of memberships(raised to fuzziness index) corresponding to each cluster
-		int nelements = distanceMatrix.nRows();
+  private int[] get_sizes(List<NodeCluster> group_items) {
+    int[] sizes = new int[NodeCluster.getMaxClusterNumber()];
+    for (NodeCluster c: group_items) {
+      sizes[c.getClusterNumber()-1] = c.size();
+    }
+    return sizes;
+  }
 
-		for (NodeCluster cluster : Clusters){
-			int c = Clusters.indexOf(cluster);
-			double numerator = 0;
-			Double distance = 0.0;
-			int i = 0;
-			for (int e = 0; e < nelements; e++) {
-				numerator = 0;
-				for(CyNode node : cluster){
-					i = nodeList.indexOf(node);
-					distance = distanceMatrix.doubleValue(i,e);
-					numerator += distance;
-				}
-				cData.setValue(c,e,(numerator/cluster.size()));
-			}
-		}
-	}
+  // For each cluster, sum up the distances
+  private double[] get_sums(CyMatrix d2, List<NodeCluster> group_items) {
+    double[] sums = new double[NodeCluster.getMaxClusterNumber()];
+    List<CyNode> nodes = d2.getRowNodes();
+
+    for (NodeCluster c: group_items) {
+      int cluster_number = c.getClusterNumber()-1;
+      sums[cluster_number] = 0.0d;
+
+      int[] node_indices = node_index(c, nodes);
+      if (node_indices == null) 
+        continue;
+
+      for (int i = 0; i < node_indices.length; i++) {
+        for (int j = i+1; j < node_indices.length; j++) {
+          sums[cluster_number] += d2.doubleValue(node_indices[i], node_indices[j]);
+        }
+      }
+    }
+    return sums;
+  }
+
+  private int[] node_index(NodeCluster c, List<CyNode>nodes) {
+    int[] indices = new int[c.size()];
+    int index = 0;
+    /*
+    System.out.print("cluster number: "+c.getClusterNumber()+", nodes = [");
+    for (CyNode n: nodes) {System.out.print(n+",");}
+    System.out.println("]");
+    */
+    for (CyNode n: c) {
+      int nodeid = nodes.indexOf(n);
+      if (nodeid >= 0) {
+        // System.out.println("n = "+n+", index(n) = "+nodes.indexOf(n));
+        indices[index++] = nodes.indexOf(n);
+      }
+    }
+    if (index == 0) return null;
+
+    return Arrays.copyOf(indices, index);
+  }
 
 	/**
 	 * Creates a Map from nodes to their respective membership arrays
@@ -192,8 +345,7 @@ public class RunFuzzifier {
 	public HashMap <CyNode, double[]> createMembershipMap(double[][] membershipArray){
 
 		HashMap<CyNode, double[]> membershipHM = new HashMap<CyNode, double[]>();
-		List<CyNode> nodeList = distanceMatrix.getRowNodes();
-		for ( int i = 0; i<distanceMatrix.nRows(); i++){
+		for ( int i = 0; i<nodeList.size(); i++){
 			membershipHM.put(nodeList.get(i), membershipArray[i]);
 		}
 

@@ -27,7 +27,9 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.text.NumberFormat;
@@ -40,6 +42,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -51,11 +54,15 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.UIManager;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.SpringEmbeddedLayouter;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.ViewUtils;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -68,16 +75,22 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.util.color.BrewerType;
+import org.cytoscape.util.color.Palette;
+import org.cytoscape.util.swing.CyColorPaletteChooser;
+import org.cytoscape.util.swing.CyColorPaletteChooserFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.work.TaskMonitor;
-
 
 public class RankingPanel extends JPanel implements CytoPanelComponent{
 
@@ -169,10 +182,15 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
     }
 
 
+    private static Integer getClusterNumber(final NodeCluster cluster) {
+      int clusterNumber = cluster.getClusterNumber();
+      return clusterNumber;
+    }
+
     private static StringBuilder getRankScore(final NodeCluster cluster) {
         StringBuilder details = new StringBuilder();
 
-        details.append("Score: ");
+        // details.append("Score: ");
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(3);
         details.append(nf.format(cluster.getRankScore()));
@@ -212,9 +230,21 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
             table = new JTable(browserModel);
             table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
             table.setAutoCreateRowSorter(true);
-            table.setDefaultRenderer(StringBuffer.class, new ResultsPanel.JTextAreaRenderer(defaultRowHeight));
+            // table.setDefaultRenderer(StringBuffer.class, new ResultsPanel.JTextAreaRenderer(defaultRowHeight));
+            table.setDefaultRenderer(ImageIcon.class, new ImageRenderer(defaultRowHeight));
             table.setIntercellSpacing(new Dimension(0, 4)); // gives a little vertical room between clusters
             table.setFocusable(false); // removes an outline that appears when the user clicks on the images
+                                       //
+            // DefaultTableCellRenderer columnRenderer = new DefaultTableCellRenderer();
+            // columnRenderer.setHorizontalAlignment(JLabel.CENTER);
+            table.getTableHeader().setDefaultRenderer(new HeaderRenderer());
+            // DefaultTableCellRenderer headerRenderer = (DefaultTableCellRenderer)table.getTableHeader().getDefaultRenderer();
+            // headerRenderer.setFont(new Font("sans-serif", Font.BOLD, 10));
+            // headerRenderer.setHorizontalAlignment(JLabel.CENTER);
+            
+
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+            table.getColumnModel().getColumn(0).setPreferredWidth(80);
 
             //System.out.println("CBP: after setting table params");
 
@@ -229,7 +259,9 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
             add(tableScrollPane, BorderLayout.CENTER);
             //System.out.println("CBP: after adding JScrollPane");
 
+            Font buttonFont = new Font("sans-serif", Font.BOLD, 10);
             JButton dispose = new JButton("Remove Results");
+            dispose.setFont(buttonFont);
             dispose.addActionListener(new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -242,8 +274,40 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
                 }
             });
 
-            JPanel buttonPanel = new JPanel();
+            JButton color = new JButton("Color nodes by rank");
+            color.setFont(buttonFont);
+            color.addActionListener(new AbstractAction() {
+                boolean undo = false;
+                VisualStyle sourceStyle = null;
+                VisualStyle rankingStyle = null;
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                  if (!undo) {
+                    CyColorPaletteChooserFactory chooserFactory = clusterManager.getService(CyColorPaletteChooserFactory.class);
+                    CyColorPaletteChooser paletteChooser = chooserFactory.getColorPaletteChooser(BrewerType.SEQUENTIAL, true);
+                    Palette colorPalette = paletteChooser.showDialog(null, "Choose color palette for node fill", null, 9);
+
+                    double[] pivots = new double[]{0.0,0.5,1.0};
+
+                    sourceStyle = ViewUtils.getCurrentVisualStyle(clusterManager);
+                    rankingStyle = ViewUtils.createFillStyle(clusterManager, sourceStyle, "_ranking", rankingType, colorPalette,pivots);
+                    ViewUtils.setVisualStyle(clusterManager, clusterManager.getNetworkView(), rankingStyle);
+                    color.setText("Remove ranking color");
+                    undo = true;
+                  } else {
+                    ViewUtils.setVisualStyle(clusterManager, clusterManager.getNetworkView(), sourceStyle);
+                    clusterManager.getService(VisualMappingManager.class).removeVisualStyle(rankingStyle);
+                    rankingStyle = null;
+
+                    color.setText("Color nodes by rank");
+                    undo = false;
+                  }
+                }
+            });
+
+            JPanel buttonPanel = new JPanel(new GridLayout(2,1));
             buttonPanel.add(dispose);
+            buttonPanel.add(color);
             add(buttonPanel, BorderLayout.SOUTH);
         }
 
@@ -297,8 +361,9 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
      */
     private class RankingBrowserPanelModel extends AbstractTableModel {
 
-        private final String[] columnNames = { "Network", "Score" };
+        private final String[] columnNames = { "Network", "Cluster", "Score" };
         private final Object[][] data; // the actual table data
+        private int rowCount = 0;
 
         public RankingBrowserPanelModel() {
             //System.out.println("CBTM: inside constructor");
@@ -306,18 +371,26 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
             data = new Object[clusters.size()][columnNames.length];
             //System.out.println("CBTM: after initialising exploreContent and data");
 
-            for (int i = 0; i < clusters.size(); i++) {
-                //System.out.println("CBTM: cluster num: "+ i);
-                final NodeCluster c = clusters.get(i);
-                //c.setRank(i);
-                StringBuilder details = getRankScore(c);
-                data[i][1] = new StringBuffer(details);
+            VisualStyle vs = ViewUtils.getClusterStyle(clusterManager, null);
 
-                SpringEmbeddedLayouter layouter = new SpringEmbeddedLayouter();
-                //System.out.println("CBTM: after invoking SpringEmbeddedLayouter");
+            SpringEmbeddedLayouter layouter = new SpringEmbeddedLayouter();
+
+            for (int i = 0; i < clusters.size(); i++) {
+                // System.out.println("CBTM: cluster num: "+ i);
+                final NodeCluster c = clusters.get(i);
+                if (c.getRankScore() < 0.1)
+                  continue;
+                //c.setRank(i);
+                rowCount++;
+                data[i][1] = getClusterNumber(c);
+                // StringBuilder details = getRankScore(c);
+                // data[i][2] = new StringBuffer(details);
+                data[i][2] = c.getRankScore();
+
+                // System.out.println("CBTM: after invoking SpringEmbeddedLayouter");
                 // get an image for each cluster - make it a nice layout of the cluster
-                final Image image = createClusterImage(c, graphPicSize, graphPicSize, layouter, false);
-                //System.out.println("CBTM: after createClusterImage");
+                final Image image = ViewUtils.createClusterImage(clusterManager, vs, network, c, graphPicSize, graphPicSize, layouter, false);
+                // System.out.println("CBTM: after createClusterImage");
                 data[i][0] = image != null ? new ClusterImageIcon(image, c) : new ClusterImageIcon();
             }
         }
@@ -332,7 +405,7 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
         }
 
         public int getRowCount() {
-            return data.length;
+            return rowCount;
         }
 
         public Object getValueAt(int row, int col) {
@@ -351,262 +424,34 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
         }
     }
 
-
     /**
-     * Convert a network to an image.  This is used by the MCODEResultsPanel.
-     *
-     * @param cluster Input network to convert to an image
-     * @param height  Height that the resulting image should be
-     * @param width   Width that the resulting image should be
-     * @param layouter Reference to the layout algorithm
-     * @param layoutNecessary Determinant of cluster size growth or shrinkage, the former requires layout
-     * @return The resulting image
+     * Header renderer
      */
-    public Image createClusterImage(final NodeCluster cluster,
-                                    final int height,
-                                    final int width,
-                                    SpringEmbeddedLayouter layouter,
-                                    boolean layoutNecessary) {
-        //System.out.println("CCI: inside method");
-        final CyRootNetwork root =  clusterManager.getService(CyRootNetworkManager.class).getRootNetwork(network);
-        //need to create a method get the subnetwork for a cluster
-        final CyNetwork net = cluster.getSubNetwork(network, root, SavePolicy.DO_NOT_SAVE);
+    public static class HeaderRenderer extends DefaultTableCellRenderer {
+      public HeaderRenderer() {
+        super();
+        setHorizontalAlignment(JLabel.CENTER);
+        setFont(new Font("sans-serif", Font.BOLD, 10));
+      }
 
-        //System.out.println("CCI: after getting root and network ");
-        // Progress reporters.
-        // There are three basic tasks, the progress of each is calculated and then combined
-        // using the respective weighting to get an overall progress global progress
-        int weightSetupNodes = 20; // setting up the nodes and edges is deemed as 25% of the whole task
-        int weightSetupEdges = 5;
-        double weightLayout = 75.0; // layout it is 70%
-        double goalTotal = weightSetupNodes + weightSetupEdges;
-
-        if (layoutNecessary) {
-            goalTotal += weightLayout;
-        }
-
-        // keeps track of progress as a percent of the totalGoal
-        double progress = 0;
-
-        final VisualStyle vs = getClusterStyle();
-        //System.out.println("CCI: after getClusterStyle");
-        final CyNetworkView clusterView = createNetworkView(net, vs);
-        //System.out.println("CCI: after createNetworkView");
-
-        clusterView.setVisualProperty(NETWORK_WIDTH, new Double(width));
-        clusterView.setVisualProperty(NETWORK_HEIGHT, new Double(height));
-
-        for (View<CyNode> nv : clusterView.getNodeViews()) {
-            if (interrupted) {
-                //logger.debug("Interrupted: Node Setup");
-                // before we short-circuit the method we reset the interruption so that the method can run without
-                // problems the next time around
-                if (layouter != null) layouter.resetDoLayout();
-                resetLoading();
-
-                return null;
-            }
-
-            // Node position
-            final double x;
-            final double y;
-
-            // First we check if the MCODECluster already has a node view of this node (posing the more generic condition
-            // first prevents the program from throwing a null pointer exception in the second condition)
-            if (cluster.getView() != null && cluster.getView().getNodeView(nv.getModel()) != null) {
-                //If it does, then we take the layout position that was already generated for it
-                x = cluster.getView().getNodeView(nv.getModel()).getVisualProperty(NODE_X_LOCATION);
-                y = cluster.getView().getNodeView(nv.getModel()).getVisualProperty(NODE_Y_LOCATION);
-            } else {
-                // Otherwise, randomize node positions before layout so that they don't all layout in a line
-                // (so they don't fall into a local minimum for the SpringEmbedder)
-                // If the SpringEmbedder implementation changes, this code may need to be removed
-                // size is small for many default drawn graphs, thus +100
-                x = (clusterView.getVisualProperty(NETWORK_WIDTH) + 100) * Math.random();
-                y = (clusterView.getVisualProperty(NETWORK_HEIGHT) + 100) * Math.random();
-
-                if (!layoutNecessary) {
-                    goalTotal += weightLayout;
-                    progress /= (goalTotal / (goalTotal - weightLayout));
-                    layoutNecessary = true;
-                }
-            }
-
-            nv.setVisualProperty(NODE_X_LOCATION, x);
-            nv.setVisualProperty(NODE_Y_LOCATION, y);
-
-            //Might be specific to MCODE
-			/*
-			// Node shape
-			if (cluster.getSeedNode() == nv.getModel().getSUID()) {
-				nv.setLockedValue(NODE_SHAPE, NodeShapeVisualProperty.RECTANGLE);
-			} else {
-				nv.setLockedValue(NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
-			}
-			 */
-
-			/*
-			// Update loader
-			if (loader != null) {
-				progress += 100.0 * (1.0 / (double) clusterView.getNodeViews().size()) *
-							((double) weightSetupNodes / (double) goalTotal);
-				loader.setProgress((int) progress, "Setup: nodes");
-			}
-
-			*/
-        }
-
-        if (clusterView.getEdgeViews() != null) {
-            for (int i = 0; i < clusterView.getEdgeViews().size(); i++) {
-                if (interrupted) {
-                    //logger.error("Interrupted: Edge Setup");
-                    if (layouter != null) layouter.resetDoLayout();
-                    resetLoading();
-
-                    return null;
-                }
-				/*
-				if (loader != null) {
-					progress += 100.0 * (1.0 / (double) clusterView.getEdgeViews().size()) *
-								((double) weightSetupEdges / (double) goalTotal);
-					loader.setProgress((int) progress, "Setup: edges");
-				}
-				*/
-            }
-        }
-
-        if (layoutNecessary) {
-            if (layouter == null) {
-                layouter = new SpringEmbeddedLayouter();
-            }
-
-            layouter.setGraphView(clusterView);
-
-            // The doLayout method should return true if the process completes without interruption
-            if (!layouter.doLayout(weightLayout, goalTotal, progress)) {
-                // Otherwise, if layout is not completed, set the interruption to false, and return null, not an image
-                resetLoading();
-
-                return null;
-            }
-        }
-
-        final Image image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        final Graphics2D g = (Graphics2D) image.getGraphics();
-
-        SwingUtilities.invokeLater(new Runnable() {
-            //@Override
-            public void run() {
-                try {
-                    final Dimension size = new Dimension(width, height);
-
-                    JPanel panel = new JPanel();
-                    panel.setPreferredSize(size);
-                    panel.setSize(size);
-                    panel.setMinimumSize(size);
-                    panel.setMaximumSize(size);
-                    panel.setBackground((Color) vs.getDefaultValue(NETWORK_BACKGROUND_PAINT));
-
-                    JWindow window = new JWindow();
-                    window.getContentPane().add(panel, BorderLayout.CENTER);
-
-                    RenderingEngine<CyNetwork> re = renderingEngineFactory.createRenderingEngine(panel, clusterView);
-
-                    vs.apply(clusterView);
-                    clusterView.fitContent();
-                    clusterView.updateView();
-                    window.pack();
-                    window.repaint();
-
-                    re.createImage(width, height);
-                    re.printCanvas(g);
-                    g.dispose();
-
-                    if (clusterView.getNodeViews().size() > 0) {
-                        cluster.setView(clusterView);
-                    }
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-        });
-
-        layouter.resetDoLayout();
-        resetLoading();
-
-        return image;
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public VisualStyle getClusterStyle() {
-        if (clusterStyle == null) {
-            clusterStyle = visualStyleFactory.createVisualStyle("Cluster");
-
-            clusterStyle.setDefaultValue(NODE_SIZE, 40.0);
-            clusterStyle.setDefaultValue(NODE_WIDTH, 40.0);
-            clusterStyle.setDefaultValue(NODE_HEIGHT, 40.0);
-            clusterStyle.setDefaultValue(NODE_PAINT, Color.RED);
-            clusterStyle.setDefaultValue(NODE_FILL_COLOR, Color.RED);
-            clusterStyle.setDefaultValue(NODE_BORDER_WIDTH, 0.0);
-
-            clusterStyle.setDefaultValue(EDGE_WIDTH, 5.0);
-            clusterStyle.setDefaultValue(EDGE_PAINT, Color.BLUE);
-            clusterStyle.setDefaultValue(EDGE_UNSELECTED_PAINT, Color.BLUE);
-            clusterStyle.setDefaultValue(EDGE_STROKE_UNSELECTED_PAINT, Color.BLUE);
-            clusterStyle.setDefaultValue(EDGE_SELECTED_PAINT, Color.BLUE);
-            clusterStyle.setDefaultValue(EDGE_STROKE_SELECTED_PAINT, Color.BLUE);
-            clusterStyle.setDefaultValue(EDGE_TARGET_ARROW_SHAPE, NONE);
-            clusterStyle.setDefaultValue(EDGE_SOURCE_ARROW_SHAPE, NONE);
-
-			/*
-			//System.out.println("GCS: before getVisual Lexicon");
-			VisualLexicon lexicon = applicationMgr.getCurrentRenderingEngine().getVisualLexicon();
-			VisualProperty vp = lexicon.lookup(CyEdge.class, "edgeTargetArrowShape");
-			//System.out.println("CCI: after setting visual property");
-
-			if (vp != null) {
-				Object arrowValue = vp.parseSerializableString("ARROW");
-				System.out.println("Edge target arrow value = "+arrowValue.toString());
-				if (arrowValue != null) clusterStyle.setDefaultValue(vp, arrowValue);
-			}
-			*/
-        }
-
-        return clusterStyle;
-    }
-
-    public CyNetworkView createNetworkView(final CyNetwork net, VisualStyle vs) {
-        final CyNetworkView view = networkViewFactory.createNetworkView(net);
-        //System.out.println("inside createNetworkView");
-        if (vs == null) vs = visualMappingMgr.getDefaultVisualStyle();
-        visualMappingMgr.setVisualStyle(vs, view);
-        vs.apply(view);
-        view.updateView();
-
-        return view;
+      @Override
+      public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+        Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+        c.setFont(new Font("sans-serif", Font.BOLD, 10));
+        return c;
+      }
     }
 
     /**
-     * A text area renderer that creates a line wrapped, non-editable text area
+     * An image renderer that creates a reasonable row height
      */
-    public static class JTextAreaRenderer extends JTextArea implements TableCellRenderer {
+    public static class ImageRenderer extends JLabel implements TableCellRenderer {
 
         int minHeight;
 
-        /**
-         * Constructor
-         *
-         * @param minHeight
-         *            The minimum height of the row, either the size of the
-         *            graph picture or zero
-         */
-        public JTextAreaRenderer(int minHeight) {
-            //System.out.println("JTAR: inside constructor ");
-            this.setLineWrap(true);
-            this.setWrapStyleWord(true);
-            this.setEditable(false);
-            this.setFont(new Font(this.getFont().getFontName(), Font.PLAIN, 11));
-            this.minHeight = minHeight;
+        public ImageRenderer(int minHeight) {
+          super();
+          this.minHeight = minHeight;
         }
 
         /**
@@ -629,9 +474,7 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
                                                        boolean hasFocus,
                                                        int row,
                                                        int column) {
-            //System.out.println("JTAR: inside getTableCellRendererComponent");
-            StringBuffer sb = (StringBuffer) value;
-            this.setText(sb.toString());
+            this.setIcon((Icon)value);
 
             if (isSelected) {
                 this.setBackground(table.getSelectionBackground());
@@ -642,15 +485,17 @@ public class RankingPanel extends JPanel implements CytoPanelComponent{
             }
 
             // Row height calculations
+            this.setHorizontalAlignment(JLabel.CENTER);
+            int iconPreferredHeight = (int) this.getPreferredSize().getHeight();
+            int iconPreferredWidth = (int) this.getPreferredSize().getWidth();
             int currentRowHeight = table.getRowHeight(row);
             int rowMargin = table.getRowMargin();
-            this.setSize(table.getColumnModel().getColumn(column).getWidth(), currentRowHeight - (2 * rowMargin));
-            int textAreaPreferredHeight = (int) this.getPreferredSize().getHeight();
+            this.setSize(iconPreferredWidth+10, currentRowHeight - (2 * rowMargin));
 
             // JTextArea can grow and shrink here
-            if (currentRowHeight != Math.max(textAreaPreferredHeight + (2 * rowMargin), minHeight + (2 * rowMargin))) {
+            if (currentRowHeight != Math.max(iconPreferredHeight + (2 * rowMargin), minHeight + (2 * rowMargin))) {
                 table.setRowHeight(row, Math
-                        .max(textAreaPreferredHeight + (2 * rowMargin), minHeight + (2 * rowMargin)));
+                        .max(iconPreferredHeight + (2 * rowMargin), minHeight + (2 * rowMargin)));
             }
 
             return this;

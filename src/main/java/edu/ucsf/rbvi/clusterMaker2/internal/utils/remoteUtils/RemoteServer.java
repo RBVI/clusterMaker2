@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import org.apache.http.HttpEntity;
@@ -25,46 +26,39 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobExecutio
 public class RemoteServer {
 
 	static private String LOCAL_PATH = "http://localhost:8000/";
-	static private String PROD_PATH = "http://webservices.rbvi.ucsf.edu/rest/api/v1/";
+	static private String PROD_PATH = "https://webservices.rbvi.ucsf.edu/rest/api/v1/";
 	
 		
 	static public String getBasePath() {
 		return PROD_PATH;
 	}
 	
+	    // service is the shortname of the algorithm
 		//make the choice between different clustering algorithms/servers, this works
 	static public String getServiceURI(String service) {
-		
-		String server = PROD_PATH;
-		
-		if (service.equals("leiden")) {
-			return server + "service/leiden?objective_function=modularity&iterations=4";
-		} else if (service.equals("fastgreedy")) {
-			return server + "service/fastgreedy";
-		} else if (service.equals("infomap")) {
-			return server + "service/infomap";
-		} else if (service.equals("labelpropagation")) {
-			return server + "service/labelpropagation";
-		} else if (service.equals("leadingeigenvector")) {
-			return server + "service/leadingeigenvector";
-		} else if (service.equals("multilevel")) {
-			return server + "service/multilevel";
-		} else {
-			System.out.println("Unknown service");
-		}
-			
-		return null;
+		return PROD_PATH + "service/" + service;
+
 	}
+
+  static public String getServiceURIWithArgs(String service, Map<String, String> args) {
+    String uri = getServiceURI(service) + '?';
+    for (String key: args.keySet()) {
+      uri += key+"="+args.get(key)+'&';
+    }
+    return uri.substring(0, uri.length()-1);
+  }
+
+
 		//sends the data
 		//you should use a JSONParser to parse the reply and return that.
 		//the URI is the whole URI of the service
 		//returns the status code and JSONObject (JobID)
 	static public JSONObject postFile(String uri, JSONObject jsonData) throws Exception {
-		System.out.println("Posting on: " + uri);
+		// System.out.println("Posting on: " + uri);
 		CloseableHttpClient httpClient = HttpClients.createDefault();  //client = browser --> executes in the default browser of my computer?
 		
 		CloseableHttpResponse response = getPOSTresponse(uri, jsonData, httpClient);
-		System.out.println("HttpPOST response: " + response.toString());
+		// System.out.println("HttpPOST response: " + response.toString());
 		
 		int statusCode = response.getStatusLine().getStatusCode();
 		if (statusCode != 200 && statusCode != 202) {
@@ -106,17 +100,31 @@ public class RemoteServer {
 		
 		int statusCode = response.getStatusLine().getStatusCode();
 		if (statusCode != 200 && statusCode != 202) {
+			System.out.println("Status code not 200!");
 			return null;
 		}
 		HttpEntity entity = response.getEntity();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));
 		
-		JSONObject json= new JSONObject();
+    JSONObject json = null;
 		if (command == Command.CHECK) {
+      System.out.println("Creating parser");
+			JSONParser parser = new JSONParser();
+      System.out.println("Parsing data");
+      try {
+			json = (JSONObject) parser.parse(reader); 
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      System.out.println("Status: "+json.toString());
+      if (json.containsKey("status")) {
+        json.put("jobStatus", json.get("status"));
+      }
+      /*
 			String line = "";
 			Object message = null;
 			while ((line = reader.readLine()) != null) {
-				System.out.println(line);
+				System.out.println("fetchJSON: "+line);
 				json.put("jobStatus", line);
 				if (json.containsKey("message")) {
 					message = json.get("message");
@@ -125,13 +133,12 @@ public class RemoteServer {
 					json.put("message", line);
 				}
 			}
+      */
 		} else if (command == Command.FETCH) {
 			JSONParser parser = new JSONParser();
 			json = (JSONObject) parser.parse(reader); 
 		}
-		
-	
-	   
+
 		return json; //= dictionary, take it and poll from this the status key Map<Key, value> and for key status there is some answer, JSON similar to xml but easier
 	}
 

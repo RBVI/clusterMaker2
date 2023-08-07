@@ -58,7 +58,7 @@ public class RunTransClust {
 		count = 0;
 		for (int i = 0; i < this.nodes.size(); i++) {
 			CyNode cyNodeI = this.nodes.get(i);
-			es.startPositions[integers2proteins.get(cyNodeI.getSUID())] = count;
+			es.startPositions[integers2proteins.get(ModelUtils.getNodeName(network, cyNodeI))] = count;
 			for (int j = 0; j < this.nodes.size(); j++) {
 				CyNode cyNodeJ = this.nodes.get(j);
 					es.sources[count] = i;
@@ -69,7 +69,7 @@ public class RunTransClust {
 						count++;
 					}
 			}
-			es.endPositions[integers2proteins.get(cyNodeI.getSUID())] = count-1;
+			es.endPositions[integers2proteins.get(ModelUtils.getNodeName(network, cyNodeI))] = count-1;
 		}
 		
 		Semaphore s = new Semaphore(1);

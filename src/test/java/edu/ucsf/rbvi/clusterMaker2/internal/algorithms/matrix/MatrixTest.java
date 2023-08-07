@@ -308,6 +308,8 @@ public class MatrixTest {
 		}
 		coltMatrix2 = new ColtMatrix((SimpleMatrix)simpleMatrix2);
 		ojAlgoMatrix2 = new OjAlgoMatrix((SimpleMatrix)simpleMatrix2);
+
+    Matrix ojAlgoMatrixX = new OjAlgoMatrix(10,10);
 	}
 
 	private double sumByRows(Matrix mat) {

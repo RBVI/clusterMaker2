@@ -27,11 +27,6 @@ public class FastGreedyTaskFactory extends AbstractClusterTaskFactory {
 	public String getShortName() {return FastGreedy.SHORTNAME;}
 	
 	@Override
-	public String getLongDescription() {
-		return "";
-	}
-
-	@Override
 	public ClusterViz getVisualizer() {
 		return null;
 	}
@@ -45,4 +40,11 @@ public class FastGreedyTaskFactory extends AbstractClusterTaskFactory {
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new FastGreedy(context, clusterManager, registrar));
 	}
+
+	@Override
+	public String getLongDescription() {
+    return "This function implements the fast greedy modularity optimization algorithm for "+
+           "finding community structure, see A Clauset, MEJ Newman, C Moore: Finding community "+
+           "structure in very large networks, http://www.arxiv.org/abs/cond-mat/0408187 for the details.";
+  }
 }

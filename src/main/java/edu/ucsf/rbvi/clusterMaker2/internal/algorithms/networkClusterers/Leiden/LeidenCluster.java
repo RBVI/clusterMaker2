@@ -14,6 +14,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.json.simple.JSONArray;
 import org.cytoscape.jobs.CyJob;
@@ -38,9 +39,10 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobDataServ
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobExecutionService;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.RemoteServer;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.ClusterJobHandler;
+import edu.ucsf.rbvi.clusterMaker2.internal.utils.remoteUtils.NetworkClusterJobHandler;
 
 public class LeidenCluster extends AbstractNetworkClusterer {
-	public static String NAME = "Leiden Clusterer";
+	public static String NAME = "Leiden Clusterer (remote)";
 	public static String SHORTNAME = "leiden";
 	final CyServiceRegistrar registrar;
 	public final static String GROUP_ATTRIBUTE = "__LeidenGroups.SUID";
@@ -62,10 +64,12 @@ public class LeidenCluster extends AbstractNetworkClusterer {
 	public String getShortName() {return SHORTNAME;}
 
 	@Override
+  @ProvidesTitle
 	public String getName() {return NAME;}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		monitor = taskMonitor;
 		// Get the execution service
 		CyJobExecutionService executionService = 
 						registrar.getService(CyJobExecutionService.class, "(title=ClusterJobExecutor)");
@@ -75,6 +79,19 @@ public class LeidenCluster extends AbstractNetworkClusterer {
 		clusterAttributeName = context.getClusterAttribute();
 		createGroups = context.advancedAttributes.createGroups;
      	String attribute = context.getattribute().getSelectedValue();
+     	
+		HashMap<String, Object> configuration = new HashMap<>();
+		if (context.isSynchronous == true) {
+			configuration.put("waitTime", -1);
+		} else {
+			configuration.put("waitTime", 20);
+		}
+
+    // Get the arguments from our context
+    configuration.put("resolution", context.resolution_parameter);
+    configuration.put("beta", context.beta);
+    configuration.put("iterations", context.n_iterations);
+    configuration.put("objective_function", context.objective_function.getSelectedValue());
 				
 		HashMap<Long, String> nodeMap = getNetworkNodes(currentNetwork);
 		List<String> nodeArray = new ArrayList<>();
@@ -95,28 +112,25 @@ public class LeidenCluster extends AbstractNetworkClusterer {
 		jobData = dataService.addData(jobData, "edges", edgeArray);
 		job.storeClusterData(clusterAttributeName, currentNetwork, clusterManager, createGroups, GROUP_ATTRIBUTE, null, getShortName());
 				// Create our handler
-		ClusterJobHandler jobHandler = new ClusterJobHandler(job, network);
+		NetworkClusterJobHandler jobHandler = new NetworkClusterJobHandler(job, network, context.vizProperties.showUI, context.vizProperties.restoreEdges);
 		job.setJobMonitor(jobHandler);	
 				// Submit the job
-		CyJobStatus exStatus = executionService.executeJob(job, basePath, null, jobData);
+		CyJobStatus exStatus = executionService.executeJob(job, basePath, configuration, jobData);
 		
 		CyJobStatus.Status status = exStatus.getStatus();
 		System.out.println("Status: " + status);
+		
 		if (status == Status.FINISHED) {
-			executionService.fetchResults(job, dataService.getDataInstance()); 
-			if (context.vizProperties.showUI) {
-				taskMonitor.showMessage(TaskMonitor.Level.INFO, "Creating network");
-				insertTasksAfterCurrentTask(new NewNetworkView(network, clusterManager, true, context.vizProperties.restoreEdges, false));
-			}
-			
+			jobHandler.loadData(job, taskMonitor);
 		} else if (status == Status.RUNNING 
 				|| status == Status.SUBMITTED 
 				|| status == Status.QUEUED) {
 			CyJobManager manager = registrar.getService(CyJobManager.class);
 			manager.addJob(job, jobHandler, 5); //this one shows the load button
 			
-		} else if (status == Status.ERROR 
-				|| status == Status.UNKNOWN  
+		} else if (status == Status.ERROR) {
+			monitor.showMessage(TaskMonitor.Level.ERROR, "Job error: " + exStatus.getMessage());
+    } else if (status == Status.UNKNOWN  
 				|| status == Status.CANCELED 
 				|| status == Status.FAILED
 				|| status == Status.TERMINATED 

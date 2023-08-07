@@ -23,6 +23,8 @@ import org.cytoscape.jobs.CyJobData;
 import org.cytoscape.jobs.CyJobDataService;
 import org.cytoscape.jobs.CyJobStatus;
 import org.cytoscape.jobs.CyJobStatus.Status;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
@@ -41,6 +43,7 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.AbstractNetworkClusterer;
 import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leiden.LeidenCluster;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
+import edu.ucsf.rbvi.clusterMaker2.internal.ui.ScatterPlotDialog;
 
 /**
  * The main interface to the RBVI network cluster REST service.  The
@@ -134,7 +137,10 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 	public CyJobStatus checkJobStatus(CyJob job) {
 		if (job instanceof ClusterJob) {
 			JSONObject result = handleCommand((ClusterJob)job, Command.CHECK, null);
-			return getStatus(result, null);
+			CyJobStatus status = getStatus(result, null);
+      if (status.getStatus() == Status.ERROR)
+        logger.error("Job "+job.getJobId()+" experienced and error: "+status.getMessage());
+      return status;
 		}
 		return new CyJobStatus(Status.ERROR, "CyJob is not a ClusterJob");
 	}
@@ -143,67 +149,78 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 	@Override
 	public CyJobStatus executeJob(CyJob job, String basePath, Map<String, Object> configuration, //configuration comes from network data
 	                              CyJobData inputData) {
-		
 		if (!(job instanceof ClusterJob))
 			return new CyJobStatus(Status.ERROR, "CyJob is not a ClusterJob"); //error message if not clusterjob
 
 		ClusterJob clJob = (ClusterJob)job; //converts CyJob into ClusterJob
 		Map<String, String> queryMap = convertConfiguration(configuration); //converts configuration into Map<String, String>
-
+		
 		String serializedData = dataService.getSerializedData(inputData); //gets serialized data (JSON) using dataService
-		System.out.println("Serialized data in execution service: " + serializedData);
-		queryMap.put("inputData", serializedData.toString()); //...and puts it into queryMap as key: "inputData", value: String of the data
-		queryMap.put(COMMAND, Command.SUBMIT.toString()); //puts key: COMMAND, value: SUBMIT in the queryMap --> queryMap has two keys
+		// System.out.println("Serialized data in execution service: " + serializedData); 
+		// queryMap.put("inputData", serializedData.toString()); //...and puts it into queryMap as key: "inputData", value: String of the data
+		// queryMap.put(COMMAND, Command.SUBMIT.toString()); //puts key: COMMAND, value: SUBMIT in the queryMap --> queryMap has two keys
 		
 		JSONParser parser = new JSONParser();
 		JSONObject jsonData = null;
 		try {
 			jsonData = (JSONObject) parser.parse(serializedData);
 		} catch (ParseException e1) {
-			System.out.println("Data to JSONObject conversion failed: " + e1.getMessage());
+			// System.out.println("Data to JSONObject conversion failed: " + e1.getMessage());
+      logger.error("Data to JSONObject conversion failed: " + e1.getMessage());
+      return new CyJobStatus(Status.ERROR, "Data to JSONObject conversion failed: "+e1.getMessage());
 		}
+		
+		// System.out.println("jsonData (posted on server): " + jsonData);
 		
 		Object value = null;
 		String jobName = (String) clJob.getClusterData().get("shortName");
 		try {
-			value = RemoteServer.postFile(RemoteServer.getServiceURI(jobName), jsonData);
+			value = RemoteServer.postFile(RemoteServer.getServiceURIWithArgs(jobName,queryMap), jsonData);
 		} catch (Exception e) {
-			System.out.println("Error in postFile method: " + e.getMessage());
+      logger.error("Error in postFile method: " + e.getMessage());
+      return new CyJobStatus(Status.ERROR, "Error in postFile method: "+e.getMessage());
 		}
-		System.out.println("JSON Job ID: " + value);
+		logger.info("JSON Job ID: " + value);
 		
 		if (value == null) 
 			return new CyJobStatus(Status.ERROR, "Job submission failed!");
+
 		JSONObject json = (JSONObject) value;
 		if (!json.containsKey(JOBID)) {
-			System.out.println("JSON returned: "+json.toString());
+			// System.out.println("JSON returned: "+json.toString());
+      logger.error("Server didn't return an ID!");
 			return new CyJobStatus(Status.ERROR, "Server didn't return an ID!");
 		}
 
-		System.out.println("JSONObject postFile(): " + json);
+		// System.out.println("JSONObject postFile(): " + json);
 		
 		String jobId = json.get(JOBID).toString(); //gets the job ID from the JSON Object
 		clJob.setJobId(jobId); //...and sets it to the ClusterJob 
-		System.out.println("ClusterJob jobID: " + clJob.getJobId());
+    logger.info("ClusterJob jobID: " + clJob.getJobId());
 		//everything above this is to get the job ID from the JSON jobID repsonse from postFile() and put it in the ClusterJob object
 		
 		clJob.setBasePath(basePath); //...and also sets the basePath to the Cluster Job
-		System.out.println("ClusterJob BasePath: " + clJob.getBasePath());
+    logger.info("ClusterJob BasePath: " + clJob.getBasePath());
 		
 		//getting status
-		int waitTime = 20;
+		int waitTime = Integer.parseInt(queryMap.get("waitTime"));
 		CyJobStatus status = checkJobStatus(clJob);
-		for (int i = 0; i < waitTime; i += 5) {
-		    if (jobDone(status)) return status;
 
-		    try {
-		        TimeUnit.SECONDS.sleep(5);
-		    } catch (InterruptedException e) {
-		        return new CyJobStatus(Status.ERROR, "Interrupted");
-		    }
-		    
-		    status = checkJobStatus(clJob);
-		}
+    boolean done = false;
+    int i = 0;
+    while (!done) {
+      if (jobDone(status)) return status;
+      try {
+          TimeUnit.SECONDS.sleep(5);
+      } catch (InterruptedException e) {
+          return new CyJobStatus(Status.ERROR, "Interrupted");
+      }
+
+      status = checkJobStatus(clJob);
+      i += 5;
+      if ((waitTime >= 0) && (i >= waitTime))
+        return status;
+    }
 		
 		return status;
 	}
@@ -214,41 +231,31 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 	      st == Status.CANCELED ||
 	      st == Status.FAILED ||
 	      st == Status.TERMINATED ||
+	      st == Status.ERROR ||
 	      st == Status.PURGED)
 	        return true;
 	    return false;
 	}
-
+ 
+	
 	//fetches JSON object, deserializes the data and puts it to CyJobData
 	@Override
 	public CyJobStatus fetchResults(CyJob job, CyJobData data) {
 		if (job instanceof ClusterJob) {
+			
 			ClusterJob clusterJob = (ClusterJob) job;
 			//handleCommand gives whatever HttpGET gives.
-			JSONObject result = handleCommand(clusterJob, Command.FETCH, null); //handles command FETCH --> argMap is null --> JSON object runs the command
+		    JSONObject result = handleCommand(clusterJob, Command.FETCH, null); //handles command FETCH --> argMap is null --> JSON object runs the command
+		    // System.out.println("fetchResults() JSONObject result: " + result);
 			
 			// Get the unserialized data, dataService deserializes the data (the JSON object), CyJobData is basically a HashMap
-			CyJobData newData = dataService.deserialize(result); 
-			System.out.println("CyJobData results: " + newData.getAllValues());
+		    CyJobData newData = dataService.deserialize(result); 
+		    // System.out.println("CyJobData results: " + newData.getAllValues());
 			
 			// Merge it in, move the information from newData to data
-			for (String key: newData.keySet()) {
-				data.put(key, newData.get(key));
-			}
-
-			Map<String, Object> clusterData = clusterJob.getClusterData().getAllValues();
-			String clusterAttributeName = (String) clusterData.get("clusterAttributeName");
-			CyNetwork network = (CyNetwork) clusterData.get("network");
-			ClusterManager clusterManager = (ClusterManager) clusterData.get("clusterManager");
-			Boolean createGroups = (Boolean) clusterData.get("createGroups");
-			String group_attr = (String) clusterData.get("group_attr");
-			List<String> params  = (List<String>) clusterData.get("params");
-			String shortName = (String) clusterData.get("shortName");
-			List<NodeCluster> nodeClusters = createClusters(data, clusterAttributeName, network); //move this to remote utils
-			System.out.println("NodeClusters: " + nodeClusters);
-			
-			AbstractNetworkClusterer.createGroups(network, nodeClusters, group_attr, clusterAttributeName, 
-					clusterManager, createGroups, params, shortName);
+		    for (String key: newData.keySet()) {
+		    	data.put(key, newData.get(key));
+		    }
 			
 			CyJobStatus resultStatus = getStatus(result, null);
 			if (resultStatus == null)
@@ -258,19 +265,26 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		return new CyJobStatus(Status.ERROR, "CyJob is not a ClusterJob"); //if not a clusterjob
 	}
 	
+	//returns a list of NodeCluster objects that have a number and a list of nodes belonging to it
 	public static List<NodeCluster> createClusters(CyJobData data, String clusterAttributeName, CyNetwork network) {
 		JSONArray partitions = (JSONArray) data.get("partitions");
+    // System.out.println("Found "+partitions.size()+" partitions");
+
+    // Build a map of node names
+    Map<String, CyNode> nodeNameMap = new HashMap<>();
+    for (CyNode cyNode: network.getNodeList()) {
+      String name = network.getRow(cyNode).get(CyNetwork.NAME, String.class);
+      nodeNameMap.put(name, cyNode);
+    }
 		
 		List<NodeCluster> nodeClusters = new ArrayList<>();
-		int i = 1;
+		int i = 1; //each cluster is assigned a number
 		for (Object partition : partitions) {
+      // System.out.println("Cluster "+i);
 			List<String> cluster = (ArrayList<String>) partition;
 			List<CyNode> cyNodes = new ArrayList<>();
 			for (String nodeName : cluster) {
-				for (CyNode cyNode : network.getNodeList())
-					if (network.getRow(cyNode).get(CyNetwork.NAME, String.class).equals(nodeName)) {
-						cyNodes.add(cyNode);
-					}
+        cyNodes.add(nodeNameMap.get(nodeName));
 			}
 
 			NodeCluster nodeCluster = new NodeCluster(i, cyNodes);
@@ -325,18 +339,21 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 		}
 	}
 
-	
-	
+
 	
 	//compare f ex "done" and map that to the status ENUM
 	//added return new CyJobStatus
 	private CyJobStatus getStatus(JSONObject obj, String message) {
-		if (obj.containsKey(STATUS)) {
+		if (obj.containsKey(ERROR)) {
+			return new CyJobStatus(Status.ERROR, (String)obj.get(ERROR));
+		} else if (obj.containsKey(STATUS)) {
 			Status status = Status.UNKNOWN;
 			if (obj.get(STATUS).equals("done")) {
 				status = Status.FINISHED;
 			} else if (obj.get(STATUS).equals("running")) {
 				status = Status.RUNNING;
+			} else if (obj.get(STATUS).equals("error")) {
+				status = Status.ERROR;
 			}
 			// Did we get any information about our status?
 			if (obj.containsKey(STATUS_MESSAGE)) {
@@ -345,8 +362,6 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 				return new CyJobStatus(status, message);
 			}
 			return new CyJobStatus(status, message);
-		} else if (obj.containsKey(ERROR)) {
-			return new CyJobStatus(Status.ERROR, (String)obj.get(ERROR));
 		}
 		return null;
 	}
@@ -357,12 +372,13 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 
 		argMap.put(COMMAND, command.toString());
 		argMap.put(JOBID, job.getJobId());
+	    // System.out.println("handleCommand argmap: " + argMap);
 		
 		JSONObject response = null;
 		
 		if (command == Command.CHECK) {
 			try {
-				response = RemoteServer.fetchJSON(job.getBasePath() + "status/" + job.getJobId(), command);
+				response = RemoteServer.fetchJSON(job.getBasePath() + "status2/" + job.getJobId(), command);
 			} catch (Exception e) {
 				System.out.println("Exception in fetchJSON: " + e.getMessage());
 			}
@@ -375,6 +391,8 @@ public class ClusterJobExecutionService implements CyJobExecutionService {
 			}
 		}
 		
+		// System.out.println("FetchJSON: " + response + "/nmessage: ");
+    System.out.println("handleCommand: "+response);
 		return response;
 	}
 

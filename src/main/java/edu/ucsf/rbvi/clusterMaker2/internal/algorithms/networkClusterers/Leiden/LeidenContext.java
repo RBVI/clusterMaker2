@@ -3,6 +3,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leiden
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 import org.cytoscape.model.CyColumn;
@@ -28,6 +29,7 @@ public class LeidenContext implements ClusterAlgorithmContext {
 	@Tunable(description = "Objective function",
 			 longDescription = "Whether to use the Constant Potts Model (CPM) or modularity. Must be either \"CPM\" or \"modularity\".",
 			 exampleStringValue = "CPM",
+			 tooltip = "<html>Whether to use the Constant Potts Model (CPM) or modularity. Must be either 'CPM' or 'modularity'.</html>",
 			 groups = {"Leiden Advanced Settings"}, gravity = 1.0)
 	public ListSingleSelection<String> objective_function = new ListSingleSelection<>("CPM", "modularity");
 	
@@ -48,20 +50,31 @@ public class LeidenContext implements ClusterAlgorithmContext {
 			 		+ "Higher resolutions lead to more smaller communities, "
 			 		+ "while lower resolutions lead to fewer larger communities.",
 			 exampleStringValue = "1.0",
+			 tooltip = "<html>The resolution parameter to use. Higher resolutions lead to more smaller communities,<br/>"
+			 		+ "while lower resolutions lead to fewer larger communities.</html>",
 			 groups = {"Leiden Advanced Settings"}, gravity = 3.0)
 	public double resolution_parameter = 1.0;
 	
 	@Tunable(description = "Beta value",
 			 longDescription = "Parameter affecting the randomness in the Leiden algorithm. This affects only the refinement step of the algorithm.",
 			 exampleStringValue = "0.01",
+			 tooltip = "<html>Parameter affecting the randomness in the Leiden algorithm. This affects only the refinement step of the algorithm.</html>",
 			 groups = {"Leiden Advanced Settings"}, gravity = 4.0)
 	public double beta = 0.01;
 	
 	@Tunable(description = "Number of iterations",
 			 longDescription = "The number of iterations to iterate the Leiden algorithm. Each iteration may improve the partition further.",
 			 exampleStringValue = "2",
+			 tooltip = "<html>The number of iterations to iterate the Leiden algorithm. Each iteration may improve the partition further.</html>",
 			 groups = {"Leiden Advanced Settings"}, gravity = 5.0)
 	public int n_iterations = 2;
+	
+	@Tunable(description = "Synchronous",
+			 longDescription = "If ```false``` the algorithm will run in the background after specified wait time",
+			 exampleStringValue = "true",
+			 tooltip = "<html>If ```false``` the algorithm will run in the background after specified wait time</html>",
+			 groups = {"Leiden Advanced Settings"}, gravity = 6.0)
+	public boolean isSynchronous = false;
 	
 	@ContainsTunables
 	public AdvancedProperties advancedAttributes;
@@ -84,6 +97,8 @@ public class LeidenContext implements ClusterAlgorithmContext {
 		resolution_parameter = origin.resolution_parameter;
 		beta = origin.beta;
 		n_iterations = origin.n_iterations;
+		isSynchronous = origin.isSynchronous;
+		
 	}
 
 	public void setNetwork(CyNetwork network) {

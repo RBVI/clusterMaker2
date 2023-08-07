@@ -28,6 +28,7 @@ public class InfomapContext implements ClusterAlgorithmContext {
 	@Tunable(description = "Trials",
 			 longDescription = "The number of attempts to partition the network.",
 			 exampleStringValue = "10",
+			 tooltip = "<html>The number of attempts to partition the network.</html>",
 			 groups =  {"Infomap Advanced Settings"}, gravity = 1.0)
 	public int trials = 10;
 	
@@ -42,6 +43,13 @@ public class InfomapContext implements ClusterAlgorithmContext {
 		return attribute;
 	}
 	public void setattribute(ListSingleSelection<String> attr) { }
+	
+	@Tunable(description = "Synchronous",
+			 longDescription = "If ```false``` the algorithm will run in the background after specified wait time",
+			 exampleStringValue = "true",
+			 tooltip = "<html>If ```false``` the algorithm will run in the background after specified wait time</html>",
+			 groups = {"Leiden Advanced Settings"}, gravity = 6.0)
+	public boolean isSynchronous = false;
 	
 	@ContainsTunables
 	public AdvancedProperties advancedAttributes;
@@ -61,6 +69,7 @@ public class InfomapContext implements ClusterAlgorithmContext {
 
 		trials = origin.trials;
 		attribute = origin.attribute;
+		isSynchronous = origin.isSynchronous;
 	}
 
 	public void setNetwork(CyNetwork network) {

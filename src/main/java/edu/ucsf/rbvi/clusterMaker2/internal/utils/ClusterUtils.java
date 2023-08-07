@@ -41,64 +41,66 @@ public class ClusterUtils {
         }
     }
 
-    public static List<NodeCluster> setEdgeScoresInCluster(CyNetwork network, List<NodeCluster> clusters, List<String> edgeAttributes, String clusterColumnName, boolean multiplicative) {
+    public static List<NodeCluster> setEdgeScoresInCluster(CyNetwork network, List<NodeCluster> clusters, 
+                                                           Map<CyIdentifiable, double[]> edgeMap, String clusterColumnName, boolean multiplicative) {
         List<CyEdge> edges = network.getEdgeList();
         CyTable nodeTable = network.getDefaultNodeTable();
         CyTable edgeTable = network.getDefaultEdgeTable();
 
-        for (String edgeAttr : edgeAttributes) {
-            for (CyEdge edge : edges) {
-                CyRow source = nodeTable.getRow(edge.getSource().getSUID());
-                CyRow target = nodeTable.getRow(edge.getTarget().getSUID());
-                CyRow edgeRow = edgeTable.getRow(edge.getSUID());
-                int sourceClusterNumber = source.get(clusterColumnName, Integer.class, -1);
-                int targetClusterNumber = target.get(clusterColumnName, Integer.class, -1);
-                int sourceHighestClusterNumber = -1;
-                int targetHighestClusterNumber = -1;
+        for (CyEdge edge : edges) {
+          CyRow source = nodeTable.getRow(edge.getSource().getSUID());
+          CyRow target = nodeTable.getRow(edge.getTarget().getSUID());
+          CyRow edgeRow = edgeTable.getRow(edge.getSUID());
+          double[] attrValues = edgeMap.get(edge);
+          int sourceClusterNumber = source.get(clusterColumnName, Integer.class, -1);
+          int targetClusterNumber = target.get(clusterColumnName, Integer.class, -1);
+          int sourceHighestClusterNumber = -1;
+          int targetHighestClusterNumber = -1;
 
-                for (NodeCluster cluster : clusters) {
-                    int clusterNumber = cluster.getClusterNumber();
-
-                    if (clusterNumber == sourceClusterNumber && (clusterNumber < sourceHighestClusterNumber || sourceHighestClusterNumber == -1)) {
-                        if (multiplicative) {
-                            setRankScoreMultiplicative(edgeAttr, edgeRow, cluster);
-                        } else {
-                            setRankScore(edgeAttr, edgeRow, cluster);
-                        }
-                        sourceHighestClusterNumber = clusterNumber;
-                    } else if (clusterNumber == targetClusterNumber && (clusterNumber < targetHighestClusterNumber || targetHighestClusterNumber == -1)) {
-                        if (multiplicative) {
-                            setRankScoreMultiplicative(edgeAttr, edgeRow, cluster);
-                        } else {
-                            setRankScore(edgeAttr, edgeRow, cluster);
-                        }
-                        targetHighestClusterNumber = clusterNumber;
-                    }
+          for (int attrIndex = 0; attrIndex < attrValues.length; attrIndex++) {
+            for (NodeCluster cluster : clusters) {
+              int clusterNumber = cluster.getClusterNumber();
+              if (clusterNumber == sourceClusterNumber && (clusterNumber < sourceHighestClusterNumber || sourceHighestClusterNumber == -1)) {
+                if (multiplicative) {
+                    setRankScoreMultiplicative(cluster, attrValues[attrIndex]);
+                } else {
+                    setRankScore(cluster, attrValues[attrIndex]);
                 }
+                sourceHighestClusterNumber = clusterNumber;
+              } else if (clusterNumber == targetClusterNumber && (clusterNumber < targetHighestClusterNumber || targetHighestClusterNumber == -1)) {
+                if (multiplicative) {
+                    setRankScoreMultiplicative(cluster, attrValues[attrIndex]);
+                } else {
+                    setRankScore(cluster, attrValues[attrIndex]);
+                }
+                targetHighestClusterNumber = clusterNumber;
+              }
             }
+          }
         }
 
         return clusters;
     }
 
-    public static List<NodeCluster> setNodeScoresInCluster(CyNetwork network, List<NodeCluster> clusters, List<String> nodeAttributes, String clusterColumnName, boolean multiplicative) {
+    public static List<NodeCluster> setNodeScoresInCluster(CyNetwork network, List<NodeCluster> clusters, 
+                                                           Map<CyIdentifiable, double[]> nodeMap, String clusterColumnName, boolean multiplicative) {
         List<CyNode> nodes = network.getNodeList();
         CyTable table = network.getDefaultNodeTable();
 
-        for (String nodeAttr : nodeAttributes) {
-            for (CyNode node : nodes) {
-                CyRow row = table.getRow(node.getSUID());
-                int nodeClusterNumber = row.get(clusterColumnName, Integer.class, -1);
-
-                for (NodeCluster cluster : clusters) {
-                    if (cluster.getClusterNumber() == nodeClusterNumber) {
-                        if (multiplicative) {
-                            setRankScoreMultiplicative(nodeAttr, row, cluster);
-                        } else {
-                            setRankScore(nodeAttr, row, cluster);
-                        }
-                    }
+        for (CyNode node : nodes) {
+            CyRow row = table.getRow(node.getSUID());
+            int nodeClusterNumber = row.get(clusterColumnName, Integer.class, -1);
+            double[] attrValues = nodeMap.get(node);
+            for (int attrIndex = 0; attrIndex < attrValues.length; attrIndex++) {
+              for (NodeCluster cluster : clusters) {
+                if (cluster.getClusterNumber() == nodeClusterNumber) {
+                  if (multiplicative) {
+                    setRankScoreMultiplicative(cluster, attrValues[attrIndex]);
+                  } else {
+                    setRankScore(cluster, attrValues[attrIndex]);
+                  }
                 }
+              }
             }
         }
 
@@ -109,8 +111,9 @@ public class ClusterUtils {
      * Assumes ascending sorted clusters
      */
     public static void insertResultsInColumns(CyNetwork network, List<NodeCluster> clusters, String shortname) {
-        CyTable nodeTable = network.getDefaultNodeTable();
-        CyTable edgeTable = network.getDefaultEdgeTable();
+
+        CyTable nodeTable = network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS);
+        CyTable edgeTable = network.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS);
         CyTable networkTable = network.getDefaultNetworkTable();
         List<CyEdge> edges = network.getEdgeList();
 
@@ -129,32 +132,15 @@ public class ClusterUtils {
         ClusterUtils.setEdgeTableColumnValues(edgeTable, edges, clusters, shortname);
     }
 
-    private static void setRankScore(String attribute, CyRow row, NodeCluster cluster) {
-        try {
-            cluster.addScoreToAvg(cluster.getRankScore() + row.get(attribute, Double.class, 0.0));
-        } catch (ClassCastException cce) {
-            try {
-                cluster.addScoreToAvg(cluster.getRankScore() + row.get(attribute, Integer.class, 0));
-            } catch (Exception e) { // Not a number type!
-                e.printStackTrace();
-            }
-        }
+    private static void setRankScore(NodeCluster cluster, double value) {
+      cluster.addScoreToAvg(cluster.getRankScore() + value);
     }
 
-    private static void setRankScoreMultiplicative(String edgeAttr, CyRow source, NodeCluster cluster) {
-        try {
-            if (cluster.getRankScore() == 0.0) {
-                cluster.addScoreToAvg(1.0);
-            }
-            cluster.addScoreToAvg(cluster.getRankScore() * (source.get(edgeAttr, Double.class, 0.0) + 1.0)); // assumes
-            // values between 0.0 and 1.0
-        } catch (ClassCastException cce) { //
-            try {
-                cluster.addScoreToAvg(cluster.getRankScore() * (source.get(edgeAttr, Integer.class, 0) + 1));
-            } catch (Exception e) { // Not a number type!
-                e.printStackTrace();
-            }
+    private static void setRankScoreMultiplicative(NodeCluster cluster, double value) {
+        if (cluster.getRankScore() == 0.0) {
+            cluster.addScoreToAvg(1.0);
         }
+        cluster.addScoreToAvg(cluster.getRankScore() * (value + 1.0)); // assumes
     }
 
     public static List<NodeCluster> fetchClusters(CyNetwork network) {
@@ -187,7 +173,7 @@ public class ClusterUtils {
         return clusters;
     }
 
-    public static List<NodeCluster> fetchRankingResults(CyNetwork network) {
+    public static List<NodeCluster> fetchRankingResults(CyNetwork network, boolean skipSingletons) {
         List<NodeCluster> clusters = new ArrayList<>();
         String clusterAttribute = getClusterAttribute(network);
         String rankingAttribute = getRankingAttribute(network);
@@ -211,6 +197,8 @@ public class ClusterUtils {
         }
 
         for (int clusterNum : clusterMap.keySet()) {
+            if (skipSingletons && clusterMap.get(clusterNum).size() <= 1)
+              continue;
             NodeCluster cluster = new NodeCluster(clusterMap.get(clusterNum));
             cluster.setClusterNumber(clusterNum);
             cluster.setRankScore(clusterScoreMap.get(clusterNum));

@@ -29,6 +29,13 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leadin
 		}
 		public void setattribute(ListSingleSelection<String> attr) { }
 		
+		@Tunable(description = "Synchronous",
+			   longDescription = "If ```false``` the algorithm will run in the background after specified wait time",
+				 exampleStringValue = "true",
+			   tooltip = "<html>If ```false``` the algorithm will run in the background after specified wait time</html>",
+				 groups = {"Leading Eigenvector Advanced Settings"}, gravity = 6.0)
+		public boolean isSynchronous = false;
+		
 		@ContainsTunables
 		public AdvancedProperties advancedAttributes;
 
@@ -46,6 +53,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leadin
 				advancedAttributes = new AdvancedProperties("LeadingEigenvectorCluster", false);
 
 			attribute = origin.attribute;
+			isSynchronous = origin.isSynchronous;
 		}
 
 		public void setNetwork(CyNetwork network) {

@@ -11,13 +11,15 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 
 public class NewNetworkViewContext {
 	CyNetwork network;
+  boolean useAttr;
 	
 	//Tunables
 	
-	public ListSingleSelection<String> attribute;
+	public ListSingleSelection<String> attribute = null;
 
 	@Tunable(description = "Cluster Attribute to Use", groups={"New Network Options"}, gravity=1.0)
   public ListSingleSelection<String> getattribute(){
+    if (useAttr) return null;
     attribute = ModelUtils.updateEdgeAttributeList(network, attribute);
     return attribute;
   }
@@ -31,7 +33,8 @@ public class NewNetworkViewContext {
 	         groups={"New Network Options"}, gravity=3.0)
 	public boolean restoreEdges = false;
 
-	public NewNetworkViewContext() {
+	public NewNetworkViewContext(boolean useAttr) {
+    this.useAttr = useAttr;
 	}
 
 	public CyNetwork getNetwork() { return network; }

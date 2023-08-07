@@ -14,6 +14,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.event.MouseAdapter;
@@ -25,14 +26,34 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
+import com.itextpdf.awt.DefaultFontMapper;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfWriter;
+
+import org.apache.log4j.Logger;
+import org.freehep.graphicsio.ps.PSGraphics2D;
+import org.freehep.graphicsio.svg.SVGGraphics2D;
+import org.freehep.graphics2d.VectorGraphics;
+
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
@@ -46,6 +67,8 @@ import edu.ucsf.rbvi.clusterMaker2.internal.utils.ViewUtils;
  */
 @SuppressWarnings("serial")
 public class ScatterPlot extends JPanel implements MouseListener, MouseMotionListener{
+  static final Logger logger = Logger.getLogger(CyUserLog.NAME);
+
 	private float scale = 1;
 	private int MAX_SCORE = 1;
 	private int MIN_SCORE = -1;
@@ -56,14 +79,14 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 	private static final int XSTART = BORDER_GAP+LABEL_GAP;
 	private static final int YSTART = BORDER_GAP;
 	private static final int GRAPH_HATCH_WIDTH = 2;
-	private int graph_point_width = 2;
+	private int graph_point_width = 1;
 
 	private final Matrix loadings;
 	private final CyMatrix[] scores;
 	private final int xIndex;
 	private final int yIndex;
-	private final Color pointColor;
-	private final int pointWidth;
+	private Color pointColor;
+	private int pointWidth;
 	private final ClusterManager manager;
 
 	private List<Point> graphPoints;
@@ -138,6 +161,21 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 		addMouseMotionListener(this);
 
 	}
+
+  public void setPointSize(int size) {
+    pointWidth = size;
+    repaint();
+  }
+
+  public void setPointColor(Color color) {
+    pointColor = color;
+    repaint();
+  }
+
+  public void setColorMap(Map<String, Color> map) {
+    colorMap = map;
+    repaint();
+  }
 
 	@Override
 	public Dimension getPreferredSize() { return new Dimension(PREF_W, PREF_H); }
@@ -297,6 +335,10 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 	@Override
 	protected void paintComponent(Graphics g) {
 	  super.paintComponent(g);
+    drawAll(g);
+  }
+
+  private void drawAll(Graphics g) {
 		String labelX = loadings.getColumnLabel(xIndex);
 		String labelY = loadings.getColumnLabel(yIndex);
 
@@ -305,16 +347,21 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 
 	  Graphics2D g2 = (Graphics2D)g;
 	  g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-	  AffineTransform at = new AffineTransform();
+	  // AffineTransform at = new AffineTransform();
 	  if(dragging && !shift){
 			int currentDX = currentX - startingX;
 			int currentDY =  currentY - startingY;
-			at.setToTranslation(previousDX + currentDX, previousDY + currentDY);
+			// at.setToTranslation(previousDX + currentDX, previousDY + currentDY);
+      g2.translate(previousDX + currentDX, previousDY + currentDY);
+      // System.out.println("Dragging");
 	  } else {
-			at.setToTranslation(previousDX, previousDY);
+			// at.setToTranslation(previousDX, previousDY);
+      g2.translate(previousDX, previousDY);
+      // System.out.println("Not dragging: dx = "+previousDX+" dy = "+previousDY);
 		}
-	  at.scale(scale, scale);
-	  g2.setTransform(at);
+	  g2.scale(scale, scale);
+	  // at.scale(scale, scale);
+	  // g2.setTransform(at);
 
 		drawAxes(g2, plotWidth, plotHeight, labelX, labelY);
 
@@ -365,10 +412,13 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 				int x2 = (int) (loadings.getValue(row, xIndex) * xScale * MAX_SCORE + newX);
 				int y2 = (int) (-1 * (loadings.getValue(row, yIndex) * yScale * MAX_SCORE - newY));
 				String label = loadings.getRowLabel(row);
-				if (colorMap.containsKey(label))
-					drawArrow(g2, x1, y1, x2, y2, colorMap.get(label));
-				else
+				if (colorMap.containsKey(label)) {
+          if (colorMap.get(label).getAlpha() != 0) {
+            drawArrow(g2, x1, y1, x2, y2, colorMap.get(label));
+          }
+        } else {
 					drawArrow(g2, x1, y1, x2, y2, Color.RED);
+        }
 			}
 		}
 
@@ -542,12 +592,132 @@ public class ScatterPlot extends JPanel implements MouseListener, MouseMotionLis
 		g2.setTransform(oldTx);
 	}
 
+  public void print(String format, File file) {
+    if (format.startsWith(".")) {
+      format = format.substring(1);
+    }
+    int saveWidth = pointWidth;
+    // pointWidth = 1;
+		if (format.equals("png") || format.equals("jpg") || format.equals("bmp"))
+			bitmapSave(format, file);
+		else if (format.equals("pdf"))
+			pdfSave(format, file);
+		else if (format.equals("svg"))
+			svgSave(format, file);
+
+    pointWidth = saveWidth;
+  }
+
 	private Color getColor(CyNetwork network, CyNode node) {
 		return ViewUtils.getColor(manager, network, node);
 	}
 
 	private String getLabel(CyNetwork network, CyNode node) {
 		return ViewUtils.getLabel(manager, network, node);
+	}
+	
+  private void pdfSave(String format, File file) {
+		com.itextpdf.text.Rectangle pageSize = new com.itextpdf.text.Rectangle(getWidth(), getHeight());
+    logger.info("Writing PDF document to "+file.getAbsolutePath());
+    System.out.println("PageSize = "+pageSize.toString());
+    System.out.println("Width X Height = "+getWidth()+" X "+getHeight());
+		Document document = new Document(pageSize);
+    float saveScale = scale;
+		try {
+			OutputStream output = new BufferedOutputStream(new FileOutputStream(file));
+			PdfWriter writer = PdfWriter.getInstance(document, output);
+			document.open();
+			PdfContentByte cb = writer.getDirectContent();
+
+			Graphics2D g = cb.createGraphics(pageSize.getWidth(), pageSize.getHeight(), new DefaultFontMapper());
+			drawAll(g);
+      g.dispose();
+      document.close();
+    }
+    catch (Exception e)
+    {
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(this,
+				new JTextArea("Scatterplot export had problem " +  e ));
+			// logger.error("Exception " + e);
+    }
+    scale = saveScale;
+  
+    document.close();
+	}
+
+	private void bitmapSave(String format, File file) {
+    logger.info("Writing "+format+" document to "+file.getAbsolutePath());
+    float saveScale = scale;
+		try {
+			OutputStream output = new BufferedOutputStream(new FileOutputStream(file));
+
+			int extraWidth = BORDER_GAP*2;
+			int extraHeight = BORDER_GAP*2;
+			Rectangle destRect = new Rectangle(0,0, getWidth()*5, getHeight()*5);
+
+      // scale = scale * 5;
+
+			BufferedImage i;
+      if (format.equals("png"))
+        i = new BufferedImage(destRect.width + extraWidth, destRect.height + extraHeight, BufferedImage.TYPE_INT_ARGB);
+      else
+        i = new BufferedImage(destRect.width + extraWidth, destRect.height + extraHeight, BufferedImage.TYPE_INT_RGB);
+			Graphics g = i.getGraphics();
+
+      // For PNG, we want to allow a transparent background, so don't do the fill
+      if (!format.equals("png")) {
+        g.setColor(Color.white);
+        g.fillRect(0,0,destRect.width+1 + extraWidth,  destRect.height+1+extraHeight);
+      }
+			g.setColor(Color.black);
+			g.translate(extraHeight/2, extraWidth/2);
+
+      // Our X and Y values are currently in the wrong scale -- we need to fix that
+      ((Graphics2D)g).scale(5,5);
+			drawAll(g);
+
+			ImageIO.write(i,format,output);
+			// ignore success, could keep window open on failure if save could indicate success.
+			output.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(this,
+				new JTextArea("Scatterplot export had problem " +  e ));
+			// logger.error("Exception " + e);
+		}
+    scale = saveScale;
+  }
+
+	private void svgSave (String format, File file) {
+    logger.info("Writing "+format+" document to "+file.getAbsolutePath());
+		com.itextpdf.text.Rectangle pageSize = PageSize.LETTER;
+		Properties p = new Properties();
+		p.setProperty(PSGraphics2D.PAGE_SIZE,"Letter");
+		p.setProperty("org.freehep.graphicsio.AbstractVectorGraphicsIO.TEXT_AS_SHAPES",
+                  Boolean.toString(false));
+
+		try {
+			OutputStream output = new BufferedOutputStream(new FileOutputStream(file));
+			SVGGraphics2D g = new SVGGraphics2D(output, getPreferredSize());
+
+      // Width and height aren't the same, so we need to fix this up
+      double imageScale = Math.min(pageSize.getWidth()  / ((double) getWidth()+BORDER_GAP*2),
+                                   pageSize.getHeight() / ((double) getHeight()+BORDER_GAP*2));
+			g.setProperties(p);
+			g.startExport();
+      g.scale(imageScale, imageScale);
+			drawAll(g);
+			g.endExport();
+			output.close();
+    }
+    catch (Exception e)
+    {
+			JOptionPane.showMessageDialog(this,
+				new JTextArea("Scatterplot export had problem " +  e ));
+			// logger.error("Exception " + e);
+			// e.printStackTrace();
+    }
 	}
 
 }

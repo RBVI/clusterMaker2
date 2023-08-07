@@ -63,7 +63,7 @@ public class AttributeList {
 	@Tunable(description="Edges are assymetric (not common)", 
 	         longDescription="Under rare circumstances, the edges might be assymetric (i.e. directed)",
 	         exampleStringValue="false",
-	         groups="Array sources", gravity=52)
+	         groups="Array sources", dependsOn="edgeAttributeList!=", gravity=52)
 	public boolean assymetric = false;
 
 	public AttributeList(CyNetwork network) {

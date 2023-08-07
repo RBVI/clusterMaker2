@@ -7,20 +7,19 @@ import org.cytoscape.application.CyUserLog;
 import org.apache.log4j.Logger;
 
 import org.ojalgo.OjAlgoUtils;
-import org.ojalgo.access.Access1D;
 import org.ojalgo.function.PrimitiveFunction;
 import org.ojalgo.function.aggregator.Aggregator;
 import org.ojalgo.function.aggregator.AggregatorFunction;
+import org.ojalgo.function.constant.PrimitiveMath;
 import org.ojalgo.matrix.BasicMatrix;
-import org.ojalgo.matrix.BasicMatrix.Builder;
-import org.ojalgo.matrix.PrimitiveMatrix;
+import org.ojalgo.matrix.Primitive64Matrix;
 import org.ojalgo.matrix.decomposition.DecompositionStore;
 import org.ojalgo.matrix.decomposition.Eigenvalue;
 import org.ojalgo.matrix.decomposition.SingularValue;
 import org.ojalgo.matrix.store.ElementsSupplier;
 import org.ojalgo.matrix.store.MatrixStore;
 import org.ojalgo.matrix.store.PhysicalStore;
-import org.ojalgo.matrix.store.PrimitiveDenseStore;
+import org.ojalgo.matrix.store.Primitive64Store;
 import org.ojalgo.matrix.task.InverterTask;
 import org.ojalgo.matrix.task.SolverTask;
 import org.ojalgo.scalar.ComplexNumber;
@@ -60,7 +59,7 @@ public class OjAlgoOps implements MatrixOps {
 	 * Create a new matrix that is the transpose of this one
 	 */
 	public Matrix transpose() {
-		PhysicalStore<Double> data = matrix.storeFactory.transpose(matrix.data);
+		Primitive64Store data = matrix.storeFactory.transpose(matrix.data);
 		OjAlgoMatrix result = new OjAlgoMatrix(matrix, data);
 		result.transposed = true;
 		return result;
@@ -125,13 +124,13 @@ public class OjAlgoOps implements MatrixOps {
 
 	public double normalizeRow(int row) {
 		double sum = rowSum(row);
-		matrix.data.modifyRow(row, 0L, PrimitiveFunction.DIVIDE.second(sum));
+		matrix.data.modifyRow(row, 0L, PrimitiveMath.DIVIDE.second(sum));
 		return sum;
 	}
 
 	public double normalizeColumn(int column) {
 		double sum = columnSum(column);
-		matrix.data.modifyColumn(0L, column, PrimitiveFunction.DIVIDE.second(sum));
+		matrix.data.modifyColumn(0L, column, PrimitiveMath.DIVIDE.second(sum));
 		return sum;
 	}
 
@@ -266,7 +265,8 @@ public class OjAlgoOps implements MatrixOps {
 	}
 
 	public Matrix covariance() {
-		PhysicalStore<Double> cov = matrix.storeFactory.makeZero(matrix.nColumns(), matrix.nColumns());
+    OjAlgoMatrix mat = new OjAlgoMatrix(matrix.nColumns(), matrix.nColumns());
+    Primitive64Store cov = mat.data;
 		double[] columnMeans = new double[matrix.nColumns()];
 		for (int i=0; i < matrix.nColumns(); i++) {
 			columnMeans[i] = columnMean(i);
@@ -293,7 +293,7 @@ public class OjAlgoOps implements MatrixOps {
 	 * Add a value to all cells in the matrix
 	 */
 	public void addScalar(double value) {
-		matrix.data.modifyAll(PrimitiveFunction.ADD.second(value));
+		matrix.data.modifyAll(PrimitiveMath.ADD.second(value));
 	}
 
 	/**
@@ -302,14 +302,14 @@ public class OjAlgoOps implements MatrixOps {
 	public void addElement(Matrix addend) {
 		OjAlgoMatrix ojAddend = (OjAlgoMatrix)addend;
 		MatrixStore<Double> d = matrix.data.add(ojAddend.data);
-		matrix.data = (PhysicalStore<Double>)d;
+		matrix.data = (Primitive64Store)d;
 	}
 
 	/**
 	 * Subtract a value to all cells in the matrix
 	 */
 	public void subtractScalar(double value) {
-		matrix.data.modifyAll(PrimitiveFunction.SUBTRACT.second(value));
+		matrix.data.modifyAll(PrimitiveMath.SUBTRACT.second(value));
 	}
 
 	/**
@@ -318,14 +318,14 @@ public class OjAlgoOps implements MatrixOps {
 	public void subtractElement(Matrix subend) {
 		OjAlgoMatrix ojSubend = (OjAlgoMatrix)subend;
 		MatrixStore<Double> d = matrix.data.subtract(ojSubend.data);
-		matrix.data = (PhysicalStore<Double>)d;
+		matrix.data = (Primitive64Store)d;
 	}
 
 	/**
 	 * Multiply a value to all cells in the matrix
 	 */
 	public void multiplyScalar(double value) {
-		matrix.data.modifyAll(PrimitiveFunction.MULTIPLY.second(value));
+		matrix.data.modifyAll(PrimitiveMath.MULTIPLY.second(value));
 	}
 	
 	public Matrix multiplyMatrix(Matrix m2) {
@@ -341,7 +341,7 @@ public class OjAlgoOps implements MatrixOps {
 	 * Divide a value to all cells in the matrix
 	 */
 	public void divideScalar(double value) {
-		matrix.data.modifyAll(PrimitiveFunction.DIVIDE.second(value));
+		matrix.data.modifyAll(PrimitiveMath.DIVIDE.second(value));
 	}
 
 	/**
@@ -354,7 +354,7 @@ public class OjAlgoOps implements MatrixOps {
 	 * @param value to divide each cell in the column by
 	 */
 	public void divideScalarColumn(int column, double value) {
-		matrix.data.modifyColumn(0L, column, PrimitiveFunction.DIVIDE.second(value));
+		matrix.data.modifyColumn(0L, column, PrimitiveMath.DIVIDE.second(value));
 	}
 
 	/**
@@ -379,7 +379,9 @@ public class OjAlgoOps implements MatrixOps {
 	 * Calculates the Pearson correlation matrix
 	 */
 	public Matrix correlation() {
-		PhysicalStore<Double> corr = matrix.storeFactory.makeZero(matrix.nColumns(), matrix.nColumns());
+		OjAlgoMatrix ojCorr = new OjAlgoMatrix(matrix.nColumns(), matrix.nColumns());
+    Primitive64Store corr = ojCorr.data;
+		// Primitive64Store corr = (Primitive64Store)matrix.storeFactory.makeFilled(matrix.nColumns(), matrix.nColumns());
 		double[] columnMeans = new double[matrix.nColumns()];
 		double[] columnStdDev = new double[matrix.nColumns()];
 		for (int i=0; i < matrix.nColumns(); i++) {
@@ -415,7 +417,7 @@ public class OjAlgoOps implements MatrixOps {
 
 	public double[] eigenValues(boolean nonZero){
 		if (decomp == null) {
-			decomp = Eigenvalue.make(matrix.data);
+			decomp = Eigenvalue.PRIMITIVE.make(matrix.data);
 			decomp.decompose(matrix.data);
 		}
 
@@ -439,7 +441,7 @@ public class OjAlgoOps implements MatrixOps {
 
 	public double[][] eigenVectors(){
 		if (decomp == null) {
-			decomp = Eigenvalue.make(matrix.data);
+			decomp = Eigenvalue.PRIMITIVE.make(matrix.data);
 			decomp.decompose(matrix.data);
 		}
 
@@ -454,15 +456,15 @@ public class OjAlgoOps implements MatrixOps {
 
 	public Matrix svdU() {
 		if (svdDecomp == null) {
-			svdDecomp = SingularValue.make(matrix.data);
+			svdDecomp = SingularValue.PRIMITIVE.make(matrix.data);
 			svdDecomp.decompose(matrix.data);
 		}
-		return wrap(svdDecomp.getQ1());
+		return wrap(svdDecomp.getU());
 	}
 
 	public Matrix svdS() {
 		if (svdDecomp == null) {
-			svdDecomp = SingularValue.make(matrix.data);
+			svdDecomp = SingularValue.PRIMITIVE.make(matrix.data);
 			svdDecomp.decompose(matrix.data);
 		}
 		return wrap(svdDecomp.getD());
@@ -470,10 +472,10 @@ public class OjAlgoOps implements MatrixOps {
 
 	public Matrix svdV() {
 		if (svdDecomp == null) {
-			svdDecomp = SingularValue.make(matrix.data);
+			svdDecomp = SingularValue.PRIMITIVE.make(matrix.data);
 			svdDecomp.decompose(matrix.data);
 		}
-		return wrap(svdDecomp.getQ2());
+		return wrap(svdDecomp.getV());
 	}
 
 	public int cardinality() { return matrix.data.aggregateAll(Aggregator.CARDINALITY).intValue(); }

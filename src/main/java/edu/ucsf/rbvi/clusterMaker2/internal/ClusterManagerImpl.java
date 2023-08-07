@@ -117,15 +117,18 @@ public class ClusterManagerImpl implements ClusterManager {
 			case NETWORK:
 				networkClusterIndex += 1.0;
 				props.setProperty(MENU_GRAVITY, ""+networkClusterIndex);
+        props.setProperty(PREFERRED_MENU, "Apps.clusterMaker Cluster Network");
 				break;
 
 			case ATTRIBUTE:
 				attributeClusterIndex += 1.0;
 				props.setProperty(MENU_GRAVITY, ""+attributeClusterIndex);
+        props.setProperty(PREFERRED_MENU, "Apps.clusterMaker Cluster Attributes");
 				break;
 
 			case FILTER:
 				filterIndex += 1.0;
+        props.setProperty(PREFERRED_MENU, "Apps.clusterMaker Filter Clusters");
 				props.setProperty(MENU_GRAVITY, ""+filterIndex);
 				break;
 
@@ -171,15 +174,17 @@ public class ClusterManagerImpl implements ClusterManager {
 
 		// Create our wrapper and register the algorithm
 		Properties props = new Properties();
-		props.setProperty(COMMAND, viz.getShortName());
-		props.setProperty(COMMAND_DESCRIPTION, viz.getName());
-		props.setProperty(COMMAND_NAMESPACE, "clusterviz");
+		if (viz.getShortName() != null) {
+			props.setProperty(COMMAND, viz.getShortName());
+			props.setProperty(COMMAND_DESCRIPTION, viz.getName());
+			props.setProperty(COMMAND_NAMESPACE, "clusterviz");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, viz.getLongDescription());
+			props.setProperty(COMMAND_EXAMPLE_JSON, viz.getExampleJSON());
+			props.setProperty(COMMAND_SUPPORTS_JSON, viz.getSupportsJSON());
+		}
 		props.setProperty(IN_MENU_BAR, "true");
 		props.setProperty(PREFERRED_MENU, "Apps.clusterMaker Visualizations");
 		props.setProperty(TITLE, viz.getName());
-		props.setProperty(COMMAND_LONG_DESCRIPTION, viz.getLongDescription());
-		props.setProperty(COMMAND_EXAMPLE_JSON, viz.getExampleJSON());
-		props.setProperty(COMMAND_SUPPORTS_JSON, viz.getSupportsJSON());
 		vizClusterIndex += 1.0;
 		props.setProperty(MENU_GRAVITY, ""+vizClusterIndex);
 		serviceRegistrar.registerService(viz, TaskFactory.class, props);
@@ -219,15 +224,18 @@ public class ClusterManagerImpl implements ClusterManager {
 		rankMap.put(rankFactory.getName(), rankFactory);
 
 		Properties props = new Properties();
-		props.setProperty(COMMAND, rankFactory.getShortName());
-		props.setProperty(COMMAND_NAMESPACE, "clusterrank");
-		props.setProperty(COMMAND_DESCRIPTION, rankFactory.getName());
+    if (rankFactory.getShortName() != null) {
+      props.setProperty(COMMAND, rankFactory.getShortName());
+      props.setProperty(COMMAND_NAMESPACE, "clusterrank");
+      props.setProperty(COMMAND_DESCRIPTION, rankFactory.getName());
+      props.setProperty(COMMAND_LONG_DESCRIPTION, rankFactory.getLongDescription());
+      props.setProperty(COMMAND_EXAMPLE_JSON, rankFactory.getExampleJSON());
+      props.setProperty(COMMAND_SUPPORTS_JSON, rankFactory.getSupportsJSON());
+    }
+
 		props.setProperty(IN_MENU_BAR, "true");
 		props.setProperty(PREFERRED_MENU, "Apps.clusterMaker Ranking");
 		props.setProperty(TITLE, rankFactory.getName());
-		props.setProperty(COMMAND_LONG_DESCRIPTION, rankFactory.getLongDescription());
-		props.setProperty(COMMAND_EXAMPLE_JSON, rankFactory.getExampleJSON());
-		props.setProperty(COMMAND_SUPPORTS_JSON, rankFactory.getSupportsJSON());
 		rankingIndex += 1.0;
 		props.setProperty(MENU_GRAVITY, ""+rankingIndex);
 		serviceRegistrar.registerService(rankFactory, TaskFactory.class, props);

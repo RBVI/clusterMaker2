@@ -7,6 +7,7 @@ package edu.ucsf.rbvi.clusterMaker2.internal.ui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -27,19 +28,28 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
+import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.*;
+import javax.swing.border.EtchedBorder;
+import javax.swing.filechooser.FileFilter;
 import org.jdesktop.swingx.JXCollapsiblePane;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.util.swing.FileChooserFilter;
+import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
+
+import org.cytoscape.util.swing.CyColorChooser;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
@@ -65,6 +75,7 @@ public class ScatterPlotDialog extends JDialog {
 	private String title;
 	private Color pointColor = Color.BLUE;
 
+  private JDialog exportDialog;
 	private JPanel container;
 	private JPanel panelXAxis;
 	private JPanel panelYAxis;
@@ -80,6 +91,7 @@ public class ScatterPlotDialog extends JDialog {
 	private JComboBox<String> comboXAxis;
 	private JComboBox<String> comboYAxis;
 	private JButton buttonColor;
+	private JButton buttonExport;
 	private JButton buttonLayout;
 	private JButton buttonOptions;
 	private JButton buttonPlot;
@@ -87,41 +99,50 @@ public class ScatterPlotDialog extends JDialog {
 	private Map<String, Color> loadingsColorMap;
 	private boolean supportsLayout;
 
+  private ScatterPlot scatterPlot = null;
+
 	// For inner classes
 	private final ScatterPlotDialog thisDialog;
 
+  // Get a handle on the CyColorChooser
+  private CyColorChooser chooser = null;
+
 	private boolean useLoadings;
+
+  private FileUtil fileUtil;
+  private Collection<FileChooserFilter> fileFilters;
+
+	// Entry point for remote DR techniques (e.g. UMAP)
+	public ScatterPlotDialog(ClusterManager manager, String title, TaskMonitor monitor, CyNode[] nodes, double[][] coordinates) {
+    super();
+    // Make the matrix
+	  CyMatrix matrix = CyMatrixFactory.makeSmallMatrix(manager.getNetwork(), coordinates.length, coordinates[0].length, coordinates);
+    matrix.setRowNodes(nodes);
+		this.manager = manager;
+		this.scores = new CyMatrix[1];
+		this.title = title;
+		this.variances = null;
+		this.loadings = CyMatrixFactory.makeSmallMatrix(manager.getNetwork(), 1, 2);
+		thisDialog = this;
+    fileUtil = manager.getService(FileUtil.class);
+    fileFilters = getFileChooserFilters();
+    // createExportDialog();
+    init(manager, title, monitor, matrix);
+  }
 
 	// Entry point for tSNE and related
 	public ScatterPlotDialog(ClusterManager manager, String title, TaskMonitor monitor, CyMatrix coordinates) {
 		super();
-		this.title = title;
-		setTitle(title+" Scatter Plot");
-		monitor.setTitle(title+" Scatter Plot");
-		useLoadings = false;
-		supportsLayout = true;
 		this.manager = manager;
 		this.scores = new CyMatrix[1];
-		this.scores[0] = coordinates;
-
+		this.title = title;
 		this.variances = null;
-		this.loadings = CyMatrixFactory.makeSmallMatrix(scores[0].getNetwork(), 1, 2);
-		loadings.setColumnLabel(0, "X Axis");
-		loadings.setColumnLabel(1, "Y Axis");
+		this.loadings = CyMatrixFactory.makeSmallMatrix(manager.getNetwork(), 1, 2);
 		thisDialog = this;
-
-		if (coordinates.nColumns() != 2) {
-			monitor.showMessage(TaskMonitor.Level.ERROR, "Coordinate scatterplot must have 2 columns!");
-			return;
-		}
-
-		container = new JPanel();
-		createUI();
-		getContentPane().add(container);
-
-		pack();
-		setLocationByPlatform(true);
-		setVisible(true);
+    fileUtil = manager.getService(FileUtil.class);
+    fileFilters = getFileChooserFilters();
+    // createExportDialog();
+    init(manager, title, monitor, coordinates);
 	}
 
 	// Entry point for PCoA and related
@@ -149,6 +170,11 @@ public class ScatterPlotDialog extends JDialog {
 			return;
 		}
 
+    CyColorChooser chooser = manager.getService(CyColorChooser.class);
+    fileUtil = manager.getService(FileUtil.class);
+    fileFilters = getFileChooserFilters();
+    // createExportDialog();
+
 		container = new JPanel();
 		createUI();
 		getContentPane().add(container);
@@ -174,6 +200,9 @@ public class ScatterPlotDialog extends JDialog {
 		supportsLayout = false;
 		initializeColors();
 
+    fileUtil = manager.getService(FileUtil.class);
+    fileFilters = getFileChooserFilters();
+
 		this.variances = varianceArray;
 
 		thisDialog = this;
@@ -184,6 +213,8 @@ public class ScatterPlotDialog extends JDialog {
 			return;
 		}
 
+    // createExportDialog();
+
 		container = new JPanel();
 		createUI();
 		getContentPane().add(container);
@@ -192,6 +223,36 @@ public class ScatterPlotDialog extends JDialog {
 		setLocationByPlatform(true);
 		setVisible(true);
 	}
+
+  private void init(ClusterManager manager, String title, TaskMonitor monitor, CyMatrix matrix) {
+		this.title = title;
+		setTitle(title+" Scatter Plot");
+    if (monitor != null)
+		  monitor.setTitle(title+" Scatter Plot");
+		useLoadings = false;
+		supportsLayout = true;
+		this.scores[0] = matrix;
+
+		loadings.setColumnLabel(0, "X Axis");
+		loadings.setColumnLabel(1, "Y Axis");
+
+		if (matrix.nColumns() != 2) {
+      if (monitor != null)
+        monitor.showMessage(TaskMonitor.Level.ERROR, "Coordinate scatterplot must have 2 columns!");
+      else {
+        // User log?
+      }
+			return;
+		}
+
+		container = new JPanel();
+		createUI();
+		getContentPane().add(container);
+
+		pack();
+		setLocationByPlatform(true);
+		setVisible(true);
+  }
 
 	private void createUI() {
 		panelXAxis = new JPanel();
@@ -210,12 +271,12 @@ public class ScatterPlotDialog extends JDialog {
 
 		buttonColor = new JButton("Get Colors");
 		buttonLayout = new JButton("Copy Layout");
+    buttonExport = new JButton("Export");
 
 		container.setLayout(new GridBagLayout());
 		container.removeAll();
 
-		ScatterPlot scatterPlot = 
-		 				new ScatterPlot(manager, scores, loadings, 0, 1, pointColor, 3, loadingsColorMap, useLoadings);
+		scatterPlot = new ScatterPlot(manager, scores, loadings, 0, 1, pointColor, 3, loadingsColorMap, useLoadings);
 
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.anchor = GridBagConstraints.NORTHWEST;
@@ -277,7 +338,7 @@ public class ScatterPlotDialog extends JDialog {
 			lButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					String label = e.getActionCommand();
-					Color clr = JColorChooser.showDialog(thisDialog, "Choose color for "+label+" arrow", thisDialog.getBackground());
+					Color clr = chooser.showDialog(thisDialog, "Choose color for "+label+" arrow", loadingsColorMap.get(label));
 					if (clr != null) {
 						loadingsColorMap.put(label, clr);
 						repaintScatterPlot();
@@ -319,8 +380,10 @@ public class ScatterPlotDialog extends JDialog {
 		colorButton.addActionListener (new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				Color clr = JColorChooser.showDialog(thisDialog, "Choose color of points", thisDialog.getBackground());
-				if (clr != null)
+				if (clr != null) {
 					pointColor = clr;
+          scatterPlot.setPointColor(pointColor);
+        }
 			}
 		});
 
@@ -410,6 +473,7 @@ public class ScatterPlotDialog extends JDialog {
 		panelButtons.add(buttonOptions);
 		panelButtons.add(buttonPlot);
 		panelButtons.add(buttonColor);
+    panelButtons.add(buttonExport);
 		if (supportsLayout)
 			panelButtons.add(buttonLayout);
 		if (useLoadings)
@@ -455,6 +519,8 @@ public class ScatterPlotDialog extends JDialog {
 			public void actionPerformed(ActionEvent e)
 			{
 				repaintScatterPlot();
+        // int pointSize = Integer.parseInt(textFieldPointSize.getText());
+				// scatterPlot.setPointSize(pointSize);
 			}
 
 		});
@@ -464,10 +530,32 @@ public class ScatterPlotDialog extends JDialog {
 			public void actionPerformed(ActionEvent e)
 			{
 				pointColor = null;
-				repaintScatterPlot();
+        scatterPlot.setPointColor(pointColor);
+        scatterPlot.setColorMap(loadingsColorMap);
+				// repaintScatterPlot();
 			}
 
 		});
+
+		buttonExport.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e)
+			{
+        // File file = fileUtil.getFile(thisDialog, "Export Image", FileUtil.CUSTOM, null, "Export", fileFilters);
+        // System.out.println("File = "+file.getAbsolutePath());
+        // exportDialog.setVisible(true);
+        createExportDialog();
+			}
+
+		});
+
+    textFieldPointSize.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e)
+      {
+        int pointSize = Integer.parseInt(textFieldPointSize.getText());
+				scatterPlot.setPointSize(pointSize);
+      }
+    });
+
 		
 		if (supportsLayout) {
 			buttonLayout.addActionListener(new ActionListener() {
@@ -510,11 +598,11 @@ public class ScatterPlotDialog extends JDialog {
 			yAxis = comboYAxis.getSelectedIndex();
 		}
 
-		ScatterPlot scatterPlot = new ScatterPlot(manager, scores, loadings, 
-		                                          xAxis, 
-																		          yAxis,
-																							pointColor, pointSize, loadingsColorMap,
-																							useLoadings);
+		scatterPlot = new ScatterPlot(manager, scores, loadings, 
+		                              xAxis, 
+																	yAxis,
+																	pointColor, pointSize, loadingsColorMap,
+																	useLoadings);
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.anchor = GridBagConstraints.NORTHWEST;
 		constraints.insets = new Insets(5, 5, 5, 5);
@@ -527,6 +615,125 @@ public class ScatterPlotDialog extends JDialog {
 		container.add(scatterPlot, constraints, 0);
 		container.updateUI();
 	}
+
+  public void createExportDialog() {
+    CyApplicationManager applicationManager = manager.getService(CyApplicationManager.class);
+
+    JFileChooser fileChooser = new JFileChooser();
+    // Clear the default file filter
+    for (FileFilter f: fileChooser.getChoosableFileFilters()) {
+      fileChooser.removeChoosableFileFilter(f);
+    }
+    fileChooser.setCurrentDirectory(applicationManager.getCurrentDirectory());
+    for (FileChooserFilter filter: fileFilters) {
+      fileChooser.addChoosableFileFilter(filter);
+    }
+    if (fileChooser.showDialog(thisDialog, "Export") == JFileChooser.APPROVE_OPTION) {
+      FileChooserFilter chooserFilter = (FileChooserFilter)fileChooser.getFileFilter();
+      File file = fileChooser.getSelectedFile();
+      if (file == null)
+        file = new File(fileChooser.getCurrentDirectory(), "image"+chooserFilter.getExtensions()[0]);
+
+      // System.out.println("File = "+file);
+      // System.out.println("Format = "+chooserFilter.getExtensions()[0]);
+
+      // Check the file types and get the right format
+      if (!chooserFilter.accept(file)) {
+        FileChooserFilter newFilter = null;
+        for (FileChooserFilter filter: fileFilters) {
+          if (filter.accept(file)) {
+            newFilter = filter;
+            break;
+          }
+        }
+        if (newFilter == null) {
+          // We need to force the file to be the right type
+          file = new File(file.getAbsolutePath()+chooserFilter.getExtensions()[0]);
+        } else {
+          chooserFilter = newFilter;
+        }
+      }
+
+      // Do the print
+      scatterPlot.print(chooserFilter.getExtensions()[0], file);
+    }
+    return;
+  }
+
+  /*
+  public void createExportDialog() {
+    JComboBox<String> formatSelection;
+
+    // Get the format (popup dialog)
+    exportDialog = new JDialog(this, "Select the output file and format");
+
+    JPanel topPanel = new JPanel();
+    topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
+
+    JFileChooser fileChooser = new JFileChooser((String)null);
+    fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
+    fileChooser.setControlButtonsAreShown(false);
+    topPanel.add(fileChooser);
+
+    {
+      Box formatBox = Box.createHorizontalBox();
+      JLabel lbl = new JLabel("Export Format: ");
+      String[] formats = {"pdf","svg","png","jpg"};
+      formatSelection = new JComboBox<>(formats);
+
+      formatBox.add(Box.createHorizontalStrut(10));
+      formatBox.add(lbl);
+      formatBox.add(formatSelection);
+      formatBox.add(Box.createHorizontalGlue());
+      topPanel.add(formatBox);
+    }
+
+    {
+      Box buttonBox = Box.createHorizontalBox();
+      JButton exportButton = new JButton("Export");
+      exportButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+          fileChooser.approveSelection();
+          String format = (String)formatSelection.getSelectedItem();
+          File dir = fileChooser.getCurrentDirectory();
+          File file = fileChooser.getSelectedFile();
+          if (file == null) {
+            file = new File(dir, "image."+format);
+          }
+          System.out.println("File type = "+fileChooser.getTypeDescription(file));
+
+          // Do the print
+          scatterPlot.print(format, file);
+
+          // Do the save
+          exportDialog.setVisible(false);
+        }
+      });
+      JButton cancelButton = new JButton("Cancel");
+      cancelButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+          exportDialog.setVisible(false);
+        }
+      });
+      // buttonBox.add(Box.createVerticalStrut(10));
+      buttonBox.add(Box.createHorizontalGlue());
+      buttonBox.add(exportButton);
+      buttonBox.add(Box.createHorizontalStrut(10));
+      buttonBox.add(cancelButton);
+      buttonBox.add(Box.createHorizontalStrut(10));
+      topPanel.add(buttonBox);
+    }
+
+    {
+      Box spacerBox = Box.createHorizontalBox();
+      spacerBox.add(Box.createVerticalStrut(10));
+      topPanel.add(spacerBox);
+    }
+
+    exportDialog.add(topPanel);
+    exportDialog.pack();
+  }
+*/
 
 	private void initializeColors() {
 		float hue = 0f;
@@ -548,4 +755,13 @@ public class ScatterPlotDialog extends JDialog {
 		                                                       view, coordinates, undo);
 		splt.execute();
 	}
+
+  private Collection<FileChooserFilter> getFileChooserFilters() {
+    List<FileChooserFilter> chooserList = new ArrayList<>();
+    chooserList.add(new FileChooserFilter("PDF File", ".pdf"));
+    chooserList.add(new FileChooserFilter("PNG File", ".png"));
+    chooserList.add(new FileChooserFilter("JPEG File", ".jpg"));
+    chooserList.add(new FileChooserFilter("SVG File", ".svg"));
+    return chooserList;
+  }
 }

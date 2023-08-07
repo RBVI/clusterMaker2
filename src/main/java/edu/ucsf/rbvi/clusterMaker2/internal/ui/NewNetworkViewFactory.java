@@ -20,7 +20,7 @@ public class NewNetworkViewFactory implements ClusterVizFactory   {
 	boolean checkAvailable;
 	
 	public NewNetworkViewFactory(ClusterManager clusterManager, boolean checkAvailable) {
-		context = new NewNetworkViewContext();
+		// context = new NewNetworkViewContext();
 		this.clusterManager = clusterManager;
 		this.checkAvailable = checkAvailable;
 	}
@@ -70,7 +70,7 @@ public class NewNetworkViewFactory implements ClusterVizFactory   {
 		// Not sure why we need to do this, but it looks like
 		// the tunable stuff "remembers" objects that it's already
 		// processed this tunable.  So, we use a copy constructor
-		return new TaskIterator(new NewNetworkView(context, clusterManager, checkAvailable, true));
+		return new TaskIterator(new NewNetworkView(clusterManager, checkAvailable, true));
 	}
 
 	@Override

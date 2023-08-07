@@ -36,34 +36,37 @@ public abstract class AbstractFuzzyNetworkClusterer extends AbstractNetworkClust
 	
 	protected void createFuzzyTable(List<FuzzyNodeCluster> clusters){
 			
+    String tableSuidColumn = clusterAttributeName + "_Table.SUID";
+    String fuzzyClusterTableName = clusterAttributeName + "_Table";
 		CyTable networkTable = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
-		CyTable FuzzyClusterTable = null;
-		if(!CyTableUtil.getColumnNames(networkTable).contains(clusterAttributeName + "_Table.SUID")){
-			
-			network.getDefaultNetworkTable().createColumn(clusterAttributeName + "_Table.SUID", Long.class, false);
-			FuzzyClusterTable = tableFactory.createTable(clusterAttributeName + "_Table", "Fuzzy_Node.SUID", Long.class, true, true);
-			
-		}
-		else{
-			long FuzzyClusterTableSUID = network.getRow(network).get(clusterAttributeName + "_Table.SUID", Long.class);
-			 FuzzyClusterTable = tableManager.getTable(FuzzyClusterTableSUID);
+		CyTable fuzzyClusterTable = null;
+		if(!CyTableUtil.getColumnNames(networkTable).contains(tableSuidColumn)) {
+			networkTable.createColumn(tableSuidColumn, Long.class, false);
+			fuzzyClusterTable = tableFactory.createTable(fuzzyClusterTableName, "Fuzzy_Node.SUID", Long.class, true, true);
+		} else {
+			Long fuzzyClusterTableSUID = networkTable.getRow(network.getSUID()).get(tableSuidColumn, Long.class);
+      if (fuzzyClusterTableSUID == null) {
+        fuzzyClusterTable = tableFactory.createTable(fuzzyClusterTableName, "Fuzzy_Node.SUID", Long.class, true, true);
+      } else {
+        fuzzyClusterTable = tableManager.getTable(fuzzyClusterTableSUID);
+      }
 		}
 
 		for(FuzzyNodeCluster cluster : clusters){
-			if(FuzzyClusterTable.getColumn("Cluster_"+cluster.getClusterNumber()) == null){
-				FuzzyClusterTable.createColumn("Cluster_"+cluster.getClusterNumber(), Double.class, false);
+			if(fuzzyClusterTable.getColumn("Cluster_"+cluster.getClusterNumber()) == null){
+				fuzzyClusterTable.createColumn("Cluster_"+cluster.getClusterNumber(), Double.class, false);
 			}
 		}
 		
-		CyRow TableRow;
+		CyRow tableRow;
 		for(CyNode node: network.getNodeList()){
-			TableRow = FuzzyClusterTable.getRow(node.getSUID());
+			tableRow = fuzzyClusterTable.getRow(node.getSUID());
 			for(FuzzyNodeCluster cluster : clusters){
-				TableRow.set("Cluster_"+cluster.getClusterNumber(), cluster.getMembership(node));
+				tableRow.set("Cluster_"+cluster.getClusterNumber(), cluster.getMembership(node));
 			}
 		}
 		
-		network.getRow(network).set(clusterAttributeName + "_Table.SUID", FuzzyClusterTable.getSUID());
-		tableManager.addTable(FuzzyClusterTable);			
+		networkTable.getRow(network.getSUID()).set(tableSuidColumn, fuzzyClusterTable.getSUID());
+		tableManager.addTable(fuzzyClusterTable);
 	}
 }

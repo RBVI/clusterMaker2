@@ -21,22 +21,23 @@ import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.NodeCluster.ScoreComparat
  */
 
 public class FuzzyNodeCluster extends NodeCluster {
+	static int clusterCount = 0;
+  static int maxClusterNumber = 0;
 
 	private HashMap<CyNode, Double> membershipMap = null;
-	public static int fuzzyClusterCount = 0;
 	public FuzzyNodeCluster() {
 		super();
-		fuzzyClusterCount++;
-		clusterNumber = fuzzyClusterCount;
-
+		clusterCount++;
+    maxClusterNumber = Math.max(clusterNumber, maxClusterNumber);
 	}
 
 	public FuzzyNodeCluster(Collection<CyNode> collection, HashMap<CyNode, Double> clusterMemberships) {
 		super(collection);
 
+		clusterCount++;
+    maxClusterNumber = Math.max(clusterNumber, maxClusterNumber);
+
 		membershipMap = new HashMap<CyNode, Double>();
-		fuzzyClusterCount++;
-		clusterNumber = fuzzyClusterCount;
 
 		for(CyNode element : clusterMemberships.keySet()){
 
@@ -47,15 +48,29 @@ public class FuzzyNodeCluster extends NodeCluster {
 
 	}
 
-	public boolean add(List<CyNode>nodeList, int index, double membershipValue) {
+  public static void reset() {
+    clusterCount = 0;
+    maxClusterNumber = 0;
+  }
 
+	public boolean add(List<CyNode>nodeList, int index, double membershipValue) {
 		boolean retval = add(nodeList.get(index));
 		if(retval){
 			membershipMap.put(nodeList.get(index), membershipValue);
 		}
 		return retval;
 	}
-	public static void init() { fuzzyClusterCount = 0; hasScore = false; }
+
+  public boolean add(CyNode node, double membershipValue) {
+    if (membershipMap == null)
+      membershipMap = new HashMap<CyNode, Double>();
+
+    boolean retval = add(node);
+    if (retval)
+			membershipMap.put(node, membershipValue);
+    return retval;
+  }
+
 	public Double getMembership(CyNode node){
 		return membershipMap.get(node);
 

@@ -7,6 +7,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 
 import org.ojalgo.matrix.store.PhysicalStore;
+import org.ojalgo.matrix.store.Primitive64Store;
 
 import edu.ucsf.rbvi.clusterMaker2.internal.api.CyMatrix;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.DistanceMetric;
@@ -251,7 +252,7 @@ public class CyOjAlgoMatrix extends OjAlgoMatrix implements CyMatrix {
 
 		String[] newRowLabels = new String[nRows];
 		CyNode[] newRowNodes = new CyNode[nRows];
-		PhysicalStore<Double> newData = storeFactory.makeZero(nRows, nColumns);
+		Primitive64Store newData = (Primitive64Store)storeFactory.makeZero(nRows, nColumns);
 		for (int row = 0; row < nRows; row++) {
 			newRowLabels[row] = rowLabels[index[row]];
 			newRowNodes[row] = rowNodes[index[row]];

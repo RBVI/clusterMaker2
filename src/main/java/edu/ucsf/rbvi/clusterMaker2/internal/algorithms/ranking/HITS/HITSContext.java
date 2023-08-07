@@ -1,7 +1,9 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.HITS;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.units.NormalizationContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.Tunable;
 
 

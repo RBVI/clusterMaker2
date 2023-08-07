@@ -1,10 +1,13 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PRWP;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.units.NormalizationContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListMultipleSelection;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,9 +28,13 @@ public class PRWPContext {
     @Tunable(description = "Edge attributes", groups = "Biomarker information", gravity = 30.0)
     public ListMultipleSelection<String> edgeAttributes;
 
+    @ContainsTunables
+    public NormalizationContext normalizationContext;
+
     public PRWPContext(ClusterManager manager) {
         this.manager = manager;
         network = this.manager.getNetwork();
+        normalizationContext = new NormalizationContext(manager, network);
         updateContext();
     }
 
@@ -78,6 +85,7 @@ public class PRWPContext {
 
     public void setNetwork(CyNetwork network) {
         this.network = network;
+        normalizationContext.setNetwork(network);
     }
 
     public CyNetwork getNetwork() {

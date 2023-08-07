@@ -28,7 +28,10 @@ package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.networkClusterers.Leadin
 		
 		@Override
 		public String getLongDescription() {
-			return "";
+			return "Newman's leading eigenvector method for detecting community structure. This is the proper "+
+             "implementation of the recursive, divisive algorithm: each split is done by maximizing the "+
+             "modularity regarding the original network, see MEJ Newman: Finding community structure in networks "+
+             "using the eigenvectors of matrices, Phys Rev E 74:036104 (2006). ";
 		}
 
 		@Override

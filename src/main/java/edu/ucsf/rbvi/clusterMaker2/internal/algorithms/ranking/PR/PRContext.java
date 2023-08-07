@@ -1,8 +1,10 @@
 package edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.PR;
 
+import edu.ucsf.rbvi.clusterMaker2.internal.algorithms.ranking.units.NormalizationContext;
 import edu.ucsf.rbvi.clusterMaker2.internal.api.ClusterManager;
 import edu.ucsf.rbvi.clusterMaker2.internal.utils.ModelUtils;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListMultipleSelection;
 
@@ -22,9 +24,13 @@ public class PRContext {
     @Tunable(description = "Iterations", groups = "PR factors", gravity = 10.0)
     public int iterations = 1000;
 
+    @ContainsTunables
+    public NormalizationContext normalizationContext;
+
     public PRContext(ClusterManager manager) {
         this.manager = manager;
         network = this.manager.getNetwork();
+        normalizationContext = new NormalizationContext(manager, network);
         updateContext();
     }
 
@@ -56,6 +62,7 @@ public class PRContext {
 
     public void setNetwork(CyNetwork network) {
         this.network = network;
+        normalizationContext.setNetwork(network);
     }
 
     public CyNetwork getNetwork() {
